@@ -1,0 +1,59 @@
+name: Deploy application
+on:
+  workflow_dispatch: # This workflow can be triggered manually from: https://github.com/navikt/amt-aktivitetskort-publisher/actions/workflows/deploy.yaml
+  push:
+    branches:
+      - main
+env:
+  PRINT_PAYLOAD: true
+
+jobs:
+  test-build-and-push:
+    permissions:
+      contents: "write"
+      id-token: "write"
+      security-events: "write"
+    name: Test, build and push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Build artifacts
+        run: ./gradlew build
+      - name: Dependency submission (for dependabot)
+        uses: mikepenz/gradle-dependency-submission@v0.9.0
+        with:
+          fail-on-error: true
+          gradle-dependency-path: "build.gradle.kts"
+      - name: docker-build-push
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: amt
+          tag: ${{ github.sha }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+
+  deploy-dev:
+    name: Deploy application to dev
+    needs: test-build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy application
+        uses: nais/deploy/actions/deploy@master
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-gcp
+          RESOURCE: .nais/nais-dev.yaml
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
