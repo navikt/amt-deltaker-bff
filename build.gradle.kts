@@ -17,13 +17,16 @@ val kotlinVersion = "1.9.10"
 val ktorVersion = "2.3.5"
 val logbackVersion = "1.4.11"
 val prometeusVersion = "1.6.3"
-val klintVersion = "0.49.1"
+val ktlintVersion = "0.49.1"
+val jacksonVersion = "2.15.2"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("io.ktor:ktor-serialization-jackson-jvm")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion")
+
     implementation("io.ktor:ktor-server-call-logging-jvm")
     implementation("io.ktor:ktor-server-call-id-jvm")
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm")
@@ -32,6 +35,7 @@ dependencies {
     implementation("io.ktor:ktor-server-status-pages-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
+
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
 }
@@ -56,5 +60,5 @@ tasks.jar {
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set(klintVersion)
+    version.set(ktlintVersion)
 }
