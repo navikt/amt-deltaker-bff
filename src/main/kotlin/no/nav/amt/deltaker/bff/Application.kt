@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 
 fun main() {
     val server = embeddedServer(Netty, port = 8080, module = Application::module)
-    server.start(wait = true)
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
@@ -18,6 +17,7 @@ fun main() {
             server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
         },
     )
+    server.start(wait = true)
 }
 
 fun Application.module() {
