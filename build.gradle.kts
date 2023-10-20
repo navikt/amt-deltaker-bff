@@ -21,6 +21,9 @@ val ktlintVersion = "0.49.1"
 val jacksonVersion = "2.15.2"
 val logstashEncoderVersion = "7.4"
 val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
+val kafkaClientsVersion = "3.6.0"
+val testcontainersVersion = "1.19.0"
+val kotestVersion = "5.7.2"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -40,9 +43,15 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:log:$commonVersion")
+    implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
+    testImplementation("org.testcontainers:kafka:$testcontainersVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
 }
 
 kotlin {
