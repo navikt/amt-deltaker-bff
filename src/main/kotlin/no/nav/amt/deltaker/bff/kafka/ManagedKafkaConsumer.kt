@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.kafka
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -17,11 +17,11 @@ class ManagedKafkaConsumer<K, V>(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val job = Job()
-    private val scope = CoroutineScope(Dispatchers.Default + job)
 
     private var running = true
 
-    fun run() = scope.launch {
+    @OptIn(DelicateCoroutinesApi::class)
+    fun run() = GlobalScope.launch(job) {
         KafkaConsumer<K, V>(config).use { consumer ->
             consumer.subscribe(listOf(topic))
             while (running) {
