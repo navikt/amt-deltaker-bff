@@ -14,6 +14,9 @@ data class Environment(
         const val DB_HOST_KEY = "DB_HOST"
         const val DB_PORT_KEY = "DB_PORT"
 
+        const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
+        const val ARRANGOR_TOPIC = "amt.arrangor-v1"
+
         fun isDev(): Boolean {
             val cluster = System.getenv("NAIS_CLUSTER_NAME") ?: "Ikke dev"
             return cluster == "dev-gcp"

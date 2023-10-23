@@ -10,19 +10,21 @@ import org.junit.Test
 class ArrangorConsumerTest {
 
     companion object {
-        val repository = ArrangorRepository
+        lateinit var repository: ArrangorRepository
 
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
+            repository = ArrangorRepository()
         }
     }
 
     @Test
     fun `consumeArrangor - ny arrangor - upserter`() {
         val arrangor = TestData.lagArrangor()
-        consumeArrangor(arrangor.id, objectMapper().writeValueAsString(arrangor))
+        val arrangorConsumer = ArrangorConsumer(repository)
+        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper().writeValueAsString(arrangor))
 
         repository.get(arrangor.id) shouldBe arrangor
     }
@@ -34,7 +36,8 @@ class ArrangorConsumerTest {
 
         val oppdatertArrangor = arrangor.copy(navn = "Oppdatert Arrangor")
 
-        consumeArrangor(arrangor.id, objectMapper().writeValueAsString(oppdatertArrangor))
+        val arrangorConsumer = ArrangorConsumer(repository)
+        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper().writeValueAsString(oppdatertArrangor))
 
         repository.get(arrangor.id) shouldBe oppdatertArrangor
     }
@@ -44,7 +47,8 @@ class ArrangorConsumerTest {
         val arrangor = TestData.lagArrangor()
         repository.upsert(arrangor)
 
-        consumeArrangor(arrangor.id, null)
+        val arrangorConsumer = ArrangorConsumer(repository)
+        arrangorConsumer.consumeArrangor(arrangor.id, null)
 
         repository.get(arrangor.id) shouldBe null
     }

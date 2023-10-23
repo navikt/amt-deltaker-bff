@@ -9,12 +9,13 @@ import org.junit.Test
 class ArrangorRepositoryTest {
 
     companion object {
-        val repository = ArrangorRepository
+        lateinit var repository: ArrangorRepository
 
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
+            repository = ArrangorRepository()
         }
     }
 

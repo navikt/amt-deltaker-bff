@@ -7,10 +7,9 @@ import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
+import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
+import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.db.Database
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
-import no.nav.amt.deltaker.bff.kafka.configureKafkaListener
 
 fun main() {
     val server = embeddedServer(Netty, port = 8080, module = Application::module)
@@ -33,8 +32,10 @@ fun Application.module() {
 
     Database.init(environment)
 
-    val kafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl()
-    configureKafkaListener(kafkaConfig)
+    val arrangorRepository = ArrangorRepository()
+
+    val arrangorConsumer = ArrangorConsumer(arrangorRepository)
+    arrangorConsumer.run()
 
     attributes.put(isReadyKey, true)
 }
