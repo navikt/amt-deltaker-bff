@@ -6,7 +6,7 @@ import no.nav.amt.deltaker.bff.db.Database
 import java.time.LocalDateTime
 import java.util.UUID
 
-class ArrangorRepository {
+object ArrangorRepository {
     private fun rowMapper(row: Row) = Arrangor(
         id = row.uuid("id"),
         navn = row.string("navn"),
