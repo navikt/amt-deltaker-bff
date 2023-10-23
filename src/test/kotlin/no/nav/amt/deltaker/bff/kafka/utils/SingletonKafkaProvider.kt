@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.kafka
+package no.nav.amt.deltaker.bff.kafka.utils
 
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.KafkaContainer

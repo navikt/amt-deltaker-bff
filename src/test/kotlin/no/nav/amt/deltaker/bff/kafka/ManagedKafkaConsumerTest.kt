@@ -2,19 +2,15 @@ package no.nav.amt.deltaker.bff.kafka
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
+import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
+import no.nav.amt.deltaker.bff.kafka.utils.produceStringString
+import no.nav.amt.deltaker.bff.kafka.utils.produceUUIDByteArray
 import no.nav.amt.deltaker.bff.utils.AsyncUtils
-import org.apache.kafka.clients.producer.KafkaProducer
-import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
-import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.common.serialization.StringSerializer
 import org.apache.kafka.common.serialization.UUIDDeserializer
-import org.apache.kafka.common.serialization.UUIDSerializer
 import org.junit.Test
-import java.util.Properties
 import java.util.UUID
 
 class ManagedKafkaConsumerTest {
@@ -32,7 +28,7 @@ class ManagedKafkaConsumerTest {
         val value = "value"
         val cache = mutableMapOf<String, String>()
 
-        produce(ProducerRecord(topic, key, value))
+        produceStringString(ProducerRecord(topic, key, value))
 
         val consumer = ManagedKafkaConsumer(topic, stringConsumerConfig) { k: String, v: String ->
             cache[k] = v
@@ -79,7 +75,7 @@ class ManagedKafkaConsumerTest {
 
         var antallGangerKallt = 0
 
-        produce(ProducerRecord(topic, key, value))
+        produceStringString(ProducerRecord(topic, key, value))
 
         val consumer = ManagedKafkaConsumer<String, String>(topic, stringConsumerConfig) { _, _ ->
             antallGangerKallt++
@@ -90,30 +86,6 @@ class ManagedKafkaConsumerTest {
         AsyncUtils.eventually {
             antallGangerKallt shouldBe 2
             consumer.stop()
-        }
-    }
-
-    private fun produce(record: ProducerRecord<String, String>): RecordMetadata {
-        KafkaProducer<String, String>(
-            Properties().apply {
-                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, SingletonKafkaProvider.getHost())
-                put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-                put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java)
-            },
-        ).use { producer ->
-            return producer.send(record).get()
-        }
-    }
-
-    private fun produceUUIDByteArray(record: ProducerRecord<UUID, ByteArray>): RecordMetadata {
-        KafkaProducer<UUID, ByteArray>(
-            Properties().apply {
-                put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, SingletonKafkaProvider.getHost())
-                put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, UUIDSerializer::class.java)
-                put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer::class.java)
-            },
-        ).use { producer ->
-            return producer.send(record).get()
         }
     }
 }

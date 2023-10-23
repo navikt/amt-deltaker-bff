@@ -1,12 +1,13 @@
 package no.nav.amt.deltaker.bff.arrangor
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import org.junit.BeforeClass
 import org.junit.Test
 
-class ArrangorRepositoryTest {
+class ArrangorConsumerTest {
 
     companion object {
         lateinit var repository: ArrangorRepository
@@ -20,30 +21,31 @@ class ArrangorRepositoryTest {
     }
 
     @Test
-    fun `upsert - ny arrangor - inserter`() {
+    fun `consumeArrangor - ny arrangor - upserter`() {
         val arrangor = TestData.lagArrangor()
-        repository.upsert(arrangor)
+        consumeArrangor(arrangor.id, objectMapper().writeValueAsString(arrangor))
 
         repository.get(arrangor.id) shouldBe arrangor
     }
 
     @Test
-    fun `upsert - eksisterende arrangor - oppdaterer`() {
+    fun `consumeArrangor - oppdatert arrangor - upserter`() {
         val arrangor = TestData.lagArrangor()
         repository.upsert(arrangor)
 
         val oppdatertArrangor = arrangor.copy(navn = "Oppdatert Arrangor")
-        repository.upsert(oppdatertArrangor)
+
+        consumeArrangor(arrangor.id, objectMapper().writeValueAsString(oppdatertArrangor))
 
         repository.get(arrangor.id) shouldBe oppdatertArrangor
     }
 
     @Test
-    fun `delete - eksisterende arrangor - sletter`() {
+    fun `consumeArrangor - tombstonet arrangor - sletter`() {
         val arrangor = TestData.lagArrangor()
         repository.upsert(arrangor)
 
-        repository.delete(arrangor.id)
+        consumeArrangor(arrangor.id, null)
 
         repository.get(arrangor.id) shouldBe null
     }
