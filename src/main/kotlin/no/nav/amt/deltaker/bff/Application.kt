@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
+import no.nav.amt.deltaker.bff.db.Database
 
 fun main() {
     val server = embeddedServer(Netty, port = 8080, module = Application::module)
@@ -24,6 +25,10 @@ fun Application.module() {
     configureSerialization()
     configureMonitoring()
     configureRouting()
+
+    val environment = Environment()
+
+    Database.init(environment)
 
     attributes.put(isReadyKey, true)
 }
