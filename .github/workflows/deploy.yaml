@@ -23,15 +23,12 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - name: Setup Gradle
+      - name: Setup Gradle to generate and submit dependency graphs
         uses: gradle/gradle-build-action@v2
+        with:
+          dependency-graph: generate-and-submit
       - name: Build artifacts
         run: ./gradlew build
-      - name: Dependency submission (for dependabot)
-        uses: mikepenz/gradle-dependency-submission@v0.9.0
-        with:
-          fail-on-error: true
-          gradle-dependency-path: "build.gradle.kts"
       - name: docker-build-push
         uses: nais/docker-build-push@v0
         id: docker-build-push
