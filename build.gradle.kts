@@ -22,8 +22,12 @@ val jacksonVersion = "2.15.3"
 val logstashEncoderVersion = "7.4"
 val commonVersion = "3.2023.09.13_04.55-a8ff452fbd94"
 val kafkaClientsVersion = "3.6.0"
-val testcontainersVersion = "1.19.0"
+val testcontainersVersion = "1.19.1"
 val kotestVersion = "5.7.2"
+val flywayVersion = "9.22.0"
+val hikariVersion = "5.0.1"
+val kotliqueryVersion = "1.9.0"
+val postgresVersion = "42.6.0"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -44,6 +48,10 @@ dependencies {
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:log:$commonVersion")
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
+    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.postgresql:postgresql:$postgresVersion")
+    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
