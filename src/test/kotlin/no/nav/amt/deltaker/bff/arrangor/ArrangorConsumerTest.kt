@@ -24,7 +24,7 @@ class ArrangorConsumerTest {
     fun `consumeArrangor - ny arrangor - upserter`() {
         val arrangor = TestData.lagArrangor()
         val arrangorConsumer = ArrangorConsumer(repository)
-        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper().writeValueAsString(arrangor))
+        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper.writeValueAsString(arrangor))
 
         repository.get(arrangor.id) shouldBe arrangor
     }
@@ -37,7 +37,7 @@ class ArrangorConsumerTest {
         val oppdatertArrangor = arrangor.copy(navn = "Oppdatert Arrangor")
 
         val arrangorConsumer = ArrangorConsumer(repository)
-        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper().writeValueAsString(oppdatertArrangor))
+        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper.writeValueAsString(oppdatertArrangor))
 
         repository.get(arrangor.id) shouldBe oppdatertArrangor
     }

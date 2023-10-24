@@ -33,7 +33,7 @@ class ArrangorConsumer(
             repository.delete(id)
             log.info("Slettet arrangør med id $id")
         } else {
-            repository.upsert(objectMapper().readValue(arrangor))
+            repository.upsert(objectMapper.readValue(arrangor))
             log.info("Lagret arrangør med id $id")
         }
     }
