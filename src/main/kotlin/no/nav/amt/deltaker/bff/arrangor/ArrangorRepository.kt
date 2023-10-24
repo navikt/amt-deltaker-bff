@@ -50,4 +50,13 @@ class ArrangorRepository {
             it.run(query)
         }
     }
+
+    fun delete(id: UUID) = Database.query {
+        val query = queryOf(
+            """delete from arrangor where id = :id""",
+            mapOf("id" to id),
+        )
+
+        it.update(query)
+    }
 }

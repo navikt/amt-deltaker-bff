@@ -7,6 +7,8 @@ import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
+import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
+import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.db.Database
 
 fun main() {
@@ -29,6 +31,11 @@ fun Application.module() {
     val environment = Environment()
 
     Database.init(environment)
+
+    val arrangorRepository = ArrangorRepository()
+
+    val arrangorConsumer = ArrangorConsumer(arrangorRepository)
+    arrangorConsumer.run()
 
     attributes.put(isReadyKey, true)
 }
