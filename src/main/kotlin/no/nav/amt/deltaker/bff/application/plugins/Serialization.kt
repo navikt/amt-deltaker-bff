@@ -27,4 +27,4 @@ fun ObjectMapper.applicationConfig() {
     disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 }
 
-fun objectMapper() = jacksonObjectMapper().apply { applicationConfig() }
+val objectMapper = jacksonObjectMapper().apply { applicationConfig() }

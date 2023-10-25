@@ -5,7 +5,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.Deserializer
 
 class LocalKafkaConfig(
-    val kafkaBrokers: String = System.getenv("KAFKA_BROKERS") ?: "http://localhost:9092",
+    val kafkaBrokers: String = System.getenv("KAFKA_BROKERS") ?: "localhost:9092",
     val kafkaAutoOffsetReset: String = "earliest",
 ) : KafkaConfig {
     override fun commonConfig() = mapOf(
