@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.kafka.config
 
 import no.nav.amt.deltaker.bff.getEnvVar
+import org.apache.kafka.clients.CommonClientConfigs
 import org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -17,6 +18,7 @@ class KafkaConfigImpl : KafkaConfig {
     private val kafkaTruststorePath = getEnvVar("KAFKA_TRUSTSTORE_PATH")
     private val kafkaCredstorePassword = getEnvVar("KAFKA_CREDSTORE_PASSWORD")
     private val kafkaKeystorePath = getEnvVar("KAFKA_KEYSTORE_PATH")
+    private val kafkaSecurityProtocol = "SSL"
 
     override fun commonConfig() = mapOf(
         BOOTSTRAP_SERVERS_CONFIG to kafkaBrokers,
@@ -25,6 +27,7 @@ class KafkaConfigImpl : KafkaConfig {
     ) + securityConfig()
 
     private fun securityConfig() = mapOf(
+        CommonClientConfigs.SECURITY_PROTOCOL_CONFIG to kafkaSecurityProtocol,
         SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG to "", // Disable server host name verification
         SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG to javaKey,
         SslConfigs.SSL_KEYSTORE_TYPE_CONFIG to pkcs12,
