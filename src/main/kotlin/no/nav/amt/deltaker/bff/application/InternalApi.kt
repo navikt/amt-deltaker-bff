@@ -26,5 +26,5 @@ fun Application.registerInternalApi(amtArrangorClient: AmtArrangorClient) {
 }
 
 fun isInternalRequest(request: ApplicationRequest): Boolean {
-    return request.origin.remoteHost == "127.0.0.1"
+    return request.origin.remoteAddress == "127.0.0.1"
 }
