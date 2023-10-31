@@ -36,4 +36,4 @@ data class Environment(
 fun getEnvVar(varName: String, defaultValue: String? = null) = System.getenv(varName)
     ?: System.getProperty(varName)
     ?: defaultValue
-    ?: throw RuntimeException("Missing required variable $varName")
+    ?: if (Environment.isLocal()) "" else error("Missing required variable $varName")
