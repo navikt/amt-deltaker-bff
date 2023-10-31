@@ -6,7 +6,11 @@ data class Environment(
     val dbDatabase: String = getEnvVar(DB_DATABASE_KEY),
     val dbHost: String = getEnvVar(DB_HOST_KEY),
     val dbPort: String = getEnvVar(DB_PORT_KEY),
+    val azureAdTokenUrl: String = getEnvVar(AZURE_AD_TOKEN_URL_KEY),
+    val azureClientId: String = getEnvVar(AZURE_APP_CLIENT_ID_KEY),
+    val azureClientSecret: String = getEnvVar(AZURE_APP_CLIENT_SECRET_KEY),
 ) {
+
     companion object {
         const val DB_USERNAME_KEY = "DB_USERNAME"
         const val DB_PASSWORD_KEY = "DB_PASSWORD"
@@ -16,6 +20,10 @@ data class Environment(
 
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
         const val ARRANGOR_TOPIC = "amt.arrangor-v1"
+
+        const val AZURE_AD_TOKEN_URL_KEY = "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
+        const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"
+        const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
 
         fun isDev(): Boolean {
             val cluster = System.getenv("NAIS_CLUSTER_NAME") ?: "Ikke dev"

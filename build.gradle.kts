@@ -28,6 +28,7 @@ val flywayVersion = "9.22.3"
 val hikariVersion = "5.0.1"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.6.0"
+val caffeineVersion = "3.1.8"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -43,6 +44,11 @@ dependencies {
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-status-pages-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
+
+    implementation("com.github.ben-manes.caffeine:caffeine:$caffeineVersion")
 
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
@@ -54,6 +60,7 @@ dependencies {
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
     testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
