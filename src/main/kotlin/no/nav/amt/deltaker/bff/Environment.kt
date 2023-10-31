@@ -9,6 +9,8 @@ data class Environment(
     val azureAdTokenUrl: String = getEnvVar(AZURE_AD_TOKEN_URL_KEY),
     val azureClientId: String = getEnvVar(AZURE_APP_CLIENT_ID_KEY),
     val azureClientSecret: String = getEnvVar(AZURE_APP_CLIENT_SECRET_KEY),
+    val amtArrangorUrl: String = getEnvVar(AMT_ARRANGOR_URL_KEY),
+    val amtArrangorScope: String = getEnvVar(AMT_ARRANGOR_SCOPE_KEY),
 ) {
 
     companion object {
@@ -19,7 +21,10 @@ data class Environment(
         const val DB_PORT_KEY = "DB_PORT"
 
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
-        const val ARRANGOR_TOPIC = "amt.arrangor-v1"
+
+        const val AMT_ARRANGOR_TOPIC = "amt.arrangor-v1"
+        const val AMT_ARRANGOR_URL_KEY = "AMT_ARRANGOR_URL"
+        const val AMT_ARRANGOR_SCOPE_KEY = "AMT_ARRANGOR_SCOPE"
 
         const val AZURE_AD_TOKEN_URL_KEY = "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
         const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"

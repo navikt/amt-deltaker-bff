@@ -44,6 +44,11 @@ spec:
     pool: nav-dev
   tokenx:
     enabled: true
+  env:
+    - name: AMT_ARRANGOR_SCOPE
+      value: api://dev-gcp.amt.amt-arrangor/.default
+    - name: AMT_ARRANGOR_URL
+      value: http://amt-arrangor
 
   gcp:
     sqlInstances:
