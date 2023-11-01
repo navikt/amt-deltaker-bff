@@ -44,6 +44,10 @@ spec:
     pool: nav-dev
   tokenx:
     enabled: true
+  accessPolicy:
+    outbound:
+      rules:
+        - application: amt-arrangor
   env:
     - name: AMT_ARRANGOR_SCOPE
       value: api://dev-gcp.amt.amt-arrangor/.default
