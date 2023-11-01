@@ -7,7 +7,10 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
+import io.ktor.http.isSuccess
+import org.slf4j.LoggerFactory
 import java.time.Duration
 
 class AzureAdTokenClient(
@@ -16,6 +19,8 @@ class AzureAdTokenClient(
     private val clientSecret: String,
     private val httpClient: HttpClient,
 ) {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     private val tokenCache = Caffeine.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(55))
@@ -28,7 +33,7 @@ class AzureAdTokenClient(
     }
 
     private suspend fun createMachineToMachineToken(scope: String): AzureAdToken {
-        val token: AzureAdToken = httpClient.post(azureAdTokenUrl) {
+        val response = httpClient.post(azureAdTokenUrl) {
             FormDataContent(
                 Parameters.build {
                     "grant_type" to "client_credentials"
@@ -37,7 +42,14 @@ class AzureAdTokenClient(
                     "scope" to scope
                 },
             )
-        }.body()
+        }
+
+        if (!response.status.isSuccess()) {
+            log.error("Kunne ikke hente AAD-token: ${response.status.value} ${response.bodyAsText()}")
+            error("Kunne ikke hente AAD-token")
+        }
+
+        val token = response.body<AzureAdToken>()
 
         tokenCache.put(scope, token)
 
