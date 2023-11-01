@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
@@ -38,7 +38,7 @@ fun Application.module() {
 
     Database.init(environment)
 
-    val httpClient = HttpClient(CIO) {
+    val httpClient = HttpClient(Apache) {
         install(ContentNegotiation) {
             jackson { applicationConfig() }
         }
