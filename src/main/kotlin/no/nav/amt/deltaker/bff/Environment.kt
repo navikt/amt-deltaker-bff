@@ -30,6 +30,8 @@ data class Environment(
         const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"
         const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
 
+        const val HTTP_CLIENT_TIMEOUT_MS = 10_000
+
         fun isDev(): Boolean {
             val cluster = System.getenv("NAIS_CLUSTER_NAME") ?: "Ikke dev"
             return cluster == "dev-gcp"

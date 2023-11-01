@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.arrangor
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.headers
 import io.ktor.http.isSuccess
@@ -19,7 +20,7 @@ class AmtArrangorClient(
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.get("$baseUrl/api/service/arrangor/organisasjonsnummer/$orgnummer") {
             headers {
-                HttpHeaders.Authorization to token
+                append(HttpHeaders.Authorization, token)
             }
         }
 
@@ -35,13 +36,14 @@ class AmtArrangorClient(
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.get("$baseUrl/api/service/arrangor/$id") {
             headers {
-                HttpHeaders.Authorization to token
+                append(HttpHeaders.Authorization, token)
             }
         }
 
         if (!response.status.isSuccess()) {
             error(
-                "Kunne ikke hente arrangør med id $id fra amt-arrangør. Status=${response.status.value}",
+                "Kunne ikke hente arrangør med id $id fra amt-arrangør. Status=${response.status.value} " +
+                    "error=${response.bodyAsText()}",
             )
         }
         return response.body()

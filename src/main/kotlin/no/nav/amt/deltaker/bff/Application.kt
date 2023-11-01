@@ -7,6 +7,7 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
 import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.application.plugins.applicationConfig
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
@@ -39,6 +40,11 @@ fun Application.module() {
     Database.init(environment)
 
     val httpClient = HttpClient(Apache) {
+        engine {
+            socketTimeout = HTTP_CLIENT_TIMEOUT_MS
+            connectTimeout = HTTP_CLIENT_TIMEOUT_MS
+            connectionRequestTimeout = HTTP_CLIENT_TIMEOUT_MS * 2
+        }
         install(ContentNegotiation) {
             jackson { applicationConfig() }
         }
