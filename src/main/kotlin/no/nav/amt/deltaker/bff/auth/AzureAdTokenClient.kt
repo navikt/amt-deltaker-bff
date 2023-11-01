@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Parameters
 import io.ktor.http.isSuccess
@@ -34,13 +35,15 @@ class AzureAdTokenClient(
 
     private suspend fun createMachineToMachineToken(scope: String): AzureAdToken {
         val response = httpClient.post(azureAdTokenUrl) {
-            FormDataContent(
-                Parameters.build {
-                    "grant_type" to "client_credentials"
-                    "client_id" to clientId
-                    "client_secret" to clientSecret
-                    "scope" to scope
-                },
+            setBody(
+                FormDataContent(
+                    Parameters.build {
+                        append("grant_type", "client_credentials")
+                        append("client_id", clientId)
+                        append("client_secret", clientSecret)
+                        append("scope", scope)
+                    },
+                ),
             )
         }
 
