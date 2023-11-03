@@ -13,7 +13,6 @@ import no.nav.amt.deltaker.bff.application.plugins.applicationConfig
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
-import no.nav.amt.deltaker.bff.application.registerInternalApi
 import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
@@ -71,7 +70,6 @@ fun Application.module() {
 
     configureRouting()
     configureMonitoring()
-    registerInternalApi(amtArrangorClient)
 
     attributes.put(isReadyKey, true)
 }

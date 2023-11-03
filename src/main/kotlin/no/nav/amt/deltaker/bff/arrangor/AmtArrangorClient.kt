@@ -24,7 +24,8 @@ class AmtArrangorClient(
 
         if (!response.status.isSuccess()) {
             error(
-                "Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. Status=${response.status.value}",
+                "Kunne ikke hente arrangør med orgnummer $orgnummer fra amt-arrangør. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
         return response.body()
