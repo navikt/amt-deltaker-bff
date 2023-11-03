@@ -3,13 +3,11 @@ package no.nav.amt.deltaker.bff.arrangor
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.request
 import io.ktor.http.HttpHeaders
-import io.ktor.http.headers
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
-import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class AmtArrangorClient(
@@ -18,14 +16,10 @@ class AmtArrangorClient(
     private val httpClient: HttpClient,
     private val azureAdTokenClient: AzureAdTokenClient,
 ) {
-    private val log = LoggerFactory.getLogger(javaClass)
-
     suspend fun hentArrangor(orgnummer: String): ArrangorDto {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.get("$baseUrl/api/service/arrangor/organisasjonsnummer/$orgnummer") {
-            headers {
-                append(HttpHeaders.Authorization, token)
-            }
+            header(HttpHeaders.Authorization, token)
         }
 
         if (!response.status.isSuccess()) {
@@ -38,15 +32,10 @@ class AmtArrangorClient(
 
     suspend fun hentArrangor(id: UUID): ArrangorDto {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
-        log.info("dev token: $token")
 
         val response = httpClient.get("$baseUrl/api/service/arrangor/$id") {
-            headers {
-                append(HttpHeaders.Authorization, token)
-            }
+            header(HttpHeaders.Authorization, token)
         }
-        log.info("Request: ${response.request}")
-        log.info("Response: ${response.bodyAsText()}")
 
         if (!response.status.isSuccess()) {
             error(

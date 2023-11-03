@@ -30,12 +30,10 @@ class AzureAdTokenClient(
     suspend fun getMachineToMachineToken(scope: String): String {
         val token = tokenCache.getIfPresent(scope) ?: createMachineToMachineToken(scope)
 
-        log.info("hentet token: ${token.tokenType}, ${token.accessToken}")
         return "${token.tokenType} ${token.accessToken}" // i.e. "Bearer XYZ"
     }
 
     private suspend fun createMachineToMachineToken(scope: String): AzureAdToken {
-        log.info("lager nytt aad token for scope: $scope")
         val response = httpClient.post(azureAdTokenUrl) {
             setBody(
                 FormDataContent(
