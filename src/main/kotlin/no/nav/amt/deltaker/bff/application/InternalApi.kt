@@ -17,7 +17,7 @@ fun Application.registerInternalApi(amtArrangorClient: AmtArrangorClient) {
             if (isInternalRequest(call.request)) {
                 val id = UUID.fromString(call.parameters["id"])
                 val arrangor = amtArrangorClient.hentArrangor(id)
-                call.respond(arrangor.id)
+                call.respond(arrangor.id.toString())
             } else {
                 call.respond(HttpStatusCode.Forbidden)
             }
