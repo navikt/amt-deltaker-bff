@@ -2,9 +2,9 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     id("io.ktor.plugin") version "2.3.5"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
@@ -13,7 +13,7 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val kotlinVersion = "1.9.10"
+val kotlinVersion = "1.9.20"
 val ktorVersion = "2.3.5"
 val logbackVersion = "1.4.11"
 val prometeusVersion = "1.11.5"
