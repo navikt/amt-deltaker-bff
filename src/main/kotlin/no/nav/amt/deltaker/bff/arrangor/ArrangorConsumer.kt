@@ -19,7 +19,7 @@ class ArrangorConsumer(
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val consumer = ManagedKafkaConsumer(
-        topic = Environment.ARRANGOR_TOPIC,
+        topic = Environment.AMT_ARRANGOR_TOPIC,
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
