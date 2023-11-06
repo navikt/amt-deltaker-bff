@@ -2,9 +2,9 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    kotlin("jvm") version "1.9.10"
+    kotlin("jvm") version "1.9.20"
     id("io.ktor.plugin") version "2.3.5"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
@@ -13,7 +13,7 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val kotlinVersion = "1.9.10"
+val kotlinVersion = "1.9.20"
 val ktorVersion = "2.3.5"
 val logbackVersion = "1.4.11"
 val prometeusVersion = "1.11.5"
@@ -23,7 +23,7 @@ val logstashEncoderVersion = "7.4"
 val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
 val kafkaClientsVersion = "3.6.0"
 val testcontainersVersion = "1.19.1"
-val kotestVersion = "5.7.2"
+val kotestVersion = "5.8.0"
 val flywayVersion = "9.22.3"
 val hikariVersion = "5.0.1"
 val kotliqueryVersion = "1.9.0"
