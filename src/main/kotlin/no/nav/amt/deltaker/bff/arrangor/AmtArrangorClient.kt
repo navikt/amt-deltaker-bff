@@ -53,4 +53,11 @@ data class ArrangorDto(
     val navn: String,
     val organisasjonsnummer: String,
     val overordnetArrangor: Arrangor?,
-)
+) {
+    fun toModel() = Arrangor(
+        id = id,
+        navn = navn,
+        organisasjonsnummer = organisasjonsnummer,
+        overordnetArrangorId = overordnetArrangor?.id,
+    )
+}

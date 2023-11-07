@@ -51,6 +51,17 @@ class ArrangorRepository {
         }
     }
 
+    fun get(orgnr: String): Arrangor? {
+        return Database.query {
+            val query = queryOf(
+                """select * from arrangor where organisasjonsnummer = :orgnr""",
+                mapOf("orgnr" to orgnr),
+            ).map(::rowMapper).asSingle
+
+            it.run(query)
+        }
+    }
+
     fun delete(id: UUID) = Database.query {
         val query = queryOf(
             """delete from arrangor where id = :id""",
