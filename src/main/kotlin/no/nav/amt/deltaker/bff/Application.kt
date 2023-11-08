@@ -8,6 +8,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
+import no.nav.amt.deltaker.bff.application.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.application.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.application.plugins.applicationConfig
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
@@ -16,6 +18,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
+import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.db.Database
 
@@ -64,9 +67,15 @@ fun Application.module() {
     )
 
     val arrangorRepository = ArrangorRepository()
+    val deltakerlisteRepository = DeltakerlisteRepository()
+
+    val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
 
     val arrangorConsumer = ArrangorConsumer(arrangorRepository)
+    val deltakerlisteConsumer = DeltakerlisteConsumer(deltakerlisteRepository, arrangorService)
+
     arrangorConsumer.run()
+    deltakerlisteConsumer.run()
 
     configureRouting()
     configureMonitoring()

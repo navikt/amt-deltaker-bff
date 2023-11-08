@@ -21,6 +21,7 @@ data class Environment(
         const val DB_PORT_KEY = "DB_PORT"
 
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
+        const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
 
         const val AMT_ARRANGOR_TOPIC = "amt.arrangor-v1"
         const val AMT_ARRANGOR_URL_KEY = "AMT_ARRANGOR_URL"

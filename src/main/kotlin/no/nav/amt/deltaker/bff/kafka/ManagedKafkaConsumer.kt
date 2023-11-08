@@ -13,7 +13,7 @@ import java.time.Duration
 class ManagedKafkaConsumer<K, V>(
     val topic: String,
     val config: Map<String, *>,
-    val consume: (key: K, value: V) -> Unit,
+    val consume: suspend (key: K, value: V) -> Unit,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val job = Job()
