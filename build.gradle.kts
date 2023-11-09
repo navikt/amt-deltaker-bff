@@ -3,7 +3,7 @@ version = "1.0-SNAPSHOT"
 
 plugins {
     kotlin("jvm") version "1.9.20"
-    id("io.ktor.plugin") version "2.3.5"
+    id("io.ktor.plugin") version "2.3.6"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
@@ -14,7 +14,7 @@ repositories {
 }
 
 val kotlinVersion = "1.9.20"
-val ktorVersion = "2.3.5"
+val ktorVersion = "2.3.6"
 val logbackVersion = "1.4.11"
 val prometeusVersion = "1.11.5"
 val ktlintVersion = "0.49.1"
@@ -24,7 +24,7 @@ val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
 val kafkaClientsVersion = "3.6.0"
 val testcontainersVersion = "1.19.1"
 val kotestVersion = "5.8.0"
-val flywayVersion = "9.22.3"
+val flywayVersion = "10.0.0"
 val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.6.0"
@@ -56,6 +56,7 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
+    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
