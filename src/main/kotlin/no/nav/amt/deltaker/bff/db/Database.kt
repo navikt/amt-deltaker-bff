@@ -39,10 +39,13 @@ object Database {
         (dataSource as HikariDataSource).close()
     }
 
-    private fun runMigration() =
+    private fun runMigration(initSql: String? = null): Int =
         Flyway.configure()
             .connectRetries(5)
             .dataSource(dataSource)
+            .initSql(initSql)
             .load()
             .migrate()
+            .migrations
+            .size
 }
