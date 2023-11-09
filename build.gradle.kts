@@ -24,7 +24,7 @@ val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
 val kafkaClientsVersion = "3.6.0"
 val testcontainersVersion = "1.19.1"
 val kotestVersion = "5.8.0"
-val flywayVersion = "10.0.0"
+val flywayVersion = "9.22.3"
 val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.6.0"
@@ -56,7 +56,6 @@ dependencies {
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
-    implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
