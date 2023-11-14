@@ -1,9 +1,9 @@
 package no.nav.amt.deltaker.bff.utils.data
 
-import no.nav.amt.deltaker.bff.application.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.application.deltakerliste.Tiltak
-import no.nav.amt.deltaker.bff.application.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import java.time.LocalDate
 import java.util.UUID
 

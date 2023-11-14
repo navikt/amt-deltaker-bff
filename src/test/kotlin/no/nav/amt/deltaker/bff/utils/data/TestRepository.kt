@@ -1,9 +1,9 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.application.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import org.slf4j.LoggerFactory
 
 object TestRepository {

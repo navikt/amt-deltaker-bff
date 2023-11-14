@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.application.deltakerliste
+package no.nav.amt.deltaker.bff.deltakerliste
 
 import java.time.LocalDate
 import java.util.UUID
@@ -28,11 +28,11 @@ data class Deltakerliste(
 
         companion object {
             fun fromString(status: String) = when (status) {
-                "GJENNOMFORES" -> Deltakerliste.Status.GJENNOMFORES
-                "AVBRUTT" -> Deltakerliste.Status.AVBRUTT
-                "AVLYST" -> Deltakerliste.Status.AVLYST
-                "AVSLUTTET" -> Deltakerliste.Status.AVSLUTTET
-                "PLANLAGT", "APENT_FOR_INNSOK" -> Deltakerliste.Status.PLANLAGT
+                "GJENNOMFORES" -> GJENNOMFORES
+                "AVBRUTT" -> AVBRUTT
+                "AVLYST" -> AVLYST
+                "AVSLUTTET" -> AVSLUTTET
+                "PLANLAGT", "APENT_FOR_INNSOK" -> PLANLAGT
                 else -> error("Ukjent deltakerlistestatus: $status")
             }
         }
