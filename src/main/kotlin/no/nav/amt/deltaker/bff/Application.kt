@@ -7,11 +7,13 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
 import no.nav.amt.deltaker.bff.application.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.application.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.application.plugins.applicationConfig
+import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
@@ -20,7 +22,10 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.db.Database
+import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
+import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 
 fun main() {
     val server = embeddedServer(Netty, port = 8080, module = Application::module)
@@ -77,6 +82,15 @@ fun Application.module() {
     arrangorConsumer.run()
     deltakerlisteConsumer.run()
 
+    val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
+        PoaoTilgangHttpClient(
+            baseUrl = environment.poaoTilgangUrl,
+            tokenProvider = { runBlocking { azureAdTokenClient.getMachineToMachineToken(environment.poaoTilgangScope) } },
+        ),
+    )
+    val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
+
+    configureAuthentication(environment)
     configureRouting()
     configureMonitoring()
 

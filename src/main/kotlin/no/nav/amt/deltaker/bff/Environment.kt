@@ -9,8 +9,12 @@ data class Environment(
     val azureAdTokenUrl: String = getEnvVar(AZURE_AD_TOKEN_URL_KEY),
     val azureClientId: String = getEnvVar(AZURE_APP_CLIENT_ID_KEY),
     val azureClientSecret: String = getEnvVar(AZURE_APP_CLIENT_SECRET_KEY),
+    val jwkKeysUrl: String = getEnvVar(AZURE_OPENID_CONFIG_JWKS_URI_KEY),
+    val jwtIssuer: String = getEnvVar(AZURE_OPENID_CONFIG_ISSUER_KEY),
     val amtArrangorUrl: String = getEnvVar(AMT_ARRANGOR_URL_KEY),
     val amtArrangorScope: String = getEnvVar(AMT_ARRANGOR_SCOPE_KEY),
+    val poaoTilgangUrl: String = getEnvVar(POAO_TILGANG_URL_KEY),
+    val poaoTilgangScope: String = getEnvVar(POAO_TILGANG_SCOPE_KEY),
 ) {
 
     companion object {
@@ -30,6 +34,11 @@ data class Environment(
         const val AZURE_AD_TOKEN_URL_KEY = "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
         const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"
         const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
+        const val AZURE_OPENID_CONFIG_JWKS_URI_KEY = "AZURE_OPENID_CONFIG_JWKS_URI"
+        const val AZURE_OPENID_CONFIG_ISSUER_KEY = "AZURE_OPENID_CONFIG_ISSUER"
+
+        const val POAO_TILGANG_URL_KEY = "POAO_TILGANG_URL"
+        const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"
 
         const val HTTP_CLIENT_TIMEOUT_MS = 10_000
 
