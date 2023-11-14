@@ -33,6 +33,12 @@ class AzureAdTokenClient(
         return "${token.tokenType} ${token.accessToken}" // i.e. "Bearer XYZ"
     }
 
+    suspend fun getMachineToMachineTokenWithoutType(scope: String): String {
+        val token = tokenCache.getIfPresent(scope) ?: createMachineToMachineToken(scope)
+
+        return token.accessToken // i.e. "XYZ"
+    }
+
     private suspend fun createMachineToMachineToken(scope: String): AzureAdToken {
         val response = httpClient.post(azureAdTokenUrl) {
             setBody(

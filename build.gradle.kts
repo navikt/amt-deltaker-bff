@@ -21,6 +21,7 @@ val ktlintVersion = "0.49.1"
 val jacksonVersion = "2.15.3"
 val logstashEncoderVersion = "7.4"
 val commonVersion = "3.2023.10.18_13.28-58db82ecb1a5"
+val poaoTilgangVersion = "2023.11.13_07.58-92c894e940a5"
 val kafkaClientsVersion = "3.6.0"
 val testcontainersVersion = "1.19.1"
 val kotestVersion = "5.8.0"
@@ -29,6 +30,8 @@ val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.6.0"
 val caffeineVersion = "3.1.8"
+val mockkVersion = "1.13.8"
+val nimbusVersion = "9.37.1"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -43,6 +46,8 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus:$prometeusVersion")
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-status-pages-jvm")
+    implementation("io.ktor:ktor-server-auth:$ktorVersion")
+    implementation("io.ktor:ktor-server-auth-jwt:$ktorVersion")
     implementation("io.ktor:ktor-server-netty-jvm")
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-apache:$ktorVersion")
@@ -53,6 +58,9 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:log:$commonVersion")
+
+    implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
+
     implementation("org.apache.kafka:kafka-clients:$kafkaClientsVersion")
     implementation("com.zaxxer:HikariCP:$hikariVersion")
     implementation("org.flywaydb:flyway-core:$flywayVersion")
@@ -67,6 +75,8 @@ dependencies {
     testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusVersion")
 }
 
 kotlin {
