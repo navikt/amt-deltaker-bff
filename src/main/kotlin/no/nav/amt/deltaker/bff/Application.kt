@@ -85,7 +85,7 @@ fun Application.module() {
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
             baseUrl = environment.poaoTilgangUrl,
-            tokenProvider = { runBlocking { azureAdTokenClient.getMachineToMachineToken(environment.poaoTilgangScope) } },
+            tokenProvider = { runBlocking { azureAdTokenClient.getMachineToMachineTokenWithoutType(environment.poaoTilgangScope) } },
         ),
     )
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
