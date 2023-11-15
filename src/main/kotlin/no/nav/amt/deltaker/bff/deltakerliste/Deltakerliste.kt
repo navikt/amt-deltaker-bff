@@ -52,3 +52,10 @@ data class Deltakerliste(
         Tiltak.Type.GRUFAGYRKE,
     )
 }
+
+data class Mal(
+    val visningstekst: String,
+    val type: String,
+    val valgt: Boolean,
+    val beskrivelse: String?,
+)
