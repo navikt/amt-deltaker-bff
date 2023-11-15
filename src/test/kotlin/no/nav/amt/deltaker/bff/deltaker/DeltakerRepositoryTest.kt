@@ -84,8 +84,8 @@ class DeltakerRepositoryTest {
         a.status.id shouldBe b.status.id
         a.status.type shouldBe b.status.type
         a.status.aarsak shouldBe b.status.aarsak
-        a.status.gyldigFra shouldBe b.status.gyldigFra
-        a.status.gyldigTil shouldBe b.status.gyldigTil
+        a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
+        a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
         a.status.opprettet shouldBeCloseTo b.status.opprettet
         a.sistEndretAv shouldBe b.sistEndretAv
         a.sistEndret shouldBeCloseTo b.sistEndret

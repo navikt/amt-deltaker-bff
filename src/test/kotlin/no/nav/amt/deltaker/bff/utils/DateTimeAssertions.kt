@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.utils
 
 import io.kotest.matchers.date.shouldBeWithin
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import java.time.Duration
 import java.time.LocalDateTime
@@ -21,7 +22,10 @@ infix fun LocalDateTime.shouldBeEqualTo(expected: LocalDateTime?) {
     expected!!.shouldBeWithin(Duration.ofSeconds(1), this)
 }
 
-infix fun LocalDateTime.shouldBeCloseTo(expected: LocalDateTime?) {
-    expected shouldNotBe null
-    expected!!.shouldBeWithin(Duration.ofSeconds(10), this)
+infix fun LocalDateTime?.shouldBeCloseTo(expected: LocalDateTime?) {
+    if (this == null) {
+        expected shouldBe null
+    } else {
+        expected!!.shouldBeWithin(Duration.ofSeconds(10), this)
+    }
 }
