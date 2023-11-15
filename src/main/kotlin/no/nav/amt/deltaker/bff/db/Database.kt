@@ -5,7 +5,9 @@ import kotliquery.Session
 import kotliquery.sessionOf
 import kotliquery.using
 import no.nav.amt.deltaker.bff.Environment
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import org.flywaydb.core.Flyway
+import org.postgresql.util.PGobject
 import javax.sql.DataSource
 
 object Database {
@@ -48,4 +50,9 @@ object Database {
             .migrate()
             .migrations
             .size
+}
+
+fun toPGObject(value: Any) = PGobject().also {
+    it.type = "json"
+    it.value = objectMapper.writeValueAsString(value)
 }
