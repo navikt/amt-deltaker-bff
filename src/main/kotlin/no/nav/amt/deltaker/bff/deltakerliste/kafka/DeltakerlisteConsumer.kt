@@ -1,10 +1,10 @@
-package no.nav.amt.deltaker.bff.application.deltakerliste.kafka
+package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.application.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl

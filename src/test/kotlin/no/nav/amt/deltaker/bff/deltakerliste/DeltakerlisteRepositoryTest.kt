@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.application.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
