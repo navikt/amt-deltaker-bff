@@ -28,7 +28,7 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
-        sistEndretAv = row.stringOrNull("d.sist_endret_av"),
+        sistEndretAv = row.string("d.sist_endret_av"),
         sistEndret = row.localDateTime("d.modified_at"),
         opprettet = row.localDateTime("d.created_at"),
     )

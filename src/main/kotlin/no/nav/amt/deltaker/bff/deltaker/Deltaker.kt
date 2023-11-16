@@ -16,7 +16,7 @@ data class Deltaker(
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
     val status: DeltakerStatus,
-    val sistEndretAv: String?,
+    val sistEndretAv: String,
     val sistEndret: LocalDateTime,
     val opprettet: LocalDateTime,
 )

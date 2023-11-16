@@ -71,7 +71,7 @@ object TestData {
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
         mal: List<Mal> = emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-        sistEndretAv: String? = randomNavIdent(),
+        sistEndretAv: String = randomNavIdent(),
         sistEndret: LocalDateTime = LocalDateTime.now(),
         opprettet: LocalDateTime = LocalDateTime.now(),
     ) = Deltaker(

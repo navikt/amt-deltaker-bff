@@ -9,7 +9,7 @@ create table deltaker
     deltakelsesprosent   double precision,
     bakgrunnsinformasjon text,
     mal                  jsonb                                              not null,
-    sist_endret_av       varchar,
+    sist_endret_av       varchar                                            not null,
     created_at           timestamp with time zone default CURRENT_TIMESTAMP not null,
     modified_at          timestamp with time zone default CURRENT_TIMESTAMP not null
 );
