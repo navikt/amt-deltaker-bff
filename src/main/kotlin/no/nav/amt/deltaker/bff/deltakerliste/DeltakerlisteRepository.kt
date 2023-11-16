@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.application.deltakerliste
+package no.nav.amt.deltaker.bff.deltakerliste
 
 import kotliquery.Row
 import kotliquery.queryOf

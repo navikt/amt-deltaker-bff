@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.application.deltakerliste
+package no.nav.amt.deltaker.bff.deltakerliste
 
 data class Tiltak(
     val navn: String,

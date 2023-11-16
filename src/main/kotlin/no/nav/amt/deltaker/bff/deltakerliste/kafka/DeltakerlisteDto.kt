@@ -1,8 +1,8 @@
-package no.nav.amt.deltaker.bff.application.deltakerliste.kafka
+package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
-import no.nav.amt.deltaker.bff.application.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.application.deltakerliste.Tiltak
-import no.nav.amt.deltaker.bff.application.deltakerliste.arenaKodeTilTiltakstype
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.arenaKodeTilTiltakstype
 import java.time.LocalDate
 import java.util.UUID
 
