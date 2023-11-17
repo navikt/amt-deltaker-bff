@@ -32,11 +32,11 @@ object TestRepository {
         }
     }
 
-    fun insert(deltakerliste: Deltakerliste, arrangor: Arrangor = TestData.lagArrangor(deltakerliste.arrangorId)) {
+    fun insert(deltakerliste: Deltakerliste) {
         try {
-            insert(arrangor)
+            insert(deltakerliste.arrangor)
         } catch (e: Exception) {
-            log.warn("Arrangor med id ${arrangor.id} er allerede opprettet")
+            log.warn("Arrangor med id ${deltakerliste.arrangor.id} er allerede opprettet")
         }
 
         Database.query {
@@ -52,7 +52,7 @@ object TestRepository {
                         "id" to deltakerliste.id,
                         "navn" to deltakerliste.navn,
                         "status" to deltakerliste.status.name,
-                        "arrangor_id" to deltakerliste.arrangorId,
+                        "arrangor_id" to deltakerliste.arrangor.id,
                         "tiltaksnavn" to deltakerliste.tiltak.navn,
                         "tiltakstype" to deltakerliste.tiltak.type.name,
                         "start_dato" to deltakerliste.startDato,

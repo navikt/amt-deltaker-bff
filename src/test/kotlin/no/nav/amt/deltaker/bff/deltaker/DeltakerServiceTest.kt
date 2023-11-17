@@ -32,8 +32,8 @@ class DeltakerServiceTest {
 
     @Test
     fun `opprettDeltaker - deltaker finnes ikke - oppretter ny deltaker`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
         deltakerlisteRepository.upsert(deltakerliste)
 
@@ -64,8 +64,8 @@ class DeltakerServiceTest {
             sluttdato = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
         )
-        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId)
-        val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId, arrangor = arrangor)
         TestRepository.insert(arrangor)
         deltakerlisteRepository.upsert(deltakerliste)
         deltakerRepository.upsert(deltaker)
@@ -84,8 +84,8 @@ class DeltakerServiceTest {
             sluttdato = LocalDate.now().minusDays(2),
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         )
-        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId)
-        val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId, arrangor = arrangor)
         TestRepository.insert(arrangor)
         deltakerlisteRepository.upsert(deltakerliste)
         deltakerRepository.upsert(deltaker)

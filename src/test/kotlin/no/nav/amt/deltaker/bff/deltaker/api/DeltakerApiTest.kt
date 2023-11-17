@@ -31,7 +31,7 @@ import org.junit.Before
 import org.junit.Test
 import java.util.UUID
 
-class DeltakerApiKtTest {
+class DeltakerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()

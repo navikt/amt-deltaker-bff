@@ -23,8 +23,9 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `upsert - ny deltakerliste - inserter`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        TestRepository.insert(TestData.lagArrangor(id = deltakerliste.arrangorId))
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
 
         repository.upsert(deltakerliste)
 
@@ -33,8 +34,9 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `upsert - deltakerliste ny sluttdato - oppdaterer`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        TestRepository.insert(TestData.lagArrangor(id = deltakerliste.arrangorId))
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
 
         repository.upsert(deltakerliste)
 
@@ -47,8 +49,9 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `delete - sletter deltakerliste`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        TestRepository.insert(TestData.lagArrangor(id = deltakerliste.arrangorId))
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
 
         repository.upsert(deltakerliste)
 
@@ -58,16 +61,16 @@ class DeltakerlisteRepositoryTest {
     }
 
     @Test
-    fun `getDeltakerlisteMedArrangor - deltakerliste og arrangor finnes - henter deltakerliste og arrangor`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
+    fun `get - deltakerliste og arrangor finnes - henter deltakerliste`() {
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
         repository.upsert(deltakerliste)
 
-        val deltakerlisteMedArrangor = repository.getDeltakerlisteMedArrangor(deltakerliste.id)
+        val deltakerlisteMedArrangor = repository.get(deltakerliste.id)
 
         deltakerlisteMedArrangor shouldNotBe null
-        deltakerlisteMedArrangor?.deltakerliste?.navn shouldBe deltakerliste.navn
+        deltakerlisteMedArrangor?.navn shouldBe deltakerliste.navn
         deltakerlisteMedArrangor?.arrangor?.navn shouldBe arrangor.navn
     }
 }

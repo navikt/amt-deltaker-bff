@@ -7,6 +7,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
+import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 
@@ -17,12 +18,12 @@ fun Routing.registerDeltakerApi(
     authenticate("VEILEDER") {
         post("/pamelding") {
             val pameldingRequest = call.receive<PameldingRequest>()
-            val navAnsattAzureId = getNavAnsattAzureId()
-            tilgangskontrollService.verifiserSkrivetilgang(navAnsattAzureId, pameldingRequest.personident)
+            val navIdent = getNavIdent()
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
             val deltaker = deltakerService.opprettDeltaker(
                 deltakerlisteId = pameldingRequest.deltakerlisteId,
                 personident = pameldingRequest.personident,
-                opprettetAv = navAnsattAzureId.toString(), // må hente nav-ident
+                opprettetAv = navIdent,
             )
             call.respond(deltaker)
         }
