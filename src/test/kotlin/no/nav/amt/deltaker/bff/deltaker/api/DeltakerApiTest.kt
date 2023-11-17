@@ -17,6 +17,7 @@ import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
+import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -99,6 +100,7 @@ class DeltakerApiTest {
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
         application {
+            configureSerialization()
             configureAuthentication(Environment())
             configureRouting(tilgangskontrollService, deltakerService)
         }

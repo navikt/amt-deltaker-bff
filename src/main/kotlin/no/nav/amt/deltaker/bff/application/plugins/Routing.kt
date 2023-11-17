@@ -1,11 +1,9 @@
 package no.nav.amt.deltaker.bff.application.plugins
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.application.call
 import io.ktor.server.application.install
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -30,9 +28,6 @@ fun Application.configureRouting(
         exception<Throwable> { call, cause ->
             call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
         }
-    }
-    install(ContentNegotiation) {
-        jackson { applicationConfig() }
     }
     routing {
         registerHealthApi()
