@@ -74,6 +74,7 @@ class AuthenticationTest {
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
         application {
+            configureSerialization()
             configureAuthentication(Environment())
             configureRouting(tilgangskontrollService, deltakerService)
             setUpTestRoute()
