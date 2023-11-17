@@ -38,6 +38,15 @@ data class Deltakerliste(
         }
     }
 
+    fun getOppstartstype(): Oppstartstype {
+        return oppstart
+            ?: if (erKurs()) {
+                Oppstartstype.FELLES
+            } else {
+                Oppstartstype.LOPENDE
+            }
+    }
+
     fun erKurs(): Boolean {
         if (oppstart != null) {
             return oppstart == Oppstartstype.FELLES

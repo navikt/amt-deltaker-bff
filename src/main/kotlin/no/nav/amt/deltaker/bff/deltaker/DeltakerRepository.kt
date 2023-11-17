@@ -106,6 +106,43 @@ class DeltakerRepository {
         it.run(query)
     }
 
+    fun get(personIdent: String, deltakerlisteId: UUID): Deltaker? =
+        Database.query {
+            val sql = """
+            select d.id as "d.id",
+                   d.personident as "d.personident",
+                   d.deltakerliste_id as "d.deltakerliste_id",
+                   d.startdato as "d.startdato",
+                   d.sluttdato as "d.sluttdato",
+                   d.dager_per_uke as "d.dager_per_uke",
+                   d.deltakelsesprosent as "d.deltakelsesprosent",
+                   d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
+                   d.mal as "d.mal",
+                   d.sist_endret_av as "d.sist_endret_av",
+                   d.created_at as "d.created_at",
+                   d.modified_at as "d.modified_at",
+                   ds.id as "ds.id",
+                   ds.deltaker_id as "ds.deltaker_id",
+                   ds.type as "ds.type",
+                   ds.aarsak as "ds.aarsak",
+                   ds.gyldig_fra as "ds.gyldig_fra",
+                   ds.gyldig_til as "ds.gyldig_til",
+                   ds.created_at as "ds.created_at",
+                   ds.modified_at as "ds.modified_at"
+            from deltaker d join deltaker_status ds on d.id = ds.deltaker_id
+            where d.personident = :personident and d.deltakerliste_id = :deltakerliste_id and ds.gyldig_til is null
+            """.trimIndent()
+
+            val query = queryOf(
+                sql,
+                mapOf(
+                    "personident" to personIdent,
+                    "deltakerliste_id" to deltakerlisteId,
+                ),
+            ).map(::rowMapper).asSingle
+            it.run(query)
+        }
+
     fun getDeltakerStatuser(deltakerId: UUID) = Database.query { session ->
         val sql = """
             select * from deltaker_status where deltaker_id = :deltaker_id

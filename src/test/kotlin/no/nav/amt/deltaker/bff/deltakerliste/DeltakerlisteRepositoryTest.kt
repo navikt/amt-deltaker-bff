@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -54,5 +55,19 @@ class DeltakerlisteRepositoryTest {
         repository.delete(deltakerliste.id)
 
         repository.get(deltakerliste.id) shouldBe null
+    }
+
+    @Test
+    fun `getDeltakerlisteMedArrangor - deltakerliste og arrangor finnes - henter deltakerliste og arrangor`() {
+        val deltakerliste = TestData.lagDeltakerliste()
+        val arrangor = TestData.lagArrangor(id = deltakerliste.arrangorId)
+        TestRepository.insert(arrangor)
+        repository.upsert(deltakerliste)
+
+        val deltakerlisteMedArrangor = repository.getDeltakerlisteMedArrangor(deltakerliste.id)
+
+        deltakerlisteMedArrangor shouldNotBe null
+        deltakerlisteMedArrangor?.deltakerliste?.navn shouldBe deltakerliste.navn
+        deltakerlisteMedArrangor?.arrangor?.navn shouldBe arrangor.navn
     }
 }

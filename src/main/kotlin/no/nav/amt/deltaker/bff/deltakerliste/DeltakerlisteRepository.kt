@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltakerliste
 
 import kotliquery.Row
 import kotliquery.queryOf
+import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -21,6 +22,28 @@ class DeltakerlisteRepository {
         startDato = row.localDate("start_dato"),
         sluttDato = row.localDate("slutt_dato"),
         oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
+    )
+
+    private fun rowMapperDeltakerlisteMedArrangor(row: Row) = DeltakerlisteMedArrangor(
+        deltakerliste = Deltakerliste(
+            id = row.uuid("deltakerliste_id"),
+            arrangorId = row.uuid("arrangor_id"),
+            tiltak = Tiltak(
+                navn = row.string("tiltaksnavn"),
+                type = Tiltak.Type.valueOf(row.string("tiltakstype")),
+            ),
+            navn = row.string("deltakerliste_navn"),
+            status = Deltakerliste.Status.valueOf(row.string("status")),
+            startDato = row.localDate("start_dato"),
+            sluttDato = row.localDate("slutt_dato"),
+            oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
+        ),
+        arrangor = Arrangor(
+            id = row.uuid("arrangor_id"),
+            navn = row.string("arrangor_navn"),
+            organisasjonsnummer = row.string("organisasjonsnummer"),
+            overordnetArrangorId = row.uuidOrNull("overordnet_arrangor_id"),
+        ),
     )
 
     fun upsert(deltakerliste: Deltakerliste) = Database.query {
@@ -91,6 +114,31 @@ class DeltakerlisteRepository {
             "select * from deltakerliste where id = :id",
             mapOf("id" to id),
         ).map(::rowMapper).asSingle
+
+        it.run(query)
+    }
+
+    fun getDeltakerlisteMedArrangor(id: UUID) = Database.query {
+        val query = queryOf(
+            """
+                SELECT deltakerliste.id   AS deltakerliste_id,
+                   arrangor_id,
+                   tiltaksnavn,
+                   tiltakstype,
+                   deltakerliste.navn AS deltakerliste_navn,
+                   status,
+                   start_dato,
+                   slutt_dato,
+                   oppstart,
+                   a.navn             AS arrangor_navn,
+                   organisasjonsnummer,
+                   overordnet_arrangor_id
+                FROM deltakerliste
+                     INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
+                WHERE deltakerliste.id = :id
+            """.trimIndent(),
+            mapOf("id" to id),
+        ).map(::rowMapperDeltakerlisteMedArrangor).asSingle
 
         it.run(query)
     }

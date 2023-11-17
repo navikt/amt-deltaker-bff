@@ -19,4 +19,8 @@ data class Deltaker(
     val sistEndretAv: String,
     val sistEndret: LocalDateTime,
     val opprettet: LocalDateTime,
-)
+) {
+    fun harSluttet(): Boolean {
+        return status.type in AVSLUTTENDE_STATUSER || sluttdato?.isBefore(LocalDate.now()) == true
+    }
+}
