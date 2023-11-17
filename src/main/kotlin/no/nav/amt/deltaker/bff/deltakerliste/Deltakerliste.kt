@@ -1,17 +1,18 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
+import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import java.time.LocalDate
 import java.util.UUID
 
 data class Deltakerliste(
     val id: UUID,
-    val arrangorId: UUID,
     val tiltak: Tiltak,
     val navn: String,
     val status: Status,
     val startDato: LocalDate,
     val sluttDato: LocalDate? = null,
     val oppstart: Oppstartstype?,
+    val arrangor: Arrangor,
 ) {
     enum class Oppstartstype {
         LOPENDE,
@@ -36,6 +37,15 @@ data class Deltakerliste(
                 else -> error("Ukjent deltakerlistestatus: $status")
             }
         }
+    }
+
+    fun getOppstartstype(): Oppstartstype {
+        return oppstart
+            ?: if (erKurs()) {
+                Oppstartstype.FELLES
+            } else {
+                Oppstartstype.LOPENDE
+            }
     }
 
     fun erKurs(): Boolean {

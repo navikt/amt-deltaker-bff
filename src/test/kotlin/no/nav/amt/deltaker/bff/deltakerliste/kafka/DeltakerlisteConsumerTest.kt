@@ -30,14 +30,14 @@ class DeltakerlisteConsumerTest {
     @Test
     fun `consumeDeltakerliste - ny liste og arrangor - lagrer deltakerliste`() {
         val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(arrangorId = arrangor.id)
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
         val consumer = DeltakerlisteConsumer(repository, arrangorService)
 
         runBlocking {
             consumer.consumeDeltakerliste(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(deltakerliste, arrangor)),
+                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, deltakerliste)),
             )
 
             repository.get(deltakerliste.id) shouldBe deltakerliste
@@ -47,10 +47,8 @@ class DeltakerlisteConsumerTest {
     @Test
     fun `consumeDeltakerliste - ny sluttdato - oppdaterer deltakerliste`() {
         val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(arrangorId = arrangor.id)
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
-
-        TestRepository.insert(arrangor)
         TestRepository.insert(deltakerliste)
 
         val consumer = DeltakerlisteConsumer(repository, arrangorService)
@@ -60,7 +58,7 @@ class DeltakerlisteConsumerTest {
         runBlocking {
             consumer.consumeDeltakerliste(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(oppdatertDeltakerliste, arrangor)),
+                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, oppdatertDeltakerliste)),
             )
 
             repository.get(deltakerliste.id) shouldBe oppdatertDeltakerliste

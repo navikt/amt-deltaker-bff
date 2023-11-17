@@ -29,14 +29,14 @@ object TestData {
 
     fun lagDeltakerliste(
         id: UUID = UUID.randomUUID(),
-        arrangorId: UUID = UUID.randomUUID(),
+        arrangor: Arrangor = lagArrangor(),
         tiltak: Tiltak = lagTiltak(),
         navn: String = "Test Deltakerliste ${tiltak.type}",
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
         oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.type),
-    ) = Deltakerliste(id, arrangorId, tiltak, navn, status, startDato, sluttDato, oppstart)
+    ) = Deltakerliste(id, tiltak, navn, status, startDato, sluttDato, oppstart, arrangor)
 
     fun lagTiltak(
         type: Tiltak.Type = Tiltak.Type.entries.random(),
@@ -44,8 +44,8 @@ object TestData {
     ) = Tiltak(navn, type)
 
     fun lagDeltakerlisteDto(
-        deltakerliste: Deltakerliste = lagDeltakerliste(),
-        arrangor: Arrangor = lagArrangor(deltakerliste.arrangorId),
+        arrangor: Arrangor = lagArrangor(),
+        deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),
     ) = DeltakerlisteDto(
         id = deltakerliste.id,
         tiltakstype = DeltakerlisteDto.Tiltakstype(

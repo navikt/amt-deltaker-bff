@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -22,8 +23,9 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `upsert - ny deltakerliste - inserter`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        TestRepository.insert(TestData.lagArrangor(id = deltakerliste.arrangorId))
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
 
         repository.upsert(deltakerliste)
 
@@ -32,8 +34,9 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `upsert - deltakerliste ny sluttdato - oppdaterer`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        TestRepository.insert(TestData.lagArrangor(id = deltakerliste.arrangorId))
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
 
         repository.upsert(deltakerliste)
 
@@ -46,13 +49,28 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `delete - sletter deltakerliste`() {
-        val deltakerliste = TestData.lagDeltakerliste()
-        TestRepository.insert(TestData.lagArrangor(id = deltakerliste.arrangorId))
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
 
         repository.upsert(deltakerliste)
 
         repository.delete(deltakerliste.id)
 
         repository.get(deltakerliste.id) shouldBe null
+    }
+
+    @Test
+    fun `get - deltakerliste og arrangor finnes - henter deltakerliste`() {
+        val arrangor = TestData.lagArrangor()
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(arrangor)
+        repository.upsert(deltakerliste)
+
+        val deltakerlisteMedArrangor = repository.get(deltakerliste.id)
+
+        deltakerlisteMedArrangor shouldNotBe null
+        deltakerlisteMedArrangor?.navn shouldBe deltakerliste.navn
+        deltakerlisteMedArrangor?.arrangor?.navn shouldBe arrangor.navn
     }
 }

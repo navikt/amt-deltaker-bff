@@ -11,38 +11,37 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.mockk
 import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.generateJWT
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
 import org.junit.Test
-import java.nio.file.Paths
 import java.util.UUID
 
-class AuthenticationKtTest {
+class AuthenticationTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
+    private val deltakerService = mockk<DeltakerService>()
 
     @Before
     fun setup() {
-        configureEnv()
+        configureEnvForAuthentication()
     }
 
     @Test
     fun `testAuthentication - gyldig token, ansatt har tilgang - returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        application {
-            configureAuthentication(Environment())
-            configureRouting()
-            setUpTestRoute()
-        }
+        setUpTestApplication()
         client.get("/fnr/12345678910") {
             header(HttpHeaders.Authorization, "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}")
         }.apply {
@@ -54,11 +53,7 @@ class AuthenticationKtTest {
     @Test
     fun `testAuthentication - gyldig token, ansatt har ikke tilgang - returnerer 403`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Deny("Ikke tilgang", ""))
-        application {
-            configureAuthentication(Environment())
-            configureRouting()
-            setUpTestRoute()
-        }
+        setUpTestApplication()
         client.get("/fnr/12345678910") {
             header(HttpHeaders.Authorization, "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}")
         }.apply {
@@ -69,11 +64,7 @@ class AuthenticationKtTest {
     @Test
     fun `testAuthentication - ugyldig tokenissuer - returnerer 401`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        application {
-            configureAuthentication(Environment())
-            configureRouting()
-            setUpTestRoute()
-        }
+        setUpTestApplication()
         client.get("/fnr/12345678910") {
             header(HttpHeaders.Authorization, "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff", issuer = "annenIssuer")}")
         }.apply {
@@ -81,12 +72,12 @@ class AuthenticationKtTest {
         }
     }
 
-    private fun configureEnv() {
-        val path = "src/test/resources/jwkset.json"
-        val uri = Paths.get(path).toUri().toURL().toString()
-        System.setProperty(Environment.AZURE_OPENID_CONFIG_JWKS_URI_KEY, uri)
-        System.setProperty(Environment.AZURE_OPENID_CONFIG_ISSUER_KEY, "issuer")
-        System.setProperty(Environment.AZURE_APP_CLIENT_ID_KEY, "deltaker-bff")
+    private fun ApplicationTestBuilder.setUpTestApplication() {
+        application {
+            configureAuthentication(Environment())
+            configureRouting(tilgangskontrollService, deltakerService)
+            setUpTestRoute()
+        }
     }
 
     private fun Application.setUpTestRoute() {

@@ -45,3 +45,9 @@ fun <T : Any> PipelineContext<T, ApplicationCall>.getNavAnsattAzureId(): UUID {
         ?.let { UUID.fromString(it) }
         ?: throw AuthorizationException("NavAnsattAzureId mangler i JWTPrincipal")
 }
+
+fun <T : Any> PipelineContext<T, ApplicationCall>.getNavIdent(): String {
+    return call.principal<JWTPrincipal>()
+        ?.get("NAVident")
+        ?: throw AuthorizationException("NAVident mangler i JWTPrincipal")
+}

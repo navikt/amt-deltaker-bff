@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
+import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.arenaKodeTilTiltakstype
@@ -38,14 +39,14 @@ data class DeltakerlisteDto(
         )
     }
 
-    fun toModel(arrangorId: UUID) = Deltakerliste(
+    fun toModel(arrangor: Arrangor) = Deltakerliste(
         id = this.id,
-        arrangorId = arrangorId,
         tiltak = this.tiltakstype.toModel(),
         navn = this.navn,
         status = Deltakerliste.Status.fromString(this.status),
         startDato = this.startDato,
         sluttDato = this.sluttDato,
         oppstart = this.oppstart,
+        arrangor = arrangor,
     )
 }

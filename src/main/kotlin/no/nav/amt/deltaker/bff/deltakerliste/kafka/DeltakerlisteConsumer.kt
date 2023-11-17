@@ -42,6 +42,6 @@ class DeltakerlisteConsumer(
         if (!deltakerliste.tiltakstype.erStottet()) return
 
         val arrangor = arrangorService.hentArrangor(deltakerliste.virksomhetsnummer)
-        repository.upsert(deltakerliste.toModel(arrangor.id))
+        repository.upsert(deltakerliste.toModel(arrangor))
     }
 }
