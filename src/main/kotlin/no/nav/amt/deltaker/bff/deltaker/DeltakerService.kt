@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.deltaker.api.DeltakerlisteDTO
 import no.nav.amt.deltaker.bff.deltaker.api.PameldingResponse
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import org.slf4j.LoggerFactory
