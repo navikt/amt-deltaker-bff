@@ -3,6 +3,9 @@ package no.nav.amt.deltaker.bff.utils.data
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltaker.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
+import no.nav.amt.deltaker.bff.deltaker.model.ForslagTilDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -98,6 +101,31 @@ object TestData {
         gyldigTil: LocalDateTime? = null,
         opprettet: LocalDateTime = gyldigFra,
     ) = DeltakerStatus(id, type, aarsak, gyldigFra, gyldigTil, opprettet)
+
+    fun lagDeltakerSamtykke(
+        id: UUID = UUID.randomUUID(),
+        deltakerVedSamtykke: Deltaker = lagDeltaker(
+            status = lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER),
+        ),
+        deltakerId: UUID = deltakerVedSamtykke.id,
+        godkjent: LocalDateTime? = null,
+        gyldigTil: LocalDateTime? = null,
+        godkjentAvNav: GodkjenningAvNav? = null,
+    ) = DeltakerSamtykke(id, deltakerId, godkjent, gyldigTil, deltakerVedSamtykke, godkjentAvNav)
+
+    fun lagGodkjenningAvNav(
+        type: String = "ANNET",
+        beskrivelse: String = "Fordi jeg kan",
+        godkjentAv: String = randomNavIdent(),
+    ) = GodkjenningAvNav(type, beskrivelse, godkjentAv)
+
+    fun lagForslagTilDeltaker(
+        mal: List<Mal> = emptyList(),
+        bakgrunnsinformasjon: String? = "Har vært ...",
+        deltakelsesprosent: Float? = 100F,
+        dagerPerUke: Float? = 5F,
+        godkjentAvNav: GodkjenningAvNav? = null,
+    ) = ForslagTilDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav)
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,

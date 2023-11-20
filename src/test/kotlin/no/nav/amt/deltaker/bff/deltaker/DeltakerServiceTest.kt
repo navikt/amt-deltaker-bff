@@ -3,6 +3,8 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
+import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -10,16 +12,19 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
 class DeltakerServiceTest {
     private val personident = "12345678910"
     private val opprettetAv = "OpprettetAv"
+
     companion object {
         lateinit var deltakerlisteRepository: DeltakerlisteRepository
         lateinit var deltakerRepository: DeltakerRepository
         lateinit var deltakerService: DeltakerService
+        lateinit var samtykkeRepository: DeltakerSamtykkeRepository
 
         @JvmStatic
         @BeforeClass
@@ -27,7 +32,8 @@ class DeltakerServiceTest {
             SingletonPostgresContainer.start()
             deltakerlisteRepository = DeltakerlisteRepository()
             deltakerRepository = DeltakerRepository()
-            deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository)
+            samtykkeRepository = DeltakerSamtykkeRepository()
+            deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository)
         }
     }
 
@@ -94,5 +100,87 @@ class DeltakerServiceTest {
         val pameldingResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
 
         pameldingResponse.deltakerId shouldNotBe deltakerId
+    }
+
+    @Test
+    fun `opprettForslag - deltaker har status UTKAST - oppretter et samtykke og setter ny status på deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        TestRepository.insert(deltaker)
+
+        val forslag = TestData.lagForslagTilDeltaker()
+        deltakerService.opprettForslag(deltaker, forslag, TestData.randomNavIdent())
+
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+        oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER
+
+        val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
+
+        samtykke.deltakerId shouldBe deltaker.id
+        samtykke.godkjent shouldBe null
+        samtykke.gyldigTil shouldBe null
+        sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
+        samtykke.godkjentAvNav shouldBe null
+    }
+
+    @Test
+    fun `opprettForslag - deltaker har et samtykke som ikke er godkjent - oppdater eksisterende samtykke`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER),
+        )
+        TestRepository.insert(deltaker)
+
+        val eksisterendeSamtykke = TestData.lagDeltakerSamtykke(
+            deltakerId = deltaker.id,
+            deltakerVedSamtykke = deltaker,
+        )
+        TestRepository.insert(eksisterendeSamtykke)
+
+        val forslag = TestData.lagForslagTilDeltaker(bakgrunnsinformasjon = "Nye opplysninger...")
+
+        deltakerService.opprettForslag(deltaker, forslag, TestData.randomNavIdent())
+
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+        val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
+
+        samtykke.id shouldBe eksisterendeSamtykke.id
+        samtykke.deltakerId shouldBe deltaker.id
+        samtykke.godkjent shouldBe null
+        samtykke.gyldigTil shouldBe null
+        sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
+        samtykke.godkjentAvNav shouldBe null
+    }
+
+    @Test
+    fun `opprettForslag - deltaker har ikke status UTKAST - oppretter et samtykke og setter ikke ny status på deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        val opprinneligSamtykke = TestData.lagDeltakerSamtykke(
+            deltakerId = deltaker.id,
+            deltakerVedSamtykke = deltaker.copy(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER),
+            ),
+            godkjent = LocalDateTime.now().minusMonths(2),
+            gyldigTil = null,
+        )
+
+        TestRepository.insert(deltaker)
+        TestRepository.insert(opprinneligSamtykke)
+
+        val navIdent = TestData.randomNavIdent()
+        val forslag = TestData.lagForslagTilDeltaker(
+            godkjentAvNav = TestData.lagGodkjenningAvNav(godkjentAv = navIdent),
+        )
+        deltakerService.opprettForslag(deltaker, forslag, navIdent)
+
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+        oppdatertDeltaker.status.type shouldBe deltaker.status.type
+        oppdatertDeltaker.sistEndretAv shouldBe navIdent
+
+        val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).last()
+
+        samtykke.deltakerId shouldBe deltaker.id
+        samtykke.godkjent shouldBe null
+        samtykke.gyldigTil shouldBe null
+        sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
+        samtykke.godkjentAvNav shouldBe forslag.godkjentAvNav
     }
 }

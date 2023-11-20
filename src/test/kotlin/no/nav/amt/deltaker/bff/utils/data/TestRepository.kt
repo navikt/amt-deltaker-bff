@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -119,6 +120,25 @@ object TestRepository {
             "gyldig_fra" to status.gyldigFra,
             "gyldig_til" to status.gyldigTil,
             "created_at" to status.opprettet,
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(samtykke: DeltakerSamtykke) = Database.query {
+        val sql = """
+            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav)
+            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav)
+            on conflict (id) do nothing;
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to samtykke.id,
+            "deltaker_id" to samtykke.deltakerId,
+            "godkjent" to samtykke.godkjent,
+            "gyldig_til" to samtykke.gyldigTil,
+            "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
+            "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
         )
 
         it.update(queryOf(sql, params))

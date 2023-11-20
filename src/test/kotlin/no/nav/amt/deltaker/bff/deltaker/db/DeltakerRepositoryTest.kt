@@ -1,8 +1,9 @@
-package no.nav.amt.deltaker.bff.deltaker
+package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -72,24 +73,24 @@ class DeltakerRepositoryTest {
         statuser.first { it.id == deltaker.status.id }.gyldigTil shouldNotBe null
         statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigTil shouldBe null
     }
+}
 
-    private fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
-        a.id shouldBe b.id
-        a.personident shouldBe b.personident
-        a.startdato shouldBe b.startdato
-        a.sluttdato shouldBe b.sluttdato
-        a.dagerPerUke shouldBe b.dagerPerUke
-        a.deltakelsesprosent shouldBe b.deltakelsesprosent
-        a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
-        a.mal shouldBe b.mal
-        a.status.id shouldBe b.status.id
-        a.status.type shouldBe b.status.type
-        a.status.aarsak shouldBe b.status.aarsak
-        a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
-        a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
-        a.status.opprettet shouldBeCloseTo b.status.opprettet
-        a.sistEndretAv shouldBe b.sistEndretAv
-        a.sistEndret shouldBeCloseTo b.sistEndret
-        a.opprettet shouldBeCloseTo b.opprettet
-    }
+fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
+    a.id shouldBe b.id
+    a.personident shouldBe b.personident
+    a.startdato shouldBe b.startdato
+    a.sluttdato shouldBe b.sluttdato
+    a.dagerPerUke shouldBe b.dagerPerUke
+    a.deltakelsesprosent shouldBe b.deltakelsesprosent
+    a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
+    a.mal shouldBe b.mal
+    a.status.id shouldBe b.status.id
+    a.status.type shouldBe b.status.type
+    a.status.aarsak shouldBe b.status.aarsak
+    a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
+    a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
+    a.status.opprettet shouldBeCloseTo b.status.opprettet
+    a.sistEndretAv shouldBe b.sistEndretAv
+    a.sistEndret shouldBeCloseTo b.sistEndret
+    a.opprettet shouldBeCloseTo b.opprettet
 }
