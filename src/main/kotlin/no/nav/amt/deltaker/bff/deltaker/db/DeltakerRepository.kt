@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.deltaker
+package no.nav.amt.deltaker.bff.deltaker.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Query
@@ -7,6 +7,8 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
+import no.nav.amt.deltaker.bff.deltaker.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
 import java.util.UUID
 
 class DeltakerRepository {
@@ -37,11 +39,11 @@ class DeltakerRepository {
         val sql = """
             insert into deltaker(
                 id, personident, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av
+                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, modified_at
             )
             values (
                 :id, :personident, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv
+                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndret
             )
             on conflict (id) do update set 
                 personident          = :personident,
