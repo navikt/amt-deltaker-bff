@@ -4,7 +4,7 @@ version = "1.0-SNAPSHOT"
 plugins {
     kotlin("jvm") version "1.9.20"
     id("io.ktor.plugin") version "2.3.6"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
     id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
