@@ -38,23 +38,6 @@ class DeltakerService(
             ?: throw RuntimeException("Kunne ikke hente opprettet deltaker med id ${deltaker.id}")
     }
 
-    private fun nyttUtkast(personident: String, deltakerlisteId: UUID, opprettetAv: String): Deltaker =
-        Deltaker(
-            id = UUID.randomUUID(),
-            personident = personident,
-            deltakerlisteId = deltakerlisteId,
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            bakgrunnsinformasjon = null,
-            mal = emptyList(),
-            status = nyDeltakerStatus(DeltakerStatus.Type.UTKAST),
-            sistEndretAv = opprettetAv,
-            sistEndret = LocalDateTime.now(),
-            opprettet = LocalDateTime.now(),
-        )
-
     fun get(id: UUID) = deltakerRepository.get(id) ?: throw NoSuchElementException("Fant ikke deltaker med id: $id")
 
     fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: ForslagTilDeltaker, endretAv: String) {
@@ -89,6 +72,27 @@ class DeltakerService(
             ),
         )
     }
+
+    fun slettUtkast(deltakerId: UUID) {
+        deltakerRepository.slettUtkast(deltakerId)
+    }
+
+    private fun nyttUtkast(personident: String, deltakerlisteId: UUID, opprettetAv: String): Deltaker =
+        Deltaker(
+            id = UUID.randomUUID(),
+            personident = personident,
+            deltakerlisteId = deltakerlisteId,
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            bakgrunnsinformasjon = null,
+            mal = emptyList(),
+            status = nyDeltakerStatus(DeltakerStatus.Type.UTKAST),
+            sistEndretAv = opprettetAv,
+            sistEndret = LocalDateTime.now(),
+            opprettet = LocalDateTime.now(),
+        )
 }
 
 private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(

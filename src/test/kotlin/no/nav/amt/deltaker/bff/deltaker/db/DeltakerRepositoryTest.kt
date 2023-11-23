@@ -73,6 +73,18 @@ class DeltakerRepositoryTest {
         statuser.first { it.id == deltaker.status.id }.gyldigTil shouldNotBe null
         statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigTil shouldBe null
     }
+
+    @Test
+    fun `slettUtkast - ny deltaker - insertes`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId)
+        TestRepository.insert(deltakerliste)
+        repository.upsert(deltaker)
+
+        repository.slettUtkast(deltaker.id)
+
+        repository.get(deltaker.id) shouldBe null
+    }
 }
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {

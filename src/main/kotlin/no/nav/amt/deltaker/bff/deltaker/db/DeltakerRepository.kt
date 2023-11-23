@@ -165,6 +165,39 @@ class DeltakerRepository {
         session.run(query)
     }
 
+    fun slettUtkast(deltakerId: UUID) = Database.query { session ->
+        session.transaction { tx ->
+            tx.update(slettStatus(deltakerId))
+            tx.update(slettDeltaker(deltakerId))
+        }
+    }
+
+    private fun slettStatus(deltakerId: UUID): Query {
+        val sql = """
+            delete from deltaker_status
+            where deltaker_id = :deltaker_id;
+        """.trimIndent()
+
+        val params = mapOf(
+            "deltaker_id" to deltakerId,
+        )
+
+        return queryOf(sql, params)
+    }
+
+    private fun slettDeltaker(deltakerId: UUID): Query {
+        val sql = """
+            delete from deltaker
+            where id = :deltaker_id;
+        """.trimIndent()
+
+        val params = mapOf(
+            "deltaker_id" to deltakerId,
+        )
+
+        return queryOf(sql, params)
+    }
+
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query {
         val sql = """
             insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra) 
