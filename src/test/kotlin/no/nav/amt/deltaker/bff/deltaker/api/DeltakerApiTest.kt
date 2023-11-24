@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.api
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.delete
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -23,6 +24,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -56,6 +58,7 @@ class DeltakerApiTest {
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -63,6 +66,7 @@ class DeltakerApiTest {
         setUpTestApplication()
         client.post("/pamelding") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -116,6 +120,31 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `slett utkast - har tilgang, deltaker er UTKAST - sletter deltaker og returnerer 200`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        every { deltakerService.get(deltaker.id) } returns deltaker
+        every { deltakerService.slettUtkast(deltaker.id) } returns Unit
+
+        setUpTestApplication()
+        client.delete("/pamelding/${deltaker.id}") { deleteRequest() }.apply {
+            status shouldBe HttpStatusCode.OK
+        }
+    }
+
+    @Test
+    fun `slett utkast - deltaker har ikke status UTKAST - returnerer 400`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER))
+        every { deltakerService.get(deltaker.id) } returns deltaker
+
+        setUpTestApplication()
+        client.delete("/pamelding/${deltaker.id}") { deleteRequest() }.apply {
+            status shouldBe HttpStatusCode.BadRequest
+        }
+    }
+
     private fun HttpRequestBuilder.postRequest(body: Any) {
         header(
             HttpHeaders.Authorization,
@@ -129,6 +158,19 @@ class DeltakerApiTest {
         )
         contentType(ContentType.Application.Json)
         setBody(objectMapper.writeValueAsString(body))
+    }
+
+    private fun HttpRequestBuilder.deleteRequest() {
+        header(
+            HttpHeaders.Authorization,
+            "Bearer ${
+                generateJWT(
+                    consumerClientId = "frontend-clientid",
+                    navAnsattAzureId = UUID.randomUUID().toString(),
+                    audience = "deltaker-bff",
+                )
+            }",
+        )
     }
 
     private fun getPameldingResponse(): PameldingResponse =
