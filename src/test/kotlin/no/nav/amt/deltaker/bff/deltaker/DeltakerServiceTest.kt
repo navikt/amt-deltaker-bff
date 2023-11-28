@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -182,5 +183,64 @@ class DeltakerServiceTest {
         samtykke.gyldigTil shouldBe null
         sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
         samtykke.godkjentAvNav shouldBe forslag.godkjentAvNav
+    }
+
+    @Test
+    fun `meldPaUtenGodkjenning - deltaker har status UTKAST - oppretter et godkjent samtykke og setter ny status for deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        TestRepository.insert(deltaker)
+        val godkjenningAvNav = TestData.lagGodkjenningAvNav()
+        val forslag = TestData.lagForslagTilDeltaker(godkjentAvNav = godkjenningAvNav)
+
+        deltakerService.meldPaUtenGodkjenning(deltaker, forslag, godkjenningAvNav.godkjentAv)
+
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+        oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
+
+        val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
+
+        samtykke.deltakerId shouldBe deltaker.id
+        samtykke.godkjent shouldBeCloseTo LocalDateTime.now()
+        samtykke.gyldigTil shouldBe null
+        sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
+        samtykke.godkjentAvNav shouldBe godkjenningAvNav
+    }
+
+    @Test
+    fun `meldPaUtenGodkjenning - deltaker har et samtykke som ikke er godkjent - oppdater eksisterende samtykke`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER),
+        )
+        TestRepository.insert(deltaker)
+        val eksisterendeSamtykke = TestData.lagDeltakerSamtykke(
+            deltakerId = deltaker.id,
+            deltakerVedSamtykke = deltaker,
+        )
+        TestRepository.insert(eksisterendeSamtykke)
+        val godkjenningAvNav = TestData.lagGodkjenningAvNav()
+        val forslag = TestData.lagForslagTilDeltaker(bakgrunnsinformasjon = "Nye opplysninger...", godkjentAvNav = godkjenningAvNav)
+
+        deltakerService.meldPaUtenGodkjenning(deltaker, forslag, godkjenningAvNav.godkjentAv)
+
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+        val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
+
+        samtykke.id shouldBe eksisterendeSamtykke.id
+        samtykke.deltakerId shouldBe deltaker.id
+        samtykke.godkjent shouldBeCloseTo LocalDateTime.now()
+        samtykke.gyldigTil shouldBe null
+        sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
+        samtykke.godkjentAvNav shouldBe godkjenningAvNav
+    }
+
+    @Test
+    fun `meldPaUtenGodkjenning - forslag mangler godkjenning - kaster feil`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        TestRepository.insert(deltaker)
+        val forslag = TestData.lagForslagTilDeltaker(godkjentAvNav = null)
+
+        assertFailsWith<RuntimeException> {
+            deltakerService.meldPaUtenGodkjenning(deltaker, forslag, TestData.randomNavIdent())
+        }
     }
 }

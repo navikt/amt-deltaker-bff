@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.ForslagTilDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -51,6 +52,32 @@ fun Routing.registerDeltakerApi(
                     deltakelsesprosent = request.deltakelsesprosent,
                     dagerPerUke = request.dagerPerUke,
                     godkjentAvNav = null,
+                ),
+                endretAv = navIdent,
+            )
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post("/pamelding/{deltakerId}/utenGodkjenning") {
+            val navIdent = getNavIdent()
+            val request = call.receive<PameldingUtenGodkjenningRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+
+            deltakerService.meldPaUtenGodkjenning(
+                opprinneligDeltaker = deltaker,
+                forslag = ForslagTilDeltaker(
+                    mal = request.mal,
+                    bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                    deltakelsesprosent = request.deltakelsesprosent,
+                    dagerPerUke = request.dagerPerUke,
+                    godkjentAvNav = GodkjenningAvNav(
+                        type = request.begrunnelse.type,
+                        beskrivelse = request.begrunnelse.beskrivelse,
+                        godkjentAv = navIdent,
+                    ),
                 ),
                 endretAv = navIdent,
             )

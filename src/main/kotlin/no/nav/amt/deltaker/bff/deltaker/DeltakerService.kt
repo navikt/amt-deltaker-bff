@@ -73,6 +73,37 @@ class DeltakerService(
         )
     }
 
+    fun meldPaUtenGodkjenning(opprinneligDeltaker: Deltaker, forslag: ForslagTilDeltaker, endretAv: String) {
+        if (forslag.godkjentAvNav == null) {
+            log.error("Kan ikke forhåndsgodkjenne deltaker med id ${opprinneligDeltaker.id} uten begrunnelse, skal ikke kunne skje!")
+            throw RuntimeException("Kan ikke forhåndsgodkjenne deltaker uten begrunnelse")
+        }
+        val deltaker = opprinneligDeltaker.copy(
+            mal = forslag.mal,
+            bakgrunnsinformasjon = forslag.bakgrunnsinformasjon,
+            deltakelsesprosent = forslag.deltakelsesprosent,
+            dagerPerUke = forslag.dagerPerUke,
+            status = nyDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART), // her skal vi mest sannsynlig ha en annen status, men det er ikke avklart hva den skal være
+            sistEndretAv = endretAv,
+            sistEndret = LocalDateTime.now(),
+        )
+
+        deltakerRepository.upsert(deltaker)
+
+        val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
+
+        samtykkeRepository.upsert(
+            DeltakerSamtykke(
+                id = samtykkeId,
+                deltakerId = deltaker.id,
+                godkjent = LocalDateTime.now(),
+                gyldigTil = null,
+                deltakerVedSamtykke = deltaker,
+                godkjentAvNav = forslag.godkjentAvNav,
+            ),
+        )
+    }
+
     fun slettUtkast(deltakerId: UUID) {
         deltakerRepository.slettUtkast(deltakerId)
     }
