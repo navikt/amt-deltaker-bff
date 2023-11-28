@@ -56,7 +56,7 @@ class DeltakerApiTest {
         coEvery { deltakerService.get(any()) } returns TestData.lagDeltaker()
 
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
@@ -65,26 +65,26 @@ class DeltakerApiTest {
     @Test
     fun `skal teste autorisering - mangler token - returnerer 401`() = testApplication {
         setUpTestApplication()
-        client.post("/pamelding") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
-    fun `pamelding - har tilgang - returnerer PameldingResponse`() = testApplication {
+    fun `post deltaker - har tilgang - returnerer PameldingResponse`() = testApplication {
         val pameldingResponse = getPameldingResponse()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.opprettDeltaker(any(), any(), any()) } returns pameldingResponse
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
+        client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
             TestCase.assertEquals(objectMapper.writeValueAsString(pameldingResponse), bodyAsText())
         }
     }
 
     @Test
-    fun `pamelding - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
+    fun `post deltaker - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every {
             deltakerService.opprettDeltaker(
@@ -94,7 +94,7 @@ class DeltakerApiTest {
             )
         } throws NoSuchElementException("Fant ikke deltakerliste")
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
+        client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
             status shouldBe HttpStatusCode.NotFound
         }
     }
