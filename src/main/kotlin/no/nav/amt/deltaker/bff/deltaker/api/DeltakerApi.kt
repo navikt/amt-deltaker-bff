@@ -25,7 +25,7 @@ fun Routing.registerDeltakerApi(
     val log = LoggerFactory.getLogger(javaClass)
 
     authenticate("VEILEDER") {
-        post("/pamelding") {
+        post("/deltaker") {
             val navIdent = getNavIdent()
             val pameldingRequest = call.receive<PameldingRequest>()
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)

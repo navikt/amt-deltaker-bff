@@ -56,7 +56,7 @@ class DeltakerApiTest {
         coEvery { deltakerService.get(any()) } returns TestData.lagDeltaker()
 
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
@@ -65,26 +65,26 @@ class DeltakerApiTest {
     @Test
     fun `skal teste autorisering - mangler token - returnerer 401`() = testApplication {
         setUpTestApplication()
-        client.post("/pamelding") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
-    fun `pamelding - har tilgang - returnerer PameldingResponse`() = testApplication {
-        val pameldingResponse = getPameldingResponse()
+    fun `post deltaker - har tilgang - returnerer deltaker`() = testApplication {
+        val deltakerResponse = getDeltakerResponse()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.opprettDeltaker(any(), any(), any()) } returns pameldingResponse
+        every { deltakerService.opprettDeltaker(any(), any(), any()) } returns deltakerResponse
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
+        client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(pameldingResponse), bodyAsText())
+            TestCase.assertEquals(objectMapper.writeValueAsString(deltakerResponse), bodyAsText())
         }
     }
 
     @Test
-    fun `pamelding - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
+    fun `post deltaker - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every {
             deltakerService.opprettDeltaker(
@@ -94,7 +94,7 @@ class DeltakerApiTest {
             )
         } throws NoSuchElementException("Fant ikke deltakerliste")
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
+        client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
             status shouldBe HttpStatusCode.NotFound
         }
     }
@@ -198,8 +198,8 @@ class DeltakerApiTest {
         )
     }
 
-    private fun getPameldingResponse(): PameldingResponse =
-        PameldingResponse(
+    private fun getDeltakerResponse(): DeltakerResponse =
+        DeltakerResponse(
             deltakerId = UUID.randomUUID(),
             deltakerliste = DeltakerlisteDTO(
                 deltakerlisteId = UUID.randomUUID(),
@@ -207,8 +207,14 @@ class DeltakerApiTest {
                 tiltakstype = Tiltak.Type.GRUFAGYRKE,
                 arrangorNavn = "Arrangør AS",
                 oppstartstype = Deltakerliste.Oppstartstype.FELLES,
-                mal = emptyList(),
             ),
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST),
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            bakgrunnsinformasjon = null,
+            mal = emptyList(),
         )
 
     private fun ApplicationTestBuilder.setUpTestApplication() {

@@ -45,15 +45,21 @@ class DeltakerServiceTest {
         TestRepository.insert(arrangor)
         deltakerlisteRepository.upsert(deltakerliste)
 
-        val pameldingResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
+        val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
 
-        pameldingResponse.deltakerId shouldBe deltakerRepository.get(personident, deltakerliste.id)?.id
-        pameldingResponse.deltakerliste.deltakerlisteId shouldBe deltakerliste.id
-        pameldingResponse.deltakerliste.deltakerlisteNavn shouldBe deltakerliste.navn
-        pameldingResponse.deltakerliste.tiltakstype shouldBe deltakerliste.tiltak.type
-        pameldingResponse.deltakerliste.arrangorNavn shouldBe arrangor.navn
-        pameldingResponse.deltakerliste.oppstartstype shouldBe deltakerliste.getOppstartstype()
-        pameldingResponse.deltakerliste.mal shouldBe emptyList()
+        deltakerResponse.deltakerId shouldBe deltakerRepository.get(personident, deltakerliste.id)?.id
+        deltakerResponse.deltakerliste.deltakerlisteId shouldBe deltakerliste.id
+        deltakerResponse.deltakerliste.deltakerlisteNavn shouldBe deltakerliste.navn
+        deltakerResponse.deltakerliste.tiltakstype shouldBe deltakerliste.tiltak.type
+        deltakerResponse.deltakerliste.arrangorNavn shouldBe arrangor.navn
+        deltakerResponse.deltakerliste.oppstartstype shouldBe deltakerliste.getOppstartstype()
+        deltakerResponse.status.type shouldBe DeltakerStatus.Type.UTKAST
+        deltakerResponse.startdato shouldBe null
+        deltakerResponse.sluttdato shouldBe null
+        deltakerResponse.dagerPerUke shouldBe null
+        deltakerResponse.deltakelsesprosent shouldBe null
+        deltakerResponse.bakgrunnsinformasjon shouldBe null
+        deltakerResponse.mal shouldBe emptyList()
     }
 
     @Test
@@ -78,9 +84,16 @@ class DeltakerServiceTest {
         deltakerlisteRepository.upsert(deltakerliste)
         deltakerRepository.upsert(deltaker)
 
-        val pameldingResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
+        val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
 
-        pameldingResponse.deltakerId shouldBe deltakerId
+        deltakerResponse.deltakerId shouldBe deltakerId
+        deltakerResponse.status.type shouldBe DeltakerStatus.Type.DELTAR
+        deltakerResponse.startdato shouldBe deltaker.startdato
+        deltakerResponse.sluttdato shouldBe deltaker.sluttdato
+        deltakerResponse.dagerPerUke shouldBe deltaker.dagerPerUke
+        deltakerResponse.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
+        deltakerResponse.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
+        deltakerResponse.mal shouldBe deltaker.mal
     }
 
     @Test
@@ -98,9 +111,10 @@ class DeltakerServiceTest {
         deltakerlisteRepository.upsert(deltakerliste)
         deltakerRepository.upsert(deltaker)
 
-        val pameldingResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
+        val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
 
-        pameldingResponse.deltakerId shouldNotBe deltakerId
+        deltakerResponse.deltakerId shouldNotBe deltakerId
+        deltakerResponse.status.type shouldBe DeltakerStatus.Type.UTKAST
     }
 
     @Test
