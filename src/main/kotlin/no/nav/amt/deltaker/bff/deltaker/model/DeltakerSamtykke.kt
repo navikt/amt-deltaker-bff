@@ -15,6 +15,6 @@ data class DeltakerSamtykke(
 
 data class GodkjenningAvNav(
     val type: String,
-    val beskrivelse: String,
+    val beskrivelse: String?,
     val godkjentAv: String,
 )

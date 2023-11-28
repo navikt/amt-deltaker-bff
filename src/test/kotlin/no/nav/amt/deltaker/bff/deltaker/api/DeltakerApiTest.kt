@@ -58,6 +58,7 @@ class DeltakerApiTest {
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
@@ -66,6 +67,7 @@ class DeltakerApiTest {
         setUpTestApplication()
         client.post("/pamelding") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
     }
 
@@ -116,6 +118,29 @@ class DeltakerApiTest {
 
         setUpTestApplication()
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.apply {
+            status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
+    @Test
+    fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter ferdig godkjent deltaker og returnerer 200`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker()
+        every { deltakerService.get(deltaker.id) } returns deltaker
+        every { deltakerService.meldPaUtenGodkjenning(deltaker, any(), any()) } returns Unit
+
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+        }
+    }
+
+    @Test
+    fun `pamelding deltakerId uten godkjenning - deltaker finnes ikke - returnerer 404`() = testApplication {
+        every { deltakerService.get(any()) } throws NoSuchElementException()
+
+        setUpTestApplication()
+        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.apply {
             status shouldBe HttpStatusCode.NotFound
         }
     }
@@ -196,4 +221,11 @@ class DeltakerApiTest {
 
     private val forslagRequest = ForslagRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
+    private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
+        emptyList(),
+        "Bakgrunnen for...",
+        null,
+        null,
+        Begrunnelse("TELEFONKONTAKT", null),
+    )
 }
