@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.api.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.DeltakerlisteDTO
-import no.nav.amt.deltaker.bff.deltaker.api.PameldingResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
@@ -23,18 +23,18 @@ class DeltakerService(
         deltakerlisteId: UUID,
         personident: String,
         opprettetAv: String,
-    ): PameldingResponse {
+    ): DeltakerResponse {
         val deltakerliste = deltakerlisteRepository.get(deltakerlisteId)
             ?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
         val eksisterendeDeltaker = deltakerRepository.get(personident, deltakerlisteId)
         if (eksisterendeDeltaker != null && !eksisterendeDeltaker.harSluttet()) {
             log.warn("Deltakeren er allerede opprettet og deltar fortsatt")
-            return eksisterendeDeltaker.toPameldingResponse(deltakerliste)
+            return eksisterendeDeltaker.toDeltakerResponse(deltakerliste)
         }
         val deltaker = nyttUtkast(personident, deltakerlisteId, opprettetAv)
         log.info("Oppretter deltaker med id ${deltaker.id}")
         deltakerRepository.upsert(deltaker)
-        return deltakerRepository.get(deltaker.id)?.toPameldingResponse(deltakerliste)
+        return deltakerRepository.get(deltaker.id)?.toDeltakerResponse(deltakerliste)
             ?: throw RuntimeException("Kunne ikke hente opprettet deltaker med id ${deltaker.id}")
     }
 
@@ -135,8 +135,8 @@ private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.A
     opprettet = LocalDateTime.now(),
 )
 
-private fun Deltaker.toPameldingResponse(deltakerliste: Deltakerliste): PameldingResponse {
-    return PameldingResponse(
+private fun Deltaker.toDeltakerResponse(deltakerliste: Deltakerliste): DeltakerResponse {
+    return DeltakerResponse(
         deltakerId = id,
         deltakerliste = DeltakerlisteDTO(
             deltakerlisteId = deltakerlisteId,
@@ -144,7 +144,13 @@ private fun Deltaker.toPameldingResponse(deltakerliste: Deltakerliste): Pameldin
             tiltakstype = deltakerliste.tiltak.type,
             arrangorNavn = deltakerliste.arrangor.navn,
             oppstartstype = deltakerliste.getOppstartstype(),
-            mal = mal,
         ),
+        status = status,
+        startdato = startdato,
+        sluttdato = sluttdato,
+        dagerPerUke = dagerPerUke,
+        deltakelsesprosent = deltakelsesprosent,
+        bakgrunnsinformasjon = bakgrunnsinformasjon,
+        mal = mal,
     )
 }

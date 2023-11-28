@@ -72,14 +72,14 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `post deltaker - har tilgang - returnerer PameldingResponse`() = testApplication {
-        val pameldingResponse = getPameldingResponse()
+    fun `post deltaker - har tilgang - returnerer deltaker`() = testApplication {
+        val deltakerResponse = getDeltakerResponse()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.opprettDeltaker(any(), any(), any()) } returns pameldingResponse
+        every { deltakerService.opprettDeltaker(any(), any(), any()) } returns deltakerResponse
         setUpTestApplication()
         client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(pameldingResponse), bodyAsText())
+            TestCase.assertEquals(objectMapper.writeValueAsString(deltakerResponse), bodyAsText())
         }
     }
 
@@ -198,8 +198,8 @@ class DeltakerApiTest {
         )
     }
 
-    private fun getPameldingResponse(): PameldingResponse =
-        PameldingResponse(
+    private fun getDeltakerResponse(): DeltakerResponse =
+        DeltakerResponse(
             deltakerId = UUID.randomUUID(),
             deltakerliste = DeltakerlisteDTO(
                 deltakerlisteId = UUID.randomUUID(),
@@ -207,8 +207,14 @@ class DeltakerApiTest {
                 tiltakstype = Tiltak.Type.GRUFAGYRKE,
                 arrangorNavn = "Arrangør AS",
                 oppstartstype = Deltakerliste.Oppstartstype.FELLES,
-                mal = emptyList(),
             ),
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST),
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            bakgrunnsinformasjon = null,
+            mal = emptyList(),
         )
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
