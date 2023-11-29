@@ -150,17 +150,20 @@ class DeltakerService(
             )
         }
 
-        deltakerRepository.upsert(deltaker)
-        historikkRepository.upsert(
-            DeltakerHistorikk(
-                id = UUID.randomUUID(),
-                deltakerId = deltaker.id,
-                endringType = endringType,
-                endring = endring,
-                endretAv = endretAv,
-                endret = LocalDateTime.now(),
-            ),
-        )
+        if (erEndret(opprinneligDeltaker, deltaker)) {
+            deltakerRepository.upsert(deltaker)
+            historikkRepository.upsert(
+                DeltakerHistorikk(
+                    id = UUID.randomUUID(),
+                    deltakerId = deltaker.id,
+                    endringType = endringType,
+                    endring = endring,
+                    endretAv = endretAv,
+                    endret = LocalDateTime.now(),
+                ),
+            )
+            log.info("Oppdatert deltaker med id ${deltaker.id}")
+        }
         val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
             ?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerlisteId}")
         return deltakerRepository.get(deltaker.id)?.toDeltakerResponse(deltakerliste)
@@ -169,6 +172,17 @@ class DeltakerService(
 
     fun slettUtkast(deltakerId: UUID) {
         deltakerRepository.slettUtkast(deltakerId)
+    }
+
+    private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {
+        return !(
+            opprinneligDeltaker.bakgrunnsinformasjon == oppdatertDeltaker.bakgrunnsinformasjon &&
+                opprinneligDeltaker.mal == oppdatertDeltaker.mal &&
+                opprinneligDeltaker.deltakelsesprosent == oppdatertDeltaker.deltakelsesprosent &&
+                opprinneligDeltaker.dagerPerUke == oppdatertDeltaker.dagerPerUke &&
+                opprinneligDeltaker.startdato == oppdatertDeltaker.startdato &&
+                opprinneligDeltaker.sluttdato == oppdatertDeltaker.sluttdato
+            )
     }
 
     private fun nyttUtkast(personident: String, deltakerlisteId: UUID, opprettetAv: String): Deltaker =

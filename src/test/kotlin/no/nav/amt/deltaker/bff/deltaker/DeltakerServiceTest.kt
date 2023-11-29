@@ -291,6 +291,27 @@ class DeltakerServiceTest {
     }
 
     @Test
+    fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, men ingen endring - oppdaterer ikke i databasen og returnerer uendret deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        TestRepository.insert(deltaker)
+        val endretAv = TestData.randomNavIdent()
+
+        val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+            deltaker,
+            DeltakerEndringType.BAKGRUNNSINFORMASJON,
+            DeltakerEndring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
+            endretAv,
+        )
+
+        oppdatertDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
+        val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id)
+        oppdatertDeltakerFraDb.sistEndretAv shouldBe deltaker.sistEndretAv
+        oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo deltaker.sistEndret
+        val historikk = historikkRepository.getForDeltaker(deltaker.id)
+        historikk.size shouldBe 0
+    }
+
+    @Test
     fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, deltaker har sluttet - kaster feil`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET), sluttdato = LocalDate.now().minusMonths(1))
         TestRepository.insert(deltaker)
