@@ -2,9 +2,13 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -26,6 +30,7 @@ class DeltakerServiceTest {
         lateinit var deltakerRepository: DeltakerRepository
         lateinit var deltakerService: DeltakerService
         lateinit var samtykkeRepository: DeltakerSamtykkeRepository
+        lateinit var historikkRepository: DeltakerHistorikkRepository
 
         @JvmStatic
         @BeforeClass
@@ -34,7 +39,8 @@ class DeltakerServiceTest {
             deltakerlisteRepository = DeltakerlisteRepository()
             deltakerRepository = DeltakerRepository()
             samtykkeRepository = DeltakerSamtykkeRepository()
-            deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository)
+            historikkRepository = DeltakerHistorikkRepository()
+            deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository, historikkRepository)
         }
     }
 
@@ -102,7 +108,7 @@ class DeltakerServiceTest {
         val deltaker = TestData.lagDeltaker(
             id = deltakerId,
             personident = personident,
-            sluttdato = LocalDate.now().minusDays(2),
+            sluttdato = LocalDate.now().minusWeeks(3),
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         )
         val arrangor = TestData.lagArrangor()
@@ -122,7 +128,7 @@ class DeltakerServiceTest {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
         TestRepository.insert(deltaker)
 
-        val forslag = TestData.lagForslagTilDeltaker()
+        val forslag = TestData.lagOppdatertDeltaker()
         deltakerService.opprettForslag(deltaker, forslag, TestData.randomNavIdent())
 
         val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
@@ -150,7 +156,7 @@ class DeltakerServiceTest {
         )
         TestRepository.insert(eksisterendeSamtykke)
 
-        val forslag = TestData.lagForslagTilDeltaker(bakgrunnsinformasjon = "Nye opplysninger...")
+        val forslag = TestData.lagOppdatertDeltaker(bakgrunnsinformasjon = "Nye opplysninger...")
 
         deltakerService.opprettForslag(deltaker, forslag, TestData.randomNavIdent())
 
@@ -181,7 +187,7 @@ class DeltakerServiceTest {
         TestRepository.insert(opprinneligSamtykke)
 
         val navIdent = TestData.randomNavIdent()
-        val forslag = TestData.lagForslagTilDeltaker(
+        val forslag = TestData.lagOppdatertDeltaker(
             godkjentAvNav = TestData.lagGodkjenningAvNav(godkjentAv = navIdent),
         )
         deltakerService.opprettForslag(deltaker, forslag, navIdent)
@@ -204,7 +210,7 @@ class DeltakerServiceTest {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
         TestRepository.insert(deltaker)
         val godkjenningAvNav = TestData.lagGodkjenningAvNav()
-        val forslag = TestData.lagForslagTilDeltaker(godkjentAvNav = godkjenningAvNav)
+        val forslag = TestData.lagOppdatertDeltaker(godkjentAvNav = godkjenningAvNav)
 
         deltakerService.meldPaUtenGodkjenning(deltaker, forslag, godkjenningAvNav.godkjentAv)
 
@@ -232,7 +238,7 @@ class DeltakerServiceTest {
         )
         TestRepository.insert(eksisterendeSamtykke)
         val godkjenningAvNav = TestData.lagGodkjenningAvNav()
-        val forslag = TestData.lagForslagTilDeltaker(bakgrunnsinformasjon = "Nye opplysninger...", godkjentAvNav = godkjenningAvNav)
+        val forslag = TestData.lagOppdatertDeltaker(bakgrunnsinformasjon = "Nye opplysninger...", godkjentAvNav = godkjenningAvNav)
 
         deltakerService.meldPaUtenGodkjenning(deltaker, forslag, godkjenningAvNav.godkjentAv)
 
@@ -251,10 +257,67 @@ class DeltakerServiceTest {
     fun `meldPaUtenGodkjenning - forslag mangler godkjenning - kaster feil`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
         TestRepository.insert(deltaker)
-        val forslag = TestData.lagForslagTilDeltaker(godkjentAvNav = null)
+        val forslag = TestData.lagOppdatertDeltaker(godkjentAvNav = null)
 
         assertFailsWith<RuntimeException> {
             deltakerService.meldPaUtenGodkjenning(deltaker, forslag, TestData.randomNavIdent())
+        }
+    }
+
+    @Test
+    fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon - oppdaterer i databasen og returnerer oppdatert deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        TestRepository.insert(deltaker)
+        val oppdatertBakgrunnsinformasjon = "Oppdatert informasjon"
+        val endretAv = TestData.randomNavIdent()
+
+        val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+            deltaker,
+            DeltakerEndringType.BAKGRUNNSINFORMASJON,
+            DeltakerEndring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
+            endretAv,
+        )
+
+        oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
+        val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id)
+        oppdatertDeltakerFraDb.sistEndretAv shouldBe endretAv
+        oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
+        val historikk = historikkRepository.getForDeltaker(deltaker.id)
+        historikk.size shouldBe 1
+        historikk.first().endringType shouldBe DeltakerEndringType.BAKGRUNNSINFORMASJON
+        historikk.first().endring shouldBe DeltakerEndring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon)
+        historikk.first().endret shouldBeCloseTo LocalDateTime.now()
+        historikk.first().endretAv shouldBe endretAv
+    }
+
+    @Test
+    fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, men ingen endring - oppdaterer ikke i databasen og returnerer uendret deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        TestRepository.insert(deltaker)
+        val endretAv = TestData.randomNavIdent()
+
+        val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+            deltaker,
+            DeltakerEndringType.BAKGRUNNSINFORMASJON,
+            DeltakerEndring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
+            endretAv,
+        )
+
+        oppdatertDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
+        val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id)
+        oppdatertDeltakerFraDb.sistEndretAv shouldBe deltaker.sistEndretAv
+        oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo deltaker.sistEndret
+        val historikk = historikkRepository.getForDeltaker(deltaker.id)
+        historikk.size shouldBe 0
+    }
+
+    @Test
+    fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, deltaker har sluttet - kaster feil`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET), sluttdato = LocalDate.now().minusMonths(1))
+        TestRepository.insert(deltaker)
+
+        assertFailsWith<IllegalArgumentException> {
+            deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, DeltakerEndring.EndreBakgrunnsinformasjon("oppdatert informasjon"), TestData.randomNavIdent())
         }
     }
 }

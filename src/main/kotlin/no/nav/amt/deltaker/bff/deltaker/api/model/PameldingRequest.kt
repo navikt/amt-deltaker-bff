@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.deltaker.api
+package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import java.util.UUID
 

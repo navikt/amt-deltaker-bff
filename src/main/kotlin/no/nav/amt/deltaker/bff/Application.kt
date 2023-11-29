@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
@@ -94,7 +95,8 @@ fun Application.module() {
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
     val samtykkeRepository = DeltakerSamtykkeRepository()
-    val deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository)
+    val historikkRepository = DeltakerHistorikkRepository()
+    val deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository, historikkRepository)
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService)

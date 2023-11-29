@@ -1,11 +1,14 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
-import no.nav.amt.deltaker.bff.deltaker.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
-import no.nav.amt.deltaker.bff.deltaker.model.ForslagTilDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -119,13 +122,22 @@ object TestData {
         godkjentAv: String = randomNavIdent(),
     ) = GodkjenningAvNav(type, beskrivelse, godkjentAv)
 
-    fun lagForslagTilDeltaker(
+    fun lagOppdatertDeltaker(
         mal: List<Mal> = emptyList(),
         bakgrunnsinformasjon: String? = "Har vært ...",
         deltakelsesprosent: Float? = 100F,
         dagerPerUke: Float? = 5F,
         godkjentAvNav: GodkjenningAvNav? = null,
-    ) = ForslagTilDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav)
+    ) = OppdatertDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav)
+
+    fun lagDeltakerHistorikk(
+        id: UUID = UUID.randomUUID(),
+        deltakerId: UUID,
+        endringType: DeltakerEndringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
+        endring: DeltakerEndring = DeltakerEndring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
+        endretAv: String = randomNavIdent(),
+        endret: LocalDateTime = LocalDateTime.now(),
+    ) = DeltakerHistorikk(id, deltakerId, endringType, endring, endretAv, endret)
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,

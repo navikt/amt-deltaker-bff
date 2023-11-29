@@ -1,6 +1,6 @@
-package no.nav.amt.deltaker.bff.deltaker.api
+package no.nav.amt.deltaker.bff.deltaker.api.model
 
-import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak

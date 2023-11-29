@@ -26,9 +26,9 @@ class ApplicationTest {
             configureAuthentication(Environment())
             configureRouting(tilgangskontrollService, deltakerService)
         }
-        client.get("/").apply {
+        client.get("/internal/health/liveness").apply {
             assertEquals(HttpStatusCode.OK, status)
-            assertEquals("Hello World!", bodyAsText())
+            assertEquals("I'm alive!", bodyAsText())
         }
     }
 }

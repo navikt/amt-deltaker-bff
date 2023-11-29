@@ -12,9 +12,15 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.ForslagTilDeltaker
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -46,7 +52,7 @@ fun Routing.registerDeltakerApi(
 
             deltakerService.opprettForslag(
                 opprinneligDeltaker = deltaker,
-                forslag = ForslagTilDeltaker(
+                forslag = OppdatertDeltaker(
                     mal = request.mal,
                     bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                     deltakelsesprosent = request.deltakelsesprosent,
@@ -68,7 +74,7 @@ fun Routing.registerDeltakerApi(
 
             deltakerService.meldPaUtenGodkjenning(
                 opprinneligDeltaker = deltaker,
-                forslag = ForslagTilDeltaker(
+                oppdatertDeltaker = OppdatertDeltaker(
                     mal = request.mal,
                     bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                     deltakelsesprosent = request.deltakelsesprosent,
@@ -101,6 +107,23 @@ fun Routing.registerDeltakerApi(
             log.info("$navIdent har slettet utkast for deltaker med id $deltakerId")
 
             call.respond(HttpStatusCode.OK)
+        }
+
+        post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
+            val navIdent = getNavIdent()
+            val request = call.receive<EndreBakgrunnsinformasjonRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
+                endring = DeltakerEndring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
+                endretAv = navIdent,
+            )
+
+            call.respond(oppdatertDeltaker)
         }
     }
 }

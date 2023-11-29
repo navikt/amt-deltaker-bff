@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltaker.Deltaker
 import java.time.LocalDateTime
 import java.util.UUID
 
