@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.deltaker
+package no.nav.amt.deltaker.bff.deltaker.model
 
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import java.time.LocalDate
@@ -21,6 +21,6 @@ data class Deltaker(
     val opprettet: LocalDateTime,
 ) {
     fun harSluttet(): Boolean {
-        return status.type in AVSLUTTENDE_STATUSER || sluttdato?.isBefore(LocalDate.now()) == true
+        return status.type in AVSLUTTENDE_STATUSER || sluttdato?.isBefore(LocalDate.now().minusWeeks(2)) == true
     }
 }

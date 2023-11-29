@@ -1,10 +1,11 @@
-package no.nav.amt.deltaker.bff.deltaker.api
+package no.nav.amt.deltaker.bff.deltaker.model
 
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 
-data class ForslagRequest(
+data class OppdatertDeltaker(
     val mal: List<Mal>,
     val bakgrunnsinformasjon: String?,
     val deltakelsesprosent: Float?,
     val dagerPerUke: Float?,
+    val godkjentAvNav: GodkjenningAvNav?,
 )

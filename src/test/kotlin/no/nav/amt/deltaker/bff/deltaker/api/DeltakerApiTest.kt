@@ -24,8 +24,17 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerlisteDTO
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -35,6 +44,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 import java.util.UUID
 
 class DeltakerApiTest {
@@ -60,6 +70,7 @@ class DeltakerApiTest {
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -69,6 +80,7 @@ class DeltakerApiTest {
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -170,6 +182,34 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker()
+        every { deltakerService.get(deltaker.id) } returns deltaker
+        val oppdatertDeltakerResponse = getDeltakerResponse(deltakerId = deltaker.id, statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART, bakgrunnsinformasjon = bakgrunnsinformasjonRequest.bakgrunnsinformasjon)
+        every { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, any(), any()) } returns oppdatertDeltakerResponse
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.apply {
+            TestCase.assertEquals(HttpStatusCode.OK, status)
+            TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltakerResponse), bodyAsText())
+        }
+    }
+
+    @Test
+    fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET), sluttdato = LocalDate.now().minusMonths(1))
+        every { deltakerService.get(deltaker.id) } returns deltaker
+        every { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, any(), any()) } throws IllegalArgumentException("Deltaker har sluttet")
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
+        }
+    }
+
     private fun HttpRequestBuilder.postRequest(body: Any) {
         header(
             HttpHeaders.Authorization,
@@ -198,9 +238,18 @@ class DeltakerApiTest {
         )
     }
 
-    private fun getDeltakerResponse(): DeltakerResponse =
+    private fun getDeltakerResponse(
+        deltakerId: UUID = UUID.randomUUID(),
+        statustype: DeltakerStatus.Type = DeltakerStatus.Type.UTKAST,
+        startdato: LocalDate? = null,
+        sluttdato: LocalDate? = null,
+        dagerPerUke: Float? = null,
+        deltakelsesprosent: Float? = null,
+        bakgrunnsinformasjon: String? = null,
+        mal: List<Mal> = emptyList(),
+    ): DeltakerResponse =
         DeltakerResponse(
-            deltakerId = UUID.randomUUID(),
+            deltakerId = deltakerId,
             deltakerliste = DeltakerlisteDTO(
                 deltakerlisteId = UUID.randomUUID(),
                 deltakerlisteNavn = "Gjennomføring 1",
@@ -208,13 +257,13 @@ class DeltakerApiTest {
                 arrangorNavn = "Arrangør AS",
                 oppstartstype = Deltakerliste.Oppstartstype.FELLES,
             ),
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST),
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            bakgrunnsinformasjon = null,
-            mal = emptyList(),
+            status = TestData.lagDeltakerStatus(type = statustype),
+            startdato = startdato,
+            sluttdato = sluttdato,
+            dagerPerUke = dagerPerUke,
+            deltakelsesprosent = deltakelsesprosent,
+            bakgrunnsinformasjon = bakgrunnsinformasjon,
+            mal = mal,
         )
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
@@ -234,4 +283,5 @@ class DeltakerApiTest {
         null,
         Begrunnelse("TELEFONKONTAKT", null),
     )
+    private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
 }

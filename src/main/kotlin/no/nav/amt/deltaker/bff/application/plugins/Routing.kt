@@ -19,6 +19,9 @@ fun Application.configureRouting(
     deltakerService: DeltakerService,
 ) {
     install(StatusPages) {
+        exception<IllegalArgumentException> { call, cause ->
+            call.respondText(text = "400: $cause", status = HttpStatusCode.BadRequest)
+        }
         exception<AuthorizationException> { call, cause ->
             call.respondText(text = "403: $cause", status = HttpStatusCode.Forbidden)
         }
@@ -33,9 +36,5 @@ fun Application.configureRouting(
         registerHealthApi()
 
         registerDeltakerApi(tilgangskontrollService, deltakerService)
-
-        get("/") {
-            call.respondText("Hello World!")
-        }
     }
 }
