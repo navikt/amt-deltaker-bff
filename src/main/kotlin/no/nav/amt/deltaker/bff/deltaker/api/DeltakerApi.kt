@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -157,6 +158,22 @@ fun Routing.registerDeltakerApi(
                     deltakelsesprosent = request.deltakelsesprosent,
                     dagerPerUke = request.dagerPerUke,
                 ),
+                endretAv = navIdent,
+            )
+            call.respond(oppdatertDeltaker)
+        }
+
+        post("/deltaker/{deltakerId}/startdato") {
+            val navIdent = getNavIdent()
+            val request = call.receive<EndreStartdatoRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringType = DeltakerEndringType.STARTDATO,
+                endring = DeltakerEndring.EndreStartdato(request.startdato),
                 endretAv = navIdent,
             )
             call.respond(oppdatertDeltaker)
