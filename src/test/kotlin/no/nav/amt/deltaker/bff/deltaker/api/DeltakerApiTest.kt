@@ -28,6 +28,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerlisteDTO
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -71,6 +72,7 @@ class DeltakerApiTest {
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/mal") { postRequest(malRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -81,6 +83,7 @@ class DeltakerApiTest {
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/mal") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -210,6 +213,21 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `oppdater mal - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker()
+        every { deltakerService.get(deltaker.id) } returns deltaker
+        val oppdatertDeltakerResponse = getDeltakerResponse(deltakerId = deltaker.id, statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART, mal = malRequest.mal)
+        every { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.MAL, any(), any()) } returns oppdatertDeltakerResponse
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/mal") { postRequest(malRequest) }.apply {
+            TestCase.assertEquals(HttpStatusCode.OK, status)
+            TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltakerResponse), bodyAsText())
+        }
+    }
+
     private fun HttpRequestBuilder.postRequest(body: Any) {
         header(
             HttpHeaders.Authorization,
@@ -284,4 +302,5 @@ class DeltakerApiTest {
         Begrunnelse("TELEFONKONTAKT", null),
     )
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
+    private val malRequest = EndreMalRequest(listOf(Mal("visningstekst", "type", true, null)))
 }

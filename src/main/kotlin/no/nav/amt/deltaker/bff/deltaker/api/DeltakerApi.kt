@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -120,6 +121,23 @@ fun Routing.registerDeltakerApi(
                 opprinneligDeltaker = deltaker,
                 endringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
                 endring = DeltakerEndring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
+                endretAv = navIdent,
+            )
+
+            call.respond(oppdatertDeltaker)
+        }
+
+        post("/deltaker/{deltakerId}/mal") {
+            val navIdent = getNavIdent()
+            val request = call.receive<EndreMalRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringType = DeltakerEndringType.MAL,
+                endring = DeltakerEndring.EndreMal(request.mal),
                 endretAv = navIdent,
             )
 
