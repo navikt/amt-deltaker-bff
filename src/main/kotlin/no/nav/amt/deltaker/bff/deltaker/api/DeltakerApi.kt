@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
@@ -123,7 +124,6 @@ fun Routing.registerDeltakerApi(
                 endring = DeltakerEndring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
                 endretAv = navIdent,
             )
-
             call.respond(oppdatertDeltaker)
         }
 
@@ -140,7 +140,25 @@ fun Routing.registerDeltakerApi(
                 endring = DeltakerEndring.EndreMal(request.mal),
                 endretAv = navIdent,
             )
+            call.respond(oppdatertDeltaker)
+        }
 
+        post("/deltaker/{deltakerId}/deltakelsesmengde") {
+            val navIdent = getNavIdent()
+            val request = call.receive<EndreDeltakelsesmengdeRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringType = DeltakerEndringType.DELTAKELSESMENGDE,
+                endring = DeltakerEndring.EndreDeltakelsesmengde(
+                    deltakelsesprosent = request.deltakelsesprosent,
+                    dagerPerUke = request.dagerPerUke,
+                ),
+                endretAv = navIdent,
+            )
             call.respond(oppdatertDeltaker)
         }
     }
