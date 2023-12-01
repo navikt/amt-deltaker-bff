@@ -24,19 +24,19 @@ class NavAnsattServiceTest {
     }
 
     @Test
-    fun `hentNavAnsatt - navansatt finnes i db - henter fra db`() {
+    fun `hentEllerOpprettNavAnsatt - navansatt finnes i db - henter fra db`() {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
         val navAnsattService = NavAnsattService(repository, mockk<AmtPersonServiceClient>())
 
         runBlocking {
-            val navAnsattFraDb = navAnsattService.hentNavAnsatt(navAnsatt.navident)
+            val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navident)
             navAnsattFraDb shouldBe navAnsatt
         }
     }
 
     @Test
-    fun `hentNavAnsatt - navansatt finnes ikke i db - henter fra personservice og lagrer`() {
+    fun `hentEllerOpprettNavAnsatt - navansatt finnes ikke i db - henter fra personservice og lagrer`() {
         val navAnsattResponse = TestData.lagNavAnsatt()
         val httpClient = mockHttpClient(objectMapper.writeValueAsString(navAnsattResponse))
         val amtPersonServiceClient = AmtPersonServiceClient(
@@ -48,7 +48,7 @@ class NavAnsattServiceTest {
         val navAnsattService = NavAnsattService(repository, amtPersonServiceClient)
 
         runBlocking {
-            val navAnsatt = navAnsattService.hentNavAnsatt(navAnsattResponse.navident)
+            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navident)
 
             navAnsatt shouldBe navAnsattResponse
             repository.get(navAnsattResponse.id) shouldBe navAnsattResponse

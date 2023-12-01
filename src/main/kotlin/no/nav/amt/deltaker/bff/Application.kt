@@ -111,7 +111,7 @@ fun Application.module() {
     val deltakerRepository = DeltakerRepository()
     val samtykkeRepository = DeltakerSamtykkeRepository()
     val historikkRepository = DeltakerHistorikkRepository()
-    val deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository, historikkRepository)
+    val deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository, historikkRepository, navAnsattService)
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService)

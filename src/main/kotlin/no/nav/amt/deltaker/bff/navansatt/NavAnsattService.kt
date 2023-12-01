@@ -9,7 +9,7 @@ class NavAnsattService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun hentNavAnsatt(navIdent: String): NavAnsatt {
+    suspend fun hentEllerOpprettNavAnsatt(navIdent: String): NavAnsatt {
         repository.get(navIdent)?.let { return it }
 
         log.info("Fant ikke nav-ansatt med ident $navIdent, henter fra amt-person-service")
