@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class NavAnsattConsumer(
-    private val repository: NavAnsattRepository,
+    private val navAnsattService: NavAnsattService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -30,10 +30,10 @@ class NavAnsattConsumer(
 
     fun consumeNavAnsatt(id: UUID, navAnsatt: String?) {
         if (navAnsatt == null) {
-            repository.delete(id)
+            navAnsattService.slettNavAnsatt(id)
             log.info("Slettet navansatt med id $id")
         } else {
-            repository.upsert(objectMapper.readValue(navAnsatt))
+            navAnsattService.oppdaterNavAnsatt(objectMapper.readValue(navAnsatt))
             log.info("Lagret navansatt med id $id")
         }
     }

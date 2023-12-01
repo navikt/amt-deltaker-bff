@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.navansatt
 
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -8,6 +9,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 
 class NavAnsattConsumerTest {
+    private val amtPersonServiceClient = mockk<AmtPersonServiceClient>()
     companion object {
         lateinit var repository: NavAnsattRepository
 
@@ -22,7 +24,7 @@ class NavAnsattConsumerTest {
     @Test
     fun `consumeNavAnsatt - ny navansatt - upserter`() {
         val navAnsatt = TestData.lagNavAnsatt()
-        val navAnsattConsumer = NavAnsattConsumer(repository)
+        val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
         navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(navAnsatt))
 
@@ -34,7 +36,7 @@ class NavAnsattConsumerTest {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
-        val navAnsattConsumer = NavAnsattConsumer(repository)
+        val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
         navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(oppdatertNavAnsatt))
 
@@ -45,7 +47,7 @@ class NavAnsattConsumerTest {
     fun `consumeNavAnsatt - tombstonet navansatt - sletter`() {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
-        val navAnsattConsumer = NavAnsattConsumer(repository)
+        val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
         navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, null)
 

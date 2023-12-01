@@ -28,8 +28,10 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
+import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 
@@ -64,17 +66,24 @@ fun Application.module() {
     }
 
     val azureAdTokenClient = AzureAdTokenClient(
-        environment.azureAdTokenUrl,
-        environment.azureClientId,
-        environment.azureClientSecret,
-        httpClient,
+        azureAdTokenUrl = environment.azureAdTokenUrl,
+        clientId = environment.azureClientId,
+        clientSecret = environment.azureClientSecret,
+        httpClient = httpClient,
     )
 
     val amtArrangorClient = AmtArrangorClient(
-        environment.amtArrangorUrl,
-        environment.amtArrangorScope,
-        httpClient,
-        azureAdTokenClient,
+        baseUrl = environment.amtArrangorUrl,
+        scope = environment.amtArrangorScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
+    )
+
+    val amtPersonServiceClient = AmtPersonServiceClient(
+        baseUrl = environment.amtPersonServiceUrl,
+        scope = environment.amtPersonServiceScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
     )
 
     val arrangorRepository = ArrangorRepository()
@@ -82,10 +91,11 @@ fun Application.module() {
     val navAnsattRepository = NavAnsattRepository()
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
+    val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
 
     val arrangorConsumer = ArrangorConsumer(arrangorRepository)
     val deltakerlisteConsumer = DeltakerlisteConsumer(deltakerlisteRepository, arrangorService)
-    val navAnsattConsumer = NavAnsattConsumer(navAnsattRepository)
+    val navAnsattConsumer = NavAnsattConsumer(navAnsattService)
 
     arrangorConsumer.run()
     deltakerlisteConsumer.run()
