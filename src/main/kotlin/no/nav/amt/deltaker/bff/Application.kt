@@ -28,6 +28,8 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 
@@ -77,14 +79,17 @@ fun Application.module() {
 
     val arrangorRepository = ArrangorRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
+    val navAnsattRepository = NavAnsattRepository()
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
 
     val arrangorConsumer = ArrangorConsumer(arrangorRepository)
     val deltakerlisteConsumer = DeltakerlisteConsumer(deltakerlisteRepository, arrangorService)
+    val navAnsattConsumer = NavAnsattConsumer(navAnsattRepository)
 
     arrangorConsumer.run()
     deltakerlisteConsumer.run()
+    navAnsattConsumer.run()
 
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(

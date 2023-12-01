@@ -31,6 +31,8 @@ data class Environment(
         const val AMT_ARRANGOR_URL_KEY = "AMT_ARRANGOR_URL"
         const val AMT_ARRANGOR_SCOPE_KEY = "AMT_ARRANGOR_SCOPE"
 
+        const val AMT_NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
+
         const val AZURE_AD_TOKEN_URL_KEY = "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
         const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"
         const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
