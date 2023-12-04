@@ -33,7 +33,7 @@ val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.7.0"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.8"
-val nimbusVersion = "9.37.1"
+val nimbusVersion = "9.37.2"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
