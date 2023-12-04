@@ -16,6 +16,8 @@ import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData
 
 fun mockHttpClient(response: String): HttpClient {
@@ -44,6 +46,15 @@ fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArran
         baseUrl = "https://amt-arrangor",
         scope = "amt.arrangor.scope",
         httpClient = mockHttpClient(objectMapper.writeValueAsString(response)),
+        azureAdTokenClient = mockAzureAdClient(),
+    )
+}
+
+fun mockAmtPersonServiceClient(navAnsatt: NavAnsatt = TestData.lagNavAnsatt()): AmtPersonServiceClient {
+    return AmtPersonServiceClient(
+        baseUrl = "https://amt-person-service",
+        scope = "amt.person-service.scope",
+        httpClient = mockHttpClient(objectMapper.writeValueAsString(navAnsatt)),
         azureAdTokenClient = mockAzureAdClient(),
     )
 }

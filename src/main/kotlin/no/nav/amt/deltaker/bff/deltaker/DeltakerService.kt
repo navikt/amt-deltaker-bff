@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringT
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
@@ -23,10 +24,11 @@ class DeltakerService(
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val samtykkeRepository: DeltakerSamtykkeRepository,
     private val historikkRepository: DeltakerHistorikkRepository,
+    private val navAnsattService: NavAnsattService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun opprettDeltaker(
+    suspend fun opprettDeltaker(
         deltakerlisteId: UUID,
         personident: String,
         opprettetAv: String,
@@ -39,6 +41,7 @@ class DeltakerService(
             return eksisterendeDeltaker.toDeltakerResponse(deltakerliste)
         }
         val deltaker = nyttUtkast(personident, deltakerlisteId, opprettetAv)
+        navAnsattService.hentEllerOpprettNavAnsatt(opprettetAv)
         log.info("Oppretter deltaker med id ${deltaker.id}")
         deltakerRepository.upsert(deltaker)
         return deltakerRepository.get(deltaker.id)?.toDeltakerResponse(deltakerliste)
@@ -47,7 +50,7 @@ class DeltakerService(
 
     fun get(id: UUID) = deltakerRepository.get(id) ?: throw NoSuchElementException("Fant ikke deltaker med id: $id")
 
-    fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: OppdatertDeltaker, endretAv: String) {
+    suspend fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: OppdatertDeltaker, endretAv: String) {
         val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.UTKAST) {
             nyDeltakerStatus(DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER)
         } else {
@@ -64,6 +67,7 @@ class DeltakerService(
             sistEndret = LocalDateTime.now(),
         )
 
+        navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
         deltakerRepository.upsert(deltaker)
 
         val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
@@ -80,7 +84,7 @@ class DeltakerService(
         )
     }
 
-    fun meldPaUtenGodkjenning(opprinneligDeltaker: Deltaker, oppdatertDeltaker: OppdatertDeltaker, endretAv: String) {
+    suspend fun meldPaUtenGodkjenning(opprinneligDeltaker: Deltaker, oppdatertDeltaker: OppdatertDeltaker, endretAv: String) {
         if (oppdatertDeltaker.godkjentAvNav == null) {
             log.error("Kan ikke forhåndsgodkjenne deltaker med id ${opprinneligDeltaker.id} uten begrunnelse, skal ikke kunne skje!")
             throw RuntimeException("Kan ikke forhåndsgodkjenne deltaker uten begrunnelse")
@@ -95,6 +99,7 @@ class DeltakerService(
             sistEndret = LocalDateTime.now(),
         )
 
+        navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
         deltakerRepository.upsert(deltaker)
 
         val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
@@ -111,7 +116,7 @@ class DeltakerService(
         )
     }
 
-    fun oppdaterDeltaker(
+    suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         endringType: DeltakerEndringType,
         endring: DeltakerEndring,
@@ -151,6 +156,7 @@ class DeltakerService(
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
+            navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
             deltakerRepository.upsert(deltaker)
             historikkRepository.upsert(
                 DeltakerHistorikk(

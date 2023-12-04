@@ -48,6 +48,7 @@ spec:
     outbound:
       rules:
         - application: amt-arrangor
+        - application: amt-person-service
         - application: poao-tilgang
           namespace: poao
   env:
@@ -59,6 +60,10 @@ spec:
       value: api://dev-gcp.poao.poao-tilgang/.default
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
+    - name: AMT_PERSONSERVICE_SCOPE
+      value: api://dev-gcp.amt.amt-person-service/.default
+    - name: AMT_PERSONSERVICE_URL
+      value: http://amt-person-service
 
   gcp:
     sqlInstances:

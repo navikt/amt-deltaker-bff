@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -138,6 +139,12 @@ object TestData {
         endretAv: String = randomNavIdent(),
         endret: LocalDateTime = LocalDateTime.now(),
     ) = DeltakerHistorikk(id, deltakerId, endringType, endring, endretAv, endret)
+
+    fun lagNavAnsatt(
+        id: UUID = UUID.randomUUID(),
+        navIdent: String = randomNavIdent(),
+        navn: String = "Veileder Veiledersen",
+    ) = NavAnsatt(id, navIdent, navn)
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,
