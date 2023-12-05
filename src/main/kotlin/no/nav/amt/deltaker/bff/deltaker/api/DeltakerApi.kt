@@ -7,6 +7,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
@@ -177,6 +178,15 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
             )
             call.respond(oppdatertDeltaker)
+        }
+
+        get("/deltaker/{deltakerId}") {
+            val navIdent = getNavIdent()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.personident)
+            log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id $deltaker")
+
+            call.respond(deltakerService.getDeltakerResponse(deltaker))
         }
     }
 }

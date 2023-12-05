@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.delete
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -36,6 +37,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
@@ -49,6 +51,7 @@ import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerApiTest {
@@ -73,11 +76,12 @@ class DeltakerApiTest {
         client.post("/deltaker") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.delete("/pamelding/${UUID.randomUUID()}") { deleteRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/mal") { postRequest(malRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -91,6 +95,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/mal") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -175,7 +180,7 @@ class DeltakerApiTest {
         every { deltakerService.slettUtkast(deltaker.id) } returns Unit
 
         setUpTestApplication()
-        client.delete("/pamelding/${deltaker.id}") { deleteRequest() }.apply {
+        client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
             status shouldBe HttpStatusCode.OK
         }
     }
@@ -187,7 +192,7 @@ class DeltakerApiTest {
         every { deltakerService.get(deltaker.id) } returns deltaker
 
         setUpTestApplication()
-        client.delete("/pamelding/${deltaker.id}") { deleteRequest() }.apply {
+        client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
             status shouldBe HttpStatusCode.BadRequest
         }
     }
@@ -265,6 +270,34 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        every { deltakerService.get(deltaker.id) } returns deltaker
+        val oppdatertDeltakerResponse = getDeltakerResponse(
+            deltakerId = deltaker.id,
+            statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART,
+            historikk = listOf(
+                DeltakerHistorikkDto(
+                    DeltakerEndringType.STARTDATO,
+                    DeltakerEndring.EndreStartdato(
+                        LocalDate.now(),
+                    ),
+                    "Endret Av",
+                    LocalDateTime.now(),
+                ),
+            ),
+        )
+        coEvery { deltakerService.getDeltakerResponse(deltaker) } returns oppdatertDeltakerResponse
+
+        setUpTestApplication()
+        client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
+            TestCase.assertEquals(HttpStatusCode.OK, status)
+            TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltakerResponse), bodyAsText())
+        }
+    }
+
     private fun HttpRequestBuilder.postRequest(body: Any) {
         header(
             HttpHeaders.Authorization,
@@ -280,7 +313,7 @@ class DeltakerApiTest {
         setBody(objectMapper.writeValueAsString(body))
     }
 
-    private fun HttpRequestBuilder.deleteRequest() {
+    private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
             "Bearer ${

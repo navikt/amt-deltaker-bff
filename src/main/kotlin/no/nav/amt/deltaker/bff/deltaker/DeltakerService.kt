@@ -51,6 +51,12 @@ class DeltakerService(
 
     fun get(id: UUID) = deltakerRepository.get(id) ?: throw NoSuchElementException("Fant ikke deltaker med id: $id")
 
+    fun getDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
+        val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
+            ?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerlisteId}")
+        return deltaker.toDeltakerResponse(deltakerliste)
+    }
+
     suspend fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: OppdatertDeltaker, endretAv: String) {
         val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.UTKAST) {
             nyDeltakerStatus(DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER)
