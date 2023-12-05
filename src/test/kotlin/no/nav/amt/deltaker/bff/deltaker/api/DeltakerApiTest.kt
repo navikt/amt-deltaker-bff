@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerHistorikkDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerlisteDTO
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
@@ -301,6 +302,8 @@ class DeltakerApiTest {
         deltakelsesprosent: Float? = null,
         bakgrunnsinformasjon: String? = null,
         mal: List<Mal> = emptyList(),
+        sistEndretAv: String = "Veileder Veiledersen",
+        historikk: List<DeltakerHistorikkDto> = emptyList(),
     ): DeltakerResponse =
         DeltakerResponse(
             deltakerId = deltakerId,
@@ -318,6 +321,8 @@ class DeltakerApiTest {
             deltakelsesprosent = deltakelsesprosent,
             bakgrunnsinformasjon = bakgrunnsinformasjon,
             mal = mal,
+            sistEndretAv = sistEndretAv,
+            historikk = historikk,
         )
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
