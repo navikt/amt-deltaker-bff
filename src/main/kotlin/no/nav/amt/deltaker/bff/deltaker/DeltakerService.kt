@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerHistorikkDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerlisteDTO
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
@@ -49,6 +50,12 @@ class DeltakerService(
     }
 
     fun get(id: UUID) = deltakerRepository.get(id) ?: throw NoSuchElementException("Fant ikke deltaker med id: $id")
+
+    fun getDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
+        val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
+            ?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerlisteId}")
+        return deltaker.toDeltakerResponse(deltakerliste)
+    }
 
     suspend fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: OppdatertDeltaker, endretAv: String) {
         val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.UTKAST) {
@@ -207,6 +214,28 @@ class DeltakerService(
             sistEndret = LocalDateTime.now(),
             opprettet = LocalDateTime.now(),
         )
+
+    private fun Deltaker.toDeltakerResponse(deltakerliste: Deltakerliste): DeltakerResponse {
+        return DeltakerResponse(
+            deltakerId = id,
+            deltakerliste = DeltakerlisteDTO(
+                deltakerlisteId = deltakerlisteId,
+                deltakerlisteNavn = deltakerliste.navn,
+                tiltakstype = deltakerliste.tiltak.type,
+                arrangorNavn = deltakerliste.arrangor.navn,
+                oppstartstype = deltakerliste.getOppstartstype(),
+            ),
+            status = status,
+            startdato = startdato,
+            sluttdato = sluttdato,
+            dagerPerUke = dagerPerUke,
+            deltakelsesprosent = deltakelsesprosent,
+            bakgrunnsinformasjon = bakgrunnsinformasjon,
+            mal = mal,
+            sistEndretAv = sistEndretAv,
+            historikk = historikkRepository.getForDeltaker(id).map { it.toDeltakerHistorikkDto() },
+        )
+    }
 }
 
 private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(
@@ -218,22 +247,9 @@ private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.A
     opprettet = LocalDateTime.now(),
 )
 
-private fun Deltaker.toDeltakerResponse(deltakerliste: Deltakerliste): DeltakerResponse {
-    return DeltakerResponse(
-        deltakerId = id,
-        deltakerliste = DeltakerlisteDTO(
-            deltakerlisteId = deltakerlisteId,
-            deltakerlisteNavn = deltakerliste.navn,
-            tiltakstype = deltakerliste.tiltak.type,
-            arrangorNavn = deltakerliste.arrangor.navn,
-            oppstartstype = deltakerliste.getOppstartstype(),
-        ),
-        status = status,
-        startdato = startdato,
-        sluttdato = sluttdato,
-        dagerPerUke = dagerPerUke,
-        deltakelsesprosent = deltakelsesprosent,
-        bakgrunnsinformasjon = bakgrunnsinformasjon,
-        mal = mal,
-    )
-}
+private fun DeltakerHistorikk.toDeltakerHistorikkDto() = DeltakerHistorikkDto(
+    endringType = endringType,
+    endring = endring,
+    endretAv = endretAv,
+    endret = endret,
+)
