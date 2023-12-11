@@ -109,7 +109,7 @@ object TestData {
     fun lagDeltakerSamtykke(
         id: UUID = UUID.randomUUID(),
         deltakerVedSamtykke: Deltaker = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER),
+            status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
         ),
         deltakerId: UUID = deltakerVedSamtykke.id,
         godkjent: LocalDateTime? = null,

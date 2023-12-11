@@ -17,9 +17,9 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonReque
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
@@ -49,14 +49,14 @@ fun Routing.registerDeltakerApi(
 
         post("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
-            val request = call.receive<ForslagRequest>()
+            val request = call.receive<UtkastRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            deltakerService.opprettForslag(
+            deltakerService.opprettUtkast(
                 opprinneligDeltaker = deltaker,
-                forslag = OppdatertDeltaker(
+                utkast = OppdatertDeltaker(
                     mal = request.mal,
                     bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                     deltakelsesprosent = request.deltakelsesprosent,

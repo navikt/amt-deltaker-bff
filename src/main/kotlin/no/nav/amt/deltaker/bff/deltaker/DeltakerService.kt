@@ -57,18 +57,18 @@ class DeltakerService(
         return deltaker.toDeltakerResponse(deltakerliste)
     }
 
-    suspend fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: OppdatertDeltaker, endretAv: String) {
+    suspend fun opprettUtkast(opprinneligDeltaker: Deltaker, utkast: OppdatertDeltaker, endretAv: String) {
         val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
-            nyDeltakerStatus(DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER)
+            nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
         } else {
             opprinneligDeltaker.status
         }
 
         val deltaker = opprinneligDeltaker.copy(
-            mal = forslag.mal,
-            bakgrunnsinformasjon = forslag.bakgrunnsinformasjon,
-            deltakelsesprosent = forslag.deltakelsesprosent,
-            dagerPerUke = forslag.dagerPerUke,
+            mal = utkast.mal,
+            bakgrunnsinformasjon = utkast.bakgrunnsinformasjon,
+            deltakelsesprosent = utkast.deltakelsesprosent,
+            dagerPerUke = utkast.dagerPerUke,
             status = status,
             sistEndretAv = endretAv,
             sistEndret = LocalDateTime.now(),
@@ -86,7 +86,7 @@ class DeltakerService(
                 godkjent = null,
                 gyldigTil = null,
                 deltakerVedSamtykke = deltaker,
-                godkjentAvNav = forslag.godkjentAvNav,
+                godkjentAvNav = utkast.godkjentAvNav,
             ),
         )
     }
