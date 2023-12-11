@@ -17,9 +17,9 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonReque
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
@@ -49,14 +49,14 @@ fun Routing.registerDeltakerApi(
 
         post("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
-            val request = call.receive<ForslagRequest>()
+            val request = call.receive<UtkastRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            deltakerService.opprettForslag(
+            deltakerService.opprettUtkast(
                 opprinneligDeltaker = deltaker,
-                forslag = OppdatertDeltaker(
+                utkast = OppdatertDeltaker(
                     mal = request.mal,
                     bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                     deltakelsesprosent = request.deltakelsesprosent,
@@ -102,13 +102,13 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            if (deltaker.status.type != DeltakerStatus.Type.UTKAST) {
+            if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
                 log.warn("Kan ikke slette deltaker med id $deltakerId som har status ${deltaker.status.type}")
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke slette deltaker")
             }
-            deltakerService.slettUtkast(deltakerId)
+            deltakerService.slettKladd(deltakerId)
 
-            log.info("$navIdent har slettet utkast for deltaker med id $deltakerId")
+            log.info("$navIdent har slettet kladd for deltaker med id $deltakerId")
 
             call.respond(HttpStatusCode.OK)
         }

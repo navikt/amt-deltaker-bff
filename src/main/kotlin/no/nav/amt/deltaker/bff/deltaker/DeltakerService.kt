@@ -41,7 +41,7 @@ class DeltakerService(
             log.warn("Deltakeren er allerede opprettet og deltar fortsatt")
             return eksisterendeDeltaker.toDeltakerResponse(deltakerliste)
         }
-        val deltaker = nyttUtkast(personident, deltakerlisteId, opprettetAv)
+        val deltaker = nyKladd(personident, deltakerlisteId, opprettetAv)
         navAnsattService.hentEllerOpprettNavAnsatt(opprettetAv)
         log.info("Oppretter deltaker med id ${deltaker.id}")
         deltakerRepository.upsert(deltaker)
@@ -57,18 +57,18 @@ class DeltakerService(
         return deltaker.toDeltakerResponse(deltakerliste)
     }
 
-    suspend fun opprettForslag(opprinneligDeltaker: Deltaker, forslag: OppdatertDeltaker, endretAv: String) {
-        val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.UTKAST) {
-            nyDeltakerStatus(DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER)
+    suspend fun opprettUtkast(opprinneligDeltaker: Deltaker, utkast: OppdatertDeltaker, endretAv: String) {
+        val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
+            nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
         } else {
             opprinneligDeltaker.status
         }
 
         val deltaker = opprinneligDeltaker.copy(
-            mal = forslag.mal,
-            bakgrunnsinformasjon = forslag.bakgrunnsinformasjon,
-            deltakelsesprosent = forslag.deltakelsesprosent,
-            dagerPerUke = forslag.dagerPerUke,
+            mal = utkast.mal,
+            bakgrunnsinformasjon = utkast.bakgrunnsinformasjon,
+            deltakelsesprosent = utkast.deltakelsesprosent,
+            dagerPerUke = utkast.dagerPerUke,
             status = status,
             sistEndretAv = endretAv,
             sistEndret = LocalDateTime.now(),
@@ -86,7 +86,7 @@ class DeltakerService(
                 godkjent = null,
                 gyldigTil = null,
                 deltakerVedSamtykke = deltaker,
-                godkjentAvNav = forslag.godkjentAvNav,
+                godkjentAvNav = utkast.godkjentAvNav,
             ),
         )
     }
@@ -183,8 +183,8 @@ class DeltakerService(
             ?: throw RuntimeException("Kunne ikke hente finne deltaker med id ${deltaker.id}")
     }
 
-    fun slettUtkast(deltakerId: UUID) {
-        deltakerRepository.slettUtkast(deltakerId)
+    fun slettKladd(deltakerId: UUID) {
+        deltakerRepository.slettKladd(deltakerId)
     }
 
     private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {
@@ -198,7 +198,7 @@ class DeltakerService(
             )
     }
 
-    private fun nyttUtkast(personident: String, deltakerlisteId: UUID, opprettetAv: String): Deltaker =
+    private fun nyKladd(personident: String, deltakerlisteId: UUID, opprettetAv: String): Deltaker =
         Deltaker(
             id = UUID.randomUUID(),
             personident = personident,
@@ -209,7 +209,7 @@ class DeltakerService(
             deltakelsesprosent = null,
             bakgrunnsinformasjon = null,
             mal = emptyList(),
-            status = nyDeltakerStatus(DeltakerStatus.Type.UTKAST),
+            status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
             sistEndretAv = opprettetAv,
             sistEndret = LocalDateTime.now(),
             opprettet = LocalDateTime.now(),

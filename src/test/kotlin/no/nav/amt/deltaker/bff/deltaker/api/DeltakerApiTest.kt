@@ -33,9 +33,9 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonReque
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
@@ -74,7 +74,7 @@ class DeltakerApiTest {
 
         setUpTestApplication()
         client.post("/deltaker") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
@@ -127,14 +127,14 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `pamelding deltakerId - har tilgang - oppretter forslag og returnerer 200`() = testApplication {
+    fun `pamelding deltakerId - har tilgang - oppretter utkast og returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
-        coEvery { deltakerService.opprettForslag(deltaker, any(), any()) } returns Unit
+        coEvery { deltakerService.opprettUtkast(deltaker, any(), any()) } returns Unit
 
         setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}") { postRequest(forslagRequest) }.apply {
+        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest) }.apply {
             status shouldBe HttpStatusCode.OK
         }
     }
@@ -144,7 +144,7 @@ class DeltakerApiTest {
         every { deltakerService.get(any()) } throws NoSuchElementException()
 
         setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(forslagRequest) }.apply {
+        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.apply {
             status shouldBe HttpStatusCode.NotFound
         }
     }
@@ -173,11 +173,11 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `slett utkast - har tilgang, deltaker er UTKAST - sletter deltaker og returnerer 200`() = testApplication {
+    fun `slett kladd - har tilgang, deltaker er KLADD - sletter deltaker og returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerService.get(deltaker.id) } returns deltaker
-        every { deltakerService.slettUtkast(deltaker.id) } returns Unit
+        every { deltakerService.slettKladd(deltaker.id) } returns Unit
 
         setUpTestApplication()
         client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
@@ -186,9 +186,9 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `slett utkast - deltaker har ikke status UTKAST - returnerer 400`() = testApplication {
+    fun `slett kladd - deltaker har ikke status KLADD - returnerer 400`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER))
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         every { deltakerService.get(deltaker.id) } returns deltaker
 
         setUpTestApplication()
@@ -328,7 +328,7 @@ class DeltakerApiTest {
 
     private fun getDeltakerResponse(
         deltakerId: UUID = UUID.randomUUID(),
-        statustype: DeltakerStatus.Type = DeltakerStatus.Type.UTKAST,
+        statustype: DeltakerStatus.Type = DeltakerStatus.Type.KLADD,
         startdato: LocalDate? = null,
         sluttdato: LocalDate? = null,
         dagerPerUke: Float? = null,
@@ -366,7 +366,7 @@ class DeltakerApiTest {
         }
     }
 
-    private val forslagRequest = ForslagRequest(emptyList(), "Bakgrunnen for...", null, null)
+    private val utkastRequest = UtkastRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
     private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
         emptyList(),
