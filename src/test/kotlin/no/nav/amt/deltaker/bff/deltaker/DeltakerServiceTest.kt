@@ -68,7 +68,7 @@ class DeltakerServiceTest {
             deltakerResponse.deltakerliste.tiltakstype shouldBe deltakerliste.tiltak.type
             deltakerResponse.deltakerliste.arrangorNavn shouldBe arrangor.navn
             deltakerResponse.deltakerliste.oppstartstype shouldBe deltakerliste.getOppstartstype()
-            deltakerResponse.status.type shouldBe DeltakerStatus.Type.UTKAST
+            deltakerResponse.status.type shouldBe DeltakerStatus.Type.KLADD
             deltakerResponse.startdato shouldBe null
             deltakerResponse.sluttdato shouldBe null
             deltakerResponse.dagerPerUke shouldBe null
@@ -135,13 +135,13 @@ class DeltakerServiceTest {
             val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv)
 
             deltakerResponse.deltakerId shouldNotBe deltakerId
-            deltakerResponse.status.type shouldBe DeltakerStatus.Type.UTKAST
+            deltakerResponse.status.type shouldBe DeltakerStatus.Type.KLADD
         }
     }
 
     @Test
-    fun `opprettForslag - deltaker har status UTKAST - oppretter et samtykke og setter ny status på deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+    fun `opprettForslag - deltaker har status KLADD - oppretter et samtykke og setter ny status på deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
 
         val forslag = TestData.lagOppdatertDeltaker()
@@ -192,7 +192,7 @@ class DeltakerServiceTest {
     }
 
     @Test
-    fun `opprettForslag - deltaker har ikke status UTKAST - oppretter et samtykke og setter ikke ny status på deltaker`() {
+    fun `opprettForslag - deltaker har ikke status KLADD - oppretter et samtykke og setter ikke ny status på deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         val opprinneligSamtykke = TestData.lagDeltakerSamtykke(
             deltakerId = deltaker.id,
@@ -228,8 +228,8 @@ class DeltakerServiceTest {
     }
 
     @Test
-    fun `meldPaUtenGodkjenning - deltaker har status UTKAST - oppretter et godkjent samtykke og setter ny status for deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+    fun `meldPaUtenGodkjenning - deltaker har status KLADD - oppretter et godkjent samtykke og setter ny status for deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
         val godkjenningAvNav = TestData.lagGodkjenningAvNav()
         val forslag = TestData.lagOppdatertDeltaker(godkjentAvNav = godkjenningAvNav)
@@ -281,7 +281,7 @@ class DeltakerServiceTest {
 
     @Test
     fun `meldPaUtenGodkjenning - forslag mangler godkjenning - kaster feil`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
         val forslag = TestData.lagOppdatertDeltaker(godkjentAvNav = null)
 

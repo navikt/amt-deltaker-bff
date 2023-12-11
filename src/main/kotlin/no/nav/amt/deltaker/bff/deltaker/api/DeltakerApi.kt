@@ -102,13 +102,13 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            if (deltaker.status.type != DeltakerStatus.Type.UTKAST) {
+            if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
                 log.warn("Kan ikke slette deltaker med id $deltakerId som har status ${deltaker.status.type}")
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke slette deltaker")
             }
-            deltakerService.slettUtkast(deltakerId)
+            deltakerService.slettKladd(deltakerId)
 
-            log.info("$navIdent har slettet utkast for deltaker med id $deltakerId")
+            log.info("$navIdent har slettet kladd for deltaker med id $deltakerId")
 
             call.respond(HttpStatusCode.OK)
         }

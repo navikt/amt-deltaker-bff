@@ -173,11 +173,11 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `slett utkast - har tilgang, deltaker er UTKAST - sletter deltaker og returnerer 200`() = testApplication {
+    fun `slett kladd - har tilgang, deltaker er KLADD - sletter deltaker og returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerService.get(deltaker.id) } returns deltaker
-        every { deltakerService.slettUtkast(deltaker.id) } returns Unit
+        every { deltakerService.slettKladd(deltaker.id) } returns Unit
 
         setUpTestApplication()
         client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
@@ -186,7 +186,7 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `slett utkast - deltaker har ikke status UTKAST - returnerer 400`() = testApplication {
+    fun `slett kladd - deltaker har ikke status KLADD - returnerer 400`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FORSLAG_TIL_INNBYGGER))
         every { deltakerService.get(deltaker.id) } returns deltaker
@@ -328,7 +328,7 @@ class DeltakerApiTest {
 
     private fun getDeltakerResponse(
         deltakerId: UUID = UUID.randomUUID(),
-        statustype: DeltakerStatus.Type = DeltakerStatus.Type.UTKAST,
+        statustype: DeltakerStatus.Type = DeltakerStatus.Type.KLADD,
         startdato: LocalDate? = null,
         sluttdato: LocalDate? = null,
         dagerPerUke: Float? = null,

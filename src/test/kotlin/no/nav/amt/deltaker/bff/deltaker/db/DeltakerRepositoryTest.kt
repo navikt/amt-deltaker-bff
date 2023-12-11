@@ -75,13 +75,13 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `slettUtkast - ny deltaker - insertes`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST))
+    fun `slettKladd - ny deltaker - insertes`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId)
         TestRepository.insert(deltakerliste)
         repository.upsert(deltaker)
 
-        repository.slettUtkast(deltaker.id)
+        repository.slettKladd(deltaker.id)
 
         repository.get(deltaker.id) shouldBe null
     }
