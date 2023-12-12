@@ -45,6 +45,9 @@ spec:
   tokenx:
     enabled: true
   accessPolicy:
+    inbound:
+      rules:
+        - application: amt-deltaker-flate
     outbound:
       rules:
         - application: amt-arrangor
