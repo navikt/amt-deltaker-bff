@@ -21,7 +21,7 @@ class TilgangskontrollService(
                 TilgangType.SKRIVE,
                 norskIdent,
             ),
-        ).getOrDefault(Decision.Deny("Ansatt har ikke skrivetilgang til bruker", ""))
+        ).getOrThrow()
 
         if (tilgang.isDeny) {
             log.error("Ikke skrivetilgang")
