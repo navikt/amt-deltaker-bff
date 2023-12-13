@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.auth
 
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
@@ -15,13 +16,15 @@ class TilgangskontrollService(
 
     fun verifiserSkrivetilgang(navAnsattAzureId: UUID, norskIdent: String) {
         log.info("Sjekker tilgang for ansattid $navAnsattAzureId")
-        val tilgang = poaoTilgangCachedClient.evaluatePolicy(
+        val tilgangResult = poaoTilgangCachedClient.evaluatePolicy(
             NavAnsattTilgangTilEksternBrukerPolicyInput(
                 navAnsattAzureId,
                 TilgangType.SKRIVE,
                 norskIdent,
             ),
-        ).getOrThrow()
+        ).get()
+        log.info("Resultat: ${objectMapper.writeValueAsString(tilgangResult)}")
+        val tilgang = tilgangResult ?: throw RuntimeException("Resultat mangler")
 
         if (tilgang.isDeny) {
             log.error("Ikke skrivetilgang")
