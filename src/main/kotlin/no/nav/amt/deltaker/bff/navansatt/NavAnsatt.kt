@@ -4,6 +4,6 @@ import java.util.UUID
 
 data class NavAnsatt(
     val id: UUID,
-    val navident: String,
+    val navIdent: String,
     val navn: String,
 )

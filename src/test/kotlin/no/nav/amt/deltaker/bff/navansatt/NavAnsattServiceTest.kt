@@ -30,7 +30,7 @@ class NavAnsattServiceTest {
         val navAnsattService = NavAnsattService(repository, mockk<AmtPersonServiceClient>())
 
         runBlocking {
-            val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navident)
+            val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
             navAnsattFraDb shouldBe navAnsatt
         }
     }
@@ -48,7 +48,7 @@ class NavAnsattServiceTest {
         val navAnsattService = NavAnsattService(repository, amtPersonServiceClient)
 
         runBlocking {
-            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navident)
+            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navIdent)
 
             navAnsatt shouldBe navAnsattResponse
             repository.get(navAnsattResponse.id) shouldBe navAnsattResponse
