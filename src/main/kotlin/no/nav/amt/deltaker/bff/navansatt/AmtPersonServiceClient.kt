@@ -35,7 +35,7 @@ class AmtPersonServiceClient(
                 "Kunne ikke hente nav-ansatt med ident $navIdent fra amt-person-service. " +
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
-            throw RuntimeException("Kunne ikke hente NAV-ansatt fra amt-perosn-service")
+            throw RuntimeException("Kunne ikke hente NAV-ansatt fra amt-person-service")
         }
         return response.body()
     }
