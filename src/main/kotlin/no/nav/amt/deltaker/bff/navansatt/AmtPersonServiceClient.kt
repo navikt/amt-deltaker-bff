@@ -12,6 +12,8 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class AmtPersonServiceClient(
     private val baseUrl: String,
@@ -19,6 +21,8 @@ class AmtPersonServiceClient(
     private val httpClient: HttpClient,
     private val azureAdTokenClient: AzureAdTokenClient,
 ) {
+    val log: Logger = LoggerFactory.getLogger(javaClass)
+
     suspend fun hentNavAnsatt(navIdent: String): NavAnsatt {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/api/nav-ansatt") {
@@ -27,10 +31,11 @@ class AmtPersonServiceClient(
             setBody(objectMapper.writeValueAsString(NavAnsattRequest(navIdent)))
         }
         if (!response.status.isSuccess()) {
-            error(
+            log.error(
                 "Kunne ikke hente nav-ansatt med ident $navIdent fra amt-person-service. " +
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
+            throw RuntimeException("Kunne ikke hente NAV-ansatt fra amt-perosn-service")
         }
         return response.body()
     }
