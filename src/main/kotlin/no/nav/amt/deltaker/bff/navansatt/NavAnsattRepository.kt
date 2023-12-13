@@ -9,7 +9,7 @@ import java.util.UUID
 class NavAnsattRepository {
     private fun rowMapper(row: Row) = NavAnsatt(
         id = row.uuid("id"),
-        navident = row.string("nav_ident"),
+        navIdent = row.string("nav_ident"),
         navn = row.string("navn"),
     )
 
@@ -28,7 +28,7 @@ class NavAnsattRepository {
                 sql,
                 mapOf(
                     "id" to navAnsatt.id,
-                    "nav_ident" to navAnsatt.navident,
+                    "nav_ident" to navAnsatt.navIdent,
                     "navn" to navAnsatt.navn,
                     "modified_at" to LocalDateTime.now(),
                 ),
