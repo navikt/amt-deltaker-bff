@@ -16,4 +16,5 @@ data class GodkjenningAvNav(
     val type: String,
     val beskrivelse: String?,
     val godkjentAv: String,
+    val godkjentAvEnhet: String?,
 )

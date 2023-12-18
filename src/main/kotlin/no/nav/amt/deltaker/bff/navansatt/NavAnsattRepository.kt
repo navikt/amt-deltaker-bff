@@ -13,7 +13,7 @@ class NavAnsattRepository {
         navn = row.string("navn"),
     )
 
-    fun upsert(navAnsatt: NavAnsatt) {
+    fun upsert(navAnsatt: NavAnsatt): NavAnsatt {
         val sql = """
             INSERT INTO nav_ansatt(id, nav_ident, navn, modified_at)
             VALUES (:id, :nav_ident, :navn, :modified_at) 
@@ -21,9 +21,10 @@ class NavAnsattRepository {
                 nav_ident = :nav_ident,
                 navn = :navn,
                 modified_at = :modified_at
+            returning *
         """.trimIndent()
 
-        Database.query {
+        return Database.query {
             val query = queryOf(
                 sql,
                 mapOf(
@@ -32,9 +33,10 @@ class NavAnsattRepository {
                     "navn" to navAnsatt.navn,
                     "modified_at" to LocalDateTime.now(),
                 ),
-            )
-            it.update(query)
-        }
+            ).map(::rowMapper).asSingle
+
+            it.run(query)
+        } ?: throw RuntimeException("Noe gikk galt ved lagring av nav-ansatt")
     }
 
     fun get(id: UUID): NavAnsatt? {

@@ -31,6 +31,7 @@ class DeltakerRepository {
             opprettet = row.localDateTime("ds.created_at"),
         ),
         sistEndretAv = row.string("d.sist_endret_av"),
+        sistEndretAvEnhet = row.stringOrNull("d.sist_endret_av_enhet"),
         sistEndret = row.localDateTime("d.modified_at"),
         opprettet = row.localDateTime("d.created_at"),
     )
@@ -39,11 +40,11 @@ class DeltakerRepository {
         val sql = """
             insert into deltaker(
                 id, personident, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, modified_at
+                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, sist_endret_av_enhet, modified_at
             )
             values (
                 :id, :personident, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndret
+                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndretAvEnhet, :sistEndret
             )
             on conflict (id) do update set 
                 personident          = :personident,
@@ -54,6 +55,7 @@ class DeltakerRepository {
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 mal                  = :mal,
                 sist_endret_av       = :sistEndretAv,
+                sist_endret_av_enhet = :sistEndretAvEnhet,
                 modified_at          = :sistEndret
         """.trimIndent()
 
@@ -68,6 +70,7 @@ class DeltakerRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "mal" to toPGObject(deltaker.mal),
             "sistEndretAv" to deltaker.sistEndretAv,
+            "sistEndretAvEnhet" to deltaker.sistEndretAvEnhet,
             "sistEndret" to deltaker.sistEndret,
         )
 
@@ -90,6 +93,7 @@ class DeltakerRepository {
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.mal as "d.mal",
                    d.sist_endret_av as "d.sist_endret_av",
+                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
                    d.created_at as "d.created_at",
                    d.modified_at as "d.modified_at",
                    ds.id as "ds.id",
@@ -121,6 +125,7 @@ class DeltakerRepository {
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.mal as "d.mal",
                    d.sist_endret_av as "d.sist_endret_av",
+                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
                    d.created_at as "d.created_at",
                    d.modified_at as "d.modified_at",
                    ds.id as "ds.id",

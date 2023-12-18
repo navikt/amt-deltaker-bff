@@ -20,19 +20,21 @@ class DeltakerHistorikkRepository {
             endringType = endringType,
             endring = parseDeltakerEndringJson(row.string("endring"), endringType),
             endretAv = row.string("endret_av"),
+            endretAvEnhet = row.stringOrNull("endret_av_enhet"),
             endret = row.localDateTime("modified_at"),
         )
     }
 
     fun upsert(deltakerHistorikk: DeltakerHistorikk) = Database.query {
         val sql = """
-            insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av)
-            values (:id, :deltaker_id, :endringstype, :endring, :endret_av)
+            insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
+            values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet)
             on conflict (id) do update set 
                 deltaker_id = :deltaker_id,
                 endringstype = :endringstype,
                 endring = :endring,
                 endret_av = :endret_av,
+                endret_av_enhet = :endret_av_enhet,
                 modified_at = current_timestamp
         """.trimIndent()
 
@@ -42,6 +44,7 @@ class DeltakerHistorikkRepository {
             "endringstype" to deltakerHistorikk.endringType.name,
             "endring" to toPGObject(deltakerHistorikk.endring),
             "endret_av" to deltakerHistorikk.endretAv,
+            "endret_av_enhet" to deltakerHistorikk.endretAvEnhet,
         )
 
         it.update(queryOf(sql, params))

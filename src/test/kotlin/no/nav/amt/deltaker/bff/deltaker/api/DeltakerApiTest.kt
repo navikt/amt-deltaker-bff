@@ -102,7 +102,7 @@ class DeltakerApiTest {
     fun `post deltaker - har tilgang - returnerer deltaker`() = testApplication {
         val deltakerResponse = getDeltakerResponse()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery { deltakerService.opprettDeltaker(any(), any(), any()) } returns deltakerResponse
+        coEvery { deltakerService.opprettDeltaker(any(), any(), any(), any()) } returns deltakerResponse
         setUpTestApplication()
         client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
@@ -115,6 +115,7 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery {
             deltakerService.opprettDeltaker(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -131,7 +132,7 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
-        coEvery { deltakerService.opprettUtkast(deltaker, any(), any()) } returns Unit
+        coEvery { deltakerService.opprettUtkast(deltaker, any(), any(), any()) } returns Unit
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest) }.apply {
@@ -154,7 +155,7 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
-        coEvery { deltakerService.meldPaUtenGodkjenning(deltaker, any(), any()) } returns Unit
+        coEvery { deltakerService.meldPaUtenGodkjenning(deltaker, any(), any(), any()) } returns Unit
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.apply {
@@ -203,7 +204,7 @@ class DeltakerApiTest {
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
         val oppdatertDeltakerResponse = getDeltakerResponse(deltakerId = deltaker.id, statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART, bakgrunnsinformasjon = bakgrunnsinformasjonRequest.bakgrunnsinformasjon)
-        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, any(), any()) } returns oppdatertDeltakerResponse
+        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, any(), any(), any()) } returns oppdatertDeltakerResponse
 
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.apply {
@@ -217,7 +218,7 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET), sluttdato = LocalDate.now().minusMonths(1))
         every { deltakerService.get(deltaker.id) } returns deltaker
-        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, any(), any()) } throws IllegalArgumentException("Deltaker har sluttet")
+        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.BAKGRUNNSINFORMASJON, any(), any(), any()) } throws IllegalArgumentException("Deltaker har sluttet")
 
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.apply {
@@ -231,7 +232,7 @@ class DeltakerApiTest {
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
         val oppdatertDeltakerResponse = getDeltakerResponse(deltakerId = deltaker.id, statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART, mal = malRequest.mal)
-        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.MAL, any(), any()) } returns oppdatertDeltakerResponse
+        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.MAL, any(), any(), any()) } returns oppdatertDeltakerResponse
 
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/mal") { postRequest(malRequest) }.apply {
@@ -246,7 +247,7 @@ class DeltakerApiTest {
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
         val oppdatertDeltakerResponse = getDeltakerResponse(deltakerId = deltaker.id, statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART, dagerPerUke = deltakelsesmengdeRequest.dagerPerUke, deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent)
-        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.DELTAKELSESMENGDE, any(), any()) } returns oppdatertDeltakerResponse
+        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.DELTAKELSESMENGDE, any(), any(), any()) } returns oppdatertDeltakerResponse
 
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
@@ -261,7 +262,7 @@ class DeltakerApiTest {
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns deltaker
         val oppdatertDeltakerResponse = getDeltakerResponse(deltakerId = deltaker.id, statustype = DeltakerStatus.Type.VENTER_PA_OPPSTART, startdato = startdatoRequest.startdato)
-        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.STARTDATO, any(), any()) } returns oppdatertDeltakerResponse
+        coEvery { deltakerService.oppdaterDeltaker(deltaker, DeltakerEndringType.STARTDATO, any(), any(), any()) } returns oppdatertDeltakerResponse
 
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
@@ -285,6 +286,7 @@ class DeltakerApiTest {
                         LocalDate.now(),
                     ),
                     "Endret Av",
+                    "NAV Testheim",
                     LocalDateTime.now(),
                 ),
             ),
@@ -309,6 +311,7 @@ class DeltakerApiTest {
                 )
             }",
         )
+        header("aktiv-enhet", "0101")
         contentType(ContentType.Application.Json)
         setBody(objectMapper.writeValueAsString(body))
     }
@@ -336,6 +339,7 @@ class DeltakerApiTest {
         bakgrunnsinformasjon: String? = null,
         mal: List<Mal> = emptyList(),
         sistEndretAv: String = "Veileder Veiledersen",
+        sistEndretAvEnhet: String = "NAV Testheim",
         historikk: List<DeltakerHistorikkDto> = emptyList(),
     ): DeltakerResponse =
         DeltakerResponse(
@@ -355,6 +359,7 @@ class DeltakerApiTest {
             bakgrunnsinformasjon = bakgrunnsinformasjon,
             mal = mal,
             sistEndretAv = sistEndretAv,
+            sistEndretAvEnhet = sistEndretAvEnhet,
             historikk = historikk,
         )
 

@@ -21,6 +21,7 @@ data class DeltakerResponse(
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
     val sistEndretAv: String,
+    val sistEndretAvEnhet: String?,
     val historikk: List<DeltakerHistorikkDto>,
 )
 
@@ -36,5 +37,6 @@ data class DeltakerHistorikkDto(
     val endringType: DeltakerEndringType,
     val endring: DeltakerEndring,
     val endretAv: String,
+    val endretAvEnhet: String?,
     val endret: LocalDateTime,
 )

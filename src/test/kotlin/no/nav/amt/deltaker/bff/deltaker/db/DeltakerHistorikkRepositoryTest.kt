@@ -63,6 +63,7 @@ class DeltakerHistorikkRepositoryTest {
         a.endringType shouldBe b.endringType
         a.endring shouldBe b.endring
         a.endretAv shouldBe b.endretAv
+        a.endretAvEnhet shouldBe b.endretAvEnhet
         a.endret shouldBeCloseTo b.endret
     }
 }

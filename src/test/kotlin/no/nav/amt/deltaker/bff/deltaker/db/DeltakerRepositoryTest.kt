@@ -103,6 +103,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
     a.sistEndretAv shouldBe b.sistEndretAv
+    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
     a.sistEndret shouldBeCloseTo b.sistEndret
     a.opprettet shouldBeCloseTo b.opprettet
 }

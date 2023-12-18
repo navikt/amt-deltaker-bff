@@ -9,5 +9,6 @@ data class DeltakerHistorikk(
     val endringType: DeltakerEndringType,
     val endring: DeltakerEndring,
     val endretAv: String,
+    val endretAvEnhet: String?,
     val endret: LocalDateTime,
 )
