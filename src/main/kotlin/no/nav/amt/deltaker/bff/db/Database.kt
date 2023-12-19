@@ -46,7 +46,7 @@ object Database {
             .connectRetries(5)
             .dataSource(dataSource)
             .initSql(initSql)
-            .locations("classpath:/db/migration")
+            .validateMigrationNaming(true)
             .load()
             .migrate()
             .migrations
