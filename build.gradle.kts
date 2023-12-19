@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
@@ -8,6 +10,7 @@ plugins {
     id("io.ktor.plugin") version "2.3.7"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jlleitschuh.gradle.ktlint") version "12.0.3"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 repositories {
@@ -99,6 +102,10 @@ tasks.jar {
             "Main-Class" to "no.nav.amt.deltaker.bff.ApplicationKt",
         )
     }
+}
+
+tasks.withType<ShadowJar> {
+    mergeServiceFiles()
 }
 
 configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
