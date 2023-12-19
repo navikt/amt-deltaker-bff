@@ -30,7 +30,8 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
-        sistEndretAv = row.string("d.sist_endret_av"),
+        sistEndretAv = row.stringOrNull("na.navn") ?: row.string("d.sist_endret_av"),
+        sistEndretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("d.sist_endret_av_enhet"),
         sistEndret = row.localDateTime("d.modified_at"),
         opprettet = row.localDateTime("d.created_at"),
     )
@@ -39,11 +40,11 @@ class DeltakerRepository {
         val sql = """
             insert into deltaker(
                 id, personident, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, modified_at
+                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, sist_endret_av_enhet, modified_at
             )
             values (
                 :id, :personident, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndret
+                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndretAvEnhet, :sistEndret
             )
             on conflict (id) do update set 
                 personident          = :personident,
@@ -54,6 +55,7 @@ class DeltakerRepository {
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 mal                  = :mal,
                 sist_endret_av       = :sistEndretAv,
+                sist_endret_av_enhet = :sistEndretAvEnhet,
                 modified_at          = :sistEndret
         """.trimIndent()
 
@@ -68,6 +70,7 @@ class DeltakerRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "mal" to toPGObject(deltaker.mal),
             "sistEndretAv" to deltaker.sistEndretAv,
+            "sistEndretAvEnhet" to deltaker.sistEndretAvEnhet,
             "sistEndret" to deltaker.sistEndret,
         )
 
@@ -90,6 +93,7 @@ class DeltakerRepository {
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.mal as "d.mal",
                    d.sist_endret_av as "d.sist_endret_av",
+                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
                    d.created_at as "d.created_at",
                    d.modified_at as "d.modified_at",
                    ds.id as "ds.id",
@@ -99,8 +103,13 @@ class DeltakerRepository {
                    ds.gyldig_fra as "ds.gyldig_fra",
                    ds.gyldig_til as "ds.gyldig_til",
                    ds.created_at as "ds.created_at",
-                   ds.modified_at as "ds.modified_at"
-            from deltaker d join deltaker_status ds on d.id = ds.deltaker_id
+                   ds.modified_at as "ds.modified_at",
+                   na.navn as "na.navn",
+                   ne.navn as "ne.navn"
+            from deltaker d 
+                join deltaker_status ds on d.id = ds.deltaker_id
+                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
+                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
             where d.id = :id and ds.gyldig_til is null
         """.trimIndent()
 
@@ -121,6 +130,7 @@ class DeltakerRepository {
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.mal as "d.mal",
                    d.sist_endret_av as "d.sist_endret_av",
+                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
                    d.created_at as "d.created_at",
                    d.modified_at as "d.modified_at",
                    ds.id as "ds.id",
@@ -130,8 +140,13 @@ class DeltakerRepository {
                    ds.gyldig_fra as "ds.gyldig_fra",
                    ds.gyldig_til as "ds.gyldig_til",
                    ds.created_at as "ds.created_at",
-                   ds.modified_at as "ds.modified_at"
-            from deltaker d join deltaker_status ds on d.id = ds.deltaker_id
+                   ds.modified_at as "ds.modified_at",
+                   na.navn as "na.navn",
+                   ne.navn as "ne.navn"
+            from deltaker d 
+                join deltaker_status ds on d.id = ds.deltaker_id
+                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
+                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
             where d.personident = :personident and d.deltakerliste_id = :deltakerliste_id and ds.gyldig_til is null
             """.trimIndent()
 

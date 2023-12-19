@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
+import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
@@ -38,11 +39,13 @@ fun Routing.registerDeltakerApi(
         post("/deltaker") {
             val navIdent = getNavIdent()
             val pameldingRequest = call.receive<PameldingRequest>()
+            val enhetsnummer = call.request.header("aktiv-enhet")
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
             val deltaker = deltakerService.opprettDeltaker(
                 deltakerlisteId = pameldingRequest.deltakerlisteId,
                 personident = pameldingRequest.personident,
                 opprettetAv = navIdent,
+                opprettetAvEnhet = enhetsnummer,
             )
             call.respond(deltaker)
         }
@@ -51,6 +54,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<UtkastRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -64,6 +68,7 @@ fun Routing.registerDeltakerApi(
                     godkjentAvNav = null,
                 ),
                 endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
             )
 
             call.respond(HttpStatusCode.OK)
@@ -73,6 +78,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -87,9 +93,11 @@ fun Routing.registerDeltakerApi(
                         type = request.begrunnelse.type,
                         beskrivelse = request.begrunnelse.beskrivelse,
                         godkjentAv = navIdent,
+                        godkjentAvEnhet = enhetsnummer,
                     ),
                 ),
                 endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
             )
 
             call.respond(HttpStatusCode.OK)
@@ -117,6 +125,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -125,6 +134,7 @@ fun Routing.registerDeltakerApi(
                 endringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
                 endring = DeltakerEndring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
                 endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
             )
             call.respond(oppdatertDeltaker)
         }
@@ -133,6 +143,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreMalRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -141,6 +152,7 @@ fun Routing.registerDeltakerApi(
                 endringType = DeltakerEndringType.MAL,
                 endring = DeltakerEndring.EndreMal(request.mal),
                 endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
             )
             call.respond(oppdatertDeltaker)
         }
@@ -149,6 +161,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -160,6 +173,7 @@ fun Routing.registerDeltakerApi(
                     dagerPerUke = request.dagerPerUke,
                 ),
                 endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
             )
             call.respond(oppdatertDeltaker)
         }
@@ -168,6 +182,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -176,6 +191,7 @@ fun Routing.registerDeltakerApi(
                 endringType = DeltakerEndringType.STARTDATO,
                 endring = DeltakerEndring.EndreStartdato(request.startdato),
                 endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
             )
             call.respond(oppdatertDeltaker)
         }

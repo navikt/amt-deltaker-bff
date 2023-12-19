@@ -32,6 +32,8 @@ import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 
@@ -89,9 +91,11 @@ fun Application.module() {
     val arrangorRepository = ArrangorRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattRepository = NavAnsattRepository()
+    val navEnhetRepository = NavEnhetRepository()
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
     val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
+    val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
 
     val arrangorConsumer = ArrangorConsumer(arrangorRepository)
     val deltakerlisteConsumer = DeltakerlisteConsumer(deltakerlisteRepository, arrangorService)
@@ -111,7 +115,14 @@ fun Application.module() {
     val deltakerRepository = DeltakerRepository()
     val samtykkeRepository = DeltakerSamtykkeRepository()
     val historikkRepository = DeltakerHistorikkRepository()
-    val deltakerService = DeltakerService(deltakerRepository, deltakerlisteRepository, samtykkeRepository, historikkRepository, navAnsattService)
+    val deltakerService = DeltakerService(
+        deltakerRepository,
+        deltakerlisteRepository,
+        samtykkeRepository,
+        historikkRepository,
+        navAnsattService,
+        navEnhetService,
+    )
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService)

@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -23,7 +24,7 @@ object TestData {
 
     fun randomNavIdent() = ('A'..'Z').random().toString() + (100_000..999_999).random().toString()
 
-    fun randomEnhetId() = (1000..9999).random().toString()
+    fun randomEnhetsnummer() = (1000..9999).random().toString()
 
     fun randomOrgnr() = (900_000_000..999_999_998).random().toString()
 
@@ -79,6 +80,7 @@ object TestData {
         mal: List<Mal> = emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         sistEndretAv: String = randomNavIdent(),
+        sistEndretAvEnhet: String = randomEnhetsnummer(),
         sistEndret: LocalDateTime = LocalDateTime.now(),
         opprettet: LocalDateTime = LocalDateTime.now(),
     ) = Deltaker(
@@ -93,6 +95,7 @@ object TestData {
         mal,
         status,
         sistEndretAv,
+        sistEndretAvEnhet,
         sistEndret,
         opprettet,
     )
@@ -121,7 +124,8 @@ object TestData {
         type: String = "ANNET",
         beskrivelse: String = "Fordi jeg kan",
         godkjentAv: String = randomNavIdent(),
-    ) = GodkjenningAvNav(type, beskrivelse, godkjentAv)
+        godkjentAvEnhet: String = randomEnhetsnummer(),
+    ) = GodkjenningAvNav(type, beskrivelse, godkjentAv, godkjentAvEnhet)
 
     fun lagOppdatertDeltaker(
         mal: List<Mal> = emptyList(),
@@ -137,14 +141,21 @@ object TestData {
         endringType: DeltakerEndringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
         endring: DeltakerEndring = DeltakerEndring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
         endretAv: String = randomNavIdent(),
+        endretAvEnhet: String = randomEnhetsnummer(),
         endret: LocalDateTime = LocalDateTime.now(),
-    ) = DeltakerHistorikk(id, deltakerId, endringType, endring, endretAv, endret)
+    ) = DeltakerHistorikk(id, deltakerId, endringType, endring, endretAv, endretAvEnhet, endret)
 
     fun lagNavAnsatt(
         id: UUID = UUID.randomUUID(),
         navIdent: String = randomNavIdent(),
         navn: String = "Veileder Veiledersen",
     ) = NavAnsatt(id, navIdent, navn)
+
+    fun lagNavEnhet(
+        id: UUID = UUID.randomUUID(),
+        enhetsnummer: String = randomEnhetsnummer(),
+        navn: String = "NAV Testheim",
+    ) = NavEnhet(id, enhetsnummer, navn)
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,

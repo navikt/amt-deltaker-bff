@@ -18,6 +18,8 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
 
 fun mockHttpClient(response: String): HttpClient {
@@ -50,11 +52,20 @@ fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArran
     )
 }
 
-fun mockAmtPersonServiceClient(navAnsatt: NavAnsatt = TestData.lagNavAnsatt()): AmtPersonServiceClient {
+fun mockAmtPersonServiceClientNavAnsatt(navAnsatt: NavAnsatt = TestData.lagNavAnsatt()): AmtPersonServiceClient {
     return AmtPersonServiceClient(
         baseUrl = "https://amt-person-service",
         scope = "amt.person-service.scope",
         httpClient = mockHttpClient(objectMapper.writeValueAsString(navAnsatt)),
+        azureAdTokenClient = mockAzureAdClient(),
+    )
+}
+
+fun mockAmtPersonServiceClientNavEnhet(navEnhet: NavEnhet = TestData.lagNavEnhet()): AmtPersonServiceClient {
+    return AmtPersonServiceClient(
+        baseUrl = "https://amt-person-service",
+        scope = "amt.person-service.scope",
+        httpClient = mockHttpClient(objectMapper.writeValueAsString(NavEnhetDto(id = navEnhet.id, enhetId = navEnhet.enhetsnummer, navn = navEnhet.navn))),
         azureAdTokenClient = mockAzureAdClient(),
     )
 }

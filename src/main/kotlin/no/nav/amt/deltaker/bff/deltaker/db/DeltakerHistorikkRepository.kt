@@ -19,20 +19,22 @@ class DeltakerHistorikkRepository {
             deltakerId = row.uuid("deltaker_id"),
             endringType = endringType,
             endring = parseDeltakerEndringJson(row.string("endring"), endringType),
-            endretAv = row.string("endret_av"),
-            endret = row.localDateTime("modified_at"),
+            endretAv = row.stringOrNull("na.navn") ?: row.string("endret_av"),
+            endretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("endret_av_enhet"),
+            endret = row.localDateTime("dh.modified_at"),
         )
     }
 
     fun upsert(deltakerHistorikk: DeltakerHistorikk) = Database.query {
         val sql = """
-            insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av)
-            values (:id, :deltaker_id, :endringstype, :endring, :endret_av)
+            insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
+            values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet)
             on conflict (id) do update set 
                 deltaker_id = :deltaker_id,
                 endringstype = :endringstype,
                 endring = :endring,
                 endret_av = :endret_av,
+                endret_av_enhet = :endret_av_enhet,
                 modified_at = current_timestamp
         """.trimIndent()
 
@@ -42,6 +44,7 @@ class DeltakerHistorikkRepository {
             "endringstype" to deltakerHistorikk.endringType.name,
             "endring" to toPGObject(deltakerHistorikk.endring),
             "endret_av" to deltakerHistorikk.endretAv,
+            "endret_av_enhet" to deltakerHistorikk.endretAvEnhet,
         )
 
         it.update(queryOf(sql, params))
@@ -49,7 +52,22 @@ class DeltakerHistorikkRepository {
 
     fun getForDeltaker(deltakerId: UUID) = Database.query {
         val query = queryOf(
-            "select * from deltaker_historikk where deltaker_id = :deltaker_id order by created_at",
+            """
+                SELECT dh.id              AS id,
+                       dh.deltaker_id     AS deltaker_id,
+                       dh.endringstype    AS endringstype,
+                       dh.endring         AS endring,
+                       dh.endret_av       AS endret_av,
+                       dh.endret_av_enhet AS endret_av_enhet,
+                       dh.modified_at     AS "dh.modified_at",
+                       na.navn            AS "na.navn",
+                       ne.navn            AS "ne.navn"
+                FROM deltaker_historikk dh
+                         LEFT JOIN nav_ansatt na ON dh.endret_av = na.nav_ident
+                         LEFT JOIN nav_enhet ne ON dh.endret_av_enhet = ne.nav_enhet_nummer
+                WHERE deltaker_id = :deltaker_id
+                ORDER BY dh.created_at;
+            """.trimIndent(),
             mapOf("deltaker_id" to deltakerId),
         )
         it.run(query.map(::rowMapper).asList)

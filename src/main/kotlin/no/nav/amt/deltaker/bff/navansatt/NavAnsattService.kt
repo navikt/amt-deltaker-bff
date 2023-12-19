@@ -14,12 +14,11 @@ class NavAnsattService(
 
         log.info("Fant ikke nav-ansatt med ident $navIdent, henter fra amt-person-service")
         val navAnsatt = amtPersonServiceClient.hentNavAnsatt(navIdent)
-        oppdaterNavAnsatt(navAnsatt)
-        return navAnsatt
+        return oppdaterNavAnsatt(navAnsatt)
     }
 
-    fun oppdaterNavAnsatt(navAnsatt: NavAnsatt) {
-        repository.upsert(navAnsatt)
+    fun oppdaterNavAnsatt(navAnsatt: NavAnsatt): NavAnsatt {
+        return repository.upsert(navAnsatt)
     }
 
     fun slettNavAnsatt(navAnsattId: UUID) {
