@@ -49,6 +49,8 @@ spec:
     inbound:
       rules:
         - application: amt-deltaker-flate
+        - application: veilarbpersonflate
+          namespace: poao
     outbound:
       rules:
         - application: amt-arrangor
