@@ -8,7 +8,10 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.UUID
 
 object TestRepository {
@@ -78,11 +81,11 @@ object TestRepository {
         val sql = """
             insert into deltaker(
                 id, personident, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, modified_at, created_at
+                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, sist_endret_av_enhet, modified_at, created_at
             )
             values (
                 :id, :personident, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :modifiedAt, :createdAt
+                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndretAvEnhet, :modifiedAt, :createdAt
             )
         """.trimIndent()
 
@@ -97,6 +100,7 @@ object TestRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "mal" to toPGObject(deltaker.mal),
             "sistEndretAv" to deltaker.sistEndretAv,
+            "sistEndretAvEnhet" to deltaker.sistEndretAvEnhet,
             "modifiedAt" to deltaker.sistEndret,
             "createdAt" to deltaker.opprettet,
         )
@@ -139,6 +143,40 @@ object TestRepository {
             "gyldig_til" to samtykke.gyldigTil,
             "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
             "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(navAnsatt: NavAnsatt) = Database.query {
+        val sql = """
+            insert into nav_ansatt(id, nav_ident, navn, modified_at)
+            values (:id, :nav_ident, :navn, :modified_at) 
+            on conflict (id) do nothing;
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to navAnsatt.id,
+            "nav_ident" to navAnsatt.navIdent,
+            "navn" to navAnsatt.navn,
+            "modified_at" to LocalDateTime.now(),
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(navEnhet: NavEnhet) = Database.query {
+        val sql = """
+            insert into nav_enhet(id, nav_enhet_nummer, navn, modified_at)
+            values (:id, :nav_enhet_nummer, :navn, :modified_at) 
+            on conflict (id) do nothing;
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to navEnhet.id,
+            "nav_enhet_nummer" to navEnhet.enhetsnummer,
+            "navn" to navEnhet.navn,
+            "modified_at" to LocalDateTime.now(),
         )
 
         it.update(queryOf(sql, params))

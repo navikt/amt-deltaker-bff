@@ -30,8 +30,8 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
-        sistEndretAv = row.string("d.sist_endret_av"),
-        sistEndretAvEnhet = row.stringOrNull("d.sist_endret_av_enhet"),
+        sistEndretAv = row.stringOrNull("na.navn") ?: row.string("d.sist_endret_av"),
+        sistEndretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("d.sist_endret_av_enhet"),
         sistEndret = row.localDateTime("d.modified_at"),
         opprettet = row.localDateTime("d.created_at"),
     )
@@ -103,8 +103,13 @@ class DeltakerRepository {
                    ds.gyldig_fra as "ds.gyldig_fra",
                    ds.gyldig_til as "ds.gyldig_til",
                    ds.created_at as "ds.created_at",
-                   ds.modified_at as "ds.modified_at"
-            from deltaker d join deltaker_status ds on d.id = ds.deltaker_id
+                   ds.modified_at as "ds.modified_at",
+                   na.navn as "na.navn",
+                   ne.navn as "ne.navn"
+            from deltaker d 
+                join deltaker_status ds on d.id = ds.deltaker_id
+                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
+                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
             where d.id = :id and ds.gyldig_til is null
         """.trimIndent()
 
@@ -135,8 +140,13 @@ class DeltakerRepository {
                    ds.gyldig_fra as "ds.gyldig_fra",
                    ds.gyldig_til as "ds.gyldig_til",
                    ds.created_at as "ds.created_at",
-                   ds.modified_at as "ds.modified_at"
-            from deltaker d join deltaker_status ds on d.id = ds.deltaker_id
+                   ds.modified_at as "ds.modified_at",
+                   na.navn as "na.navn",
+                   ne.navn as "ne.navn"
+            from deltaker d 
+                join deltaker_status ds on d.id = ds.deltaker_id
+                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
+                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
             where d.personident = :personident and d.deltakerliste_id = :deltakerliste_id and ds.gyldig_til is null
             """.trimIndent()
 

@@ -85,6 +85,34 @@ class DeltakerRepositoryTest {
 
         repository.get(deltaker.id) shouldBe null
     }
+
+    @Test
+    fun `get - deltaker, ansatt og enhet finnes - returnerer navn for ansatt og enhet`() {
+        val navAnsatt = TestData.lagNavAnsatt()
+        TestRepository.insert(navAnsatt)
+        val navEnhet = TestData.lagNavEnhet()
+        TestRepository.insert(navEnhet)
+        val deltaker = TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
+        TestRepository.insert(deltaker)
+
+        val deltakerFraDb = repository.get(deltaker.id)
+
+        deltakerFraDb?.sistEndretAv shouldBe navAnsatt.navn
+        deltakerFraDb?.sistEndretAvEnhet shouldBe navEnhet.navn
+    }
+
+    @Test
+    fun `get - deltaker, ansatt og enhet finnes ikke - returnerer navident og enhetsnummer`() {
+        val navAnsatt = TestData.lagNavAnsatt()
+        val navEnhet = TestData.lagNavEnhet()
+        val deltaker = TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
+        TestRepository.insert(deltaker)
+
+        val deltakerFraDb = repository.get(deltaker.id)
+
+        deltakerFraDb?.sistEndretAv shouldBe navAnsatt.navIdent
+        deltakerFraDb?.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
+    }
 }
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {

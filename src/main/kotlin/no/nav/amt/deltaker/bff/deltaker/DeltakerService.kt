@@ -152,27 +152,32 @@ class DeltakerService(
             is DeltakerEndring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
                 bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
                 sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
             is DeltakerEndring.EndreMal -> opprinneligDeltaker.copy(
                 mal = endring.mal,
                 sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
             is DeltakerEndring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
                 deltakelsesprosent = endring.deltakelsesprosent,
                 dagerPerUke = endring.dagerPerUke,
                 sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
             is DeltakerEndring.EndreStartdato -> opprinneligDeltaker.copy(
                 startdato = endring.startdato,
                 sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
             is DeltakerEndring.EndreSluttdato -> opprinneligDeltaker.copy(
                 sluttdato = endring.sluttdato,
                 sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
         }

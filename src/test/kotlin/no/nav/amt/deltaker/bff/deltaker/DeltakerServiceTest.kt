@@ -11,8 +11,10 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
@@ -34,6 +36,8 @@ class DeltakerServiceTest {
     private val opprettetAvEnhet = TestData.randomEnhetsnummer()
 
     companion object {
+        lateinit var navAnsatt: NavAnsatt
+        lateinit var navEnhet: NavEnhet
         lateinit var deltakerlisteRepository: DeltakerlisteRepository
         lateinit var deltakerRepository: DeltakerRepository
         lateinit var deltakerService: DeltakerService
@@ -48,14 +52,16 @@ class DeltakerServiceTest {
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
+            navAnsatt = TestData.lagNavAnsatt()
+            navEnhet = TestData.lagNavEnhet()
             deltakerlisteRepository = DeltakerlisteRepository()
             deltakerRepository = DeltakerRepository()
             samtykkeRepository = DeltakerSamtykkeRepository()
             historikkRepository = DeltakerHistorikkRepository()
             navAnsattRepository = NavAnsattRepository()
             navEnhetRepository = NavEnhetRepository()
-            navAnsattService = NavAnsattService(navAnsattRepository, mockAmtPersonServiceClientNavAnsatt())
-            navEnhetService = NavEnhetService(navEnhetRepository, mockAmtPersonServiceClientNavEnhet())
+            navAnsattService = NavAnsattService(navAnsattRepository, mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
+            navEnhetService = NavEnhetService(navEnhetRepository, mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
             deltakerService = DeltakerService(
                 deltakerRepository,
                 deltakerlisteRepository,
@@ -313,29 +319,30 @@ class DeltakerServiceTest {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         TestRepository.insert(deltaker)
         val oppdatertBakgrunnsinformasjon = "Oppdatert informasjon"
-        val endretAv = TestData.randomNavIdent()
-        val endretAvEnhet = TestData.randomEnhetsnummer()
+        val endretAvIdent = navAnsatt.navIdent
+        val endretAvEnhetsnummer = navEnhet.enhetsnummer
 
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
                 DeltakerEndringType.BAKGRUNNSINFORMASJON,
                 DeltakerEndring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
-                endretAv,
-                endretAvEnhet,
+                endretAvIdent,
+                endretAvEnhetsnummer,
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
             val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id)
-            oppdatertDeltakerFraDb.sistEndretAv shouldBe endretAv
+            oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
+            oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.navn
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
             val historikk = historikkRepository.getForDeltaker(deltaker.id)
             historikk.size shouldBe 1
             historikk.first().endringType shouldBe DeltakerEndringType.BAKGRUNNSINFORMASJON
             historikk.first().endring shouldBe DeltakerEndring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon)
             historikk.first().endret shouldBeCloseTo LocalDateTime.now()
-            historikk.first().endretAv shouldBe endretAv
-            historikk.first().endretAvEnhet shouldBe endretAvEnhet
+            historikk.first().endretAv shouldBe navAnsatt.navn
+            historikk.first().endretAvEnhet shouldBe navEnhet.navn
         }
     }
 
@@ -343,16 +350,16 @@ class DeltakerServiceTest {
     fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, men ingen endring - oppdaterer ikke i databasen og returnerer uendret deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         TestRepository.insert(deltaker)
-        val endretAv = TestData.randomNavIdent()
-        val endretAvEnhet = TestData.randomEnhetsnummer()
+        val endretAvIdent = navAnsatt.navIdent
+        val endretAvEnhetsnummer = navEnhet.enhetsnummer
 
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
                 DeltakerEndringType.BAKGRUNNSINFORMASJON,
                 DeltakerEndring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
-                endretAv,
-                endretAvEnhet,
+                endretAvIdent,
+                endretAvEnhetsnummer,
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
