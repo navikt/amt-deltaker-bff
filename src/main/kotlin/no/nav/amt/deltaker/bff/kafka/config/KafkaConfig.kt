@@ -9,4 +9,6 @@ interface KafkaConfig {
         valueDeserializer: Deserializer<V>,
         groupId: String,
     ): Map<String, *>
+
+    fun producerConfig(): Map<String, *>
 }
