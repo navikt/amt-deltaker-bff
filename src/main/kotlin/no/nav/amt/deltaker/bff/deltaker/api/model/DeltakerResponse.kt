@@ -1,8 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
+import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -22,7 +24,6 @@ data class DeltakerResponse(
     val mal: List<Mal>,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
-    val historikk: List<DeltakerHistorikkDto>,
 )
 
 data class DeltakerlisteDTO(
@@ -39,4 +40,34 @@ data class DeltakerHistorikkDto(
     val endretAv: String,
     val endretAvEnhet: String?,
     val endret: LocalDateTime,
+)
+
+fun Deltaker.toDeltakerResponse(): DeltakerResponse {
+    return DeltakerResponse(
+        deltakerId = id,
+        deltakerliste = DeltakerlisteDTO(
+            deltakerlisteId = deltakerliste.id,
+            deltakerlisteNavn = deltakerliste.navn,
+            tiltakstype = deltakerliste.tiltak.type,
+            arrangorNavn = deltakerliste.arrangor.navn,
+            oppstartstype = deltakerliste.getOppstartstype(),
+        ),
+        status = status,
+        startdato = startdato,
+        sluttdato = sluttdato,
+        dagerPerUke = dagerPerUke,
+        deltakelsesprosent = deltakelsesprosent,
+        bakgrunnsinformasjon = bakgrunnsinformasjon,
+        mal = mal,
+        sistEndretAv = sistEndretAv,
+        sistEndretAvEnhet = sistEndretAvEnhet,
+    )
+}
+
+private fun DeltakerHistorikk.toDeltakerHistorikkDto() = DeltakerHistorikkDto(
+    endringType = endringType,
+    endring = endring,
+    endretAv = endretAv,
+    endretAvEnhet = endretAvEnhet,
+    endret = endret,
 )

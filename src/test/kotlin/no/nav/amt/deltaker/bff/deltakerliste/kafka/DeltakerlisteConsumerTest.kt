@@ -40,7 +40,7 @@ class DeltakerlisteConsumerTest {
                 objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, deltakerliste)),
             )
 
-            repository.get(deltakerliste.id) shouldBe deltakerliste
+            repository.get(deltakerliste.id).getOrThrow() shouldBe deltakerliste
         }
     }
 
@@ -61,7 +61,7 @@ class DeltakerlisteConsumerTest {
                 objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, oppdatertDeltakerliste)),
             )
 
-            repository.get(deltakerliste.id) shouldBe oppdatertDeltakerliste
+            repository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste
         }
     }
 
@@ -77,7 +77,7 @@ class DeltakerlisteConsumerTest {
         runBlocking {
             consumer.consumeDeltakerliste(deltakerliste.id, null)
 
-            repository.get(deltakerliste.id) shouldBe null
+            repository.get(deltakerliste.id).getOrNull() shouldBe null
         }
     }
 }

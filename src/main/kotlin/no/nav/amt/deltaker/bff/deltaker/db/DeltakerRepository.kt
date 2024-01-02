@@ -5,17 +5,37 @@ import kotliquery.Query
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.util.UUID
 
 class DeltakerRepository {
     fun rowMapper(row: Row) = Deltaker(
         id = row.uuid("d.id"),
         personident = row.string("d.personident"),
-        deltakerlisteId = row.uuid("d.deltakerliste_id"),
+        deltakerliste = Deltakerliste(
+            id = row.uuid("deltakerliste_id"),
+            tiltak = Tiltak(
+                navn = row.string("tiltaksnavn"),
+                type = Tiltak.Type.valueOf(row.string("tiltakstype")),
+            ),
+            navn = row.string("deltakerliste_navn"),
+            status = Deltakerliste.Status.valueOf(row.string("status")),
+            startDato = row.localDate("start_dato"),
+            sluttDato = row.localDate("slutt_dato"),
+            oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
+            arrangor = Arrangor(
+                id = row.uuid("arrangor_id"),
+                navn = row.string("arrangor_navn"),
+                organisasjonsnummer = row.string("organisasjonsnummer"),
+                overordnetArrangorId = row.uuidOrNull("overordnet_arrangor_id"),
+            ),
+        ),
         startdato = row.localDateOrNull("d.startdato"),
         sluttdato = row.localDateOrNull("d.sluttdato"),
         dagerPerUke = row.floatOrNull("d.dager_per_uke"),
@@ -62,7 +82,7 @@ class DeltakerRepository {
         val parameters = mapOf(
             "id" to deltaker.id,
             "personident" to deltaker.personident,
-            "deltakerlisteId" to deltaker.deltakerlisteId,
+            "deltakerlisteId" to deltaker.deltakerliste.id,
             "startdato" to deltaker.startdato,
             "sluttdato" to deltaker.sluttdato,
             "dagerPerUke" to deltaker.dagerPerUke,
@@ -82,73 +102,21 @@ class DeltakerRepository {
     }
 
     fun get(id: UUID) = Database.query {
-        val sql = """
-            select d.id as "d.id",
-                   d.personident as "d.personident",
-                   d.deltakerliste_id as "d.deltakerliste_id",
-                   d.startdato as "d.startdato",
-                   d.sluttdato as "d.sluttdato",
-                   d.dager_per_uke as "d.dager_per_uke",
-                   d.deltakelsesprosent as "d.deltakelsesprosent",
-                   d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
-                   d.mal as "d.mal",
-                   d.sist_endret_av as "d.sist_endret_av",
-                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
-                   d.created_at as "d.created_at",
-                   d.modified_at as "d.modified_at",
-                   ds.id as "ds.id",
-                   ds.deltaker_id as "ds.deltaker_id",
-                   ds.type as "ds.type",
-                   ds.aarsak as "ds.aarsak",
-                   ds.gyldig_fra as "ds.gyldig_fra",
-                   ds.gyldig_til as "ds.gyldig_til",
-                   ds.created_at as "ds.created_at",
-                   ds.modified_at as "ds.modified_at",
-                   na.navn as "na.navn",
-                   ne.navn as "ne.navn"
-            from deltaker d 
-                join deltaker_status ds on d.id = ds.deltaker_id
-                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
-                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
-            where d.id = :id and ds.gyldig_til is null
-        """.trimIndent()
+        val sql = getDeltakerSql("where d.id = :id and ds.gyldig_til is null")
 
         val query = queryOf(sql, mapOf("id" to id)).map(::rowMapper).asSingle
-        it.run(query)
+        it.run(query)?.let { d -> Result.success(d) }
+            ?: Result.failure(NoSuchElementException("Ingen deltaker med id $id"))
     }
 
-    fun get(personIdent: String, deltakerlisteId: UUID): Deltaker? =
+    fun get(personIdent: String, deltakerlisteId: UUID) =
         Database.query {
-            val sql = """
-            select d.id as "d.id",
-                   d.personident as "d.personident",
-                   d.deltakerliste_id as "d.deltakerliste_id",
-                   d.startdato as "d.startdato",
-                   d.sluttdato as "d.sluttdato",
-                   d.dager_per_uke as "d.dager_per_uke",
-                   d.deltakelsesprosent as "d.deltakelsesprosent",
-                   d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
-                   d.mal as "d.mal",
-                   d.sist_endret_av as "d.sist_endret_av",
-                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
-                   d.created_at as "d.created_at",
-                   d.modified_at as "d.modified_at",
-                   ds.id as "ds.id",
-                   ds.deltaker_id as "ds.deltaker_id",
-                   ds.type as "ds.type",
-                   ds.aarsak as "ds.aarsak",
-                   ds.gyldig_fra as "ds.gyldig_fra",
-                   ds.gyldig_til as "ds.gyldig_til",
-                   ds.created_at as "ds.created_at",
-                   ds.modified_at as "ds.modified_at",
-                   na.navn as "na.navn",
-                   ne.navn as "ne.navn"
-            from deltaker d 
-                join deltaker_status ds on d.id = ds.deltaker_id
-                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
-                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
-            where d.personident = :personident and d.deltakerliste_id = :deltakerliste_id and ds.gyldig_til is null
-            """.trimIndent()
+            val sql = getDeltakerSql(
+                """ where d.personident = :personident 
+                    and d.deltakerliste_id = :deltakerliste_id 
+                    and ds.gyldig_til is null
+                """.trimMargin(),
+            )
 
             val query = queryOf(
                 sql,
@@ -157,7 +125,10 @@ class DeltakerRepository {
                     "deltakerliste_id" to deltakerlisteId,
                 ),
             ).map(::rowMapper).asSingle
-            it.run(query)
+            it.run(query)?.let { d -> Result.success(d) }
+                ?: Result.failure(
+                    NoSuchElementException("Ingen deltaker med personident og deltakerlist $deltakerlisteId"),
+                )
         }
 
     fun getDeltakerStatuser(deltakerId: UUID) = Database.query { session ->
@@ -242,4 +213,48 @@ class DeltakerRepository {
 
         return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId))
     }
+
+    private fun getDeltakerSql(where: String = "") = """
+            select d.id as "d.id",
+                   d.personident as "d.personident",
+                   d.deltakerliste_id as "d.deltakerliste_id",
+                   d.startdato as "d.startdato",
+                   d.sluttdato as "d.sluttdato",
+                   d.dager_per_uke as "d.dager_per_uke",
+                   d.deltakelsesprosent as "d.deltakelsesprosent",
+                   d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
+                   d.mal as "d.mal",
+                   d.sist_endret_av as "d.sist_endret_av",
+                   d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
+                   d.created_at as "d.created_at",
+                   d.modified_at as "d.modified_at",
+                   ds.id as "ds.id",
+                   ds.deltaker_id as "ds.deltaker_id",
+                   ds.type as "ds.type",
+                   ds.aarsak as "ds.aarsak",
+                   ds.gyldig_fra as "ds.gyldig_fra",
+                   ds.gyldig_til as "ds.gyldig_til",
+                   ds.created_at as "ds.created_at",
+                   ds.modified_at as "ds.modified_at",
+                   na.navn as "na.navn",
+                   ne.navn as "ne.navn",
+                   dl.id as deltakerliste_id,
+                   dl.arrangor_id,
+                   dl.tiltaksnavn,
+                   dl.tiltakstype,
+                   dl.navn AS deltakerliste_navn,
+                   dl.status,
+                   dl.start_dato,
+                   dl.slutt_dato,
+                   dl.oppstart,
+                   a.navn             AS arrangor_navn,
+                   organisasjonsnummer,
+                   overordnet_arrangor_id
+            from deltaker d 
+                join deltaker_status ds on d.id = ds.deltaker_id
+                join deltakerliste dl on d.deltakerliste_id = dl.id
+                join arrangor a on a.id = dl.arrangor_id
+                left join nav_ansatt na on d.sist_endret_av = na.nav_ident
+                left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
+      """ + "\n" + where
 }

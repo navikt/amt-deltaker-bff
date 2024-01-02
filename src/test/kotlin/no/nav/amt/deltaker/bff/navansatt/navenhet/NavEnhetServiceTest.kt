@@ -29,7 +29,7 @@ class NavEnhetServiceTest {
     fun `hentEllerOpprettNavEnhet - navenhet finnes i db - henter fra db`() {
         val navEnhet = TestData.lagNavEnhet()
         repository.upsert(navEnhet)
-        val navEnhetService = NavEnhetService(repository, mockk<AmtPersonServiceClient>())
+        val navEnhetService = NavEnhetService(repository, mockk())
 
         runBlocking {
             val navEnhetFraDb = navEnhetService.hentEllerOpprettNavEnhet(navEnhet.enhetsnummer)

@@ -27,11 +27,10 @@ class DeltakerRepositoryTest {
     @Test
     fun `upsert - ny deltaker - insertes`() {
         val deltaker = TestData.lagDeltaker()
-        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId)
-        TestRepository.insert(deltakerliste)
+        TestRepository.insert(deltaker.deltakerliste)
 
         repository.upsert(deltaker)
-        sammenlignDeltakere(repository.get(deltaker.id)!!, deltaker)
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
     }
 
     @Test
@@ -49,7 +48,7 @@ class DeltakerRepositoryTest {
         )
 
         repository.upsert(oppdatertDeltaker)
-        sammenlignDeltakere(repository.get(deltaker.id)!!, oppdatertDeltaker)
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }
 
     @Test
@@ -67,7 +66,7 @@ class DeltakerRepositoryTest {
         )
 
         repository.upsert(oppdatertDeltaker)
-        sammenlignDeltakere(repository.get(deltaker.id)!!, oppdatertDeltaker)
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
 
         val statuser = repository.getDeltakerStatuser(deltaker.id)
         statuser.first { it.id == deltaker.status.id }.gyldigTil shouldNotBe null
@@ -77,13 +76,12 @@ class DeltakerRepositoryTest {
     @Test
     fun `slettKladd - ny deltaker - insertes`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
-        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId)
-        TestRepository.insert(deltakerliste)
+        TestRepository.insert(deltaker.deltakerliste)
         repository.upsert(deltaker)
 
         repository.slettKladd(deltaker.id)
 
-        repository.get(deltaker.id) shouldBe null
+        repository.get(deltaker.id).isFailure shouldBe true
     }
 
     @Test
@@ -92,26 +90,30 @@ class DeltakerRepositoryTest {
         TestRepository.insert(navAnsatt)
         val navEnhet = TestData.lagNavEnhet()
         TestRepository.insert(navEnhet)
-        val deltaker = TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
+        val deltaker = TestData.lagDeltaker(
+            sistEndretAv = navAnsatt.navIdent,
+            sistEndretAvEnhet = navEnhet.enhetsnummer,
+        )
         TestRepository.insert(deltaker)
 
-        val deltakerFraDb = repository.get(deltaker.id)
+        val deltakerFraDb = repository.get(deltaker.id).getOrThrow()
 
-        deltakerFraDb?.sistEndretAv shouldBe navAnsatt.navn
-        deltakerFraDb?.sistEndretAvEnhet shouldBe navEnhet.navn
+        deltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
+        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.navn
     }
 
     @Test
     fun `get - deltaker, ansatt og enhet finnes ikke - returnerer navident og enhetsnummer`() {
         val navAnsatt = TestData.lagNavAnsatt()
         val navEnhet = TestData.lagNavEnhet()
-        val deltaker = TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
+        val deltaker =
+            TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
         TestRepository.insert(deltaker)
 
-        val deltakerFraDb = repository.get(deltaker.id)
+        val deltakerFraDb = repository.get(deltaker.id).getOrThrow()
 
-        deltakerFraDb?.sistEndretAv shouldBe navAnsatt.navIdent
-        deltakerFraDb?.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
+        deltakerFraDb.sistEndretAv shouldBe navAnsatt.navIdent
+        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
     }
 }
 

@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
@@ -47,13 +48,13 @@ fun Routing.registerDeltakerApi(
                 opprettetAv = navIdent,
                 opprettetAvEnhet = enhetsnummer,
             )
-            call.respond(deltaker)
+            call.respond(deltaker.toDeltakerResponse())
         }
 
         post("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
             val request = call.receive<UtkastRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
@@ -77,7 +78,7 @@ fun Routing.registerDeltakerApi(
         post("/pamelding/{deltakerId}/utenGodkjenning") {
             val navIdent = getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
@@ -106,7 +107,7 @@ fun Routing.registerDeltakerApi(
         delete("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
             val deltakerId = UUID.fromString(call.parameters["deltakerId"])
-            val deltaker = deltakerService.get(deltakerId)
+            val deltaker = deltakerService.get(deltakerId).getOrThrow()
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
@@ -124,7 +125,7 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
@@ -136,13 +137,13 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker)
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
 
         post("/deltaker/{deltakerId}/mal") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreMalRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
@@ -154,13 +155,13 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker)
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
@@ -175,13 +176,13 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker)
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
 
         post("/deltaker/{deltakerId}/startdato") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
@@ -193,16 +194,16 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker)
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
 
         get("/deltaker/{deltakerId}") {
             val navIdent = getNavIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"]))
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id $deltaker")
 
-            call.respond(deltakerService.getDeltakerResponse(deltaker))
+            call.respond(deltaker.toDeltakerResponse())
         }
     }
 }

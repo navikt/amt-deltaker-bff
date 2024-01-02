@@ -114,6 +114,7 @@ class DeltakerlisteRepository {
             mapOf("id" to id),
         ).map(::rowMapper).asSingle
 
-        it.run(query)
+        it.run(query)?.let { dl -> Result.success(dl) }
+            ?: Result.failure(NoSuchElementException("Fant ikke deltakerliste med id $id"))
     }
 }
