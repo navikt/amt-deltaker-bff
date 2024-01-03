@@ -4,6 +4,8 @@ import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 
+private var id = 1
+
 fun stringStringConsumer(
     topic: String,
     block: suspend (k: String, v: String) -> Unit,
@@ -11,7 +13,7 @@ fun stringStringConsumer(
     val config = LocalKafkaConfig(SingletonKafkaProvider.getHost()).consumerConfig(
         keyDeserializer = StringDeserializer(),
         valueDeserializer = StringDeserializer(),
-        groupId = "test-consumer",
+        groupId = "test-consumer-${id++}",
     )
 
     return ManagedKafkaConsumer(topic, config, block)

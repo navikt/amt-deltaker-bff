@@ -25,7 +25,7 @@ data class DeltakerDto(
 fun Deltaker.toDto() = DeltakerDto(
     id = id,
     personident = personident,
-    deltakerlisteId = deltakerlisteId,
+    deltakerlisteId = deltakerliste.id,
     startdato = startdato,
     sluttdato = sluttdato,
     dagerPerUke = dagerPerUke,

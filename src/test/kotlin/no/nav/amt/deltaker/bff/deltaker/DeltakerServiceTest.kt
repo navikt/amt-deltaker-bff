@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringT
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
+import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -124,7 +125,12 @@ class DeltakerServiceTest {
 
         runBlocking {
             val eksisterendeDeltaker =
-                deltakerService.opprettDeltaker(deltaker.deltakerliste.id, deltaker.personident, opprettetAv, opprettetAvEnhet)
+                deltakerService.opprettDeltaker(
+                    deltaker.deltakerliste.id,
+                    deltaker.personident,
+                    opprettetAv,
+                    opprettetAvEnhet,
+                )
 
             eksisterendeDeltaker.id shouldBe deltaker.id
             eksisterendeDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
@@ -147,7 +153,12 @@ class DeltakerServiceTest {
 
         runBlocking {
             val nyDeltaker =
-                deltakerService.opprettDeltaker(deltaker.deltakerliste.id, deltaker.personident, opprettetAv, opprettetAvEnhet)
+                deltakerService.opprettDeltaker(
+                    deltaker.deltakerliste.id,
+                    deltaker.personident,
+                    opprettetAv,
+                    opprettetAvEnhet,
+                )
 
             nyDeltaker.id shouldNotBe deltaker.id
             nyDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
@@ -173,6 +184,8 @@ class DeltakerServiceTest {
             samtykke.gyldigTil shouldBe null
             sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
             samtykke.godkjentAvNav shouldBe null
+
+            assertProduced(oppdatertDeltaker)
         }
     }
 
@@ -203,6 +216,8 @@ class DeltakerServiceTest {
             samtykke.gyldigTil shouldBe null
             sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
             samtykke.godkjentAvNav shouldBe null
+
+            assertProduced(oppdatertDeltaker)
         }
     }
 
@@ -240,6 +255,8 @@ class DeltakerServiceTest {
             samtykke.gyldigTil shouldBe null
             sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
             samtykke.godkjentAvNav shouldBe utkast.godkjentAvNav
+
+            assertProduced(oppdatertDeltaker)
         }
     }
 
@@ -268,6 +285,8 @@ class DeltakerServiceTest {
             samtykke.gyldigTil shouldBe null
             sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltakerFraDb)
             samtykke.godkjentAvNav shouldBe godkjenningAvNav
+
+            assertProduced(oppdatertDeltakerFraDb)
         }
     }
 
@@ -305,6 +324,8 @@ class DeltakerServiceTest {
             samtykke.gyldigTil shouldBe null
             sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltakerFraDb)
             samtykke.godkjentAvNav shouldBe godkjenningAvNav
+
+            assertProduced(oppdatertDeltakerFraDb)
         }
     }
 
@@ -355,6 +376,8 @@ class DeltakerServiceTest {
             historikk.first().endret shouldBeCloseTo LocalDateTime.now()
             historikk.first().endretAv shouldBe navAnsatt.navn
             historikk.first().endretAvEnhet shouldBe navEnhet.navn
+
+            assertProduced(oppdatertDeltakerFraDb)
         }
     }
 

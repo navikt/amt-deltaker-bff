@@ -206,6 +206,7 @@ class DeltakerService(
         endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
 
         deltakerRepository.upsert(deltaker)
+        deltakerProducer.produce(deltaker)
         log.info("Upserter deltaker med id ${deltaker.id}")
     }
 
