@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
@@ -46,6 +47,7 @@ class DeltakerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
+    private val pameldingService = mockk<PameldingService>()
 
     @Before
     fun setup() {
@@ -249,7 +251,7 @@ class DeltakerApiTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService)
+            configureRouting(tilgangskontrollService, deltakerService, pameldingService)
         }
     }
 

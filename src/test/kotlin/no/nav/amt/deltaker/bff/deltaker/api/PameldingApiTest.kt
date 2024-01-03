@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -40,6 +41,7 @@ class PameldingApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
+    private val pameldingService = mockk<PameldingService>()
 
     @Before
     fun setup() {
@@ -104,7 +106,7 @@ class PameldingApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery { deltakerService.opprettUtkast(deltaker, any(), any(), any()) } returns Unit
+        coEvery { pameldingService.opprettUtkast(deltaker, any()) } returns Unit
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest) }.apply {
@@ -128,7 +130,7 @@ class PameldingApiTest {
             coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
             val deltaker = TestData.lagDeltaker()
             every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { deltakerService.meldPaUtenGodkjenning(deltaker, any(), any(), any()) } returns Unit
+            coEvery { pameldingService.meldPaUtenGodkjenning(deltaker, any()) } returns Unit
 
             setUpTestApplication()
             client.post("/pamelding/${deltaker.id}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }
@@ -153,7 +155,7 @@ class PameldingApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        every { deltakerService.slettKladd(deltaker.id) } returns Unit
+        every { pameldingService.slettKladd(deltaker) } returns true
 
         setUpTestApplication()
         client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
@@ -167,6 +169,7 @@ class PameldingApiTest {
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { pameldingService.slettKladd(deltaker) } returns false
 
         setUpTestApplication()
         client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
@@ -178,7 +181,7 @@ class PameldingApiTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService)
+            configureRouting(tilgangskontrollService, deltakerService, pameldingService)
         }
     }
 

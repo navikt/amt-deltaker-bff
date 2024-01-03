@@ -2,10 +2,8 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
@@ -22,7 +20,6 @@ import java.util.UUID
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
     private val deltakerlisteRepository: DeltakerlisteRepository,
-    private val samtykkeRepository: DeltakerSamtykkeRepository,
     private val historikkRepository: DeltakerHistorikkRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
@@ -46,89 +43,13 @@ class DeltakerService(
         }
         val deltaker = nyKladd(personident, deltakerliste, opprettetAv, opprettetAvEnhet)
 
-        upsert(deltaker, opprettetAv, opprettetAvEnhet)
+        upsert(deltaker)
 
         return deltakerRepository.get(deltaker.id)
             .getOrThrow()
     }
 
     fun get(id: UUID) = deltakerRepository.get(id)
-
-    suspend fun opprettUtkast(
-        opprinneligDeltaker: Deltaker,
-        utkast: OppdatertDeltaker,
-        endretAv: String,
-        endretAvEnhet: String?,
-    ) {
-        val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
-            nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
-        } else {
-            opprinneligDeltaker.status
-        }
-
-        val deltaker = opprinneligDeltaker.copy(
-            mal = utkast.mal,
-            bakgrunnsinformasjon = utkast.bakgrunnsinformasjon,
-            deltakelsesprosent = utkast.deltakelsesprosent,
-            dagerPerUke = utkast.dagerPerUke,
-            status = status,
-            sistEndretAv = endretAv,
-            sistEndretAvEnhet = endretAvEnhet,
-            sistEndret = LocalDateTime.now(),
-        )
-
-        upsert(deltaker, endretAv, endretAvEnhet)
-
-        val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
-
-        samtykkeRepository.upsert(
-            DeltakerSamtykke(
-                id = samtykkeId,
-                deltakerId = deltaker.id,
-                godkjent = null,
-                gyldigTil = null,
-                deltakerVedSamtykke = deltaker,
-                godkjentAvNav = utkast.godkjentAvNav,
-            ),
-        )
-    }
-
-    suspend fun meldPaUtenGodkjenning(
-        opprinneligDeltaker: Deltaker,
-        oppdatertDeltaker: OppdatertDeltaker,
-        endretAv: String,
-        endretAvEnhet: String?,
-    ) {
-        if (oppdatertDeltaker.godkjentAvNav == null) {
-            log.error("Kan ikke forhåndsgodkjenne deltaker med id ${opprinneligDeltaker.id} uten begrunnelse")
-            error("Kan ikke forhåndsgodkjenne deltaker uten begrunnelse")
-        }
-        val deltaker = opprinneligDeltaker.copy(
-            mal = oppdatertDeltaker.mal,
-            bakgrunnsinformasjon = oppdatertDeltaker.bakgrunnsinformasjon,
-            deltakelsesprosent = oppdatertDeltaker.deltakelsesprosent,
-            dagerPerUke = oppdatertDeltaker.dagerPerUke,
-            status = nyDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART), // her skal vi mest sannsynlig ha en annen status, men det er ikke avklart hva den skal være
-            sistEndretAv = endretAv,
-            sistEndretAvEnhet = endretAvEnhet,
-            sistEndret = LocalDateTime.now(),
-        )
-
-        upsert(deltaker, endretAv, endretAvEnhet)
-
-        val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
-
-        samtykkeRepository.upsert(
-            DeltakerSamtykke(
-                id = samtykkeId,
-                deltakerId = deltaker.id,
-                godkjent = LocalDateTime.now(),
-                gyldigTil = null,
-                deltakerVedSamtykke = deltaker,
-                godkjentAvNav = oppdatertDeltaker.godkjentAvNav,
-            ),
-        )
-    }
 
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
@@ -180,7 +101,7 @@ class DeltakerService(
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
-            upsert(deltaker, endretAv, endretAvEnhet)
+            upsert(deltaker)
             historikkRepository.upsert(
                 DeltakerHistorikk(
                     id = UUID.randomUUID(),
@@ -197,21 +118,40 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
+    suspend fun oppdaterDeltaker(
+        opprinneligDeltaker: Deltaker,
+        status: DeltakerStatus,
+        endring: OppdatertDeltaker,
+    ): Deltaker {
+        val deltaker = opprinneligDeltaker.copy(
+            mal = endring.mal,
+            bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
+            deltakelsesprosent = endring.deltakelsesprosent,
+            dagerPerUke = endring.dagerPerUke,
+            status = status,
+            sistEndretAv = endring.endretAv,
+            sistEndretAvEnhet = endring.endretAvEnhet,
+            sistEndret = LocalDateTime.now(),
+        )
+
+        upsert(deltaker)
+
+        return deltakerRepository.get(deltaker.id).getOrThrow()
+    }
+
+    fun delete(deltakerId: UUID) {
+        deltakerRepository.delete(deltakerId)
+    }
+
     private suspend fun upsert(
         deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String?,
     ) {
-        navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
-        endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
+        navAnsattService.hentEllerOpprettNavAnsatt(deltaker.sistEndretAv)
+        deltaker.sistEndretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
 
         deltakerRepository.upsert(deltaker)
         deltakerProducer.produce(deltaker)
         log.info("Upserter deltaker med id ${deltaker.id}")
-    }
-
-    fun slettKladd(deltakerId: UUID) {
-        deltakerRepository.slettKladd(deltakerId)
     }
 
     private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {
@@ -249,7 +189,7 @@ class DeltakerService(
         )
 }
 
-private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(
+fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(
     id = UUID.randomUUID(),
     type = type,
     aarsak = aarsak,

@@ -74,12 +74,12 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `slettKladd - ny deltaker - insertes`() {
+    fun `delete - ingen historikk eller samtykke - sletter deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker.deltakerliste)
         repository.upsert(deltaker)
 
-        repository.slettKladd(deltaker.id)
+        repository.delete(deltaker.id)
 
         repository.get(deltaker.id).isFailure shouldBe true
     }

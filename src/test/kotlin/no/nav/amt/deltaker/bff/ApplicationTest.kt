@@ -11,12 +11,14 @@ import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import org.junit.Test
 
 class ApplicationTest {
     private val tilgangskontrollService = mockk<TilgangskontrollService>()
     private val deltakerService = mockk<DeltakerService>()
+    private val pameldingService = mockk<PameldingService>()
 
     @Test
     fun testRoot() = testApplication {
@@ -24,7 +26,7 @@ class ApplicationTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService)
+            configureRouting(tilgangskontrollService, deltakerService, pameldingService)
         }
         client.get("/internal/health/liveness").apply {
             assertEquals(HttpStatusCode.OK, status)

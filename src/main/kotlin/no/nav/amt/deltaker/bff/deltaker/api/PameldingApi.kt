@@ -13,11 +13,11 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
 import org.slf4j.LoggerFactory
@@ -26,6 +26,7 @@ import java.util.UUID
 fun Routing.registerPameldingApi(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
+    pameldingService: PameldingService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -52,7 +53,7 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            deltakerService.opprettUtkast(
+            pameldingService.opprettUtkast(
                 opprinneligDeltaker = deltaker,
                 utkast = OppdatertDeltaker(
                     mal = request.mal,
@@ -60,9 +61,9 @@ fun Routing.registerPameldingApi(
                     deltakelsesprosent = request.deltakelsesprosent,
                     dagerPerUke = request.dagerPerUke,
                     godkjentAvNav = null,
+                    endretAv = navIdent,
+                    endretAvEnhet = enhetsnummer,
                 ),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
             )
 
             call.respond(HttpStatusCode.OK)
@@ -76,7 +77,7 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            deltakerService.meldPaUtenGodkjenning(
+            pameldingService.meldPaUtenGodkjenning(
                 opprinneligDeltaker = deltaker,
                 oppdatertDeltaker = OppdatertDeltaker(
                     mal = request.mal,
@@ -89,9 +90,9 @@ fun Routing.registerPameldingApi(
                         godkjentAv = navIdent,
                         godkjentAvEnhet = enhetsnummer,
                     ),
+                    endretAv = navIdent,
+                    endretAvEnhet = enhetsnummer,
                 ),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
             )
 
             call.respond(HttpStatusCode.OK)
@@ -104,11 +105,9 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
 
-            if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
-                log.warn("Kan ikke slette deltaker med id $deltakerId som har status ${deltaker.status.type}")
+            if (!pameldingService.slettKladd(deltaker)) {
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke slette deltaker")
             }
-            deltakerService.slettKladd(deltakerId)
 
             log.info("$navIdent har slettet kladd for deltaker med id $deltakerId")
 

@@ -8,4 +8,6 @@ data class OppdatertDeltaker(
     val deltakelsesprosent: Float?,
     val dagerPerUke: Float?,
     val godkjentAvNav: GodkjenningAvNav?,
+    val endretAv: String,
+    val endretAvEnhet: String?,
 )
