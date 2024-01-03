@@ -30,7 +30,7 @@ fun Routing.registerPameldingApi(
     val log = LoggerFactory.getLogger(javaClass)
 
     authenticate("VEILEDER") {
-        post("/deltaker") {
+        post("/pamelding") {
             val navIdent = getNavIdent()
             val pameldingRequest = call.receive<PameldingRequest>()
             val enhetsnummer = call.request.header("aktiv-enhet")
