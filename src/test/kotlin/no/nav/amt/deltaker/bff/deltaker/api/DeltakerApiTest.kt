@@ -2,16 +2,13 @@ package no.nav.amt.deltaker.bff.deltaker.api
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
@@ -25,15 +22,12 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
@@ -67,10 +61,6 @@ class DeltakerApiTest {
         coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
-        client.post("/deltaker") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/mal") { postRequest(malRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
@@ -81,119 +71,11 @@ class DeltakerApiTest {
     @Test
     fun `skal teste autorisering - mangler token - returnerer 401`() = testApplication {
         setUpTestApplication()
-        client.post("/deltaker") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
-        client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
-        client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/mal") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
-    }
-
-    @Test
-    fun `post deltaker - har tilgang - returnerer deltaker`() = testApplication {
-        val deltaker = TestData.lagDeltaker()
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery { deltakerService.opprettDeltaker(any(), any(), any(), any()) } returns deltaker
-        setUpTestApplication()
-        client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
-            TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(deltaker.toDeltakerResponse()), bodyAsText())
-        }
-    }
-
-    @Test
-    fun `post deltaker - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery {
-            deltakerService.opprettDeltaker(
-                any(),
-                any(),
-                any(),
-                any(),
-            )
-        } throws NoSuchElementException("Fant ikke deltakerliste")
-        setUpTestApplication()
-        client.post("/deltaker") { postRequest(pameldingRequest) }.apply {
-            status shouldBe HttpStatusCode.NotFound
-        }
-    }
-
-    @Test
-    fun `pamelding deltakerId - har tilgang - oppretter utkast og returnerer 200`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery { deltakerService.opprettUtkast(deltaker, any(), any(), any()) } returns Unit
-
-        setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-        }
-    }
-
-    @Test
-    fun `pamelding deltakerId - deltaker finnes ikke - returnerer 404`() = testApplication {
-        every { deltakerService.get(any()) } throws NoSuchElementException()
-
-        setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.apply {
-            status shouldBe HttpStatusCode.NotFound
-        }
-    }
-
-    @Test
-    fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter ferdig godkjent deltaker og returnerer 200`() =
-        testApplication {
-            coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-            val deltaker = TestData.lagDeltaker()
-            every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { deltakerService.meldPaUtenGodkjenning(deltaker, any(), any(), any()) } returns Unit
-
-            setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }
-                .apply {
-                    status shouldBe HttpStatusCode.OK
-                }
-        }
-
-    @Test
-    fun `pamelding deltakerId uten godkjenning - deltaker finnes ikke - returnerer 404`() = testApplication {
-        every { deltakerService.get(any()) } throws NoSuchElementException()
-
-        setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }
-            .apply {
-                status shouldBe HttpStatusCode.NotFound
-            }
-    }
-
-    @Test
-    fun `slett kladd - har tilgang, deltaker er KLADD - sletter deltaker og returnerer 200`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        every { deltakerService.slettKladd(deltaker.id) } returns Unit
-
-        setUpTestApplication()
-        client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
-            status shouldBe HttpStatusCode.OK
-        }
-    }
-
-    @Test
-    fun `slett kladd - deltaker har ikke status KLADD - returnerer 400`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-
-        setUpTestApplication()
-        client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
-            status shouldBe HttpStatusCode.BadRequest
-        }
     }
 
     @Test
@@ -219,7 +101,10 @@ class DeltakerApiTest {
         client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
             .apply {
                 TestCase.assertEquals(HttpStatusCode.OK, status)
-                TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse()), bodyAsText())
+                TestCase.assertEquals(
+                    objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse()),
+                    bodyAsText(),
+                )
             }
     }
 
@@ -270,7 +155,10 @@ class DeltakerApiTest {
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/mal") { postRequest(malRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse()), bodyAsText())
+            TestCase.assertEquals(
+                objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse()),
+                bodyAsText(),
+            )
         }
     }
 
@@ -297,7 +185,10 @@ class DeltakerApiTest {
         setUpTestApplication()
         client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse()), bodyAsText())
+            TestCase.assertEquals(
+                objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse()),
+                bodyAsText(),
+            )
         }
     }
 
@@ -341,22 +232,6 @@ class DeltakerApiTest {
         }
     }
 
-    private fun HttpRequestBuilder.postRequest(body: Any) {
-        header(
-            HttpHeaders.Authorization,
-            "Bearer ${
-                generateJWT(
-                    consumerClientId = "frontend-clientid",
-                    navAnsattAzureId = UUID.randomUUID().toString(),
-                    audience = "deltaker-bff",
-                )
-            }",
-        )
-        header("aktiv-enhet", "0101")
-        contentType(ContentType.Application.Json)
-        setBody(objectMapper.writeValueAsString(body))
-    }
-
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -378,15 +253,6 @@ class DeltakerApiTest {
         }
     }
 
-    private val utkastRequest = UtkastRequest(emptyList(), "Bakgrunnen for...", null, null)
-    private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
-    private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
-        emptyList(),
-        "Bakgrunnen for...",
-        null,
-        null,
-        Begrunnelse("TELEFONKONTAKT", null),
-    )
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val malRequest = EndreMalRequest(listOf(Mal("visningstekst", "type", true, null)))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50F, dagerPerUke = 2.5F)
