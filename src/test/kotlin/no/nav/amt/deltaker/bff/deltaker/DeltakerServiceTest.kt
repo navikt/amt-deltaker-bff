@@ -60,8 +60,10 @@ class DeltakerServiceTest {
             historikkRepository = DeltakerHistorikkRepository()
             navAnsattRepository = NavAnsattRepository()
             navEnhetRepository = NavEnhetRepository()
-            navAnsattService = NavAnsattService(navAnsattRepository, mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
-            navEnhetService = NavEnhetService(navEnhetRepository, mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
+            navAnsattService =
+                NavAnsattService(navAnsattRepository, mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
+            navEnhetService =
+                NavEnhetService(navEnhetRepository, mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
             deltakerService = DeltakerService(
                 deltakerRepository,
                 deltakerlisteRepository,
@@ -81,21 +83,21 @@ class DeltakerServiceTest {
         deltakerlisteRepository.upsert(deltakerliste)
 
         runBlocking {
-            val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv, opprettetAvEnhet)
+            val deltaker = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv, opprettetAvEnhet)
 
-            deltakerResponse.deltakerId shouldBe deltakerRepository.get(personident, deltakerliste.id)?.id
-            deltakerResponse.deltakerliste.deltakerlisteId shouldBe deltakerliste.id
-            deltakerResponse.deltakerliste.deltakerlisteNavn shouldBe deltakerliste.navn
-            deltakerResponse.deltakerliste.tiltakstype shouldBe deltakerliste.tiltak.type
-            deltakerResponse.deltakerliste.arrangorNavn shouldBe arrangor.navn
-            deltakerResponse.deltakerliste.oppstartstype shouldBe deltakerliste.getOppstartstype()
-            deltakerResponse.status.type shouldBe DeltakerStatus.Type.KLADD
-            deltakerResponse.startdato shouldBe null
-            deltakerResponse.sluttdato shouldBe null
-            deltakerResponse.dagerPerUke shouldBe null
-            deltakerResponse.deltakelsesprosent shouldBe null
-            deltakerResponse.bakgrunnsinformasjon shouldBe null
-            deltakerResponse.mal shouldBe emptyList()
+            deltaker.id shouldBe deltakerRepository.get(personident, deltakerliste.id).getOrThrow().id
+            deltaker.deltakerliste.id shouldBe deltakerliste.id
+            deltaker.deltakerliste.navn shouldBe deltakerliste.navn
+            deltaker.deltakerliste.tiltak.type shouldBe deltakerliste.tiltak.type
+            deltaker.deltakerliste.arrangor.navn shouldBe arrangor.navn
+            deltaker.deltakerliste.getOppstartstype() shouldBe deltakerliste.getOppstartstype()
+            deltaker.status.type shouldBe DeltakerStatus.Type.KLADD
+            deltaker.startdato shouldBe null
+            deltaker.sluttdato shouldBe null
+            deltaker.dagerPerUke shouldBe null
+            deltaker.deltakelsesprosent shouldBe null
+            deltaker.bakgrunnsinformasjon shouldBe null
+            deltaker.mal shouldBe emptyList()
         }
     }
 
@@ -110,53 +112,41 @@ class DeltakerServiceTest {
 
     @Test
     fun `opprettDeltaker - deltaker finnes og deltar fortsatt - returnerer eksisterende deltaker`() {
-        val deltakerId = UUID.randomUUID()
         val deltaker = TestData.lagDeltaker(
-            id = deltakerId,
-            personident = personident,
             sluttdato = null,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
         )
-        val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId, arrangor = arrangor)
-        TestRepository.insert(arrangor)
-        deltakerlisteRepository.upsert(deltakerliste)
-        deltakerRepository.upsert(deltaker)
+        TestRepository.insert(deltaker)
 
         runBlocking {
-            val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv, opprettetAvEnhet)
+            val eksisterendeDeltaker =
+                deltakerService.opprettDeltaker(deltaker.deltakerliste.id, deltaker.personident, opprettetAv, opprettetAvEnhet)
 
-            deltakerResponse.deltakerId shouldBe deltakerId
-            deltakerResponse.status.type shouldBe DeltakerStatus.Type.DELTAR
-            deltakerResponse.startdato shouldBe deltaker.startdato
-            deltakerResponse.sluttdato shouldBe deltaker.sluttdato
-            deltakerResponse.dagerPerUke shouldBe deltaker.dagerPerUke
-            deltakerResponse.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
-            deltakerResponse.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            deltakerResponse.mal shouldBe deltaker.mal
+            eksisterendeDeltaker.id shouldBe deltaker.id
+            eksisterendeDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
+            eksisterendeDeltaker.startdato shouldBe deltaker.startdato
+            eksisterendeDeltaker.sluttdato shouldBe deltaker.sluttdato
+            eksisterendeDeltaker.dagerPerUke shouldBe deltaker.dagerPerUke
+            eksisterendeDeltaker.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
+            eksisterendeDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
+            eksisterendeDeltaker.mal shouldBe deltaker.mal
         }
     }
 
     @Test
     fun `opprettDeltaker - deltaker finnes men har sluttet - oppretter ny deltaker`() {
-        val deltakerId = UUID.randomUUID()
         val deltaker = TestData.lagDeltaker(
-            id = deltakerId,
-            personident = personident,
             sluttdato = LocalDate.now().minusWeeks(3),
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         )
-        val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId, arrangor = arrangor)
-        TestRepository.insert(arrangor)
-        deltakerlisteRepository.upsert(deltakerliste)
-        deltakerRepository.upsert(deltaker)
+        TestRepository.insert(deltaker)
 
         runBlocking {
-            val deltakerResponse = deltakerService.opprettDeltaker(deltakerliste.id, personident, opprettetAv, opprettetAvEnhet)
+            val nyDeltaker =
+                deltakerService.opprettDeltaker(deltaker.deltakerliste.id, deltaker.personident, opprettetAv, opprettetAvEnhet)
 
-            deltakerResponse.deltakerId shouldNotBe deltakerId
-            deltakerResponse.status.type shouldBe DeltakerStatus.Type.KLADD
+            nyDeltaker.id shouldNotBe deltaker.id
+            nyDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
         }
     }
 
@@ -169,7 +159,7 @@ class DeltakerServiceTest {
         runBlocking {
             deltakerService.opprettUtkast(deltaker, utkast, TestData.randomNavIdent(), TestData.randomEnhetsnummer())
 
-            val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
 
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
@@ -200,7 +190,7 @@ class DeltakerServiceTest {
         runBlocking {
             deltakerService.opprettUtkast(deltaker, utkast, TestData.randomNavIdent(), TestData.randomEnhetsnummer())
 
-            val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
 
             samtykke.id shouldBe eksisterendeSamtykke.id
@@ -235,7 +225,7 @@ class DeltakerServiceTest {
         runBlocking {
             deltakerService.opprettUtkast(deltaker, utkast, navIdent, navEnhet)
 
-            val oppdatertDeltaker = deltakerRepository.get(deltaker.id)!!
+            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.status.type shouldBe deltaker.status.type
             oppdatertDeltaker.sistEndretAv shouldBe navIdent
 
@@ -257,9 +247,14 @@ class DeltakerServiceTest {
         val oppdatertDeltaker = TestData.lagOppdatertDeltaker(godkjentAvNav = godkjenningAvNav)
 
         runBlocking {
-            deltakerService.meldPaUtenGodkjenning(deltaker, oppdatertDeltaker, godkjenningAvNav.godkjentAv, godkjenningAvNav.godkjentAvEnhet)
+            deltakerService.meldPaUtenGodkjenning(
+                deltaker,
+                oppdatertDeltaker,
+                godkjenningAvNav.godkjentAv,
+                godkjenningAvNav.godkjentAvEnhet,
+            )
 
-            val oppdatertDeltakerFraDb = deltakerRepository.get(deltaker.id)!!
+            val oppdatertDeltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
             oppdatertDeltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
 
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
@@ -284,12 +279,20 @@ class DeltakerServiceTest {
         )
         TestRepository.insert(eksisterendeSamtykke)
         val godkjenningAvNav = TestData.lagGodkjenningAvNav()
-        val oppdatertDeltaker = TestData.lagOppdatertDeltaker(bakgrunnsinformasjon = "Nye opplysninger...", godkjentAvNav = godkjenningAvNav)
+        val oppdatertDeltaker = TestData.lagOppdatertDeltaker(
+            bakgrunnsinformasjon = "Nye opplysninger...",
+            godkjentAvNav = godkjenningAvNav,
+        )
 
         runBlocking {
-            deltakerService.meldPaUtenGodkjenning(deltaker, oppdatertDeltaker, godkjenningAvNav.godkjentAv, godkjenningAvNav.godkjentAvEnhet)
+            deltakerService.meldPaUtenGodkjenning(
+                deltaker,
+                oppdatertDeltaker,
+                godkjenningAvNav.godkjentAv,
+                godkjenningAvNav.godkjentAvEnhet,
+            )
 
-            val oppdatertDeltakerFraDb = deltakerRepository.get(deltaker.id)!!
+            val oppdatertDeltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
 
             samtykke.id shouldBe eksisterendeSamtykke.id
@@ -309,7 +312,12 @@ class DeltakerServiceTest {
 
         runBlocking {
             assertFailsWith<RuntimeException> {
-                deltakerService.meldPaUtenGodkjenning(deltaker, oppdatertDeltaker, TestData.randomNavIdent(), TestData.randomEnhetsnummer())
+                deltakerService.meldPaUtenGodkjenning(
+                    deltaker,
+                    oppdatertDeltaker,
+                    TestData.randomNavIdent(),
+                    TestData.randomEnhetsnummer(),
+                )
             }
         }
     }
@@ -332,7 +340,7 @@ class DeltakerServiceTest {
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
-            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id)
+            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
             oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.navn
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
@@ -363,7 +371,7 @@ class DeltakerServiceTest {
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id)
+            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltakerFraDb.sistEndretAv shouldBe deltaker.sistEndretAv
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo deltaker.sistEndret
             val historikk = historikkRepository.getForDeltaker(deltaker.id)
@@ -373,7 +381,10 @@ class DeltakerServiceTest {
 
     @Test
     fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, deltaker har sluttet - kaster feil`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET), sluttdato = LocalDate.now().minusMonths(1))
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            sluttdato = LocalDate.now().minusMonths(1),
+        )
         TestRepository.insert(deltaker)
 
         runBlocking {

@@ -70,12 +70,11 @@ object TestRepository {
 
     fun insert(
         deltaker: Deltaker,
-        deltakerliste: Deltakerliste = TestData.lagDeltakerliste(id = deltaker.deltakerlisteId),
     ) = Database.query { session ->
         try {
-            insert(deltakerliste)
+            insert(deltaker.deltakerliste)
         } catch (e: Exception) {
-            log.warn("Deltakerliste med id ${deltakerliste.id} er allerede opprettet")
+            log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet")
         }
 
         val sql = """
@@ -92,7 +91,7 @@ object TestRepository {
         val parameters = mapOf(
             "id" to deltaker.id,
             "personident" to deltaker.personident,
-            "deltakerlisteId" to deltaker.deltakerlisteId,
+            "deltakerlisteId" to deltaker.deltakerliste.id,
             "startdato" to deltaker.startdato,
             "sluttdato" to deltaker.sluttdato,
             "dagerPerUke" to deltaker.dagerPerUke,

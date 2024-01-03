@@ -1,8 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerHistorikkDto
-import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerlisteDTO
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
@@ -36,34 +33,31 @@ class DeltakerService(
         personident: String,
         opprettetAv: String,
         opprettetAvEnhet: String?,
-    ): DeltakerResponse {
-        val deltakerliste = deltakerlisteRepository.get(deltakerlisteId)
-            ?: throw NoSuchElementException("Fant ikke deltakerliste med id $deltakerlisteId")
-        val eksisterendeDeltaker = deltakerRepository.get(personident, deltakerlisteId)
+    ): Deltaker {
+        val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
+
+        val eksisterendeDeltaker = deltakerRepository.get(personident, deltakerlisteId).getOrNull()
+
         if (eksisterendeDeltaker != null && !eksisterendeDeltaker.harSluttet()) {
             log.warn("Deltakeren er allerede opprettet og deltar fortsatt")
-            return eksisterendeDeltaker.toDeltakerResponse(deltakerliste)
+            return eksisterendeDeltaker
         }
-        val deltaker = nyKladd(personident, deltakerlisteId, opprettetAv, opprettetAvEnhet)
-        hentEllerOpprettNavAnsattOgEnhet(
-            navIdent = opprettetAv,
-            enhetsnummer = opprettetAvEnhet,
-        )
-        log.info("Oppretter deltaker med id ${deltaker.id}")
-        deltakerRepository.upsert(deltaker)
-        return deltakerRepository.get(deltaker.id)?.toDeltakerResponse(deltakerliste)
-            ?: throw RuntimeException("Kunne ikke hente opprettet deltaker med id ${deltaker.id}")
+        val deltaker = nyKladd(personident, deltakerliste, opprettetAv, opprettetAvEnhet)
+
+        upsert(deltaker, opprettetAv, opprettetAvEnhet)
+
+        return deltakerRepository.get(deltaker.id)
+            .getOrThrow()
     }
 
-    fun get(id: UUID) = deltakerRepository.get(id) ?: throw NoSuchElementException("Fant ikke deltaker med id: $id")
+    fun get(id: UUID) = deltakerRepository.get(id)
 
-    fun getDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
-        val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
-            ?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerlisteId}")
-        return deltaker.toDeltakerResponse(deltakerliste)
-    }
-
-    suspend fun opprettUtkast(opprinneligDeltaker: Deltaker, utkast: OppdatertDeltaker, endretAv: String, endretAvEnhet: String?) {
+    suspend fun opprettUtkast(
+        opprinneligDeltaker: Deltaker,
+        utkast: OppdatertDeltaker,
+        endretAv: String,
+        endretAvEnhet: String?,
+    ) {
         val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
             nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
         } else {
@@ -81,11 +75,7 @@ class DeltakerService(
             sistEndret = LocalDateTime.now(),
         )
 
-        hentEllerOpprettNavAnsattOgEnhet(
-            navIdent = endretAv,
-            enhetsnummer = endretAvEnhet,
-        )
-        deltakerRepository.upsert(deltaker)
+        upsert(deltaker, endretAv, endretAvEnhet)
 
         val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
 
@@ -101,10 +91,15 @@ class DeltakerService(
         )
     }
 
-    suspend fun meldPaUtenGodkjenning(opprinneligDeltaker: Deltaker, oppdatertDeltaker: OppdatertDeltaker, endretAv: String, endretAvEnhet: String?) {
+    suspend fun meldPaUtenGodkjenning(
+        opprinneligDeltaker: Deltaker,
+        oppdatertDeltaker: OppdatertDeltaker,
+        endretAv: String,
+        endretAvEnhet: String?,
+    ) {
         if (oppdatertDeltaker.godkjentAvNav == null) {
-            log.error("Kan ikke forhåndsgodkjenne deltaker med id ${opprinneligDeltaker.id} uten begrunnelse, skal ikke kunne skje!")
-            throw RuntimeException("Kan ikke forhåndsgodkjenne deltaker uten begrunnelse")
+            log.error("Kan ikke forhåndsgodkjenne deltaker med id ${opprinneligDeltaker.id} uten begrunnelse")
+            error("Kan ikke forhåndsgodkjenne deltaker uten begrunnelse")
         }
         val deltaker = opprinneligDeltaker.copy(
             mal = oppdatertDeltaker.mal,
@@ -117,11 +112,7 @@ class DeltakerService(
             sistEndret = LocalDateTime.now(),
         )
 
-        hentEllerOpprettNavAnsattOgEnhet(
-            navIdent = endretAv,
-            enhetsnummer = endretAvEnhet,
-        )
-        deltakerRepository.upsert(deltaker)
+        upsert(deltaker, endretAv, endretAvEnhet)
 
         val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
 
@@ -143,7 +134,7 @@ class DeltakerService(
         endring: DeltakerEndring,
         endretAv: String,
         endretAvEnhet: String?,
-    ): DeltakerResponse {
+    ): Deltaker {
         if (opprinneligDeltaker.harSluttet()) {
             log.warn("Kan ikke endre på deltaker med id ${opprinneligDeltaker.id}, deltaker har sluttet")
             throw IllegalArgumentException("Kan ikke endre deltaker som har sluttet")
@@ -155,12 +146,14 @@ class DeltakerService(
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
             is DeltakerEndring.EndreMal -> opprinneligDeltaker.copy(
                 mal = endring.mal,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
             is DeltakerEndring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
                 deltakelsesprosent = endring.deltakelsesprosent,
                 dagerPerUke = endring.dagerPerUke,
@@ -168,12 +161,14 @@ class DeltakerService(
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
             is DeltakerEndring.EndreStartdato -> opprinneligDeltaker.copy(
                 startdato = endring.startdato,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
             is DeltakerEndring.EndreSluttdato -> opprinneligDeltaker.copy(
                 sluttdato = endring.sluttdato,
                 sistEndretAv = endretAv,
@@ -183,11 +178,7 @@ class DeltakerService(
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
-            hentEllerOpprettNavAnsattOgEnhet(
-                navIdent = endretAv,
-                enhetsnummer = endretAvEnhet,
-            )
-            deltakerRepository.upsert(deltaker)
+            upsert(deltaker, endretAv, endretAvEnhet)
             historikkRepository.upsert(
                 DeltakerHistorikk(
                     id = UUID.randomUUID(),
@@ -201,19 +192,23 @@ class DeltakerService(
             )
             log.info("Oppdatert deltaker med id ${deltaker.id}")
         }
-        val deltakerliste = deltakerlisteRepository.get(deltaker.deltakerlisteId)
-            ?: throw NoSuchElementException("Fant ikke deltakerliste med id ${deltaker.deltakerlisteId}")
-        return deltakerRepository.get(deltaker.id)?.toDeltakerResponse(deltakerliste)
-            ?: throw RuntimeException("Kunne ikke hente finne deltaker med id ${deltaker.id}")
+        return deltakerRepository.get(deltaker.id).getOrThrow()
+    }
+
+    private suspend fun upsert(
+        deltaker: Deltaker,
+        endretAv: String,
+        endretAvEnhet: String?,
+    ) {
+        navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
+        endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
+
+        deltakerRepository.upsert(deltaker)
+        log.info("Upserter deltaker med id ${deltaker.id}")
     }
 
     fun slettKladd(deltakerId: UUID) {
         deltakerRepository.slettKladd(deltakerId)
-    }
-
-    private suspend fun hentEllerOpprettNavAnsattOgEnhet(navIdent: String, enhetsnummer: String?) {
-        navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
-        enhetsnummer?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
     }
 
     private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {
@@ -227,11 +222,16 @@ class DeltakerService(
             )
     }
 
-    private fun nyKladd(personident: String, deltakerlisteId: UUID, opprettetAv: String, opprettetAvEnhet: String?): Deltaker =
+    private fun nyKladd(
+        personident: String,
+        deltakerliste: Deltakerliste,
+        opprettetAv: String,
+        opprettetAvEnhet: String?,
+    ): Deltaker =
         Deltaker(
             id = UUID.randomUUID(),
             personident = personident,
-            deltakerlisteId = deltakerlisteId,
+            deltakerliste = deltakerliste,
             startdato = null,
             sluttdato = null,
             dagerPerUke = null,
@@ -244,29 +244,6 @@ class DeltakerService(
             sistEndretAvEnhet = opprettetAvEnhet,
             opprettet = LocalDateTime.now(),
         )
-
-    private fun Deltaker.toDeltakerResponse(deltakerliste: Deltakerliste): DeltakerResponse {
-        return DeltakerResponse(
-            deltakerId = id,
-            deltakerliste = DeltakerlisteDTO(
-                deltakerlisteId = deltakerlisteId,
-                deltakerlisteNavn = deltakerliste.navn,
-                tiltakstype = deltakerliste.tiltak.type,
-                arrangorNavn = deltakerliste.arrangor.navn,
-                oppstartstype = deltakerliste.getOppstartstype(),
-            ),
-            status = status,
-            startdato = startdato,
-            sluttdato = sluttdato,
-            dagerPerUke = dagerPerUke,
-            deltakelsesprosent = deltakelsesprosent,
-            bakgrunnsinformasjon = bakgrunnsinformasjon,
-            mal = mal,
-            sistEndretAv = sistEndretAv,
-            sistEndretAvEnhet = sistEndretAvEnhet,
-            historikk = historikkRepository.getForDeltaker(id).map { it.toDeltakerHistorikkDto() },
-        )
-    }
 }
 
 private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(
@@ -276,12 +253,4 @@ private fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.A
     gyldigFra = LocalDateTime.now(),
     gyldigTil = null,
     opprettet = LocalDateTime.now(),
-)
-
-private fun DeltakerHistorikk.toDeltakerHistorikkDto() = DeltakerHistorikkDto(
-    endringType = endringType,
-    endring = endring,
-    endretAv = endretAv,
-    endretAvEnhet = endretAvEnhet,
-    endret = endret,
 )

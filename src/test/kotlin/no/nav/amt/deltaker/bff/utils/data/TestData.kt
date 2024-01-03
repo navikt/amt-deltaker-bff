@@ -71,7 +71,7 @@ object TestData {
     fun lagDeltaker(
         id: UUID = UUID.randomUUID(),
         personident: String = randomIdent(),
-        deltakerlisteId: UUID = UUID.randomUUID(),
+        deltakerliste: Deltakerliste = lagDeltakerliste(),
         startdato: LocalDate? = LocalDate.now().minusMonths(3),
         sluttdato: LocalDate? = LocalDate.now().minusDays(1),
         dagerPerUke: Float? = 5F,
@@ -86,7 +86,7 @@ object TestData {
     ) = Deltaker(
         id,
         personident,
-        deltakerlisteId,
+        deltakerliste,
         startdato,
         sluttdato,
         dagerPerUke,
@@ -99,6 +99,11 @@ object TestData {
         sistEndret,
         opprettet,
     )
+
+    fun lagDeltakerStatus(
+        statusType: DeltakerStatus.Type,
+        aarsak: DeltakerStatus.Aarsak? = null,
+    ) = lagDeltakerStatus(type = statusType, aarsak = aarsak)
 
     fun lagDeltakerStatus(
         id: UUID = UUID.randomUUID(),

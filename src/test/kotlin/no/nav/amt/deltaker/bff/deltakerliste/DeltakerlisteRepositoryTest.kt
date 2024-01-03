@@ -29,7 +29,7 @@ class DeltakerlisteRepositoryTest {
 
         repository.upsert(deltakerliste)
 
-        repository.get(deltakerliste.id) shouldBe deltakerliste
+        repository.get(deltakerliste.id).getOrNull() shouldBe deltakerliste
     }
 
     @Test
@@ -44,7 +44,7 @@ class DeltakerlisteRepositoryTest {
 
         repository.upsert(oppdatertListe)
 
-        repository.get(deltakerliste.id) shouldBe oppdatertListe
+        repository.get(deltakerliste.id).getOrNull() shouldBe oppdatertListe
     }
 
     @Test
@@ -57,7 +57,7 @@ class DeltakerlisteRepositoryTest {
 
         repository.delete(deltakerliste.id)
 
-        repository.get(deltakerliste.id) shouldBe null
+        repository.get(deltakerliste.id).getOrNull() shouldBe null
     }
 
     @Test
@@ -67,10 +67,10 @@ class DeltakerlisteRepositoryTest {
         TestRepository.insert(arrangor)
         repository.upsert(deltakerliste)
 
-        val deltakerlisteMedArrangor = repository.get(deltakerliste.id)
+        val deltakerlisteMedArrangor = repository.get(deltakerliste.id).getOrThrow()
 
         deltakerlisteMedArrangor shouldNotBe null
-        deltakerlisteMedArrangor?.navn shouldBe deltakerliste.navn
-        deltakerlisteMedArrangor?.arrangor?.navn shouldBe arrangor.navn
+        deltakerlisteMedArrangor.navn shouldBe deltakerliste.navn
+        deltakerlisteMedArrangor.arrangor.navn shouldBe arrangor.navn
     }
 }
