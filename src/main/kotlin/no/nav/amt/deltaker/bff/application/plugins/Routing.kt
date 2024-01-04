@@ -2,21 +2,22 @@ package no.nav.amt.deltaker.bff.application.plugins
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
-import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import no.nav.amt.deltaker.bff.application.registerHealthApi
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
+import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 
 fun Application.configureRouting(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
+    pameldingService: PameldingService,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -36,5 +37,6 @@ fun Application.configureRouting(
         registerHealthApi()
 
         registerDeltakerApi(tilgangskontrollService, deltakerService)
+        registerPameldingApi(tilgangskontrollService, deltakerService, pameldingService)
     }
 }

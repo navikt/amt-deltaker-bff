@@ -138,7 +138,9 @@ object TestData {
         deltakelsesprosent: Float? = 100F,
         dagerPerUke: Float? = 5F,
         godkjentAvNav: GodkjenningAvNav? = null,
-    ) = OppdatertDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav)
+        endretAv: String = randomNavIdent(),
+        endretAvEnhet: String? = randomEnhetsnummer(),
+    ) = OppdatertDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav, endretAv, endretAvEnhet)
 
     fun lagDeltakerHistorikk(
         id: UUID = UUID.randomUUID(),

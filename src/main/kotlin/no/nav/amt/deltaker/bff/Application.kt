@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
@@ -118,16 +119,16 @@ fun Application.module() {
     val historikkRepository = DeltakerHistorikkRepository()
     val deltakerService = DeltakerService(
         deltakerRepository,
-        deltakerlisteRepository,
-        samtykkeRepository,
         historikkRepository,
         navAnsattService,
         navEnhetService,
         DeltakerProducer(),
     )
 
+    val pameldingService = PameldingService(deltakerService, samtykkeRepository, deltakerlisteRepository)
+
     configureAuthentication(environment)
-    configureRouting(tilgangskontrollService, deltakerService)
+    configureRouting(tilgangskontrollService, deltakerService, pameldingService)
     configureMonitoring()
 
     attributes.put(isReadyKey, true)

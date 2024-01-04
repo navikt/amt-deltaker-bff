@@ -151,7 +151,7 @@ class DeltakerRepository {
         session.run(query)
     }
 
-    fun slettKladd(deltakerId: UUID) = Database.query { session ->
+    fun delete(deltakerId: UUID) = Database.query { session ->
         session.transaction { tx ->
             tx.update(slettStatus(deltakerId))
             tx.update(slettDeltaker(deltakerId))
