@@ -4,12 +4,10 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
@@ -35,14 +33,10 @@ class DeltakerServiceTest {
     companion object {
         lateinit var navAnsatt: NavAnsatt
         lateinit var navEnhet: NavEnhet
-        lateinit var deltakerlisteRepository: DeltakerlisteRepository
         lateinit var deltakerRepository: DeltakerRepository
         lateinit var deltakerService: DeltakerService
-        lateinit var samtykkeRepository: DeltakerSamtykkeRepository
         lateinit var historikkRepository: DeltakerHistorikkRepository
-        lateinit var navAnsattRepository: NavAnsattRepository
         lateinit var navAnsattService: NavAnsattService
-        lateinit var navEnhetRepository: NavEnhetRepository
         lateinit var navEnhetService: NavEnhetService
 
         @JvmStatic
@@ -51,16 +45,12 @@ class DeltakerServiceTest {
             SingletonPostgresContainer.start()
             navAnsatt = TestData.lagNavAnsatt()
             navEnhet = TestData.lagNavEnhet()
-            deltakerlisteRepository = DeltakerlisteRepository()
             deltakerRepository = DeltakerRepository()
-            samtykkeRepository = DeltakerSamtykkeRepository()
             historikkRepository = DeltakerHistorikkRepository()
-            navAnsattRepository = NavAnsattRepository()
-            navEnhetRepository = NavEnhetRepository()
             navAnsattService =
-                NavAnsattService(navAnsattRepository, mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
+                NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
             navEnhetService =
-                NavEnhetService(navEnhetRepository, mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
+                NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
             deltakerService = DeltakerService(
                 deltakerRepository,
                 historikkRepository,
