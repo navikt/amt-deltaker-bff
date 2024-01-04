@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
+import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -25,6 +26,7 @@ class DeltakerService(
     private val historikkRepository: DeltakerHistorikkRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
+    private val deltakerProducer: DeltakerProducer,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -204,6 +206,7 @@ class DeltakerService(
         endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
 
         deltakerRepository.upsert(deltaker)
+        deltakerProducer.produce(deltaker)
         log.info("Upserter deltaker med id ${deltaker.id}")
     }
 

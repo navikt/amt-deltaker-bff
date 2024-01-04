@@ -26,6 +26,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
+import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
@@ -122,6 +123,7 @@ fun Application.module() {
         historikkRepository,
         navAnsattService,
         navEnhetService,
+        DeltakerProducer(),
     )
 
     configureAuthentication(environment)
