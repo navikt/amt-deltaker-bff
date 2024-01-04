@@ -45,6 +45,21 @@ fun Routing.registerPameldingApi(
             call.respond(deltaker.toDeltakerResponse())
         }
 
+        // Deprecated bør byttes til /pamelding
+        post("/deltaker") {
+            val navIdent = getNavIdent()
+            val pameldingRequest = call.receive<PameldingRequest>()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
+            val deltaker = deltakerService.opprettDeltaker(
+                deltakerlisteId = pameldingRequest.deltakerlisteId,
+                personident = pameldingRequest.personident,
+                opprettetAv = navIdent,
+                opprettetAvEnhet = enhetsnummer,
+            )
+            call.respond(deltaker.toDeltakerResponse())
+        }
+
         post("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
             val request = call.receive<UtkastRequest>()
