@@ -36,7 +36,7 @@ fun Routing.registerPameldingApi(
             val pameldingRequest = call.receive<PameldingRequest>()
             val enhetsnummer = call.request.header("aktiv-enhet")
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
-            val deltaker = deltakerService.opprettDeltaker(
+            val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = pameldingRequest.deltakerlisteId,
                 personident = pameldingRequest.personident,
                 opprettetAv = navIdent,
@@ -51,7 +51,7 @@ fun Routing.registerPameldingApi(
             val pameldingRequest = call.receive<PameldingRequest>()
             val enhetsnummer = call.request.header("aktiv-enhet")
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
-            val deltaker = deltakerService.opprettDeltaker(
+            val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = pameldingRequest.deltakerlisteId,
                 personident = pameldingRequest.personident,
                 opprettetAv = navIdent,

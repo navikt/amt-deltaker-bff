@@ -76,7 +76,7 @@ class PameldingApiTest {
     fun `post pamelding - har tilgang - returnerer deltaker`() = testApplication {
         val deltaker = TestData.lagDeltaker()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery { deltakerService.opprettDeltaker(any(), any(), any(), any()) } returns deltaker
+        coEvery { pameldingService.opprettKladd(any(), any(), any(), any()) } returns deltaker
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
@@ -88,7 +88,7 @@ class PameldingApiTest {
     fun `post pamelding - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery {
-            deltakerService.opprettDeltaker(
+            pameldingService.opprettKladd(
                 any(),
                 any(),
                 any(),

@@ -119,14 +119,13 @@ fun Application.module() {
     val historikkRepository = DeltakerHistorikkRepository()
     val deltakerService = DeltakerService(
         deltakerRepository,
-        deltakerlisteRepository,
         historikkRepository,
         navAnsattService,
         navEnhetService,
         DeltakerProducer(),
     )
 
-    val pameldingService = PameldingService(deltakerService, samtykkeRepository)
+    val pameldingService = PameldingService(deltakerService, samtykkeRepository, deltakerlisteRepository)
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService)

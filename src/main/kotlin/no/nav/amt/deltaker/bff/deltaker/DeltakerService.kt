@@ -9,8 +9,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
@@ -19,7 +17,6 @@ import java.util.UUID
 
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
-    private val deltakerlisteRepository: DeltakerlisteRepository,
     private val historikkRepository: DeltakerHistorikkRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
@@ -27,29 +24,9 @@ class DeltakerService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun opprettDeltaker(
-        deltakerlisteId: UUID,
-        personident: String,
-        opprettetAv: String,
-        opprettetAvEnhet: String?,
-    ): Deltaker {
-        val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
-
-        val eksisterendeDeltaker = deltakerRepository.get(personident, deltakerlisteId).getOrNull()
-
-        if (eksisterendeDeltaker != null && !eksisterendeDeltaker.harSluttet()) {
-            log.warn("Deltakeren er allerede opprettet og deltar fortsatt")
-            return eksisterendeDeltaker
-        }
-        val deltaker = nyKladd(personident, deltakerliste, opprettetAv, opprettetAvEnhet)
-
-        upsert(deltaker)
-
-        return deltakerRepository.get(deltaker.id)
-            .getOrThrow()
-    }
-
     fun get(id: UUID) = deltakerRepository.get(id)
+
+    fun get(personident: String, deltakerlisteId: UUID) = deltakerRepository.get(personident, deltakerlisteId)
 
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
@@ -143,7 +120,7 @@ class DeltakerService(
         deltakerRepository.delete(deltakerId)
     }
 
-    private suspend fun upsert(
+    suspend fun upsert(
         deltaker: Deltaker,
     ) {
         navAnsattService.hentEllerOpprettNavAnsatt(deltaker.sistEndretAv)
@@ -164,29 +141,6 @@ class DeltakerService(
                 opprinneligDeltaker.sluttdato == oppdatertDeltaker.sluttdato
             )
     }
-
-    private fun nyKladd(
-        personident: String,
-        deltakerliste: Deltakerliste,
-        opprettetAv: String,
-        opprettetAvEnhet: String?,
-    ): Deltaker =
-        Deltaker(
-            id = UUID.randomUUID(),
-            personident = personident,
-            deltakerliste = deltakerliste,
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            bakgrunnsinformasjon = null,
-            mal = emptyList(),
-            status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
-            sistEndretAv = opprettetAv,
-            sistEndret = LocalDateTime.now(),
-            sistEndretAvEnhet = opprettetAvEnhet,
-            opprettet = LocalDateTime.now(),
-        )
 }
 
 fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(
