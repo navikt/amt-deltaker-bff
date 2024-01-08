@@ -2,11 +2,11 @@ package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak

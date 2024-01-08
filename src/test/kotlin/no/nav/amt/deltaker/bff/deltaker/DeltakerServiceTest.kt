@@ -5,8 +5,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
@@ -85,7 +85,9 @@ class DeltakerServiceTest {
             val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
             endring.size shouldBe 1
             endring.first().endringstype shouldBe DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON
-            endring.first().endring shouldBe DeltakerEndring.Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon)
+            endring.first().endring shouldBe DeltakerEndring.Endring.EndreBakgrunnsinformasjon(
+                oppdatertBakgrunnsinformasjon,
+            )
             endring.first().endret shouldBeCloseTo LocalDateTime.now()
             endring.first().endretAv shouldBe navAnsatt.navn
             endring.first().endretAvEnhet shouldBe navEnhet.navn

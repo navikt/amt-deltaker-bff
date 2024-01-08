@@ -6,7 +6,7 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import java.util.UUID
 
 class DeltakerEndringRepository {

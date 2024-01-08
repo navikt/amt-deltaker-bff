@@ -17,7 +17,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import org.slf4j.LoggerFactory
 import java.util.UUID
 

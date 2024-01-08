@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.deltaker.model.deltakerendring
+package no.nav.amt.deltaker.bff.deltaker.model
 
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import java.time.LocalDate
