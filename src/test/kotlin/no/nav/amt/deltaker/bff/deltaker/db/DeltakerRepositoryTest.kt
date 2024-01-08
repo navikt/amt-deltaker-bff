@@ -74,7 +74,7 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `delete - ingen historikk eller samtykke - sletter deltaker`() {
+    fun `delete - ingen endring eller samtykke - sletter deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker.deltakerliste)
         repository.upsert(deltaker)

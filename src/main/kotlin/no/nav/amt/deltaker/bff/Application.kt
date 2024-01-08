@@ -24,7 +24,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
@@ -116,10 +116,10 @@ fun Application.module() {
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
     val samtykkeRepository = DeltakerSamtykkeRepository()
-    val historikkRepository = DeltakerHistorikkRepository()
+    val deltakerEndringRepository = DeltakerEndringRepository()
     val deltakerService = DeltakerService(
         deltakerRepository,
-        historikkRepository,
+        deltakerEndringRepository,
         navAnsattService,
         navEnhetService,
         DeltakerProducer(),

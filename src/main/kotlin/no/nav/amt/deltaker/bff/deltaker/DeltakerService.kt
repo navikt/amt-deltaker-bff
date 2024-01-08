@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -15,7 +15,7 @@ import java.util.UUID
 
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
-    private val historikkRepository: DeltakerHistorikkRepository,
+    private val deltakerEndringRepository: DeltakerEndringRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
     private val deltakerProducer: DeltakerProducer,
@@ -77,7 +77,7 @@ class DeltakerService(
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
             upsert(deltaker)
-            historikkRepository.upsert(
+            deltakerEndringRepository.upsert(
                 DeltakerEndring(
                     id = UUID.randomUUID(),
                     deltakerId = deltaker.id,

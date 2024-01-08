@@ -9,7 +9,7 @@ import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
 import java.util.UUID
 
-class DeltakerHistorikkRepository {
+class DeltakerEndringRepository {
     private fun rowMapper(row: Row): DeltakerEndring {
         val endringstype = DeltakerEndring.Endringstype.valueOf(row.string("endringstype"))
         return DeltakerEndring(
@@ -23,7 +23,7 @@ class DeltakerHistorikkRepository {
         )
     }
 
-    fun upsert(deltakerHistorikk: DeltakerEndring) = Database.query {
+    fun upsert(deltakerEndring: DeltakerEndring) = Database.query {
         val sql = """
             insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
             values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet)
@@ -37,12 +37,12 @@ class DeltakerHistorikkRepository {
         """.trimIndent()
 
         val params = mapOf(
-            "id" to deltakerHistorikk.id,
-            "deltaker_id" to deltakerHistorikk.deltakerId,
-            "endringstype" to deltakerHistorikk.endringstype.name,
-            "endring" to toPGObject(deltakerHistorikk.endring),
-            "endret_av" to deltakerHistorikk.endretAv,
-            "endret_av_enhet" to deltakerHistorikk.endretAvEnhet,
+            "id" to deltakerEndring.id,
+            "deltaker_id" to deltakerEndring.deltakerId,
+            "endringstype" to deltakerEndring.endringstype.name,
+            "endring" to toPGObject(deltakerEndring.endring),
+            "endret_av" to deltakerEndring.endretAv,
+            "endret_av_enhet" to deltakerEndring.endretAvEnhet,
         )
 
         it.update(queryOf(sql, params))

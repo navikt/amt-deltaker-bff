@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
@@ -37,7 +37,7 @@ class PameldingServiceTest {
         private val samtykkeRepository = DeltakerSamtykkeRepository()
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
-            historikkRepository = DeltakerHistorikkRepository(),
+            deltakerEndringRepository = DeltakerEndringRepository(),
             navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClientNavAnsatt()),
             navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClientNavEnhet()),
             deltakerProducer = DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),

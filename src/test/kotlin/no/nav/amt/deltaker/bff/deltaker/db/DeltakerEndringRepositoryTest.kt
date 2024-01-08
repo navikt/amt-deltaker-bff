@@ -10,53 +10,53 @@ import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
 import org.junit.BeforeClass
 import org.junit.Test
 
-class DeltakerHistorikkRepositoryTest {
+class DeltakerEndringRepositoryTest {
     companion object {
-        lateinit var repository: DeltakerHistorikkRepository
+        lateinit var repository: DeltakerEndringRepository
 
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
-            repository = DeltakerHistorikkRepository()
+            repository = DeltakerEndringRepository()
         }
     }
 
     @Test
-    fun `upsert - ny deltakerhistorikk - inserter`() {
+    fun `upsert - ny deltakerEndring - inserter`() {
         val deltaker = TestData.lagDeltaker()
-        val deltakerHistorikk = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
+        val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
         TestRepository.insert(deltaker)
 
-        repository.upsert(deltakerHistorikk)
+        repository.upsert(deltakerEndring)
 
-        val historikkFraDb = repository.getForDeltaker(deltaker.id)
-        historikkFraDb.size shouldBe 1
-        sammenlignDeltakerHistorikk(historikkFraDb.first(), deltakerHistorikk)
+        val endringFraDb = repository.getForDeltaker(deltaker.id)
+        endringFraDb.size shouldBe 1
+        sammenlignDeltakerEndring(endringFraDb.first(), deltakerEndring)
     }
 
     @Test
-    fun `getForDeltaker - to endringer for deltaker, navansatt og enhet finnes ikke - returnerer historikk med navident og enhetsnummer`() {
+    fun `getForDeltaker - to endringer for deltaker, navansatt og enhet finnes ikke - returnerer endring med navident og enhetsnummer`() {
         val deltaker = TestData.lagDeltaker()
-        val deltakerHistorikk = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
-        val deltakerHistorikk2 = TestData.lagDeltakerEndring(
+        val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
+        val deltakerEndring2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
             endringstype = DeltakerEndring.Endringstype.MAL,
             endring = DeltakerEndring.Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
         )
         TestRepository.insert(deltaker)
-        repository.upsert(deltakerHistorikk)
-        repository.upsert(deltakerHistorikk2)
+        repository.upsert(deltakerEndring)
+        repository.upsert(deltakerEndring2)
 
-        val historikkFraDb = repository.getForDeltaker(deltaker.id)
+        val endringFraDb = repository.getForDeltaker(deltaker.id)
 
-        historikkFraDb.size shouldBe 2
-        sammenlignDeltakerHistorikk(historikkFraDb.find { it.id == deltakerHistorikk.id }!!, deltakerHistorikk)
-        sammenlignDeltakerHistorikk(historikkFraDb.find { it.id == deltakerHistorikk2.id }!!, deltakerHistorikk2)
+        endringFraDb.size shouldBe 2
+        sammenlignDeltakerEndring(endringFraDb.find { it.id == deltakerEndring.id }!!, deltakerEndring)
+        sammenlignDeltakerEndring(endringFraDb.find { it.id == deltakerEndring2.id }!!, deltakerEndring2)
     }
 
     @Test
-    fun `getForDeltaker - to endringer for deltaker, navansatt og enhet finnes - returnerer historikk med navn for ansatt og enhet`() {
+    fun `getForDeltaker - to endringer for deltaker, navansatt og enhet finnes - returnerer endring med navn for ansatt og enhet`() {
         val navAnsatt1 = TestData.lagNavAnsatt()
         TestRepository.insert(navAnsatt1)
         val navAnsatt2 = TestData.lagNavAnsatt()
@@ -66,12 +66,12 @@ class DeltakerHistorikkRepositoryTest {
         val navEnhet2 = TestData.lagNavEnhet()
         TestRepository.insert(navEnhet2)
         val deltaker = TestData.lagDeltaker()
-        val deltakerHistorikk = TestData.lagDeltakerEndring(
+        val deltakerEndring = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
             endretAv = navAnsatt1.navIdent,
             endretAvEnhet = navEnhet1.enhetsnummer,
         )
-        val deltakerHistorikk2 = TestData.lagDeltakerEndring(
+        val deltakerEndring2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
             endringstype = DeltakerEndring.Endringstype.MAL,
             endring = DeltakerEndring.Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
@@ -79,23 +79,23 @@ class DeltakerHistorikkRepositoryTest {
             endretAvEnhet = navEnhet2.enhetsnummer,
         )
         TestRepository.insert(deltaker)
-        repository.upsert(deltakerHistorikk)
-        repository.upsert(deltakerHistorikk2)
+        repository.upsert(deltakerEndring)
+        repository.upsert(deltakerEndring2)
 
-        val historikkFraDb = repository.getForDeltaker(deltaker.id)
+        val endringFraDb = repository.getForDeltaker(deltaker.id)
 
-        historikkFraDb.size shouldBe 2
-        sammenlignDeltakerHistorikk(
-            historikkFraDb.find { it.id == deltakerHistorikk.id }!!,
-            deltakerHistorikk.copy(endretAv = navAnsatt1.navn, endretAvEnhet = navEnhet1.navn),
+        endringFraDb.size shouldBe 2
+        sammenlignDeltakerEndring(
+            endringFraDb.find { it.id == deltakerEndring.id }!!,
+            deltakerEndring.copy(endretAv = navAnsatt1.navn, endretAvEnhet = navEnhet1.navn),
         )
-        sammenlignDeltakerHistorikk(
-            historikkFraDb.find { it.id == deltakerHistorikk2.id }!!,
-            deltakerHistorikk2.copy(endretAv = navAnsatt2.navn, endretAvEnhet = navEnhet2.navn),
+        sammenlignDeltakerEndring(
+            endringFraDb.find { it.id == deltakerEndring2.id }!!,
+            deltakerEndring2.copy(endretAv = navAnsatt2.navn, endretAvEnhet = navEnhet2.navn),
         )
     }
 
-    private fun sammenlignDeltakerHistorikk(a: DeltakerEndring, b: DeltakerEndring) {
+    private fun sammenlignDeltakerEndring(a: DeltakerEndring, b: DeltakerEndring) {
         a.id shouldBe b.id
         a.deltakerId shouldBe b.deltakerId
         a.endringstype shouldBe b.endringstype
