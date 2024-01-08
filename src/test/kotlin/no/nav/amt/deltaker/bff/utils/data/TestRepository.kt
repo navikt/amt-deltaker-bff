@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -179,6 +180,32 @@ object TestRepository {
             "nav_enhet_nummer" to navEnhet.enhetsnummer,
             "navn" to navEnhet.navn,
             "modified_at" to LocalDateTime.now(),
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(endring: DeltakerEndring) = Database.query {
+        val sql = """
+            insert into deltaker_endring (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet, modified_at)
+            values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet, :endret)
+            on conflict (id) do update set 
+                deltaker_id = :deltaker_id,
+                endringstype = :endringstype,
+                endring = :endring,
+                endret_av = :endret_av,
+                endret_av_enhet = :endret_av_enhet,
+                modified_at = :endret
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to endring.id,
+            "deltaker_id" to endring.deltakerId,
+            "endringstype" to endring.endringstype.name,
+            "endring" to toPGObject(endring.endring),
+            "endret_av" to endring.endretAv,
+            "endret_av_enhet" to endring.endretAvEnhet,
+            "endret" to endring.endret,
         )
 
         it.update(queryOf(sql, params))

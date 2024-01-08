@@ -11,12 +11,14 @@ import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -24,6 +26,7 @@ import java.util.UUID
 fun Routing.registerDeltakerApi(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
+    deltakerHistorikkService: DeltakerHistorikkService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -107,9 +110,20 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.personident)
-            log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id $deltaker")
+            log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id ${deltaker.id}")
 
             call.respond(deltaker.toDeltakerResponse())
+        }
+
+        get("/deltaker/{deltakerId}/historikk") {
+            val navIdent = getNavIdent()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.personident)
+            log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
+
+            val historikk = deltakerHistorikkService.getForDeltaker(deltaker.id)
+
+            call.respond(historikk.toResponse())
         }
     }
 }

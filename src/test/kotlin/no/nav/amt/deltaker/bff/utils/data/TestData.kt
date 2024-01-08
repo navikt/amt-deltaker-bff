@@ -163,7 +163,7 @@ object TestData {
 
     fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
-        deltakerId: UUID,
+        deltakerId: UUID = UUID.randomUUID(),
         endringstype: DeltakerEndring.Endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
         endring: DeltakerEndring.Endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
         endretAv: String = randomNavIdent(),

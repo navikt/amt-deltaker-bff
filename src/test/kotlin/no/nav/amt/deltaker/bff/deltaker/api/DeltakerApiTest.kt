@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
@@ -28,8 +29,10 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -48,6 +51,7 @@ class DeltakerApiTest {
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
+    private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
 
     @Before
     fun setup() {
@@ -68,6 +72,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -78,6 +83,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
+        client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -234,6 +240,23 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker()
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        val samtykke = DeltakerHistorikk.Samtykke(TestData.lagDeltakerSamtykke())
+        val endring = DeltakerHistorikk.Endring(TestData.lagDeltakerEndring())
+        val historikk = listOf(samtykke, endring)
+        every { deltakerHistorikkService.getForDeltaker(deltaker.id) } returns historikk
+
+        setUpTestApplication()
+        client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse())
+        }
+    }
+
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -251,7 +274,7 @@ class DeltakerApiTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService)
+            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
         }
     }
 
