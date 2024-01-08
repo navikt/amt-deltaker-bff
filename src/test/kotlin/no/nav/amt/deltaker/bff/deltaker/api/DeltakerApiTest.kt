@@ -30,7 +30,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -92,7 +92,7 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.BAKGRUNNSINFORMASJON,
+                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 any(),
                 any(),
                 any(),
@@ -121,7 +121,7 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.BAKGRUNNSINFORMASJON,
+                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 any(),
                 any(),
                 any(),
@@ -147,7 +147,7 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.MAL,
+                DeltakerEndring.Endringstype.MAL,
                 any(),
                 any(),
                 any(),
@@ -177,7 +177,7 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.DELTAKELSESMENGDE,
+                DeltakerEndring.Endringstype.DELTAKELSESMENGDE,
                 any(),
                 any(),
                 any(),
@@ -206,7 +206,7 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.STARTDATO,
+                DeltakerEndring.Endringstype.STARTDATO,
                 any(),
                 any(),
                 any(),

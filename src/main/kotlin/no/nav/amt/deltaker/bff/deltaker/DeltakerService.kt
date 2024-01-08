@@ -7,8 +7,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
@@ -30,8 +28,8 @@ class DeltakerService(
 
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
-        endringstype: Endringstype,
-        endring: Endring,
+        endringstype: DeltakerEndring.Endringstype,
+        endring: DeltakerEndring.Endring,
         endretAv: String,
         endretAvEnhet: String?,
     ): Deltaker {
@@ -40,21 +38,21 @@ class DeltakerService(
             throw IllegalArgumentException("Kan ikke endre deltaker som har sluttet")
         }
         val deltaker = when (endring) {
-            is Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
                 bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
 
-            is Endring.EndreMal -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreMal -> opprinneligDeltaker.copy(
                 mal = endring.mal,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
 
-            is Endring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
                 deltakelsesprosent = endring.deltakelsesprosent,
                 dagerPerUke = endring.dagerPerUke,
                 sistEndretAv = endretAv,
@@ -62,14 +60,14 @@ class DeltakerService(
                 sistEndret = LocalDateTime.now(),
             )
 
-            is Endring.EndreStartdato -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreStartdato -> opprinneligDeltaker.copy(
                 startdato = endring.startdato,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
 
-            is Endring.EndreSluttdato -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreSluttdato -> opprinneligDeltaker.copy(
                 sluttdato = endring.sluttdato,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,

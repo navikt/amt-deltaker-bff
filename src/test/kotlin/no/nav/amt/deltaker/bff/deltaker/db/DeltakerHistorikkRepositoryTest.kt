@@ -2,8 +2,6 @@ package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -43,8 +41,8 @@ class DeltakerHistorikkRepositoryTest {
         val deltakerHistorikk = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
         val deltakerHistorikk2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
-            endringstype = Endringstype.MAL,
-            endring = Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
+            endringstype = DeltakerEndring.Endringstype.MAL,
+            endring = DeltakerEndring.Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
         )
         TestRepository.insert(deltaker)
         repository.upsert(deltakerHistorikk)
@@ -75,8 +73,8 @@ class DeltakerHistorikkRepositoryTest {
         )
         val deltakerHistorikk2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
-            endringstype = Endringstype.MAL,
-            endring = Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
+            endringstype = DeltakerEndring.Endringstype.MAL,
+            endring = DeltakerEndring.Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
             endretAv = navAnsatt2.navIdent,
             endretAvEnhet = navEnhet2.enhetsnummer,
         )

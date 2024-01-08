@@ -6,8 +6,7 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
@@ -72,8 +71,8 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.BAKGRUNNSINFORMASJON,
-                Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
+                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+                DeltakerEndring.Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
                 endretAvIdent,
                 endretAvEnhetsnummer,
             )
@@ -85,8 +84,8 @@ class DeltakerServiceTest {
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
             val historikk = historikkRepository.getForDeltaker(deltaker.id)
             historikk.size shouldBe 1
-            historikk.first().endringstype shouldBe Endringstype.BAKGRUNNSINFORMASJON
-            historikk.first().endring shouldBe Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon)
+            historikk.first().endringstype shouldBe DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON
+            historikk.first().endring shouldBe DeltakerEndring.Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon)
             historikk.first().endret shouldBeCloseTo LocalDateTime.now()
             historikk.first().endretAv shouldBe navAnsatt.navn
             historikk.first().endretAvEnhet shouldBe navEnhet.navn
@@ -105,8 +104,8 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                Endringstype.BAKGRUNNSINFORMASJON,
-                Endring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
+                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+                DeltakerEndring.Endring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
                 endretAvIdent,
                 endretAvEnhetsnummer,
             )
@@ -132,8 +131,8 @@ class DeltakerServiceTest {
             assertFailsWith<IllegalArgumentException> {
                 deltakerService.oppdaterDeltaker(
                     deltaker,
-                    Endringstype.BAKGRUNNSINFORMASJON,
-                    Endring.EndreBakgrunnsinformasjon("oppdatert informasjon"),
+                    DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+                    DeltakerEndring.Endring.EndreBakgrunnsinformasjon("oppdatert informasjon"),
                     TestData.randomNavIdent(),
                     TestData.randomEnhetsnummer(),
                 )

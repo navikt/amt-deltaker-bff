@@ -7,13 +7,11 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
-import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
 import java.util.UUID
 
 class DeltakerHistorikkRepository {
     private fun rowMapper(row: Row): DeltakerEndring {
-        val endringstype = Endringstype.valueOf(row.string("endringstype"))
+        val endringstype = DeltakerEndring.Endringstype.valueOf(row.string("endringstype"))
         return DeltakerEndring(
             id = row.uuid("id"),
             deltakerId = row.uuid("deltaker_id"),
@@ -73,22 +71,22 @@ class DeltakerHistorikkRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
-    private fun parseDeltakerEndringJson(endringJson: String, endringType: Endringstype): Endring {
+    private fun parseDeltakerEndringJson(endringJson: String, endringType: DeltakerEndring.Endringstype): DeltakerEndring.Endring {
         return when (endringType) {
-            Endringstype.BAKGRUNNSINFORMASJON ->
-                objectMapper.readValue<Endring.EndreBakgrunnsinformasjon>(endringJson)
+            DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreBakgrunnsinformasjon>(endringJson)
 
-            Endringstype.MAL ->
-                objectMapper.readValue<Endring.EndreMal>(endringJson)
+            DeltakerEndring.Endringstype.MAL ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreMal>(endringJson)
 
-            Endringstype.DELTAKELSESMENGDE ->
-                objectMapper.readValue<Endring.EndreDeltakelsesmengde>(endringJson)
+            DeltakerEndring.Endringstype.DELTAKELSESMENGDE ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreDeltakelsesmengde>(endringJson)
 
-            Endringstype.STARTDATO ->
-                objectMapper.readValue<Endring.EndreStartdato>(endringJson)
+            DeltakerEndring.Endringstype.STARTDATO ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreStartdato>(endringJson)
 
-            Endringstype.SLUTTDATO ->
-                objectMapper.readValue<Endring.EndreSluttdato>(endringJson)
+            DeltakerEndring.Endringstype.SLUTTDATO ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreSluttdato>(endringJson)
         }
     }
 }
