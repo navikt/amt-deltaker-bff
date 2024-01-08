@@ -25,7 +25,7 @@ class DeltakerEndringRepository {
 
     fun upsert(deltakerEndring: DeltakerEndring) = Database.query {
         val sql = """
-            insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
+            insert into deltaker_endring (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
             values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet)
             on conflict (id) do update set 
                 deltaker_id = :deltaker_id,
@@ -60,7 +60,7 @@ class DeltakerEndringRepository {
                        dh.modified_at     AS "dh.modified_at",
                        na.navn            AS "na.navn",
                        ne.navn            AS "ne.navn"
-                FROM deltaker_historikk dh
+                FROM deltaker_endring dh
                          LEFT JOIN nav_ansatt na ON dh.endret_av = na.nav_ident
                          LEFT JOIN nav_enhet ne ON dh.endret_av_enhet = ne.nav_enhet_nummer
                 WHERE deltaker_id = :deltaker_id
