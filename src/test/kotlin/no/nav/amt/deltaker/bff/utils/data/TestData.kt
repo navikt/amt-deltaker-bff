@@ -6,9 +6,9 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -140,17 +140,25 @@ object TestData {
         godkjentAvNav: GodkjenningAvNav? = null,
         endretAv: String = randomNavIdent(),
         endretAvEnhet: String? = randomEnhetsnummer(),
-    ) = OppdatertDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav, endretAv, endretAvEnhet)
+    ) = OppdatertDeltaker(
+        mal,
+        bakgrunnsinformasjon,
+        deltakelsesprosent,
+        dagerPerUke,
+        godkjentAvNav,
+        endretAv,
+        endretAvEnhet,
+    )
 
-    fun lagDeltakerHistorikk(
+    fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
         deltakerId: UUID,
-        endringType: DeltakerEndringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
-        endring: DeltakerEndring = DeltakerEndring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
+        endringstype: Endringstype = Endringstype.BAKGRUNNSINFORMASJON,
+        endring: Endring = Endring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
         endretAv: String = randomNavIdent(),
         endretAvEnhet: String = randomEnhetsnummer(),
         endret: LocalDateTime = LocalDateTime.now(),
-    ) = DeltakerHistorikk(id, deltakerId, endringType, endring, endretAv, endretAvEnhet, endret)
+    ) = DeltakerEndring(id, deltakerId, endringstype, endring, endretAv, endretAvEnhet, endret)
 
     fun lagNavAnsatt(
         id: UUID = UUID.randomUUID(),

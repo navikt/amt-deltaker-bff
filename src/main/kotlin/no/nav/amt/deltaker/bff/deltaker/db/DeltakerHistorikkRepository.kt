@@ -6,26 +6,26 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
 import java.util.UUID
 
 class DeltakerHistorikkRepository {
-    private fun rowMapper(row: Row): DeltakerHistorikk {
-        val endringType = DeltakerEndringType.valueOf(row.string("endringstype"))
-        return DeltakerHistorikk(
+    private fun rowMapper(row: Row): DeltakerEndring {
+        val endringstype = Endringstype.valueOf(row.string("endringstype"))
+        return DeltakerEndring(
             id = row.uuid("id"),
             deltakerId = row.uuid("deltaker_id"),
-            endringType = endringType,
-            endring = parseDeltakerEndringJson(row.string("endring"), endringType),
+            endringstype = endringstype,
+            endring = parseDeltakerEndringJson(row.string("endring"), endringstype),
             endretAv = row.stringOrNull("na.navn") ?: row.string("endret_av"),
             endretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("endret_av_enhet"),
             endret = row.localDateTime("dh.modified_at"),
         )
     }
 
-    fun upsert(deltakerHistorikk: DeltakerHistorikk) = Database.query {
+    fun upsert(deltakerHistorikk: DeltakerEndring) = Database.query {
         val sql = """
             insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
             values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet)
@@ -41,7 +41,7 @@ class DeltakerHistorikkRepository {
         val params = mapOf(
             "id" to deltakerHistorikk.id,
             "deltaker_id" to deltakerHistorikk.deltakerId,
-            "endringstype" to deltakerHistorikk.endringType.name,
+            "endringstype" to deltakerHistorikk.endringstype.name,
             "endring" to toPGObject(deltakerHistorikk.endring),
             "endret_av" to deltakerHistorikk.endretAv,
             "endret_av_enhet" to deltakerHistorikk.endretAvEnhet,
@@ -73,18 +73,22 @@ class DeltakerHistorikkRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
-    private fun parseDeltakerEndringJson(endringJson: String, endringType: DeltakerEndringType): DeltakerEndring {
+    private fun parseDeltakerEndringJson(endringJson: String, endringType: Endringstype): Endring {
         return when (endringType) {
-            DeltakerEndringType.BAKGRUNNSINFORMASJON ->
-                objectMapper.readValue<DeltakerEndring.EndreBakgrunnsinformasjon>(endringJson)
-            DeltakerEndringType.MAL ->
-                objectMapper.readValue<DeltakerEndring.EndreMal>(endringJson)
-            DeltakerEndringType.DELTAKELSESMENGDE ->
-                objectMapper.readValue<DeltakerEndring.EndreDeltakelsesmengde>(endringJson)
-            DeltakerEndringType.STARTDATO ->
-                objectMapper.readValue<DeltakerEndring.EndreStartdato>(endringJson)
-            DeltakerEndringType.SLUTTDATO ->
-                objectMapper.readValue<DeltakerEndring.EndreSluttdato>(endringJson)
+            Endringstype.BAKGRUNNSINFORMASJON ->
+                objectMapper.readValue<Endring.EndreBakgrunnsinformasjon>(endringJson)
+
+            Endringstype.MAL ->
+                objectMapper.readValue<Endring.EndreMal>(endringJson)
+
+            Endringstype.DELTAKELSESMENGDE ->
+                objectMapper.readValue<Endring.EndreDeltakelsesmengde>(endringJson)
+
+            Endringstype.STARTDATO ->
+                objectMapper.readValue<Endring.EndreStartdato>(endringJson)
+
+            Endringstype.SLUTTDATO ->
+                objectMapper.readValue<Endring.EndreSluttdato>(endringJson)
         }
     }
 }

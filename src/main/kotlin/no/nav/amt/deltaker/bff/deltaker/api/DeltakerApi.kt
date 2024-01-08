@@ -17,8 +17,8 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endring
+import no.nav.amt.deltaker.bff.deltaker.model.deltakerendring.Endringstype
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -39,8 +39,8 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
-                endring = DeltakerEndring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
+                endringstype = Endringstype.BAKGRUNNSINFORMASJON,
+                endring = Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
@@ -57,8 +57,8 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringType = DeltakerEndringType.MAL,
-                endring = DeltakerEndring.EndreMal(request.mal),
+                endringstype = Endringstype.MAL,
+                endring = Endring.EndreMal(request.mal),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
@@ -75,8 +75,8 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringType = DeltakerEndringType.DELTAKELSESMENGDE,
-                endring = DeltakerEndring.EndreDeltakelsesmengde(
+                endringstype = Endringstype.DELTAKELSESMENGDE,
+                endring = Endring.EndreDeltakelsesmengde(
                     deltakelsesprosent = request.deltakelsesprosent,
                     dagerPerUke = request.dagerPerUke,
                 ),
@@ -96,8 +96,8 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringType = DeltakerEndringType.STARTDATO,
-                endring = DeltakerEndring.EndreStartdato(request.startdato),
+                endringstype = Endringstype.STARTDATO,
+                endring = Endring.EndreStartdato(request.startdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )

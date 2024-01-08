@@ -2,14 +2,10 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 data class DeltakerResponse(
@@ -34,14 +30,6 @@ data class DeltakerlisteDTO(
     val oppstartstype: Deltakerliste.Oppstartstype,
 )
 
-data class DeltakerHistorikkDto(
-    val endringType: DeltakerEndringType,
-    val endring: DeltakerEndring,
-    val endretAv: String,
-    val endretAvEnhet: String?,
-    val endret: LocalDateTime,
-)
-
 fun Deltaker.toDeltakerResponse(): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
@@ -63,11 +51,3 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
         sistEndretAvEnhet = sistEndretAvEnhet,
     )
 }
-
-private fun DeltakerHistorikk.toDeltakerHistorikkDto() = DeltakerHistorikkDto(
-    endringType = endringType,
-    endring = endring,
-    endretAv = endretAv,
-    endretAvEnhet = endretAvEnhet,
-    endret = endret,
-)
