@@ -10,6 +10,9 @@ data class DeltakerSamtykke(
     val gyldigTil: LocalDateTime?,
     val deltakerVedSamtykke: Deltaker,
     val godkjentAvNav: GodkjenningAvNav?,
+    val opprettetAv: String,
+    val opprettetAvEnhet: String?,
+    val opprettet: LocalDateTime,
 )
 
 data class GodkjenningAvNav(

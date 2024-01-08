@@ -52,16 +52,19 @@ class PameldingService(
 
         val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, utkast)
 
-        val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
+        val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
 
         samtykkeRepository.upsert(
             DeltakerSamtykke(
-                id = samtykkeId,
+                id = samtykke?.id ?: UUID.randomUUID(),
                 deltakerId = deltaker.id,
                 godkjent = null,
                 gyldigTil = null,
                 deltakerVedSamtykke = deltaker,
                 godkjentAvNav = utkast.godkjentAvNav,
+                opprettetAv = samtykke?.opprettetAv ?: utkast.endretAv,
+                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: utkast.endretAvEnhet,
+                opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
     }
@@ -82,16 +85,19 @@ class PameldingService(
             oppdatertDeltaker,
         )
 
-        val samtykkeId = samtykkeRepository.getIkkeGodkjent(deltaker.id)?.id ?: UUID.randomUUID()
+        val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
 
         samtykkeRepository.upsert(
             DeltakerSamtykke(
-                id = samtykkeId,
+                id = samtykke?.id ?: UUID.randomUUID(),
                 deltakerId = deltaker.id,
                 godkjent = LocalDateTime.now(),
                 gyldigTil = null,
                 deltakerVedSamtykke = deltaker,
                 godkjentAvNav = oppdatertDeltaker.godkjentAvNav,
+                opprettetAv = samtykke?.opprettetAv ?: oppdatertDeltaker.endretAv,
+                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: oppdatertDeltaker.endretAvEnhet,
+                opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
     }

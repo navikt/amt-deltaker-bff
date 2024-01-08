@@ -121,7 +121,20 @@ object TestData {
         godkjent: LocalDateTime? = null,
         gyldigTil: LocalDateTime? = null,
         godkjentAvNav: GodkjenningAvNav? = null,
-    ) = DeltakerSamtykke(id, deltakerId, godkjent, gyldigTil, deltakerVedSamtykke, godkjentAvNav)
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        opprettetAv: String = randomNavIdent(),
+        opprettetAvEnhet: String? = randomEnhetsnummer(),
+    ) = DeltakerSamtykke(
+        id,
+        deltakerId,
+        godkjent,
+        gyldigTil,
+        deltakerVedSamtykke,
+        godkjentAvNav,
+        opprettetAv,
+        opprettetAvEnhet,
+        opprettet,
+    )
 
     fun lagGodkjenningAvNav(
         type: String = "ANNET",

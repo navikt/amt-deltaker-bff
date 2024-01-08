@@ -130,8 +130,8 @@ object TestRepository {
 
     fun insert(samtykke: DeltakerSamtykke) = Database.query {
         val sql = """
-            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav)
-            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav)
+            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav, created_at, opprettet_av, opprettet_av_enhet)
+            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav, :created_at, :opprettet_av, :opprettet_av_enhet)
             on conflict (id) do nothing;
         """.trimIndent()
 
@@ -142,6 +142,9 @@ object TestRepository {
             "gyldig_til" to samtykke.gyldigTil,
             "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
             "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
+            "created_at" to samtykke.opprettet,
+            "opprettet_av" to samtykke.opprettetAv,
+            "opprettet_av_enhet" to samtykke.opprettetAvEnhet,
         )
 
         it.update(queryOf(sql, params))
