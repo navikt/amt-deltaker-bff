@@ -4,6 +4,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import java.time.LocalDateTime
 
 sealed interface DeltakerHistorikkResponse
@@ -18,8 +19,8 @@ data class DeltakerEndringResponse(
 
 data class DeltakerSamtykkeResponse(
     val godkjent: LocalDateTime?,
-    val gyldigTil: LocalDateTime?,
-    val deltakerVedSamtykke: DeltakerResponse,
+    val bakgrunnsinformasjon: String?,
+    val mal: List<Mal>,
     val godkjentAvNav: GodkjenningAvNav?,
     val opprettetAv: String,
     val opprettetAvEnhet: String?,
@@ -45,8 +46,8 @@ fun DeltakerEndring.toResponse() = DeltakerEndringResponse(
 
 fun DeltakerSamtykke.toResponse() = DeltakerSamtykkeResponse(
     godkjent = godkjent,
-    gyldigTil = gyldigTil,
-    deltakerVedSamtykke = deltakerVedSamtykke.toDeltakerResponse(),
+    bakgrunnsinformasjon = deltakerVedSamtykke.bakgrunnsinformasjon,
+    mal = deltakerVedSamtykke.mal,
     godkjentAvNav = godkjentAvNav,
     opprettetAv = opprettetAv,
     opprettetAvEnhet = opprettetAvEnhet,
