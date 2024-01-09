@@ -1,14 +1,12 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
@@ -17,7 +15,7 @@ import java.util.UUID
 
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
-    private val historikkRepository: DeltakerHistorikkRepository,
+    private val deltakerEndringRepository: DeltakerEndringRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
     private val deltakerProducer: DeltakerProducer,
@@ -30,8 +28,8 @@ class DeltakerService(
 
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
-        endringType: DeltakerEndringType,
-        endring: DeltakerEndring,
+        endringstype: DeltakerEndring.Endringstype,
+        endring: DeltakerEndring.Endring,
         endretAv: String,
         endretAvEnhet: String?,
     ): Deltaker {
@@ -40,21 +38,21 @@ class DeltakerService(
             throw IllegalArgumentException("Kan ikke endre deltaker som har sluttet")
         }
         val deltaker = when (endring) {
-            is DeltakerEndring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
                 bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
 
-            is DeltakerEndring.EndreMal -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreMal -> opprinneligDeltaker.copy(
                 mal = endring.mal,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
 
-            is DeltakerEndring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
                 deltakelsesprosent = endring.deltakelsesprosent,
                 dagerPerUke = endring.dagerPerUke,
                 sistEndretAv = endretAv,
@@ -62,14 +60,14 @@ class DeltakerService(
                 sistEndret = LocalDateTime.now(),
             )
 
-            is DeltakerEndring.EndreStartdato -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreStartdato -> opprinneligDeltaker.copy(
                 startdato = endring.startdato,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
 
-            is DeltakerEndring.EndreSluttdato -> opprinneligDeltaker.copy(
+            is DeltakerEndring.Endring.EndreSluttdato -> opprinneligDeltaker.copy(
                 sluttdato = endring.sluttdato,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
@@ -79,11 +77,11 @@ class DeltakerService(
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
             upsert(deltaker)
-            historikkRepository.upsert(
-                DeltakerHistorikk(
+            deltakerEndringRepository.upsert(
+                DeltakerEndring(
                     id = UUID.randomUUID(),
                     deltakerId = deltaker.id,
-                    endringType = endringType,
+                    endringstype = endringstype,
                     endring = endring,
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,

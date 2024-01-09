@@ -9,6 +9,7 @@ import io.ktor.server.routing.routing
 import no.nav.amt.deltaker.bff.application.registerHealthApi
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
@@ -18,6 +19,7 @@ fun Application.configureRouting(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
     pameldingService: PameldingService,
+    deltakerHistorikkService: DeltakerHistorikkService,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -36,7 +38,7 @@ fun Application.configureRouting(
     routing {
         registerHealthApi()
 
-        registerDeltakerApi(tilgangskontrollService, deltakerService)
+        registerDeltakerApi(tilgangskontrollService, deltakerService, deltakerHistorikkService)
         registerPameldingApi(tilgangskontrollService, deltakerService, pameldingService)
     }
 }

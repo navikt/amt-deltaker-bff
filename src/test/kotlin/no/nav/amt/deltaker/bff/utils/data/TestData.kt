@@ -2,13 +2,11 @@ package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -123,7 +121,20 @@ object TestData {
         godkjent: LocalDateTime? = null,
         gyldigTil: LocalDateTime? = null,
         godkjentAvNav: GodkjenningAvNav? = null,
-    ) = DeltakerSamtykke(id, deltakerId, godkjent, gyldigTil, deltakerVedSamtykke, godkjentAvNav)
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        opprettetAv: String = randomNavIdent(),
+        opprettetAvEnhet: String? = randomEnhetsnummer(),
+    ) = DeltakerSamtykke(
+        id,
+        deltakerId,
+        godkjent,
+        gyldigTil,
+        deltakerVedSamtykke,
+        godkjentAvNav,
+        opprettetAv,
+        opprettetAvEnhet,
+        opprettet,
+    )
 
     fun lagGodkjenningAvNav(
         type: String = "ANNET",
@@ -140,17 +151,25 @@ object TestData {
         godkjentAvNav: GodkjenningAvNav? = null,
         endretAv: String = randomNavIdent(),
         endretAvEnhet: String? = randomEnhetsnummer(),
-    ) = OppdatertDeltaker(mal, bakgrunnsinformasjon, deltakelsesprosent, dagerPerUke, godkjentAvNav, endretAv, endretAvEnhet)
+    ) = OppdatertDeltaker(
+        mal,
+        bakgrunnsinformasjon,
+        deltakelsesprosent,
+        dagerPerUke,
+        godkjentAvNav,
+        endretAv,
+        endretAvEnhet,
+    )
 
-    fun lagDeltakerHistorikk(
+    fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
-        deltakerId: UUID,
-        endringType: DeltakerEndringType = DeltakerEndringType.BAKGRUNNSINFORMASJON,
-        endring: DeltakerEndring = DeltakerEndring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
+        deltakerId: UUID = UUID.randomUUID(),
+        endringstype: DeltakerEndring.Endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+        endring: DeltakerEndring.Endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
         endretAv: String = randomNavIdent(),
         endretAvEnhet: String = randomEnhetsnummer(),
         endret: LocalDateTime = LocalDateTime.now(),
-    ) = DeltakerHistorikk(id, deltakerId, endringType, endring, endretAv, endretAvEnhet, endret)
+    ) = DeltakerEndring(id, deltakerId, endringstype, endring, endretAv, endretAvEnhet, endret)
 
     fun lagNavAnsatt(
         id: UUID = UUID.randomUUID(),

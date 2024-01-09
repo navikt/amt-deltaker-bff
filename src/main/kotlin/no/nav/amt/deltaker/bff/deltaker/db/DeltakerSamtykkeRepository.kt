@@ -17,12 +17,15 @@ class DeltakerSamtykkeRepository {
         gyldigTil = row.localDateTimeOrNull("gyldig_til"),
         deltakerVedSamtykke = objectMapper.readValue(row.string("deltaker_ved_samtykke")),
         godkjentAvNav = row.stringOrNull("godkjent_av_nav")?.let { objectMapper.readValue(it) },
+        opprettet = row.localDateTime("created_at"),
+        opprettetAv = row.string("opprettet_av"),
+        opprettetAvEnhet = row.stringOrNull("opprettet_av_enhet"),
     )
 
     fun upsert(samtykke: DeltakerSamtykke) = Database.query {
         val sql = """
-            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav)
-            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav)
+            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav, opprettet_av, opprettet_av_enhet)
+            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav, :opprettet_av, :opprettet_av_enhet)
             on conflict (id) do update set 
                 godkjent = :godkjent,
                 gyldig_til = :gyldig_til,
@@ -38,6 +41,8 @@ class DeltakerSamtykkeRepository {
             "gyldig_til" to samtykke.gyldigTil,
             "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
             "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
+            "opprettet_av" to samtykke.opprettetAv,
+            "opprettet_av_enhet" to samtykke.opprettetAvEnhet,
         )
 
         it.update(queryOf(sql, params))

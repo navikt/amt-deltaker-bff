@@ -18,6 +18,7 @@ import io.mockk.mockk
 import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -34,6 +35,7 @@ class AuthenticationTest {
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
+    private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
 
     @Before
     fun setup() {
@@ -78,7 +80,7 @@ class AuthenticationTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService)
+            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
             setUpTestRoute()
         }
     }

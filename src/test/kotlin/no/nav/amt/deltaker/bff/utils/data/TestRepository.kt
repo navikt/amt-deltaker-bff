@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -130,8 +131,8 @@ object TestRepository {
 
     fun insert(samtykke: DeltakerSamtykke) = Database.query {
         val sql = """
-            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav)
-            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav)
+            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav, created_at, opprettet_av, opprettet_av_enhet)
+            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav, :created_at, :opprettet_av, :opprettet_av_enhet)
             on conflict (id) do nothing;
         """.trimIndent()
 
@@ -142,6 +143,9 @@ object TestRepository {
             "gyldig_til" to samtykke.gyldigTil,
             "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
             "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
+            "created_at" to samtykke.opprettet,
+            "opprettet_av" to samtykke.opprettetAv,
+            "opprettet_av_enhet" to samtykke.opprettetAvEnhet,
         )
 
         it.update(queryOf(sql, params))
@@ -176,6 +180,32 @@ object TestRepository {
             "nav_enhet_nummer" to navEnhet.enhetsnummer,
             "navn" to navEnhet.navn,
             "modified_at" to LocalDateTime.now(),
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(endring: DeltakerEndring) = Database.query {
+        val sql = """
+            insert into deltaker_endring (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet, modified_at)
+            values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet, :endret)
+            on conflict (id) do update set 
+                deltaker_id = :deltaker_id,
+                endringstype = :endringstype,
+                endring = :endring,
+                endret_av = :endret_av,
+                endret_av_enhet = :endret_av_enhet,
+                modified_at = :endret
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to endring.id,
+            "deltaker_id" to endring.deltakerId,
+            "endringstype" to endring.endringstype.name,
+            "endring" to toPGObject(endring.endring),
+            "endret_av" to endring.endretAv,
+            "endret_av_enhet" to endring.endretAvEnhet,
+            "endret" to endring.endret,
         )
 
         it.update(queryOf(sql, params))

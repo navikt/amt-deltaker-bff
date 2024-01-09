@@ -6,28 +6,26 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerHistorikk
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import java.util.UUID
 
-class DeltakerHistorikkRepository {
-    private fun rowMapper(row: Row): DeltakerHistorikk {
-        val endringType = DeltakerEndringType.valueOf(row.string("endringstype"))
-        return DeltakerHistorikk(
+class DeltakerEndringRepository {
+    private fun rowMapper(row: Row): DeltakerEndring {
+        val endringstype = DeltakerEndring.Endringstype.valueOf(row.string("endringstype"))
+        return DeltakerEndring(
             id = row.uuid("id"),
             deltakerId = row.uuid("deltaker_id"),
-            endringType = endringType,
-            endring = parseDeltakerEndringJson(row.string("endring"), endringType),
+            endringstype = endringstype,
+            endring = parseDeltakerEndringJson(row.string("endring"), endringstype),
             endretAv = row.stringOrNull("na.navn") ?: row.string("endret_av"),
             endretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("endret_av_enhet"),
             endret = row.localDateTime("dh.modified_at"),
         )
     }
 
-    fun upsert(deltakerHistorikk: DeltakerHistorikk) = Database.query {
+    fun upsert(deltakerEndring: DeltakerEndring) = Database.query {
         val sql = """
-            insert into deltaker_historikk (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
+            insert into deltaker_endring (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet)
             values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet)
             on conflict (id) do update set 
                 deltaker_id = :deltaker_id,
@@ -39,12 +37,12 @@ class DeltakerHistorikkRepository {
         """.trimIndent()
 
         val params = mapOf(
-            "id" to deltakerHistorikk.id,
-            "deltaker_id" to deltakerHistorikk.deltakerId,
-            "endringstype" to deltakerHistorikk.endringType.name,
-            "endring" to toPGObject(deltakerHistorikk.endring),
-            "endret_av" to deltakerHistorikk.endretAv,
-            "endret_av_enhet" to deltakerHistorikk.endretAvEnhet,
+            "id" to deltakerEndring.id,
+            "deltaker_id" to deltakerEndring.deltakerId,
+            "endringstype" to deltakerEndring.endringstype.name,
+            "endring" to toPGObject(deltakerEndring.endring),
+            "endret_av" to deltakerEndring.endretAv,
+            "endret_av_enhet" to deltakerEndring.endretAvEnhet,
         )
 
         it.update(queryOf(sql, params))
@@ -62,7 +60,7 @@ class DeltakerHistorikkRepository {
                        dh.modified_at     AS "dh.modified_at",
                        na.navn            AS "na.navn",
                        ne.navn            AS "ne.navn"
-                FROM deltaker_historikk dh
+                FROM deltaker_endring dh
                          LEFT JOIN nav_ansatt na ON dh.endret_av = na.nav_ident
                          LEFT JOIN nav_enhet ne ON dh.endret_av_enhet = ne.nav_enhet_nummer
                 WHERE deltaker_id = :deltaker_id
@@ -73,18 +71,22 @@ class DeltakerHistorikkRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
-    private fun parseDeltakerEndringJson(endringJson: String, endringType: DeltakerEndringType): DeltakerEndring {
+    private fun parseDeltakerEndringJson(endringJson: String, endringType: DeltakerEndring.Endringstype): DeltakerEndring.Endring {
         return when (endringType) {
-            DeltakerEndringType.BAKGRUNNSINFORMASJON ->
-                objectMapper.readValue<DeltakerEndring.EndreBakgrunnsinformasjon>(endringJson)
-            DeltakerEndringType.MAL ->
-                objectMapper.readValue<DeltakerEndring.EndreMal>(endringJson)
-            DeltakerEndringType.DELTAKELSESMENGDE ->
-                objectMapper.readValue<DeltakerEndring.EndreDeltakelsesmengde>(endringJson)
-            DeltakerEndringType.STARTDATO ->
-                objectMapper.readValue<DeltakerEndring.EndreStartdato>(endringJson)
-            DeltakerEndringType.SLUTTDATO ->
-                objectMapper.readValue<DeltakerEndring.EndreSluttdato>(endringJson)
+            DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreBakgrunnsinformasjon>(endringJson)
+
+            DeltakerEndring.Endringstype.MAL ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreMal>(endringJson)
+
+            DeltakerEndring.Endringstype.DELTAKELSESMENGDE ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreDeltakelsesmengde>(endringJson)
+
+            DeltakerEndring.Endringstype.STARTDATO ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreStartdato>(endringJson)
+
+            DeltakerEndring.Endringstype.SLUTTDATO ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreSluttdato>(endringJson)
         }
     }
 }

@@ -2,12 +2,11 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerHistorikkRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.endringshistorikk.DeltakerEndringType
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
@@ -35,7 +34,7 @@ class DeltakerServiceTest {
         lateinit var navEnhet: NavEnhet
         lateinit var deltakerRepository: DeltakerRepository
         lateinit var deltakerService: DeltakerService
-        lateinit var historikkRepository: DeltakerHistorikkRepository
+        lateinit var deltakerEndringRepository: DeltakerEndringRepository
         lateinit var navAnsattService: NavAnsattService
         lateinit var navEnhetService: NavEnhetService
 
@@ -46,14 +45,14 @@ class DeltakerServiceTest {
             navAnsatt = TestData.lagNavAnsatt()
             navEnhet = TestData.lagNavEnhet()
             deltakerRepository = DeltakerRepository()
-            historikkRepository = DeltakerHistorikkRepository()
+            deltakerEndringRepository = DeltakerEndringRepository()
             navAnsattService =
                 NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
             navEnhetService =
                 NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
             deltakerService = DeltakerService(
                 deltakerRepository,
-                historikkRepository,
+                deltakerEndringRepository,
                 navAnsattService,
                 navEnhetService,
                 DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),
@@ -72,8 +71,8 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndringType.BAKGRUNNSINFORMASJON,
-                DeltakerEndring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
+                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+                DeltakerEndring.Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
                 endretAvIdent,
                 endretAvEnhetsnummer,
             )
@@ -83,13 +82,15 @@ class DeltakerServiceTest {
             oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
             oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.navn
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
-            val historikk = historikkRepository.getForDeltaker(deltaker.id)
-            historikk.size shouldBe 1
-            historikk.first().endringType shouldBe DeltakerEndringType.BAKGRUNNSINFORMASJON
-            historikk.first().endring shouldBe DeltakerEndring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon)
-            historikk.first().endret shouldBeCloseTo LocalDateTime.now()
-            historikk.first().endretAv shouldBe navAnsatt.navn
-            historikk.first().endretAvEnhet shouldBe navEnhet.navn
+            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            endring.size shouldBe 1
+            endring.first().endringstype shouldBe DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON
+            endring.first().endring shouldBe DeltakerEndring.Endring.EndreBakgrunnsinformasjon(
+                oppdatertBakgrunnsinformasjon,
+            )
+            endring.first().endret shouldBeCloseTo LocalDateTime.now()
+            endring.first().endretAv shouldBe navAnsatt.navn
+            endring.first().endretAvEnhet shouldBe navEnhet.navn
 
             assertProduced(oppdatertDeltakerFraDb)
         }
@@ -105,8 +106,8 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndringType.BAKGRUNNSINFORMASJON,
-                DeltakerEndring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
+                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+                DeltakerEndring.Endring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
                 endretAvIdent,
                 endretAvEnhetsnummer,
             )
@@ -115,8 +116,8 @@ class DeltakerServiceTest {
             val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltakerFraDb.sistEndretAv shouldBe deltaker.sistEndretAv
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo deltaker.sistEndret
-            val historikk = historikkRepository.getForDeltaker(deltaker.id)
-            historikk.size shouldBe 0
+            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            endring.size shouldBe 0
         }
     }
 
@@ -132,8 +133,8 @@ class DeltakerServiceTest {
             assertFailsWith<IllegalArgumentException> {
                 deltakerService.oppdaterDeltaker(
                     deltaker,
-                    DeltakerEndringType.BAKGRUNNSINFORMASJON,
-                    DeltakerEndring.EndreBakgrunnsinformasjon("oppdatert informasjon"),
+                    DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
+                    DeltakerEndring.Endring.EndreBakgrunnsinformasjon("oppdatert informasjon"),
                     TestData.randomNavIdent(),
                     TestData.randomEnhetsnummer(),
                 )
