@@ -31,6 +31,9 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
+import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
+import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
+import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -128,6 +131,11 @@ fun Application.module() {
 
     val pameldingService = PameldingService(deltakerService, samtykkeRepository, deltakerlisteRepository)
     val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, samtykkeRepository)
+
+    val endringsmeldingRepository = EndringsmeldingRepository()
+    val endringsmeldingService = EndringsmeldingService(deltakerService, endringsmeldingRepository)
+    val endringsmeldingConsumer = EndringsmeldingConsumer(endringsmeldingService)
+    endringsmeldingConsumer.run()
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
