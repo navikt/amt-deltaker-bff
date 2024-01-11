@@ -133,7 +133,7 @@ fun Application.module() {
     val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, samtykkeRepository)
 
     val endringsmeldingRepository = EndringsmeldingRepository()
-    val endringsmeldingService = EndringsmeldingService(deltakerService, endringsmeldingRepository)
+    val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
     val endringsmeldingConsumer = EndringsmeldingConsumer(endringsmeldingService)
     endringsmeldingConsumer.run()
 

@@ -2,8 +2,10 @@ package no.nav.amt.deltaker.bff.endringsmelding
 
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -14,7 +16,12 @@ import org.junit.Test
 class EndringsmeldingConsumerTest {
     companion object {
         private val deltakerService = mockk<DeltakerService>()
-        private val endringsmeldingService = EndringsmeldingService(deltakerService, EndringsmeldingRepository())
+        private val navAnsattService = mockk<NavAnsattService>()
+        private val endringsmeldingService = EndringsmeldingService(
+            deltakerService = deltakerService,
+            navAnsattService = navAnsattService,
+            endringsmeldingRepository = EndringsmeldingRepository(),
+        )
         private val consumer = EndringsmeldingConsumer(endringsmeldingService)
 
         @BeforeClass
@@ -32,7 +39,9 @@ class EndringsmeldingConsumerTest {
 
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        consumer.consumeEndringsmelding(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
+        runBlocking {
+            consumer.consumeEndringsmelding(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
+        }
 
         endringsmeldingService.get(endringsmelding.id).getOrNull() shouldBe endringsmelding
     }
@@ -46,7 +55,9 @@ class EndringsmeldingConsumerTest {
 
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        consumer.consumeEndringsmelding(endringsmelding.id, null)
+        runBlocking {
+            consumer.consumeEndringsmelding(endringsmelding.id, null)
+        }
 
         endringsmeldingService.get(endringsmelding.id).getOrNull() shouldBe null
     }
@@ -57,7 +68,9 @@ class EndringsmeldingConsumerTest {
 
         every { deltakerService.get(endringsmelding.deltakerId) } returns Result.failure(NoSuchElementException())
 
-        consumer.consumeEndringsmelding(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
+        runBlocking {
+            consumer.consumeEndringsmelding(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
+        }
 
         endringsmeldingService.get(endringsmelding.id).getOrNull() shouldBe null
     }

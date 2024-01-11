@@ -25,7 +25,7 @@ class EndringsmeldingConsumer(
         consume = ::consumeEndringsmelding,
     )
 
-    fun consumeEndringsmelding(id: UUID, melding: String?) {
+    suspend fun consumeEndringsmelding(id: UUID, melding: String?) {
         if (melding == null) {
             endringsmeldingService.delete(id)
         } else {

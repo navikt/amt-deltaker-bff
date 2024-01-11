@@ -7,7 +7,6 @@ import no.nav.amt.deltaker.bff.utils.shouldBe
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDateTime
-import java.util.UUID
 
 class EndringsmeldingRepositoryTest {
 
@@ -31,12 +30,16 @@ class EndringsmeldingRepositoryTest {
 
     @Test
     fun `upsert - endret endringsmelding - oppdaterer`() {
+        val navAnsatt = TestData.lagNavAnsatt()
+        TestRepository.insert(navAnsatt)
+
         val endringsmelding = TestData.lagEndringsmelding()
         TestRepository.insert(endringsmelding)
+
         val oppdatertEndringsmelding = endringsmelding.copy(
             status = Endringsmelding.Status.UTFORT,
             utfortTidspunkt = LocalDateTime.now(),
-            utfortAvNavAnsattId = UUID.randomUUID(),
+            utfortAvNavAnsattId = navAnsatt.id,
         )
         repository.upsert(oppdatertEndringsmelding)
         repository.get(endringsmelding.id).getOrNull() shouldBe oppdatertEndringsmelding
