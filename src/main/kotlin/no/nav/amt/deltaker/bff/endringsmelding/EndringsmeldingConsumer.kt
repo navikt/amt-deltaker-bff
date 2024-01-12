@@ -12,7 +12,7 @@ import org.apache.kafka.common.serialization.UUIDDeserializer
 import java.util.UUID
 
 class EndringsmeldingConsumer(
-    val endringsmeldingService: EndringsmeldingService,
+    private val endringsmeldingService: EndringsmeldingService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) {
     private val consumer = ManagedKafkaConsumer(
@@ -20,7 +20,7 @@ class EndringsmeldingConsumer(
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
+            groupId = Environment.KAFKA_CONSUMER_GROUP_ID + "-endringsmelding",
         ),
         consume = ::consumeEndringsmelding,
     )
