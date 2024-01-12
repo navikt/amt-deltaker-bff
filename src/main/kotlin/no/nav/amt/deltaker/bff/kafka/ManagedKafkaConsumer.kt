@@ -22,6 +22,7 @@ class ManagedKafkaConsumer<K, V>(
 
     @OptIn(DelicateCoroutinesApi::class)
     fun run() = GlobalScope.launch(job) {
+        log.info("Started consumer for topic: $topic")
         KafkaConsumer<K, V>(config).use { consumer ->
             consumer.subscribe(listOf(topic))
             while (running) {

@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -35,6 +36,22 @@ class AmtPersonServiceClient(
         if (!response.status.isSuccess()) {
             log.error(
                 "Kunne ikke hente nav-ansatt med ident $navIdent fra amt-person-service. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+            throw RuntimeException("Kunne ikke hente NAV-ansatt fra amt-person-service")
+        }
+        return response.body()
+    }
+
+    suspend fun hentNavAnsatt(id: UUID): NavAnsatt {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.get("$baseUrl/api/nav-ansatt/$id") {
+            header(HttpHeaders.Authorization, token)
+            contentType(ContentType.Application.Json)
+        }
+        if (!response.status.isSuccess()) {
+            log.error(
+                "Kunne ikke hente nav-ansatt med id $id fra amt-person-service. " +
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
             throw RuntimeException("Kunne ikke hente NAV-ansatt fra amt-person-service")
