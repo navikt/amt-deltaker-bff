@@ -20,7 +20,7 @@ class EndringsmeldingConsumer(
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = Environment.KAFKA_CONSUMER_GROUP_ID + "-endringsmelding",
+            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
         ),
         consume = ::consumeEndringsmelding,
     )
