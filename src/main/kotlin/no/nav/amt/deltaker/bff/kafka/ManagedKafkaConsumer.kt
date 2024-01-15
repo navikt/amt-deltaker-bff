@@ -60,6 +60,7 @@ class ManagedKafkaConsumer<K, V>(
 
     fun awaitReady() {
         runningLatch.await()
+        log.info("Consumer for topic: $topic is ready")
     }
 
     private fun exponentialBackoff(retries: Int) = 1000L * (retries * retries)

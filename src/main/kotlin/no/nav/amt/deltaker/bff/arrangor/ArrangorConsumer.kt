@@ -23,7 +23,7 @@ class ArrangorConsumer(
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
+            groupId = "amt-deltaker-bff-arrangor-consumer",
         ),
         consume = ::consumeArrangor,
     )

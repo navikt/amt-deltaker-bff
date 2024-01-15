@@ -38,7 +38,10 @@ class NavAnsattConsumer(
         }
     }
 
-    fun run() = consumer.run()
+    fun run() {
+        log.info("Initialiserer nav-ansatt-consumer")
+        consumer.run()
+    }
 
     fun awaitReady() = consumer.awaitReady()
 }
