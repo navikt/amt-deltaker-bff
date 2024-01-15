@@ -13,14 +13,14 @@ import java.util.UUID
 
 class EndringsmeldingConsumer(
     private val endringsmeldingService: EndringsmeldingService,
-    kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
+    kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl("earliest"),
 ) {
     private val consumer = ManagedKafkaConsumer(
         topic = Environment.AMT_ENDRINGSMELDING_TOPIC,
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
+            groupId = "amt-deltaker-bff-endringsmelding-consumer",
         ),
         consume = ::consumeEndringsmelding,
     )

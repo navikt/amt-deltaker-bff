@@ -9,10 +9,11 @@ import org.apache.kafka.common.config.SslConfigs
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.StringSerializer
 
-class KafkaConfigImpl : KafkaConfig {
+class KafkaConfigImpl(
+    private val autoOffsetReset: String = "latest",
+) : KafkaConfig {
     private val javaKey = "JKS"
     private val pkcs12 = "PKCS12"
-    private val autoOffsetReset: String = "latest"
 
     private val kafkaBrokers = getEnvVar("KAFKA_BROKERS")
     private val kafkaTruststorePath = getEnvVar("KAFKA_TRUSTSTORE_PATH")
