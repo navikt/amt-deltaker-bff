@@ -137,12 +137,10 @@ fun Application.module() {
     endringsmeldingConsumer.run()
     navAnsattConsumer.run()
 
-    runBlocking {
-        arrangorConsumer.awaitReady()
-        deltakerlisteConsumer.awaitReady()
-        endringsmeldingConsumer.awaitReady()
-        navAnsattConsumer.awaitReady()
-    }
+    arrangorConsumer.awaitReady()
+    deltakerlisteConsumer.awaitReady()
+    endringsmeldingConsumer.awaitReady()
+    navAnsattConsumer.awaitReady()
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)

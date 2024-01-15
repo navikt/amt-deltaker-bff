@@ -30,7 +30,7 @@ class DeltakerlisteConsumer(
 
     fun run() = consumer.run()
 
-    suspend fun awaitReady() = consumer.awaitReady()
+    fun awaitReady() = consumer.awaitReady()
 
     suspend fun consumeDeltakerliste(id: UUID, deltakerliste: String?) {
         if (deltakerliste == null) {

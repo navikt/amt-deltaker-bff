@@ -42,5 +42,5 @@ class EndringsmeldingConsumer(
         consumer.run()
     }
 
-    suspend fun awaitReady() = consumer.awaitReady()
+    fun awaitReady() = consumer.awaitReady()
 }
