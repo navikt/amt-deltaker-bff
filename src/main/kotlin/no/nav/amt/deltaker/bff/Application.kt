@@ -132,14 +132,14 @@ fun Application.module() {
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
     val endringsmeldingConsumer = EndringsmeldingConsumer(endringsmeldingService)
 
+    endringsmeldingConsumer.run()
+    navAnsattConsumer.run()
+    arrangorConsumer.run()
+    deltakerlisteConsumer.run()
+
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
     configureMonitoring()
-
-    arrangorConsumer.run()
-    deltakerlisteConsumer.run()
-    navAnsattConsumer.run()
-    endringsmeldingConsumer.run()
 
     attributes.put(isReadyKey, true)
 }
