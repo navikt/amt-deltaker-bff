@@ -1,10 +1,12 @@
 package no.nav.amt.deltaker.bff.kafka
 
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
@@ -58,9 +60,11 @@ class ManagedKafkaConsumer<K, V>(
         job.cancel()
     }
 
-    fun awaitReady() {
-        runningLatch.await()
-        log.info("Consumer for topic: $topic is ready")
+    suspend fun awaitReady() {
+        withContext(Dispatchers.IO) {
+            runningLatch.await()
+            log.info("Consumer for topic: $topic is ready")
+        }
     }
 
     private fun exponentialBackoff(retries: Int) = 1000L * (retries * retries)

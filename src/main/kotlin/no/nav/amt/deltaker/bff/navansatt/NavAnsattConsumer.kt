@@ -43,5 +43,5 @@ class NavAnsattConsumer(
         consumer.run()
     }
 
-    fun awaitReady() = consumer.awaitReady()
+    suspend fun awaitReady() = consumer.awaitReady()
 }

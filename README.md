@@ -24,6 +24,7 @@ DB_PASSWORD=mypassword
 DB_DATABASE=mydb
 DB_HOST=localhost
 DB_PORT=5432
+AZURE_OPENID_CONFIG_JWKS_URI="http://foo.bar"
 ```
 
 eller kjør:
@@ -33,6 +34,7 @@ export DB_PASSWORD=mypassword &&
 export DB_DATABASE=mydb && 
 export DB_HOST=localhost && 
 export DB_PORT=5432 && 
+export AZURE_OPENID_CONFIG_JWKS_URI="http://foo.bar"
 ./gradlew run
 ```
 
