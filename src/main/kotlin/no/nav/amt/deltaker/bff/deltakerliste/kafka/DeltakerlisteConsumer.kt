@@ -30,6 +30,8 @@ class DeltakerlisteConsumer(
 
     fun run() = consumer.run()
 
+    fun awaitReady() = consumer.awaitReady()
+
     suspend fun consumeDeltakerliste(id: UUID, deltakerliste: String?) {
         if (deltakerliste == null) {
             repository.delete(id)
