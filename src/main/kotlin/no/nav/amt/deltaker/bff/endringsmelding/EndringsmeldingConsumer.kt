@@ -24,7 +24,7 @@ class EndringsmeldingConsumer(
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = "amt-deltaker-bff-endringsmelding-consumer",
+            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
         ),
         consume = ::consumeEndringsmelding,
     )

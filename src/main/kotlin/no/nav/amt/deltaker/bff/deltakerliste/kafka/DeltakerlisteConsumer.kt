@@ -23,7 +23,7 @@ class DeltakerlisteConsumer(
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = "amt-deltaker-bff-deltakerliste-consumer",
+            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
         ),
         consume = ::consumeDeltakerliste,
     )
