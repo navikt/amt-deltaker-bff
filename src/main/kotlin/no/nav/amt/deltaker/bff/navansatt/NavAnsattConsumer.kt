@@ -39,10 +39,7 @@ class NavAnsattConsumer(
         }
     }
 
-    fun run() {
-        log.info("Initialiserer nav-ansatt-consumer")
-        consumer.run()
-    }
+    fun run() = consumer.run()
 }
 
 data class NavAnsattDto(
