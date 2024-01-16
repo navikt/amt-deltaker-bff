@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -26,7 +27,9 @@ class NavAnsattConsumerTest {
         val navAnsatt = TestData.lagNavAnsatt()
         val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
-        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(navAnsatt.toDto()))
+        runBlocking {
+            navAnsattConsumer.consume(navAnsatt.id, objectMapper.writeValueAsString(navAnsatt.toDto()))
+        }
 
         repository.get(navAnsatt.id) shouldBe navAnsatt
     }
@@ -38,7 +41,9 @@ class NavAnsattConsumerTest {
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
         val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
-        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(oppdatertNavAnsatt.toDto()))
+        runBlocking {
+            navAnsattConsumer.consume(navAnsatt.id, objectMapper.writeValueAsString(oppdatertNavAnsatt.toDto()))
+        }
 
         repository.get(navAnsatt.id) shouldBe oppdatertNavAnsatt
     }
@@ -49,7 +54,9 @@ class NavAnsattConsumerTest {
         repository.upsert(navAnsatt)
         val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
-        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, null)
+        runBlocking {
+            navAnsattConsumer.consume(navAnsatt.id, null)
+        }
 
         repository.get(navAnsatt.id) shouldBe null
     }

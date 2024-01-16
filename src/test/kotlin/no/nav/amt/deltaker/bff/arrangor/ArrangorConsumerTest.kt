@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.arrangor
 
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -24,7 +25,10 @@ class ArrangorConsumerTest {
     fun `consumeArrangor - ny arrangor - upserter`() {
         val arrangor = TestData.lagArrangor()
         val arrangorConsumer = ArrangorConsumer(repository)
-        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper.writeValueAsString(arrangor))
+
+        runBlocking {
+            arrangorConsumer.consume(arrangor.id, objectMapper.writeValueAsString(arrangor))
+        }
 
         repository.get(arrangor.id) shouldBe arrangor
     }
@@ -37,7 +41,10 @@ class ArrangorConsumerTest {
         val oppdatertArrangor = arrangor.copy(navn = "Oppdatert Arrangor")
 
         val arrangorConsumer = ArrangorConsumer(repository)
-        arrangorConsumer.consumeArrangor(arrangor.id, objectMapper.writeValueAsString(oppdatertArrangor))
+
+        runBlocking {
+            arrangorConsumer.consume(arrangor.id, objectMapper.writeValueAsString(oppdatertArrangor))
+        }
 
         repository.get(arrangor.id) shouldBe oppdatertArrangor
     }
@@ -48,7 +55,10 @@ class ArrangorConsumerTest {
         repository.upsert(arrangor)
 
         val arrangorConsumer = ArrangorConsumer(repository)
-        arrangorConsumer.consumeArrangor(arrangor.id, null)
+
+        runBlocking {
+            arrangorConsumer.consume(arrangor.id, null)
+        }
 
         repository.get(arrangor.id) shouldBe null
     }

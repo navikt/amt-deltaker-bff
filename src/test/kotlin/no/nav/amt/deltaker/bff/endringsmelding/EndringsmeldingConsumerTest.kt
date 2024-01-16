@@ -40,7 +40,7 @@ class EndringsmeldingConsumerTest {
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
         runBlocking {
-            consumer.consumeEndringsmelding(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
+            consumer.consume(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
         }
 
         endringsmeldingService.get(endringsmelding.id).getOrNull() shouldBe endringsmelding
@@ -56,7 +56,7 @@ class EndringsmeldingConsumerTest {
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
         runBlocking {
-            consumer.consumeEndringsmelding(endringsmelding.id, null)
+            consumer.consume(endringsmelding.id, null)
         }
 
         endringsmeldingService.get(endringsmelding.id).getOrNull() shouldBe null
@@ -69,7 +69,7 @@ class EndringsmeldingConsumerTest {
         every { deltakerService.get(endringsmelding.deltakerId) } returns Result.failure(NoSuchElementException())
 
         runBlocking {
-            consumer.consumeEndringsmelding(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
+            consumer.consume(endringsmelding.id, objectMapper.writeValueAsString(endringsmelding))
         }
 
         endringsmeldingService.get(endringsmelding.id).getOrNull() shouldBe null
