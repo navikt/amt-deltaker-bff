@@ -26,7 +26,7 @@ class NavAnsattConsumerTest {
         val navAnsatt = TestData.lagNavAnsatt()
         val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
-        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(navAnsatt))
+        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(navAnsatt.toDto()))
 
         repository.get(navAnsatt.id) shouldBe navAnsatt
     }
@@ -38,7 +38,7 @@ class NavAnsattConsumerTest {
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
         val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
-        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(oppdatertNavAnsatt))
+        navAnsattConsumer.consumeNavAnsatt(navAnsatt.id, objectMapper.writeValueAsString(oppdatertNavAnsatt.toDto()))
 
         repository.get(navAnsatt.id) shouldBe oppdatertNavAnsatt
     }
@@ -54,3 +54,5 @@ class NavAnsattConsumerTest {
         repository.get(navAnsatt.id) shouldBe null
     }
 }
+
+private fun NavAnsatt.toDto() = NavAnsattDto(id, navIdent, navn)

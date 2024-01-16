@@ -33,7 +33,8 @@ class NavAnsattConsumer(
             navAnsattService.slettNavAnsatt(id)
             log.info("Slettet navansatt med id $id")
         } else {
-            navAnsattService.oppdaterNavAnsatt(objectMapper.readValue(navAnsatt))
+            val dto = objectMapper.readValue<NavAnsattDto>(navAnsatt)
+            navAnsattService.oppdaterNavAnsatt(dto.toModel())
             log.info("Lagret navansatt med id $id")
         }
     }
@@ -44,4 +45,12 @@ class NavAnsattConsumer(
     }
 
     fun awaitReady() = consumer.awaitReady()
+}
+
+data class NavAnsattDto(
+    val id: UUID,
+    val navident: String,
+    val navn: String,
+) {
+    fun toModel() = NavAnsatt(id, navident, navn)
 }
