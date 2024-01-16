@@ -41,6 +41,4 @@ class EndringsmeldingConsumer(
         log.info("Initialiserer endringsmelding-consumer")
         consumer.run()
     }
-
-    fun awaitReady() = consumer.awaitReady()
 }

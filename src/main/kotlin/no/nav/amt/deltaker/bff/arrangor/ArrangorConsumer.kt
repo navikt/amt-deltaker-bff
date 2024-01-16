@@ -39,6 +39,4 @@ class ArrangorConsumer(
     }
 
     fun run() = consumer.run()
-
-    fun awaitReady() = consumer.awaitReady()
 }

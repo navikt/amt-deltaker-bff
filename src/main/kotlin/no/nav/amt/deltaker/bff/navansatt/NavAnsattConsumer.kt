@@ -43,8 +43,6 @@ class NavAnsattConsumer(
         log.info("Initialiserer nav-ansatt-consumer")
         consumer.run()
     }
-
-    fun awaitReady() = consumer.awaitReady()
 }
 
 data class NavAnsattDto(

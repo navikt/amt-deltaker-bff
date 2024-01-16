@@ -9,7 +9,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.util.concurrent.CountDownLatch
 
 class ManagedKafkaConsumer<K, V>(
     val topic: String,
@@ -18,7 +17,6 @@ class ManagedKafkaConsumer<K, V>(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     private val job = Job()
-    private val runningLatch = CountDownLatch(1)
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
     private var running = true
@@ -27,7 +25,6 @@ class ManagedKafkaConsumer<K, V>(
         log.info("Started consumer for topic: $topic")
         KafkaConsumer<K, V>(config).use { consumer ->
             consumer.subscribe(listOf(topic))
-            runningLatch.countDown()
             while (running) {
                 consumer.poll(Duration.ofMillis(1000)).forEach { record ->
                     process(record)
@@ -56,11 +53,6 @@ class ManagedKafkaConsumer<K, V>(
     fun stop() {
         running = false
         job.cancel()
-    }
-
-    fun awaitReady() {
-        runningLatch.await()
-        log.info("Consumer for topic: $topic is ready")
     }
 
     private fun exponentialBackoff(retries: Int) = 1000L * (retries * retries)
