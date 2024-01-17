@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.arrangor
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.kafka.Consumer
 import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl
@@ -15,7 +16,7 @@ import java.util.UUID
 class ArrangorConsumer(
     private val repository: ArrangorRepository,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
-) {
+) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val consumer = ManagedKafkaConsumer(
@@ -25,20 +26,18 @@ class ArrangorConsumer(
             valueDeserializer = StringDeserializer(),
             groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
         ),
-        consume = ::consumeArrangor,
+        consume = ::consume,
     )
 
-    fun consumeArrangor(id: UUID, arrangor: String?) {
-        if (arrangor == null) {
-            repository.delete(id)
-            log.info("Slettet arrangør med id $id")
+    override suspend fun consume(key: UUID, value: String?) {
+        if (value == null) {
+            repository.delete(key)
+            log.info("Slettet arrangør med id $key")
         } else {
-            repository.upsert(objectMapper.readValue(arrangor))
-            log.info("Lagret arrangør med id $id")
+            repository.upsert(objectMapper.readValue(value))
+            log.info("Lagret arrangør med id $key")
         }
     }
 
-    fun run() {
-        consumer.run()
-    }
+    override fun run() = consumer.run()
 }

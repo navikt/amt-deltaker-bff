@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.navansatt
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.kafka.Consumer
 import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl
@@ -15,7 +16,7 @@ import java.util.UUID
 class NavAnsattConsumer(
     private val navAnsattService: NavAnsattService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
-) {
+) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val consumer = ManagedKafkaConsumer(
@@ -25,20 +26,27 @@ class NavAnsattConsumer(
             valueDeserializer = StringDeserializer(),
             groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
         ),
-        consume = ::consumeNavAnsatt,
+        consume = ::consume,
     )
 
-    fun consumeNavAnsatt(id: UUID, navAnsatt: String?) {
-        if (navAnsatt == null) {
-            navAnsattService.slettNavAnsatt(id)
-            log.info("Slettet navansatt med id $id")
+    override suspend fun consume(key: UUID, value: String?) {
+        if (value == null) {
+            navAnsattService.slettNavAnsatt(key)
+            log.info("Slettet navansatt med id $key")
         } else {
-            navAnsattService.oppdaterNavAnsatt(objectMapper.readValue(navAnsatt))
-            log.info("Lagret navansatt med id $id")
+            val dto = objectMapper.readValue<NavAnsattDto>(value)
+            navAnsattService.oppdaterNavAnsatt(dto.toModel())
+            log.info("Lagret navansatt med id $key")
         }
     }
 
-    fun run() {
-        consumer.run()
-    }
+    override fun run() = consumer.run()
+}
+
+data class NavAnsattDto(
+    val id: UUID,
+    val navident: String,
+    val navn: String,
+) {
+    fun toModel() = NavAnsatt(id, navident, navn)
 }

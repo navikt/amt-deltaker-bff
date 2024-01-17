@@ -35,7 +35,7 @@ class DeltakerlisteConsumerTest {
         val consumer = DeltakerlisteConsumer(repository, arrangorService)
 
         runBlocking {
-            consumer.consumeDeltakerliste(
+            consumer.consume(
                 deltakerliste.id,
                 objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, deltakerliste)),
             )
@@ -56,7 +56,7 @@ class DeltakerlisteConsumerTest {
         val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now())
 
         runBlocking {
-            consumer.consumeDeltakerliste(
+            consumer.consume(
                 deltakerliste.id,
                 objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, oppdatertDeltakerliste)),
             )
@@ -75,7 +75,7 @@ class DeltakerlisteConsumerTest {
         val consumer = DeltakerlisteConsumer(repository, arrangorService)
 
         runBlocking {
-            consumer.consumeDeltakerliste(deltakerliste.id, null)
+            consumer.consume(deltakerliste.id, null)
 
             repository.get(deltakerliste.id).getOrNull() shouldBe null
         }

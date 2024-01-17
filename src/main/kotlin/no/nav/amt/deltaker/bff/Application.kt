@@ -103,14 +103,6 @@ fun Application.module() {
     val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
     val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
 
-    val arrangorConsumer = ArrangorConsumer(arrangorRepository)
-    val deltakerlisteConsumer = DeltakerlisteConsumer(deltakerlisteRepository, arrangorService)
-    val navAnsattConsumer = NavAnsattConsumer(navAnsattService)
-
-    arrangorConsumer.run()
-    deltakerlisteConsumer.run()
-    navAnsattConsumer.run()
-
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
             baseUrl = environment.poaoTilgangUrl,
@@ -134,8 +126,14 @@ fun Application.module() {
 
     val endringsmeldingRepository = EndringsmeldingRepository()
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
-    val endringsmeldingConsumer = EndringsmeldingConsumer(endringsmeldingService)
-    endringsmeldingConsumer.run()
+
+    val consumers = listOf(
+        EndringsmeldingConsumer(endringsmeldingService),
+        ArrangorConsumer(arrangorRepository),
+        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService),
+        NavAnsattConsumer(navAnsattService),
+    )
+    consumers.forEach { it.run() }
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
