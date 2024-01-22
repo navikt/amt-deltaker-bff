@@ -8,6 +8,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
@@ -254,6 +255,23 @@ object TestRepository {
             "type" to endringsmelding.type.name,
             "innhold" to toPGObject(endringsmelding.innhold),
             "created_at" to endringsmelding.createdAt,
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(bruker: NavBruker) = Database.query {
+        val sql = """
+            insert into nav_bruker(personId, personident, fornavn, mellomnavn, etternavn) 
+            values (:personId, :personident, :fornavn, :mellomnavn, :etternavn)
+        """.trimIndent()
+
+        val params = mapOf(
+            "personId" to bruker.personId,
+            "personident" to bruker.personident,
+            "fornavn" to bruker.fornavn,
+            "mellomnavn" to bruker.mellomnavn,
+            "etternavn" to bruker.etternavn,
         )
 
         it.update(queryOf(sql, params))
