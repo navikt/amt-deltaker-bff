@@ -9,6 +9,9 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
@@ -21,6 +24,7 @@ import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavAnsatt
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavBruker
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavEnhet
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
 import org.junit.BeforeClass
@@ -42,7 +46,13 @@ class PameldingServiceTest {
             navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClientNavEnhet()),
             deltakerProducer = DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),
         )
-        private val pameldingService = PameldingService(deltakerService, samtykkeRepository, DeltakerlisteRepository())
+
+        private var pameldingService = PameldingService(
+            deltakerService = deltakerService,
+            samtykkeRepository = samtykkeRepository,
+            deltakerlisteRepository = DeltakerlisteRepository(),
+            navBrukerService = NavBrukerService(NavBrukerRepository(), mockAmtPersonServiceClientNavBruker()),
+        )
 
         @JvmStatic
         @BeforeClass
@@ -51,19 +61,34 @@ class PameldingServiceTest {
         }
     }
 
+    fun mockPameldingService(navBruker: NavBruker) {
+        pameldingService = PameldingService(
+            deltakerService,
+            samtykkeRepository,
+            deltakerlisteRepository = DeltakerlisteRepository(),
+            navBrukerService = NavBrukerService(NavBrukerRepository(), mockAmtPersonServiceClientNavBruker(navBruker)),
+        )
+    }
+
     @Test
     fun `opprettKladd - deltaker finnes ikke - oppretter ny deltaker`() {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
-        val personident = TestData.randomIdent()
+        val navBruker = TestData.lagNavBruker()
         val opprettetAv = TestData.randomNavIdent()
         val opprettetAvEnhet = TestData.randomEnhetsnummer()
         TestRepository.insert(deltakerliste)
+        mockPameldingService(navBruker = navBruker)
 
         runBlocking {
-            val deltaker = pameldingService.opprettKladd(deltakerliste.id, personident, opprettetAv, opprettetAvEnhet)
+            val deltaker = pameldingService.opprettKladd(
+                deltakerlisteId = deltakerliste.id,
+                personident = navBruker.personident,
+                opprettetAv = opprettetAv,
+                opprettetAvEnhet = opprettetAvEnhet,
+            )
 
-            deltaker.id shouldBe deltakerService.get(personident, deltakerliste.id).getOrThrow().id
+            deltaker.id shouldBe deltakerService.get(navBruker.personident, deltakerliste.id).getOrThrow().id
             deltaker.deltakerliste.id shouldBe deltakerliste.id
             deltaker.deltakerliste.navn shouldBe deltakerliste.navn
             deltaker.deltakerliste.tiltak.type shouldBe deltakerliste.tiltak.type
@@ -103,7 +128,7 @@ class PameldingServiceTest {
             val eksisterendeDeltaker =
                 pameldingService.opprettKladd(
                     deltaker.deltakerliste.id,
-                    deltaker.personident,
+                    deltaker.navBruker.personident,
                     deltaker.sistEndretAv,
                     deltaker.sistEndretAvEnhet,
                 )
@@ -131,7 +156,7 @@ class PameldingServiceTest {
             val nyDeltaker =
                 pameldingService.opprettKladd(
                     deltaker.deltakerliste.id,
-                    deltaker.personident,
+                    deltaker.navBruker.personident,
                     deltaker.sistEndretAv,
                     deltaker.sistEndretAvEnhet,
                 )

@@ -8,7 +8,7 @@ import java.util.UUID
 class NavBrukerRepository {
 
     private fun rowMapper(row: Row) = NavBruker(
-        personId = row.uuid("personId"),
+        personId = row.uuid("person_id"),
         personident = row.string("personident"),
         fornavn = row.string("fornavn"),
         mellomnavn = row.stringOrNull("mellomnavn"),
@@ -17,9 +17,9 @@ class NavBrukerRepository {
 
     fun upsert(bruker: NavBruker) = Database.query {
         val sql = """
-            insert into nav_bruker(personId, personident, fornavn, mellomnavn, etternavn) 
-            values (:personId, :personident, :fornavn, :mellomnavn, :etternavn)
-            on conflict (personId) do update set
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn)
+            on conflict (person_id) do update set
                 personident = :personident,
                 fornavn = :fornavn,
                 mellomnavn = :mellomnavn,
@@ -28,7 +28,7 @@ class NavBrukerRepository {
         """.trimIndent()
 
         val params = mapOf(
-            "personId" to bruker.personId,
+            "person_id" to bruker.personId,
             "personident" to bruker.personident,
             "fornavn" to bruker.fornavn,
             "mellomnavn" to bruker.mellomnavn,
@@ -42,12 +42,23 @@ class NavBrukerRepository {
 
     fun get(personId: UUID) = Database.query {
         val query = queryOf(
-            statement = "select * from nav_bruker where personId = :personId",
-            paramMap = mapOf("personId" to personId),
+            statement = "select * from nav_bruker where person_id = :person_id",
+            paramMap = mapOf("person_id" to personId),
         )
 
         it.run(query.map(::rowMapper).asSingle)
             ?.let { b -> Result.success(b) }
             ?: Result.failure(NoSuchElementException("Fant ikke bruker $personId"))
+    }
+
+    fun get(personident: String) = Database.query {
+        val query = queryOf(
+            statement = "select * from nav_bruker where personident = :personident",
+            paramMap = mapOf("personident" to personident),
+        )
+
+        it.run(query.map(::rowMapper).asSingle)
+            ?.let { b -> Result.success(b) }
+            ?: Result.failure(NoSuchElementException("Fant ikke bruker med personident"))
     }
 }

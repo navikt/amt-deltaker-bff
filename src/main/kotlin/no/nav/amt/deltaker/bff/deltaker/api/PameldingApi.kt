@@ -66,7 +66,7 @@ fun Routing.registerPameldingApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.opprettUtkast(
                 opprinneligDeltaker = deltaker,
@@ -90,7 +90,7 @@ fun Routing.registerPameldingApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.meldPaUtenGodkjenning(
                 opprinneligDeltaker = deltaker,
@@ -118,7 +118,7 @@ fun Routing.registerPameldingApi(
             val deltakerId = UUID.fromString(call.parameters["deltakerId"])
             val deltaker = deltakerService.get(deltakerId).getOrThrow()
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             if (!pameldingService.slettKladd(deltaker)) {
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke slette deltaker")

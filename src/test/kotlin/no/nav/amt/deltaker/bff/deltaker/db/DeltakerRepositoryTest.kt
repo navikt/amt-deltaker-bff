@@ -28,6 +28,7 @@ class DeltakerRepositoryTest {
     fun `upsert - ny deltaker - insertes`() {
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker.deltakerliste)
+        TestRepository.insert(deltaker.navBruker)
 
         repository.upsert(deltaker)
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
@@ -39,7 +40,6 @@ class DeltakerRepositoryTest {
         TestRepository.insert(deltaker)
 
         val oppdatertDeltaker = deltaker.copy(
-            personident = TestData.randomIdent(),
             startdato = LocalDate.now().plusWeeks(1),
             sluttdato = LocalDate.now().plusWeeks(5),
             dagerPerUke = 1F,
@@ -76,8 +76,7 @@ class DeltakerRepositoryTest {
     @Test
     fun `delete - ingen endring eller samtykke - sletter deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
-        TestRepository.insert(deltaker.deltakerliste)
-        repository.upsert(deltaker)
+        TestRepository.insert(deltaker)
 
         repository.delete(deltaker.id)
 
@@ -119,7 +118,7 @@ class DeltakerRepositoryTest {
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.id shouldBe b.id
-    a.personident shouldBe b.personident
+    a.navBruker shouldBe b.navBruker
     a.startdato shouldBe b.startdato
     a.sluttdato shouldBe b.sluttdato
     a.dagerPerUke shouldBe b.dagerPerUke

@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.util.UUID
@@ -17,7 +18,13 @@ import java.util.UUID
 class DeltakerRepository {
     fun rowMapper(row: Row) = Deltaker(
         id = row.uuid("d.id"),
-        personident = row.string("d.personident"),
+        navBruker = NavBruker(
+            personId = row.uuid("d.person_id"),
+            personident = row.string("nb.personident"),
+            fornavn = row.string("nb.fornavn"),
+            mellomnavn = row.stringOrNull("nb.mellomnavn"),
+            etternavn = row.string("nb.etternavn"),
+        ),
         deltakerliste = Deltakerliste(
             id = row.uuid("deltakerliste_id"),
             tiltak = Tiltak(
@@ -59,15 +66,15 @@ class DeltakerRepository {
     fun upsert(deltaker: Deltaker) = Database.query { session ->
         val sql = """
             insert into deltaker(
-                id, personident, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
+                id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
                 deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, sist_endret_av_enhet, modified_at
             )
             values (
-                :id, :personident, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
+                :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
                 :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndretAvEnhet, :sistEndret
             )
             on conflict (id) do update set 
-                personident          = :personident,
+                person_id          = :person_id,
                 startdato            = :startdato,
                 sluttdato            = :sluttdato,
                 dager_per_uke        = :dagerPerUke,
@@ -81,7 +88,7 @@ class DeltakerRepository {
 
         val parameters = mapOf(
             "id" to deltaker.id,
-            "personident" to deltaker.personident,
+            "person_id" to deltaker.navBruker.personId,
             "deltakerlisteId" to deltaker.deltakerliste.id,
             "startdato" to deltaker.startdato,
             "sluttdato" to deltaker.sluttdato,
@@ -112,7 +119,7 @@ class DeltakerRepository {
     fun get(personIdent: String, deltakerlisteId: UUID) =
         Database.query {
             val sql = getDeltakerSql(
-                """ where d.personident = :personident 
+                """ where nb.personident = :personident 
                     and d.deltakerliste_id = :deltakerliste_id 
                     and ds.gyldig_til is null
                 """.trimMargin(),
@@ -216,7 +223,7 @@ class DeltakerRepository {
 
     private fun getDeltakerSql(where: String = "") = """
             select d.id as "d.id",
-                   d.personident as "d.personident",
+                   d.person_id as "d.person_id",
                    d.deltakerliste_id as "d.deltakerliste_id",
                    d.startdato as "d.startdato",
                    d.sluttdato as "d.sluttdato",
@@ -228,6 +235,10 @@ class DeltakerRepository {
                    d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
                    d.created_at as "d.created_at",
                    d.modified_at as "d.modified_at",
+                   nb.personident as "nb.personident",
+                   nb.fornavn as "nb.fornavn",
+                   nb.mellomnavn as "nb.mellomnavn",
+                   nb.etternavn as "nb.etternavn",
                    ds.id as "ds.id",
                    ds.deltaker_id as "ds.deltaker_id",
                    ds.type as "ds.type",
@@ -251,6 +262,7 @@ class DeltakerRepository {
                    organisasjonsnummer,
                    overordnet_arrangor_id
             from deltaker d 
+                join nav_bruker nb on d.person_id = nb.person_id
                 join deltaker_status ds on d.id = ds.deltaker_id
                 join deltakerliste dl on d.deltakerliste_id = dl.id
                 join arrangor a on a.id = dl.arrangor_id

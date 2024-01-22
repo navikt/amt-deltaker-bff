@@ -13,6 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -75,7 +76,24 @@ class AmtPersonServiceClient(
         }
         return response.body<NavEnhetDto>().tilNavEnhet()
     }
+
+    suspend fun hentNavBruker(personident: String): NavBruker {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/api/nav-bruker") {
+            header(HttpHeaders.Authorization, token)
+            contentType(ContentType.Application.Json)
+            setBody(objectMapper.writeValueAsString(NavBrukerRequest(personident)))
+        }
+        if (!response.status.isSuccess()) {
+            error("Kunne ikke hente nav-bruker fra amt-person-service")
+        }
+        return response.body()
+    }
 }
+
+data class NavBrukerRequest(
+    val personident: String,
+)
 
 data class NavAnsattRequest(
     val navIdent: String,
