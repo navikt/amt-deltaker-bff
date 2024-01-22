@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -207,6 +208,14 @@ object TestData {
         innhold,
         type,
     )
+
+    fun lagNavBruker(
+        personId: UUID = UUID.randomUUID(),
+        personident: String = randomIdent(),
+        fornavn: String = "Fornavn",
+        mellomnavn: String? = "Mellomnavn",
+        etternavn: String = "Etternavn",
+    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn)
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,
