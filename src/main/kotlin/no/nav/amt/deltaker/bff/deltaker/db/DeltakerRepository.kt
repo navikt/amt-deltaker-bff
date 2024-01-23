@@ -52,7 +52,7 @@ class DeltakerRepository {
         status = DeltakerStatus(
             id = row.uuid("ds.id"),
             type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
-            aarsak = row.stringOrNull("ds.aarsak")?.let { DeltakerStatus.Aarsak.valueOf(it) },
+            aarsak = row.stringOrNull("ds.aarsak")?.let { objectMapper.readValue(it) },
             gyldigFra = row.localDateTime("ds.gyldig_fra"),
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
@@ -147,7 +147,7 @@ class DeltakerRepository {
             DeltakerStatus(
                 id = it.uuid("id"),
                 type = it.string("type").let { t -> DeltakerStatus.Type.valueOf(t) },
-                aarsak = it.stringOrNull("aarsak")?.let { t -> DeltakerStatus.Aarsak.valueOf(t) },
+                aarsak = it.stringOrNull("aarsak")?.let { aarsak -> objectMapper.readValue(aarsak) },
                 gyldigFra = it.localDateTime("gyldig_fra"),
                 gyldigTil = it.localDateTimeOrNull("gyldig_til"),
                 opprettet = it.localDateTime("created_at"),
@@ -202,7 +202,7 @@ class DeltakerRepository {
             "id" to status.id,
             "deltaker_id" to deltakerId,
             "type" to status.type.name,
-            "aarsak" to status.aarsak?.name,
+            "aarsak" to toPGObject(status.aarsak),
             "gyldig_fra" to status.gyldigFra,
         )
 

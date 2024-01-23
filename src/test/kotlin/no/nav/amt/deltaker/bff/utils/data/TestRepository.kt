@@ -127,7 +127,7 @@ object TestRepository {
             "id" to status.id,
             "deltaker_id" to deltakerId,
             "type" to status.type.name,
-            "aarsak" to status.aarsak?.name,
+            "aarsak" to toPGObject(status.aarsak),
             "gyldig_fra" to status.gyldigFra,
             "gyldig_til" to status.gyldigTil,
             "created_at" to status.opprettet,
