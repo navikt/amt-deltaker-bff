@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import java.time.LocalDate
@@ -8,7 +9,7 @@ import java.util.UUID
 
 data class Deltaker(
     val id: UUID,
-    val personident: String,
+    val navBruker: NavBruker,
     val deltakerliste: Deltakerliste,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,

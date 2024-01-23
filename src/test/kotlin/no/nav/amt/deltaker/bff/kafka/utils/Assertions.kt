@@ -22,7 +22,8 @@ fun assertProduced(deltaker: Deltaker) {
     AsyncUtils.eventually {
         val cachedDeltaker = cache[deltaker.id]!!
         cachedDeltaker.id shouldBe deltaker.id
-        cachedDeltaker.personident shouldBe deltaker.personident
+        cachedDeltaker.personId shouldBe deltaker.navBruker.personId
+        cachedDeltaker.personident shouldBe deltaker.navBruker.personident
         cachedDeltaker.deltakerlisteId shouldBe deltaker.deltakerliste.id
         cachedDeltaker.startdato shouldBe deltaker.startdato
         cachedDeltaker.sluttdato shouldBe deltaker.sluttdato

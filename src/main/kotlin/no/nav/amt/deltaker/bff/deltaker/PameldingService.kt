@@ -5,6 +5,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import org.slf4j.LoggerFactory
@@ -15,6 +17,7 @@ class PameldingService(
     private val deltakerService: DeltakerService,
     private val samtykkeRepository: DeltakerSamtykkeRepository,
     private val deltakerlisteRepository: DeltakerlisteRepository,
+    private val navBrukerService: NavBrukerService,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -33,7 +36,8 @@ class PameldingService(
         }
 
         val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
-        val deltaker = nyKladd(personident, deltakerliste, opprettetAv, opprettetAvEnhet)
+        val navBruker = navBrukerService.get(personident).getOrThrow()
+        val deltaker = nyKladd(navBruker, deltakerliste, opprettetAv, opprettetAvEnhet)
 
         deltakerService.upsert(deltaker)
 
@@ -112,14 +116,14 @@ class PameldingService(
     }
 
     private fun nyKladd(
-        personident: String,
+        navBruker: NavBruker,
         deltakerliste: Deltakerliste,
         opprettetAv: String,
         opprettetAvEnhet: String?,
     ): Deltaker =
         Deltaker(
             id = UUID.randomUUID(),
-            personident = personident,
+            navBruker = navBruker,
             deltakerliste = deltakerliste,
             startdato = null,
             sluttdato = null,

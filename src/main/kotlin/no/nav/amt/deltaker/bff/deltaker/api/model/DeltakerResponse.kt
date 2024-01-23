@@ -10,7 +10,10 @@ import java.util.UUID
 
 data class DeltakerResponse(
     val deltakerId: UUID,
-    val deltakerliste: DeltakerlisteDTO,
+    val fornavn: String,
+    val mellomnavn: String?,
+    val etternavn: String,
+    val deltakerliste: DeltakerlisteDto,
     val status: DeltakerStatus,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,
@@ -22,7 +25,7 @@ data class DeltakerResponse(
     val sistEndretAvEnhet: String?,
 )
 
-data class DeltakerlisteDTO(
+data class DeltakerlisteDto(
     val deltakerlisteId: UUID,
     val deltakerlisteNavn: String,
     val tiltakstype: Tiltak.Type,
@@ -33,7 +36,10 @@ data class DeltakerlisteDTO(
 fun Deltaker.toDeltakerResponse(): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
-        deltakerliste = DeltakerlisteDTO(
+        fornavn = navBruker.fornavn,
+        mellomnavn = navBruker.mellomnavn,
+        etternavn = navBruker.etternavn,
+        deltakerliste = DeltakerlisteDto(
             deltakerlisteId = deltakerliste.id,
             deltakerlisteNavn = deltakerliste.navn,
             tiltakstype = deltakerliste.tiltak.type,

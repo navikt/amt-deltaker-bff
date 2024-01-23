@@ -75,6 +75,11 @@ object TestRepository {
         deltaker: Deltaker,
     ) = Database.query { session ->
         try {
+            insert(deltaker.navBruker)
+        } catch (e: Exception) {
+            log.warn("NavBruker med id ${deltaker.navBruker.personId} er allerede opprettet")
+        }
+        try {
             insert(deltaker.deltakerliste)
         } catch (e: Exception) {
             log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet")
@@ -82,18 +87,18 @@ object TestRepository {
 
         val sql = """
             insert into deltaker(
-                id, personident, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
+                id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
                 deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, sist_endret_av_enhet, modified_at, created_at
             )
             values (
-                :id, :personident, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
+                :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
                 :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndretAvEnhet, :modifiedAt, :createdAt
             )
         """.trimIndent()
 
         val parameters = mapOf(
             "id" to deltaker.id,
-            "personident" to deltaker.personident,
+            "person_id" to deltaker.navBruker.personId,
             "deltakerlisteId" to deltaker.deltakerliste.id,
             "startdato" to deltaker.startdato,
             "sluttdato" to deltaker.sluttdato,
@@ -262,12 +267,12 @@ object TestRepository {
 
     fun insert(bruker: NavBruker) = Database.query {
         val sql = """
-            insert into nav_bruker(personId, personident, fornavn, mellomnavn, etternavn) 
-            values (:personId, :personident, :fornavn, :mellomnavn, :etternavn)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn)
         """.trimIndent()
 
         val params = mapOf(
-            "personId" to bruker.personId,
+            "person_id" to bruker.personId,
             "personident" to bruker.personident,
             "fornavn" to bruker.fornavn,
             "mellomnavn" to bruker.mellomnavn,

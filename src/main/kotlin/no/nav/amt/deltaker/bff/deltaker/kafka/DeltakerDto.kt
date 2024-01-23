@@ -9,6 +9,7 @@ import java.util.UUID
 
 data class DeltakerDto(
     val id: UUID,
+    val personId: UUID,
     val personident: String,
     val deltakerlisteId: UUID,
     val startdato: LocalDate?,
@@ -24,7 +25,8 @@ data class DeltakerDto(
 
 fun Deltaker.toDto() = DeltakerDto(
     id = id,
-    personident = personident,
+    personId = navBruker.personId,
+    personident = navBruker.personident,
     deltakerlisteId = deltakerliste.id,
     startdato = startdato,
     sluttdato = sluttdato,

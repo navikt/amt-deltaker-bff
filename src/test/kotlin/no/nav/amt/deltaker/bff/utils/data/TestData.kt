@@ -70,7 +70,7 @@ object TestData {
 
     fun lagDeltaker(
         id: UUID = UUID.randomUUID(),
-        personident: String = randomIdent(),
+        navBruker: NavBruker = lagNavBruker(),
         deltakerliste: Deltakerliste = lagDeltakerliste(),
         startdato: LocalDate? = LocalDate.now().minusMonths(3),
         sluttdato: LocalDate? = LocalDate.now().minusDays(1),
@@ -85,7 +85,7 @@ object TestData {
         opprettet: LocalDateTime = LocalDateTime.now(),
     ) = Deltaker(
         id,
-        personident,
+        navBruker,
         deltakerliste,
         startdato,
         sluttdato,

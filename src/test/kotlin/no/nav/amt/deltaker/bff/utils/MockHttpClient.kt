@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
@@ -66,6 +67,15 @@ fun mockAmtPersonServiceClientNavEnhet(navEnhet: NavEnhet = TestData.lagNavEnhet
         baseUrl = "https://amt-person-service",
         scope = "amt.person-service.scope",
         httpClient = mockHttpClient(objectMapper.writeValueAsString(NavEnhetDto(id = navEnhet.id, enhetId = navEnhet.enhetsnummer, navn = navEnhet.navn))),
+        azureAdTokenClient = mockAzureAdClient(),
+    )
+}
+
+fun mockAmtPersonServiceClientNavBruker(navBruker: NavBruker = TestData.lagNavBruker()): AmtPersonServiceClient {
+    return AmtPersonServiceClient(
+        baseUrl = "https://amt-person-service",
+        scope = "amt.person-service.scope",
+        httpClient = mockHttpClient(objectMapper.writeValueAsString(navBruker)),
         azureAdTokenClient = mockAzureAdClient(),
     )
 }

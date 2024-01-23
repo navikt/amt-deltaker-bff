@@ -37,7 +37,7 @@ fun Routing.registerDeltakerApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -55,7 +55,7 @@ fun Routing.registerDeltakerApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -73,7 +73,7 @@ fun Routing.registerDeltakerApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -94,7 +94,7 @@ fun Routing.registerDeltakerApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -109,7 +109,7 @@ fun Routing.registerDeltakerApi(
         get("/deltaker/{deltakerId}") {
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id ${deltaker.id}")
 
             call.respond(deltaker.toDeltakerResponse())
@@ -118,7 +118,7 @@ fun Routing.registerDeltakerApi(
         get("/deltaker/{deltakerId}/historikk") {
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.personident)
+            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
             val historikk = deltakerHistorikkService.getForDeltaker(deltaker.id)
