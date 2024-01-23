@@ -251,7 +251,7 @@ class PameldingServiceTest {
             oppdatertDeltaker.status.type shouldBe deltaker.status.type
             oppdatertDeltaker.sistEndretAv shouldBe navIdent
 
-            val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).last()
+            val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).find { it.godkjent == null }!!
 
             samtykke.deltakerId shouldBe deltaker.id
             samtykke.godkjent shouldBe null
