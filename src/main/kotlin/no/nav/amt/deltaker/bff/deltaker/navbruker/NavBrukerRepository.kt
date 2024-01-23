@@ -23,7 +23,8 @@ class NavBrukerRepository {
                 personident = :personident,
                 fornavn = :fornavn,
                 mellomnavn = :mellomnavn,
-                etternavn = :etternavn
+                etternavn = :etternavn,
+                modified_at = current_timestamp
             returning *
         """.trimIndent()
 
