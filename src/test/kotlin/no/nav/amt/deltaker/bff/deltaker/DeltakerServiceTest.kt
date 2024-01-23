@@ -141,4 +141,32 @@ class DeltakerServiceTest {
             }
         }
     }
+
+    @Test
+    fun `oppdaterDeltaker - ikke aktuell - oppdaterer deltaker og status`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        TestRepository.insert(deltaker)
+
+        val aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.ANNET, "Flyttet til Spania")
+
+        runBlocking {
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                deltaker,
+                DeltakerEndring.Endringstype.IKKE_AKTUELL,
+                DeltakerEndring.Endring.IkkeAktuell(aarsak),
+                navAnsatt.navIdent,
+                navEnhet.enhetsnummer,
+            )
+
+            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
+            oppdatertDeltaker.status.aarsak shouldBe aarsak.toDeltakerStatusAarsak()
+
+            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            endring.size shouldBe 1
+            endring[0].endringstype shouldBe DeltakerEndring.Endringstype.IKKE_AKTUELL
+
+            val ikkeAktuellEndring = endring[0].endring as DeltakerEndring.Endring.IkkeAktuell
+            ikkeAktuellEndring.aarsak shouldBe aarsak
+        }
+    }
 }

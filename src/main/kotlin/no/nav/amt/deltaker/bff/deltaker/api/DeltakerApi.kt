@@ -17,6 +17,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonReque
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -100,6 +101,24 @@ fun Routing.registerDeltakerApi(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.STARTDATO,
                 endring = DeltakerEndring.Endring.EndreStartdato(request.startdato),
+                endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
+            )
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
+        }
+
+        post("/deltaker/{deltakerId}/ikke-aktuell") {
+            val navIdent = getNavIdent()
+            val request = call.receive<IkkeAktuellRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringstype = DeltakerEndring.Endringstype.IKKE_AKTUELL,
+                endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )

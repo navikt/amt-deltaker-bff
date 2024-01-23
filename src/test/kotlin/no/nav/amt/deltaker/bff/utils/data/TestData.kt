@@ -101,9 +101,15 @@ object TestData {
     )
 
     fun lagDeltakerStatus(
+        type: DeltakerStatus.Type,
+        aarsak: DeltakerStatus.Aarsak,
+    ) = lagDeltakerStatus(type, aarsak.type, aarsak.beskrivelse)
+
+    fun lagDeltakerStatus(
         statusType: DeltakerStatus.Type,
         aarsak: DeltakerStatus.Aarsak.Type? = null,
-    ) = lagDeltakerStatus(type = statusType, aarsak = aarsak)
+        beskrivelse: String? = null,
+    ) = lagDeltakerStatus(type = statusType, aarsak = aarsak, beskrivelse = beskrivelse)
 
     fun lagDeltakerStatus(
         id: UUID = UUID.randomUUID(),

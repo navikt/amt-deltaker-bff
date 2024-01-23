@@ -15,7 +15,27 @@ data class DeltakerEndring(
     val endret: LocalDateTime,
 ) {
     enum class Endringstype {
-        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, MAL
+        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, MAL, IKKE_AKTUELL
+    }
+
+    data class Aarsak(
+        val type: Type,
+        val beskrivelse: String? = null,
+    ) {
+        init {
+            if (beskrivelse != null && type != Type.ANNET) {
+                error("Aarsak $type skal ikke ha beskrivelse")
+            }
+        }
+
+        enum class Type {
+            SYK, FATT_JOBB, TRENGER_ANNEN_STOTTE, UTDANNING, IKKE_MOTT, ANNET
+        }
+
+        fun toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(
+            DeltakerStatus.Aarsak.Type.valueOf(type.name),
+            beskrivelse,
+        )
     }
 
     sealed class Endring {
@@ -38,6 +58,10 @@ data class DeltakerEndring(
 
         data class EndreSluttdato(
             val sluttdato: LocalDate?,
+        ) : Endring()
+
+        data class IkkeAktuell(
+            val aarsak: Aarsak?,
         ) : Endring()
     }
 }
