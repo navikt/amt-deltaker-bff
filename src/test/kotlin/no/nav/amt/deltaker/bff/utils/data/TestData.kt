@@ -101,18 +101,32 @@ object TestData {
     )
 
     fun lagDeltakerStatus(
+        type: DeltakerStatus.Type,
+        aarsak: DeltakerStatus.Aarsak,
+    ) = lagDeltakerStatus(type, aarsak.type, aarsak.beskrivelse)
+
+    fun lagDeltakerStatus(
         statusType: DeltakerStatus.Type,
-        aarsak: DeltakerStatus.Aarsak? = null,
-    ) = lagDeltakerStatus(type = statusType, aarsak = aarsak)
+        aarsak: DeltakerStatus.Aarsak.Type? = null,
+        beskrivelse: String? = null,
+    ) = lagDeltakerStatus(type = statusType, aarsak = aarsak, beskrivelse = beskrivelse)
 
     fun lagDeltakerStatus(
         id: UUID = UUID.randomUUID(),
         type: DeltakerStatus.Type = DeltakerStatus.Type.DELTAR,
-        aarsak: DeltakerStatus.Aarsak? = null,
+        aarsak: DeltakerStatus.Aarsak.Type? = null,
+        beskrivelse: String? = null,
         gyldigFra: LocalDateTime = LocalDateTime.now(),
         gyldigTil: LocalDateTime? = null,
         opprettet: LocalDateTime = gyldigFra,
-    ) = DeltakerStatus(id, type, aarsak, gyldigFra, gyldigTil, opprettet)
+    ) = DeltakerStatus(
+        id,
+        type,
+        aarsak?.let { DeltakerStatus.Aarsak(it, beskrivelse) },
+        gyldigFra,
+        gyldigTil,
+        opprettet,
+    )
 
     fun lagDeltakerSamtykke(
         id: UUID = UUID.randomUUID(),

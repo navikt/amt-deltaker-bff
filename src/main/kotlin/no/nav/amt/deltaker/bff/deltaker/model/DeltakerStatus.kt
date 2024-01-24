@@ -11,8 +11,18 @@ data class DeltakerStatus(
     val gyldigTil: LocalDateTime?,
     val opprettet: LocalDateTime,
 ) {
-    enum class Aarsak {
-        SYK, FATT_JOBB, TRENGER_ANNEN_STOTTE, FIKK_IKKE_PLASS, IKKE_MOTT, ANNET, AVLYST_KONTRAKT
+    data class Aarsak(
+        val type: Type,
+        val beskrivelse: String?,
+    ) {
+        init {
+            if (beskrivelse != null && type != Type.ANNET) {
+                error("Aarsak $type skal ikke ha beskrivelse")
+            }
+        }
+        enum class Type {
+            SYK, FATT_JOBB, TRENGER_ANNEN_STOTTE, FIKK_IKKE_PLASS, IKKE_MOTT, ANNET, AVLYST_KONTRAKT
+        }
     }
 
     enum class Type {

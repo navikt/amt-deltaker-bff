@@ -73,6 +73,13 @@ class DeltakerService(
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
+            is DeltakerEndring.Endring.IkkeAktuell -> opprinneligDeltaker.copy(
+                status = nyDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL, endring.aarsak?.toDeltakerStatusAarsak()),
+                sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
+                sistEndret = LocalDateTime.now(),
+            )
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
@@ -136,7 +143,8 @@ class DeltakerService(
                 opprinneligDeltaker.deltakelsesprosent == oppdatertDeltaker.deltakelsesprosent &&
                 opprinneligDeltaker.dagerPerUke == oppdatertDeltaker.dagerPerUke &&
                 opprinneligDeltaker.startdato == oppdatertDeltaker.startdato &&
-                opprinneligDeltaker.sluttdato == oppdatertDeltaker.sluttdato
+                opprinneligDeltaker.sluttdato == oppdatertDeltaker.sluttdato &&
+                opprinneligDeltaker.status == oppdatertDeltaker.status
             )
     }
 }

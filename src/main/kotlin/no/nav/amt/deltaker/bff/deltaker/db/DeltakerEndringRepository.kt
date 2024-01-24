@@ -87,6 +87,9 @@ class DeltakerEndringRepository {
 
             DeltakerEndring.Endringstype.SLUTTDATO ->
                 objectMapper.readValue<DeltakerEndring.Endring.EndreSluttdato>(endringJson)
+
+            DeltakerEndring.Endringstype.IKKE_AKTUELL ->
+                objectMapper.readValue<DeltakerEndring.Endring.IkkeAktuell>(endringJson)
         }
     }
 }

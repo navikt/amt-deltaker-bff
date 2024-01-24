@@ -61,7 +61,7 @@ class DeltakerRepositoryTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
-                aarsak = DeltakerStatus.Aarsak.FATT_JOBB,
+                aarsak = DeltakerStatus.Aarsak.Type.FATT_JOBB,
             ),
         )
 
