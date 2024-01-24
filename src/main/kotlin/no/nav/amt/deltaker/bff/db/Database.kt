@@ -55,5 +55,5 @@ object Database {
 
 fun toPGObject(value: Any?) = PGobject().also {
     it.type = "json"
-    it.value = objectMapper.writeValueAsString(value)
+    it.value = value?.let { v -> objectMapper.writeValueAsString(v) }
 }
