@@ -12,7 +12,7 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.principal
 import io.ktor.util.pipeline.PipelineContext
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.auth.AuthorizationException
+import no.nav.amt.deltaker.bff.auth.AuthenticationException
 import java.net.URI
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -43,11 +43,11 @@ fun <T : Any> PipelineContext<T, ApplicationCall>.getNavAnsattAzureId(): UUID {
     return call.principal<JWTPrincipal>()
         ?.get("oid")
         ?.let { UUID.fromString(it) }
-        ?: throw AuthorizationException("NavAnsattAzureId mangler i JWTPrincipal")
+        ?: throw AuthenticationException("NavAnsattAzureId mangler i JWTPrincipal")
 }
 
 fun <T : Any> PipelineContext<T, ApplicationCall>.getNavIdent(): String {
     return call.principal<JWTPrincipal>()
         ?.get("NAVident")
-        ?: throw AuthorizationException("NAVident mangler i JWTPrincipal")
+        ?: throw AuthenticationException("NAVident mangler i JWTPrincipal")
 }

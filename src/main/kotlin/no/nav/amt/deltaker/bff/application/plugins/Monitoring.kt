@@ -14,11 +14,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import org.slf4j.event.Level
 
 fun Application.configureMonitoring() {
     install(CallLogging) {
-        level = Level.INFO
+        disableDefaultColors()
         filter { call -> call.request.path().startsWith("/") && !call.request.path().startsWith("/internal") }
         callIdMdc("call-id")
     }
