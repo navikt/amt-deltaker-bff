@@ -33,27 +33,13 @@ fun Routing.registerPameldingApi(
     authenticate("VEILEDER") {
         post("/pamelding") {
             val navIdent = getNavIdent()
-            val pameldingRequest = call.receive<PameldingRequest>()
-            val enhetsnummer = call.request.header("aktiv-enhet")
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
-            val deltaker = pameldingService.opprettKladd(
-                deltakerlisteId = pameldingRequest.deltakerlisteId,
-                personident = pameldingRequest.personident,
-                opprettetAv = navIdent,
-                opprettetAvEnhet = enhetsnummer,
-            )
-            call.respond(deltaker.toDeltakerResponse())
-        }
+            val request = call.receive<PameldingRequest>()
 
-        // Deprecated bør byttes til /pamelding
-        post("/deltaker") {
-            val navIdent = getNavIdent()
-            val pameldingRequest = call.receive<PameldingRequest>()
             val enhetsnummer = call.request.header("aktiv-enhet")
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), request.personident)
             val deltaker = pameldingService.opprettKladd(
-                deltakerlisteId = pameldingRequest.deltakerlisteId,
-                personident = pameldingRequest.personident,
+                deltakerlisteId = request.deltakerlisteId,
+                personident = request.personident,
                 opprettetAv = navIdent,
                 opprettetAvEnhet = enhetsnummer,
             )
@@ -63,6 +49,8 @@ fun Routing.registerPameldingApi(
         post("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
             val request = call.receive<UtkastRequest>()
+            request.valider()
+
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
@@ -73,8 +61,8 @@ fun Routing.registerPameldingApi(
                 utkast = OppdatertDeltaker(
                     mal = request.mal,
                     bakgrunnsinformasjon = request.bakgrunnsinformasjon,
-                    deltakelsesprosent = request.deltakelsesprosent,
-                    dagerPerUke = request.dagerPerUke,
+                    deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                    dagerPerUke = request.dagerPerUke?.toFloat(),
                     godkjentAvNav = null,
                     endretAv = navIdent,
                     endretAvEnhet = enhetsnummer,
@@ -87,6 +75,8 @@ fun Routing.registerPameldingApi(
         post("/pamelding/{deltakerId}/utenGodkjenning") {
             val navIdent = getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
+            request.valider()
+
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
@@ -97,8 +87,8 @@ fun Routing.registerPameldingApi(
                 oppdatertDeltaker = OppdatertDeltaker(
                     mal = request.mal,
                     bakgrunnsinformasjon = request.bakgrunnsinformasjon,
-                    deltakelsesprosent = request.deltakelsesprosent,
-                    dagerPerUke = request.dagerPerUke,
+                    deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                    dagerPerUke = request.dagerPerUke?.toFloat(),
                     godkjentAvNav = GodkjenningAvNav(
                         type = request.begrunnelse.type,
                         beskrivelse = request.begrunnelse.beskrivelse,
