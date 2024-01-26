@@ -125,7 +125,7 @@ class DeltakerService(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
         enhetsnummer: String?,
-        navIdent: String
+        navIdent: String,
     ): Deltaker {
         val deltaker = opprinneligDeltaker.copy(
             status = status,

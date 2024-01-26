@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
@@ -22,7 +23,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
 import org.slf4j.LoggerFactory
 import java.util.UUID
-import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 
 fun Routing.registerPameldingApi(
     tilgangskontrollService: TilgangskontrollService,
@@ -97,7 +97,7 @@ fun Routing.registerPameldingApi(
                 opprinneligDeltaker = deltaker,
                 navIdent = navIdent,
                 enhetsnummer = enhetsnummer,
-                aarsak = request.aarsak
+                aarsak = request.aarsak,
             )
 
             call.respond(HttpStatusCode.OK)

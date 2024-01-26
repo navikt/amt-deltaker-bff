@@ -142,7 +142,7 @@ class PameldingService(
         opprinneligDeltaker: Deltaker,
         enhetsnummer: String?,
         navIdent: String,
-        aarsak: DeltakerStatus.Aarsak
+        aarsak: DeltakerStatus.Aarsak,
     ) {
         if (opprinneligDeltaker.status.type != DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
             log.warn("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
