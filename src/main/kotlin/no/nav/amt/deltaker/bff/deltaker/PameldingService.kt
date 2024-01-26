@@ -137,4 +137,20 @@ class PameldingService(
             sistEndretAvEnhet = opprettetAvEnhet,
             opprettet = LocalDateTime.now(),
         )
+
+    suspend fun avbrytUtkast(
+        opprinneligDeltaker: Deltaker,
+        enhetsnummer: String?,
+        navIdent: String,
+        aarsak: DeltakerStatus.Aarsak
+    ) {
+        if (opprinneligDeltaker.status.type != DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
+            log.warn("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
+            throw IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
+        }
+        val status = nyDeltakerStatus(DeltakerStatus.Type.AVBRUTT_UTKAST, aarsak)
+        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, enhetsnummer, navIdent)
+
+        deltakerService.upsert(deltaker)
+    }
 }

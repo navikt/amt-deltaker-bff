@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
 import org.slf4j.LoggerFactory
 import java.util.UUID
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 
 fun Routing.registerPameldingApi(
     tilgangskontrollService: TilgangskontrollService,
@@ -79,6 +80,24 @@ fun Routing.registerPameldingApi(
                     endretAv = navIdent,
                     endretAvEnhet = enhetsnummer,
                 ),
+            )
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post("/pamelding/{deltakerId}/avbryt") {
+            val navIdent = getNavIdent()
+            val request = call.receive<AvbrytUtkastRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            pameldingService.avbrytUtkast(
+                opprinneligDeltaker = deltaker,
+                navIdent = navIdent,
+                enhetsnummer = enhetsnummer,
+                aarsak = request.aarsak
             )
 
             call.respond(HttpStatusCode.OK)
