@@ -180,8 +180,8 @@ class DeltakerApiTest {
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            dagerPerUke = deltakelsesmengdeRequest.dagerPerUke,
-            deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent,
+            dagerPerUke = deltakelsesmengdeRequest.dagerPerUke?.toFloat(),
+            deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent?.toFloat(),
         )
         coEvery {
             deltakerService.oppdaterDeltaker(
@@ -311,7 +311,7 @@ class DeltakerApiTest {
 
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val malRequest = EndreMalRequest(listOf(Mal("visningstekst", "type", true, null)))
-    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50F, dagerPerUke = 2.5F)
+    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
 }
