@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
@@ -171,9 +172,9 @@ class PameldingServiceTest {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
 
-        val utkast = TestData.lagOppdatertDeltaker()
+        val utkast = TestData.lagUtkast(deltaker)
         runBlocking {
-            pameldingService.upsertUtkast(deltaker, utkast)
+            pameldingService.upsertUtkast(utkast)
 
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
@@ -203,10 +204,11 @@ class PameldingServiceTest {
         )
         TestRepository.insert(eksisterendeSamtykke)
 
-        val utkast = TestData.lagOppdatertDeltaker(bakgrunnsinformasjon = "Nye opplysninger...")
+        val utkast =
+            TestData.lagUtkast(deltaker, TestData.lagPamelding(deltaker, bakgrunnsinformasjon = "Nye opplysninger"))
 
         runBlocking {
-            pameldingService.upsertUtkast(deltaker, utkast)
+            pameldingService.upsertUtkast(utkast)
 
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
@@ -223,7 +225,7 @@ class PameldingServiceTest {
     }
 
     @Test
-    fun `upsertUtkast - deltaker har ikke status KLADD - oppretter et samtykke og setter ikke ny status på deltaker`() {
+    fun `upsertUtkast - deltaker har ikke status KLADD eller UTKAST - feiler`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         val opprinneligSamtykke = TestData.lagDeltakerSamtykke(
             deltakerId = deltaker.id,
@@ -239,27 +241,16 @@ class PameldingServiceTest {
 
         val navIdent = TestData.randomNavIdent()
         val navEnhet = TestData.randomEnhetsnummer()
-        val utkast = TestData.lagOppdatertDeltaker(
+        val utkast = TestData.lagUtkast(
+            deltaker,
+            TestData.lagPamelding(deltaker),
             godkjentAvNav = TestData.lagGodkjenningAvNav(godkjentAv = navIdent, godkjentAvEnhet = navEnhet),
-            endretAv = navIdent,
-            endretAvEnhet = navEnhet,
         )
         runBlocking {
-            pameldingService.upsertUtkast(deltaker, utkast)
-
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltaker.status.type shouldBe deltaker.status.type
-            oppdatertDeltaker.sistEndretAv shouldBe navIdent
-
-            val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).find { it.godkjent == null }!!
-
-            samtykke.deltakerId shouldBe deltaker.id
-            samtykke.godkjent shouldBe null
-            samtykke.gyldigTil shouldBe null
-            sammenlignDeltakere(samtykke.deltakerVedSamtykke, oppdatertDeltaker)
-            samtykke.godkjentAvNav shouldBe utkast.godkjentAvNav
-
-            assertProduced(oppdatertDeltaker)
+            shouldThrow<IllegalArgumentException> {
+                pameldingService.upsertUtkast(utkast)
+            }
+            samtykkeRepository.getIkkeGodkjent(deltaker.id) shouldBe null
         }
     }
 
@@ -268,13 +259,10 @@ class PameldingServiceTest {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
         val godkjenningAvNav = TestData.lagGodkjenningAvNav()
-        val oppdatertDeltaker = TestData.lagOppdatertDeltaker(godkjentAvNav = godkjenningAvNav)
+        val utkast = TestData.lagUtkast(deltaker, godkjentAvNav = godkjenningAvNav)
 
         runBlocking {
-            pameldingService.meldPaUtenGodkjenning(
-                deltaker,
-                oppdatertDeltaker,
-            )
+            pameldingService.meldPaUtenGodkjenning(utkast)
 
             val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
@@ -303,13 +291,16 @@ class PameldingServiceTest {
         )
         TestRepository.insert(eksisterendeSamtykke)
         val godkjenningAvNav = TestData.lagGodkjenningAvNav()
-        val oppdatertDeltaker = TestData.lagOppdatertDeltaker(
-            bakgrunnsinformasjon = "Nye opplysninger...",
+        val utkast = TestData.lagUtkast(
+            deltaker,
+            TestData.lagPamelding(
+                bakgrunnsinformasjon = "Nye opplysninger...",
+            ),
             godkjentAvNav = godkjenningAvNav,
         )
 
         runBlocking {
-            pameldingService.meldPaUtenGodkjenning(deltaker, oppdatertDeltaker)
+            pameldingService.meldPaUtenGodkjenning(utkast)
 
             val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
@@ -329,14 +320,11 @@ class PameldingServiceTest {
     fun `meldPaUtenGodkjenning - oppdatert deltaker mangler godkjenning - kaster feil`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
-        val oppdatertDeltaker = TestData.lagOppdatertDeltaker(godkjentAvNav = null)
+        val utkast = TestData.lagUtkast(deltaker, godkjentAvNav = null)
 
         runBlocking {
             assertFailsWith<RuntimeException> {
-                pameldingService.meldPaUtenGodkjenning(
-                    deltaker,
-                    oppdatertDeltaker,
-                )
+                pameldingService.meldPaUtenGodkjenning(utkast)
             }
         }
     }

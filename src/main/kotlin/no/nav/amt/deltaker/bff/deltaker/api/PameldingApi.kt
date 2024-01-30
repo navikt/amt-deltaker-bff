@@ -19,7 +19,8 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningReques
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
-import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
+import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -57,15 +58,17 @@ fun Routing.registerPameldingApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.upsertUtkast(
-                opprinneligDeltaker = deltaker,
-                utkast = OppdatertDeltaker(
-                    mal = request.mal,
-                    bakgrunnsinformasjon = request.bakgrunnsinformasjon,
-                    deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
-                    dagerPerUke = request.dagerPerUke?.toFloat(),
+                Utkast(
+                    opprinneligDeltaker = deltaker,
+                    pamelding = Pamelding(
+                        mal = request.mal,
+                        bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                        deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                        dagerPerUke = request.dagerPerUke?.toFloat(),
+                        endretAv = navIdent,
+                        endretAvEnhet = enhetsnummer,
+                    ),
                     godkjentAvNav = null,
-                    endretAv = navIdent,
-                    endretAvEnhet = enhetsnummer,
                 ),
             )
 
@@ -83,20 +86,22 @@ fun Routing.registerPameldingApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.meldPaUtenGodkjenning(
-                opprinneligDeltaker = deltaker,
-                oppdatertDeltaker = OppdatertDeltaker(
-                    mal = request.mal,
-                    bakgrunnsinformasjon = request.bakgrunnsinformasjon,
-                    deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
-                    dagerPerUke = request.dagerPerUke?.toFloat(),
+                Utkast(
+                    opprinneligDeltaker = deltaker,
+                    pamelding = Pamelding(
+                        mal = request.mal,
+                        bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                        deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                        dagerPerUke = request.dagerPerUke?.toFloat(),
+                        endretAv = navIdent,
+                        endretAvEnhet = enhetsnummer,
+                    ),
                     godkjentAvNav = GodkjenningAvNav(
                         type = request.begrunnelse.type,
                         beskrivelse = request.begrunnelse.beskrivelse,
                         godkjentAv = navIdent,
                         godkjentAvEnhet = enhetsnummer,
                     ),
-                    endretAv = navIdent,
-                    endretAvEnhet = enhetsnummer,
                 ),
             )
 

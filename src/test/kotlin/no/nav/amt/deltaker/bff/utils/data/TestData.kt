@@ -6,7 +6,9 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
-import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Kladd
+import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
+import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
@@ -159,23 +161,63 @@ object TestData {
         godkjentAvEnhet: String = randomEnhetsnummer(),
     ) = GodkjenningAvNav(type, beskrivelse, godkjentAv, godkjentAvEnhet)
 
-    fun lagOppdatertDeltaker(
+    fun lagPamelding(
+        deltaker: Deltaker,
+        mal: List<Mal>? = null,
+        bakgrunnsinformasjon: String? = null,
+        deltakelsesprosent: Float? = null,
+        dagerPerUke: Float? = null,
+        endretAv: String? = null,
+        endretAvEnhet: String? = null,
+    ) = lagPamelding(
+        mal = mal ?: deltaker.mal,
+        bakgrunnsinformasjon = bakgrunnsinformasjon ?: deltaker.bakgrunnsinformasjon,
+        deltakelsesprosent = deltakelsesprosent ?: deltaker.deltakelsesprosent,
+        dagerPerUke = dagerPerUke ?: deltaker.dagerPerUke,
+        endretAv = endretAv ?: deltaker.sistEndretAv,
+        endretAvEnhet = endretAvEnhet ?: deltaker.sistEndretAvEnhet,
+    )
+
+    fun lagPamelding(
         mal: List<Mal> = emptyList(),
         bakgrunnsinformasjon: String? = "Har vært ...",
         deltakelsesprosent: Float? = 100F,
         dagerPerUke: Float? = 5F,
-        godkjentAvNav: GodkjenningAvNav? = null,
         endretAv: String = randomNavIdent(),
         endretAvEnhet: String? = randomEnhetsnummer(),
-    ) = OppdatertDeltaker(
+    ) = Pamelding(
         mal,
         bakgrunnsinformasjon,
         deltakelsesprosent,
         dagerPerUke,
-        godkjentAvNav,
         endretAv,
         endretAvEnhet,
     )
+
+    fun lagKladd(
+        opprinneligDeltaker: Deltaker = lagDeltaker(
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            mal = emptyList(),
+            status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
+        ),
+        pamelding: Pamelding = lagPamelding(),
+    ) = Kladd(opprinneligDeltaker, pamelding)
+
+    fun lagUtkast(
+        opprinneligDeltaker: Deltaker = lagDeltaker(
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            mal = emptyList(),
+            status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
+        ),
+        pamelding: Pamelding = lagPamelding(opprinneligDeltaker),
+        godkjentAvNav: GodkjenningAvNav? = null,
+    ) = Utkast(opprinneligDeltaker, pamelding, godkjentAvNav)
 
     fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
