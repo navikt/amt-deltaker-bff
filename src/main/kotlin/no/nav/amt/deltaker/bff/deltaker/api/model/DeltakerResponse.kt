@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class DeltakerResponse(
@@ -21,6 +22,7 @@ data class DeltakerResponse(
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
+    val sistEndret: LocalDateTime,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
 )
@@ -53,6 +55,7 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
         mal = mal,
+        sistEndret = sistEndret,
         sistEndretAv = sistEndretAv,
         sistEndretAvEnhet = sistEndretAvEnhet,
     )
