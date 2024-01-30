@@ -44,7 +44,7 @@ class PameldingService(
         return deltakerService.get(deltaker.id).getOrThrow()
     }
 
-    suspend fun opprettUtkast(
+    suspend fun upsertUtkast(
         opprinneligDeltaker: Deltaker,
         utkast: OppdatertDeltaker,
     ) {

@@ -167,13 +167,13 @@ class PameldingServiceTest {
     }
 
     @Test
-    fun `opprettUtkast - deltaker har status KLADD - oppretter et samtykke og setter ny status på deltaker`() {
+    fun `upsertUtkast - deltaker har status KLADD - oppretter et samtykke og setter ny status på deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
 
         val utkast = TestData.lagOppdatertDeltaker()
         runBlocking {
-            pameldingService.opprettUtkast(deltaker, utkast)
+            pameldingService.upsertUtkast(deltaker, utkast)
 
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
@@ -191,7 +191,7 @@ class PameldingServiceTest {
     }
 
     @Test
-    fun `opprettUtkast - deltaker har et samtykke som ikke er godkjent - oppdater eksisterende samtykke`() {
+    fun `upsertUtkast - deltaker har et samtykke som ikke er godkjent - oppdater eksisterende samtykke`() {
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
         )
@@ -206,7 +206,7 @@ class PameldingServiceTest {
         val utkast = TestData.lagOppdatertDeltaker(bakgrunnsinformasjon = "Nye opplysninger...")
 
         runBlocking {
-            pameldingService.opprettUtkast(deltaker, utkast)
+            pameldingService.upsertUtkast(deltaker, utkast)
 
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             val samtykke = samtykkeRepository.getForDeltaker(deltaker.id).first()
@@ -223,7 +223,7 @@ class PameldingServiceTest {
     }
 
     @Test
-    fun `opprettUtkast - deltaker har ikke status KLADD - oppretter et samtykke og setter ikke ny status på deltaker`() {
+    fun `upsertUtkast - deltaker har ikke status KLADD - oppretter et samtykke og setter ikke ny status på deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         val opprinneligSamtykke = TestData.lagDeltakerSamtykke(
             deltakerId = deltaker.id,
@@ -245,7 +245,7 @@ class PameldingServiceTest {
             endretAvEnhet = navEnhet,
         )
         runBlocking {
-            pameldingService.opprettUtkast(deltaker, utkast)
+            pameldingService.upsertUtkast(deltaker, utkast)
 
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.status.type shouldBe deltaker.status.type

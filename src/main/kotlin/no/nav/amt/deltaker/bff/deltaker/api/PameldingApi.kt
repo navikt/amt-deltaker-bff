@@ -56,7 +56,7 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            pameldingService.opprettUtkast(
+            pameldingService.upsertUtkast(
                 opprinneligDeltaker = deltaker,
                 utkast = OppdatertDeltaker(
                     mal = request.mal,
