@@ -14,11 +14,13 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import org.slf4j.LoggerFactory
@@ -45,6 +47,33 @@ fun Routing.registerPameldingApi(
                 opprettetAvEnhet = enhetsnummer,
             )
             call.respond(deltaker.toDeltakerResponse())
+        }
+
+        post("/pamelding/{deltakerId}/kladd") {
+            val navIdent = getNavIdent()
+            val request = call.receive<KladdRequest>()
+            request.valider()
+
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            pameldingService.upsertKladd(
+                kladd = Kladd(
+                    opprinneligDeltaker = deltaker,
+                    pamelding = Pamelding(
+                        mal = request.mal,
+                        bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                        deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                        dagerPerUke = request.dagerPerUke?.toFloat(),
+                        endretAv = navIdent,
+                        endretAvEnhet = enhetsnummer,
+                    ),
+                ),
+            )
+
+            call.respond(HttpStatusCode.OK)
         }
 
         post("/pamelding/{deltakerId}") {

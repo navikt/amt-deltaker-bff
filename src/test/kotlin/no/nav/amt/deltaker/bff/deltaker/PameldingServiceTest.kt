@@ -168,6 +168,54 @@ class PameldingServiceTest {
     }
 
     @Test
+    fun `upsertKladd - deltaker har status KLADD - oppdaterer deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.KLADD))
+        TestRepository.insert(deltaker)
+
+        val kladd = TestData.lagKladd(
+            deltaker,
+            TestData.lagPamelding(
+                bakgrunnsinformasjon = "Ny og nyttig informasjon...",
+                dagerPerUke = 1F,
+                deltakelsesprosent = 20F,
+            ),
+        )
+
+        runBlocking {
+            pameldingService.upsertKladd(kladd)
+            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
+            oppdatertDeltaker.bakgrunnsinformasjon shouldBe kladd.pamelding.bakgrunnsinformasjon
+            oppdatertDeltaker.dagerPerUke shouldBe kladd.pamelding.dagerPerUke
+            oppdatertDeltaker.deltakelsesprosent shouldBe kladd.pamelding.deltakelsesprosent
+        }
+    }
+
+    @Test
+    fun `upsertKladd - deltaker har ikke status KLADD - oppdaterer ikke deltaker`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        )
+        TestRepository.insert(deltaker)
+
+        val kladd = TestData.lagKladd(
+            deltaker,
+            TestData.lagPamelding(
+                bakgrunnsinformasjon = "Ny og nyttig informasjon...",
+                dagerPerUke = 1F,
+                deltakelsesprosent = 20F,
+            ),
+        )
+
+        runBlocking {
+            shouldThrow<IllegalArgumentException> {
+                pameldingService.upsertKladd(kladd)
+            }
+            deltakerService.get(deltaker.id).getOrThrow() shouldBe deltaker
+        }
+    }
+
+    @Test
     fun `upsertUtkast - deltaker har status KLADD - oppretter et samtykke og setter ny status på deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)

@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
+import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
@@ -61,6 +62,7 @@ class PameldingApiTest {
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}/kladd") { postRequest(kladdRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
@@ -70,6 +72,7 @@ class PameldingApiTest {
         setUpTestApplication()
         client.post("/pamelding") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/pamelding/${UUID.randomUUID()}/kladd") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
     }
@@ -100,6 +103,34 @@ class PameldingApiTest {
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
+    @Test
+    fun `kladd deltakerId - har tilgang - returnerer 200`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.KLADD))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+
+        coEvery { pameldingService.upsertKladd(any()) } returns Unit
+
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/kladd") { postRequest(kladdRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+        }
+    }
+
+    @Test
+    fun `kladd deltakerId - har tilgang, feil deltakerstatus - returnerer 400`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+
+        coEvery { pameldingService.upsertKladd(any()) } throws IllegalArgumentException()
+
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/kladd") { postRequest(kladdRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
@@ -188,6 +219,7 @@ class PameldingApiTest {
     }
 
     private val utkastRequest = UtkastRequest(emptyList(), "Bakgrunnen for...", null, null)
+    private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
     private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
         emptyList(),
