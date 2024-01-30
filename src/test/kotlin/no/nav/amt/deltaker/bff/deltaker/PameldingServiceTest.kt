@@ -211,7 +211,7 @@ class PameldingServiceTest {
             shouldThrow<IllegalArgumentException> {
                 pameldingService.upsertKladd(kladd)
             }
-            deltakerService.get(deltaker.id).getOrThrow() shouldBe deltaker
+            sammenlignDeltakere(deltakerService.get(deltaker.id).getOrThrow(), deltaker)
         }
     }
 
