@@ -6,7 +6,7 @@ import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
@@ -103,7 +103,7 @@ class DeltakerService(
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
-        endring: OppdatertDeltaker,
+        endring: Pamelding,
     ): Deltaker {
         val deltaker = opprinneligDeltaker.copy(
             mal = endring.mal,
