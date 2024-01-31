@@ -29,9 +29,11 @@ class PameldingService(
         opprettetAv: String,
         opprettetAvEnhet: String?,
     ): Deltaker {
-        val eksisterendeDeltaker = deltakerService.get(personident, deltakerlisteId).getOrNull()
+        val eksisterendeDeltaker = deltakerService
+            .getDeltakelser(personident, deltakerlisteId)
+            .firstOrNull { !it.harSluttet() }
 
-        if (eksisterendeDeltaker != null && !eksisterendeDeltaker.harSluttet()) {
+        if (eksisterendeDeltaker != null) {
             log.warn("Deltakeren ${eksisterendeDeltaker.id} er allerede opprettet og deltar fortsatt")
             return eksisterendeDeltaker
         }

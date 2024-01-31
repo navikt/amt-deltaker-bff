@@ -89,7 +89,7 @@ class PameldingServiceTest {
                 opprettetAvEnhet = opprettetAvEnhet,
             )
 
-            deltaker.id shouldBe deltakerService.get(navBruker.personident, deltakerliste.id).getOrThrow().id
+            deltaker.id shouldBe deltakerService.getDeltakelser(navBruker.personident, deltakerliste.id).first().id
             deltaker.deltakerliste.id shouldBe deltakerliste.id
             deltaker.deltakerliste.navn shouldBe deltakerliste.navn
             deltaker.deltakerliste.tiltak.type shouldBe deltakerliste.tiltak.type
