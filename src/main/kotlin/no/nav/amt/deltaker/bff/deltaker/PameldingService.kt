@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.application.metrics.OPPRETTET_KLADD
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
@@ -43,6 +44,8 @@ class PameldingService(
         val deltaker = nyDeltakerKladd(navBruker, deltakerliste, opprettetAv, opprettetAvEnhet)
 
         deltakerService.upsert(deltaker)
+
+        OPPRETTET_KLADD.inc()
 
         return deltakerService.get(deltaker.id).getOrThrow()
     }
