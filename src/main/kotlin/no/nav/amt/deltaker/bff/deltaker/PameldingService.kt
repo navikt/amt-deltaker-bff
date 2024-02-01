@@ -131,7 +131,7 @@ class PameldingService(
             ),
         )
 
-        MetricRegister.PAMELDT_UTEN_UTKAST
+        MetricRegister.PAMELDT_UTEN_UTKAST.inc()
     }
 
     fun slettKladd(deltaker: Deltaker): Boolean {
