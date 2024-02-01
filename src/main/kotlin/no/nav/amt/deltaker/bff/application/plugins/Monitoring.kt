@@ -12,10 +12,12 @@ import io.ktor.server.request.path
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import io.micrometer.core.instrument.Clock
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.prometheus.client.CollectorRegistry
 
-fun Application.configureMonitoring() {
+fun Application.configureMonitoring(collectorRegistry: CollectorRegistry) {
     install(CallLogging) {
         disableDefaultColors()
         filter { call -> call.request.path().startsWith("/") && !call.request.path().startsWith("/internal") }
@@ -27,7 +29,12 @@ fun Application.configureMonitoring() {
             callId.isNotEmpty()
         }
     }
-    val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+
+    val appMicrometerRegistry = PrometheusMeterRegistry(
+        PrometheusConfig.DEFAULT,
+        collectorRegistry,
+        Clock.SYSTEM,
+    )
 
     install(MicrometerMetrics) {
         registry = appMicrometerRegistry

@@ -7,9 +7,11 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.prometheus.client.CollectorRegistry
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
 import no.nav.amt.deltaker.bff.application.isReadyKey
+import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.applicationConfig
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
@@ -76,6 +78,9 @@ fun Application.module() {
         }
     }
 
+    val collectorRegistry = CollectorRegistry.defaultRegistry
+    val metricRegister = MetricRegister(collectorRegistry)
+
     val azureAdTokenClient = AzureAdTokenClient(
         azureAdTokenUrl = environment.azureAdTokenUrl,
         clientId = environment.azureClientId,
@@ -130,7 +135,7 @@ fun Application.module() {
         DeltakerProducer(),
     )
 
-    val pameldingService = PameldingService(deltakerService, samtykkeRepository, deltakerlisteRepository, navBrukerService)
+    val pameldingService = PameldingService(deltakerService, samtykkeRepository, deltakerlisteRepository, navBrukerService, metricRegister)
     val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, samtykkeRepository)
 
     val endringsmeldingRepository = EndringsmeldingRepository()
@@ -147,7 +152,7 @@ fun Application.module() {
 
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
-    configureMonitoring()
+    configureMonitoring(collectorRegistry)
 
     attributes.put(isReadyKey, true)
 }

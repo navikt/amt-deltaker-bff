@@ -3,7 +3,9 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
@@ -39,6 +41,7 @@ class PameldingServiceTest {
 
     companion object {
 
+        private val metricRegister = mockk<MetricRegister>(relaxed = true)
         private val samtykkeRepository = DeltakerSamtykkeRepository()
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
@@ -53,6 +56,7 @@ class PameldingServiceTest {
             samtykkeRepository = samtykkeRepository,
             deltakerlisteRepository = DeltakerlisteRepository(),
             navBrukerService = NavBrukerService(NavBrukerRepository(), mockAmtPersonServiceClientNavBruker()),
+            metricRegister = metricRegister,
         )
 
         @JvmStatic
@@ -68,6 +72,7 @@ class PameldingServiceTest {
             samtykkeRepository,
             deltakerlisteRepository = DeltakerlisteRepository(),
             navBrukerService = NavBrukerService(NavBrukerRepository(), mockAmtPersonServiceClientNavBruker(navBruker)),
+            metricRegister = metricRegister,
         )
     }
 

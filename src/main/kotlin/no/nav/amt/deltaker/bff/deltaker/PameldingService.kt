@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import no.nav.amt.deltaker.bff.application.metrics.OPPRETTET_KLADD
+import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
@@ -20,6 +20,7 @@ class PameldingService(
     private val samtykkeRepository: DeltakerSamtykkeRepository,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val navBrukerService: NavBrukerService,
+    private val metricRegister: MetricRegister,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -45,7 +46,7 @@ class PameldingService(
 
         deltakerService.upsert(deltaker)
 
-        OPPRETTET_KLADD.inc()
+        metricRegister.incOpprettetKladd()
 
         return deltakerService.get(deltaker.id).getOrThrow()
     }
