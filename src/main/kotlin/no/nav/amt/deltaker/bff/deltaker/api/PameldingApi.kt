@@ -14,13 +14,16 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
-import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Kladd
+import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
+import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -34,51 +37,68 @@ fun Routing.registerPameldingApi(
     authenticate("VEILEDER") {
         post("/pamelding") {
             val navIdent = getNavIdent()
-            val pameldingRequest = call.receive<PameldingRequest>()
+            val request = call.receive<PameldingRequest>()
+
             val enhetsnummer = call.request.header("aktiv-enhet")
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), request.personident)
             val deltaker = pameldingService.opprettKladd(
-                deltakerlisteId = pameldingRequest.deltakerlisteId,
-                personident = pameldingRequest.personident,
+                deltakerlisteId = request.deltakerlisteId,
+                personident = request.personident,
                 opprettetAv = navIdent,
                 opprettetAvEnhet = enhetsnummer,
             )
             call.respond(deltaker.toDeltakerResponse())
         }
 
-        // Deprecated bør byttes til /pamelding
-        post("/deltaker") {
+        post("/pamelding/{deltakerId}/kladd") {
             val navIdent = getNavIdent()
-            val pameldingRequest = call.receive<PameldingRequest>()
-            val enhetsnummer = call.request.header("aktiv-enhet")
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), pameldingRequest.personident)
-            val deltaker = pameldingService.opprettKladd(
-                deltakerlisteId = pameldingRequest.deltakerlisteId,
-                personident = pameldingRequest.personident,
-                opprettetAv = navIdent,
-                opprettetAvEnhet = enhetsnummer,
-            )
-            call.respond(deltaker.toDeltakerResponse())
-        }
+            val request = call.receive<KladdRequest>()
+            request.valider()
 
-        post("/pamelding/{deltakerId}") {
-            val navIdent = getNavIdent()
-            val request = call.receive<UtkastRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            pameldingService.opprettUtkast(
-                opprinneligDeltaker = deltaker,
-                utkast = OppdatertDeltaker(
-                    mal = request.mal,
-                    bakgrunnsinformasjon = request.bakgrunnsinformasjon,
-                    deltakelsesprosent = request.deltakelsesprosent,
-                    dagerPerUke = request.dagerPerUke,
+            pameldingService.upsertKladd(
+                kladd = Kladd(
+                    opprinneligDeltaker = deltaker,
+                    pamelding = Pamelding(
+                        mal = request.mal,
+                        bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                        deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                        dagerPerUke = request.dagerPerUke?.toFloat(),
+                        endretAv = navIdent,
+                        endretAvEnhet = enhetsnummer,
+                    ),
+                ),
+            )
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post("/pamelding/{deltakerId}") {
+            val navIdent = getNavIdent()
+            val request = call.receive<UtkastRequest>()
+            request.valider()
+
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            pameldingService.upsertUtkast(
+                Utkast(
+                    opprinneligDeltaker = deltaker,
+                    pamelding = Pamelding(
+                        mal = request.mal,
+                        bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                        deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                        dagerPerUke = request.dagerPerUke?.toFloat(),
+                        endretAv = navIdent,
+                        endretAvEnhet = enhetsnummer,
+                    ),
                     godkjentAvNav = null,
-                    endretAv = navIdent,
-                    endretAvEnhet = enhetsnummer,
                 ),
             )
 
@@ -106,26 +126,30 @@ fun Routing.registerPameldingApi(
         post("/pamelding/{deltakerId}/utenGodkjenning") {
             val navIdent = getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
+            request.valider()
+
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.meldPaUtenGodkjenning(
-                opprinneligDeltaker = deltaker,
-                oppdatertDeltaker = OppdatertDeltaker(
-                    mal = request.mal,
-                    bakgrunnsinformasjon = request.bakgrunnsinformasjon,
-                    deltakelsesprosent = request.deltakelsesprosent,
-                    dagerPerUke = request.dagerPerUke,
+                Utkast(
+                    opprinneligDeltaker = deltaker,
+                    pamelding = Pamelding(
+                        mal = request.mal,
+                        bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                        deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                        dagerPerUke = request.dagerPerUke?.toFloat(),
+                        endretAv = navIdent,
+                        endretAvEnhet = enhetsnummer,
+                    ),
                     godkjentAvNav = GodkjenningAvNav(
                         type = request.begrunnelse.type,
                         beskrivelse = request.begrunnelse.beskrivelse,
                         godkjentAv = navIdent,
                         godkjentAvEnhet = enhetsnummer,
                     ),
-                    endretAv = navIdent,
-                    endretAvEnhet = enhetsnummer,
                 ),
             )
 

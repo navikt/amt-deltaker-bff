@@ -35,6 +35,8 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
+            request.valider()
+
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
@@ -71,6 +73,8 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
+            request.valider()
+
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
@@ -80,8 +84,8 @@ fun Routing.registerDeltakerApi(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.DELTAKELSESMENGDE,
                 endring = DeltakerEndring.Endring.EndreDeltakelsesmengde(
-                    deltakelsesprosent = request.deltakelsesprosent,
-                    dagerPerUke = request.dagerPerUke,
+                    deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
+                    dagerPerUke = request.dagerPerUke?.toFloat(),
                 ),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -110,6 +114,8 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/ikke-aktuell") {
             val navIdent = getNavIdent()
             val request = call.receive<IkkeAktuellRequest>()
+            request.valider()
+
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 

@@ -4,7 +4,8 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.OppdatertDeltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Kladd
+import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -28,33 +29,50 @@ class PameldingService(
         opprettetAv: String,
         opprettetAvEnhet: String?,
     ): Deltaker {
-        val eksisterendeDeltaker = deltakerService.get(personident, deltakerlisteId).getOrNull()
+        val eksisterendeDeltaker = deltakerService
+            .getDeltakelser(personident, deltakerlisteId)
+            .firstOrNull { !it.harSluttet() }
 
-        if (eksisterendeDeltaker != null && !eksisterendeDeltaker.harSluttet()) {
-            log.warn("Deltakeren er allerede opprettet og deltar fortsatt")
+        if (eksisterendeDeltaker != null) {
+            log.warn("Deltakeren ${eksisterendeDeltaker.id} er allerede opprettet og deltar fortsatt")
             return eksisterendeDeltaker
         }
 
         val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
         val navBruker = navBrukerService.get(personident).getOrThrow()
-        val deltaker = nyKladd(navBruker, deltakerliste, opprettetAv, opprettetAvEnhet)
+        val deltaker = nyDeltakerKladd(navBruker, deltakerliste, opprettetAv, opprettetAvEnhet)
 
         deltakerService.upsert(deltaker)
 
         return deltakerService.get(deltaker.id).getOrThrow()
     }
 
-    suspend fun opprettUtkast(
-        opprinneligDeltaker: Deltaker,
-        utkast: OppdatertDeltaker,
-    ) {
-        val status = if (opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
-            nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
-        } else {
-            opprinneligDeltaker.status
+    suspend fun upsertKladd(kladd: Kladd) {
+        require(kladd.opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
+            "Kan ikke upserte kladd for deltaker ${kladd.opprinneligDeltaker.id} " +
+                "med status ${kladd.opprinneligDeltaker.status.type}," +
+                "status må være ${DeltakerStatus.Type.KLADD}."
         }
 
-        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, utkast)
+        deltakerService.oppdaterDeltaker(
+            kladd.opprinneligDeltaker,
+            kladd.opprinneligDeltaker.status,
+            kladd.pamelding,
+        )
+    }
+
+    suspend fun upsertUtkast(utkast: Utkast) {
+        val status = when (utkast.opprinneligDeltaker.status.type) {
+            DeltakerStatus.Type.KLADD -> nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
+            DeltakerStatus.Type.UTKAST_TIL_PAMELDING -> utkast.opprinneligDeltaker.status
+            else -> throw IllegalArgumentException(
+                "Kan ikke upserte ukast for deltaker ${utkast.opprinneligDeltaker.id} " +
+                    "med status ${utkast.opprinneligDeltaker.status.type}," +
+                    "status må være ${DeltakerStatus.Type.KLADD} eller ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}.",
+            )
+        }
+
+        val deltaker = deltakerService.oppdaterDeltaker(utkast.opprinneligDeltaker, status, utkast.pamelding)
 
         val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
 
@@ -66,27 +84,30 @@ class PameldingService(
                 gyldigTil = null,
                 deltakerVedSamtykke = deltaker,
                 godkjentAvNav = utkast.godkjentAvNav,
-                opprettetAv = samtykke?.opprettetAv ?: utkast.endretAv,
-                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: utkast.endretAvEnhet,
+                opprettetAv = samtykke?.opprettetAv ?: utkast.pamelding.endretAv,
+                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: utkast.pamelding.endretAvEnhet,
                 opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
     }
 
     suspend fun meldPaUtenGodkjenning(
-        opprinneligDeltaker: Deltaker,
-        oppdatertDeltaker: OppdatertDeltaker,
+        utkast: Utkast,
     ) {
-        if (oppdatertDeltaker.godkjentAvNav == null) {
-            log.error("Kan ikke forhåndsgodkjenne deltaker med id ${opprinneligDeltaker.id} uten begrunnelse")
-            error("Kan ikke forhåndsgodkjenne deltaker uten begrunnelse")
+        require(utkast.godkjentAvNav != null) {
+            "Kan ikke forhåndsgodkjenne deltaker med id ${utkast.opprinneligDeltaker.id} uten begrunnelse"
+        }
+        require(kanGodkjennes(utkast)) {
+            "Kan ikke melde på uten godkjenning for deltaker ${utkast.opprinneligDeltaker.id}" +
+                "med status ${utkast.opprinneligDeltaker.status.type}," +
+                "status må være ${DeltakerStatus.Type.KLADD} eller ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}."
         }
 
         val deltaker = deltakerService.oppdaterDeltaker(
-            opprinneligDeltaker,
+            utkast.opprinneligDeltaker,
             // her skal vi mest sannsynlig ha en annen status, men det er ikke avklart hva den skal være
             nyDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            oppdatertDeltaker,
+            utkast.pamelding,
         )
 
         val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
@@ -98,9 +119,9 @@ class PameldingService(
                 godkjent = LocalDateTime.now(),
                 gyldigTil = null,
                 deltakerVedSamtykke = deltaker,
-                godkjentAvNav = oppdatertDeltaker.godkjentAvNav,
-                opprettetAv = samtykke?.opprettetAv ?: oppdatertDeltaker.endretAv,
-                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: oppdatertDeltaker.endretAvEnhet,
+                godkjentAvNav = utkast.godkjentAvNav,
+                opprettetAv = samtykke?.opprettetAv ?: utkast.pamelding.endretAv,
+                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: utkast.pamelding.endretAvEnhet,
                 opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
@@ -115,7 +136,13 @@ class PameldingService(
         return true
     }
 
-    private fun nyKladd(
+    private fun kanGodkjennes(utkast: Utkast) =
+        utkast.opprinneligDeltaker.status.type in listOf(
+            DeltakerStatus.Type.KLADD,
+            DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+        )
+
+    private fun nyDeltakerKladd(
         navBruker: NavBruker,
         deltakerliste: Deltakerliste,
         opprettetAv: String,

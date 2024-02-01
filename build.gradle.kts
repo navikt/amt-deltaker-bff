@@ -7,7 +7,7 @@ plugins {
     val kotlinVersion = "1.9.22"
 
     kotlin("jvm") version kotlinVersion
-    id("io.ktor.plugin") version "2.3.7"
+    id("io.ktor.plugin") version "2.3.8"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -19,7 +19,7 @@ repositories {
 }
 
 val kotlinVersion = "1.9.21"
-val ktorVersion = "2.3.7"
+val ktorVersion = "2.3.8"
 val logbackVersion = "1.4.14"
 val prometeusVersion = "1.12.2"
 val ktlintVersion = "0.49.1"
@@ -30,7 +30,7 @@ val poaoTilgangVersion = "2023.11.13_07.58-92c894e940a5"
 val kafkaClientsVersion = "3.6.1"
 val testcontainersVersion = "1.19.4"
 val kotestVersion = "5.8.0"
-val flywayVersion = "10.6.0"
+val flywayVersion = "10.7.1"
 val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.7.1"

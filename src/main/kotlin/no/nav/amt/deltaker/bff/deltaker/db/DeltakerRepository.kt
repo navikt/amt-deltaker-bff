@@ -116,27 +116,23 @@ class DeltakerRepository {
             ?: Result.failure(NoSuchElementException("Ingen deltaker med id $id"))
     }
 
-    fun get(personIdent: String, deltakerlisteId: UUID) =
-        Database.query {
-            val sql = getDeltakerSql(
-                """ where nb.personident = :personident 
+    fun getMany(personIdent: String, deltakerlisteId: UUID) = Database.query {
+        val sql = getDeltakerSql(
+            """ where nb.personident = :personident 
                     and d.deltakerliste_id = :deltakerliste_id 
                     and ds.gyldig_til is null
-                """.trimMargin(),
-            )
+            """.trimMargin(),
+        )
 
-            val query = queryOf(
-                sql,
-                mapOf(
-                    "personident" to personIdent,
-                    "deltakerliste_id" to deltakerlisteId,
-                ),
-            ).map(::rowMapper).asSingle
-            it.run(query)?.let { d -> Result.success(d) }
-                ?: Result.failure(
-                    NoSuchElementException("Ingen deltaker med personident og deltakerlist $deltakerlisteId"),
-                )
-        }
+        val query = queryOf(
+            sql,
+            mapOf(
+                "personident" to personIdent,
+                "deltakerliste_id" to deltakerlisteId,
+            ),
+        ).map(::rowMapper).asList
+        it.run(query)
+    }
 
     fun getDeltakerStatuser(deltakerId: UUID) = Database.query { session ->
         val sql = """
