@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
@@ -43,6 +44,8 @@ class PameldingService(
         val deltaker = nyDeltakerKladd(navBruker, deltakerliste, opprettetAv, opprettetAvEnhet)
 
         deltakerService.upsert(deltaker)
+
+        MetricRegister.OPPRETTET_KLADD.inc()
 
         return deltakerService.get(deltaker.id).getOrThrow()
     }
@@ -89,6 +92,8 @@ class PameldingService(
                 opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
+
+        MetricRegister.DELT_UTKAST.inc()
     }
 
     suspend fun meldPaUtenGodkjenning(
@@ -125,6 +130,8 @@ class PameldingService(
                 opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
+
+        MetricRegister.PAMELDT_UTEN_UTKAST.inc()
     }
 
     fun slettKladd(deltaker: Deltaker): Boolean {
