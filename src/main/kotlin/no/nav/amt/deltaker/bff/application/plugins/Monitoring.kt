@@ -17,7 +17,7 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import io.prometheus.client.CollectorRegistry
 
-fun Application.configureMonitoring(collectorRegistry: CollectorRegistry) {
+fun Application.configureMonitoring() {
     install(CallLogging) {
         disableDefaultColors()
         filter { call -> call.request.path().startsWith("/") && !call.request.path().startsWith("/internal") }
@@ -32,7 +32,7 @@ fun Application.configureMonitoring(collectorRegistry: CollectorRegistry) {
 
     val appMicrometerRegistry = PrometheusMeterRegistry(
         PrometheusConfig.DEFAULT,
-        collectorRegistry,
+        CollectorRegistry.defaultRegistry,
         Clock.SYSTEM,
     )
 

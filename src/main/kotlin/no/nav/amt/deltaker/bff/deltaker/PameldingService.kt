@@ -20,7 +20,6 @@ class PameldingService(
     private val samtykkeRepository: DeltakerSamtykkeRepository,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val navBrukerService: NavBrukerService,
-    private val metricRegister: MetricRegister,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -46,7 +45,7 @@ class PameldingService(
 
         deltakerService.upsert(deltaker)
 
-        metricRegister.incOpprettetKladd()
+        MetricRegister.OPPRETTET_KLADD.inc()
 
         return deltakerService.get(deltaker.id).getOrThrow()
     }
@@ -94,7 +93,7 @@ class PameldingService(
             ),
         )
 
-        metricRegister.incDeltUtkast()
+        MetricRegister.DELT_UTKAST.inc()
     }
 
     suspend fun meldPaUtenGodkjenning(
@@ -132,7 +131,7 @@ class PameldingService(
             ),
         )
 
-        metricRegister.incPameldtUtenUtkast()
+        MetricRegister.PAMELDT_UTEN_UTKAST
     }
 
     fun slettKladd(deltaker: Deltaker): Boolean {
