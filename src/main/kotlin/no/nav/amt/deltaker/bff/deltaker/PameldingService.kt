@@ -93,6 +93,8 @@ class PameldingService(
                 opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
+
+        metricRegister.incDeltUtkast()
     }
 
     suspend fun meldPaUtenGodkjenning(
@@ -129,6 +131,8 @@ class PameldingService(
                 opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
             ),
         )
+
+        metricRegister.incPameldtUtenUtkast()
     }
 
     fun slettKladd(deltaker: Deltaker): Boolean {

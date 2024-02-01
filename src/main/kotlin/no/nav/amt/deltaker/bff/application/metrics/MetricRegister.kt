@@ -14,7 +14,27 @@ class MetricRegister(
         .help("Antall opprettede kladder for påmelding")
         .register(collectorRegistry)
 
+    private val deltUtkast: Counter = Counter.build()
+        .namespace(METRICS_NS)
+        .name("delt_utkast_count")
+        .help("Antall delte utkast for påmelding")
+        .register(collectorRegistry)
+
+    private val pameldtUtenUtkast: Counter = Counter.build()
+        .namespace(METRICS_NS)
+        .name("uten_utkast_count")
+        .help("Antall påmeldinger uten utkast")
+        .register(collectorRegistry)
+
     fun incOpprettetKladd() {
         opprettetKladd.inc()
+    }
+
+    fun incDeltUtkast() {
+        deltUtkast.inc()
+    }
+
+    fun incPameldtUtenUtkast() {
+        pameldtUtenUtkast.inc()
     }
 }
