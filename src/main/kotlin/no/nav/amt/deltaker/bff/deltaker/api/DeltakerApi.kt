@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.header
@@ -17,6 +18,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonReque
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
@@ -149,6 +151,29 @@ fun Routing.registerDeltakerApi(
             val historikk = deltakerHistorikkService.getForDeltaker(deltaker.id)
 
             call.respond(historikk.toResponse())
+        }
+
+        post("/deltaker/{deltakerId}/forleng") {
+            val navIdent = getNavIdent()
+            val request = call.receive<ForlengDeltakelseRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            if (deltaker.sluttdato != null && deltaker.sluttdato.isAfter(request.sluttdato)) {
+                call.respond(HttpStatusCode.BadRequest, "Ny sluttdato må være nyere enn opprinnelig sluttdato ved forlengelse")
+                return@post
+            }
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringstype = DeltakerEndring.Endringstype.FORLENGELSE,
+                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato),
+                endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
+            )
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
     }
 }

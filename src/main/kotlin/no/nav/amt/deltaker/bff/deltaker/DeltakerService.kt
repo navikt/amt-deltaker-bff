@@ -81,6 +81,13 @@ class DeltakerService(
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
+            is DeltakerEndring.Endring.ForlengDeltakelse -> opprinneligDeltaker.copy(
+                sluttdato = endring.sluttdato,
+                sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
+                sistEndret = LocalDateTime.now(),
+            )
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
