@@ -142,6 +142,9 @@ object TestData {
         opprettet: LocalDateTime = LocalDateTime.now(),
         opprettetAv: String = randomNavIdent(),
         opprettetAvEnhet: String? = randomEnhetsnummer(),
+        sistEndret: LocalDateTime = opprettet,
+        sistEndretAv: String = opprettetAv,
+        sistEndretAvEnhet: String? = opprettetAvEnhet,
     ) = DeltakerSamtykke(
         id,
         deltakerId,
@@ -149,9 +152,12 @@ object TestData {
         gyldigTil,
         deltakerVedSamtykke,
         godkjentAvNav,
+        opprettet,
         opprettetAv,
         opprettetAvEnhet,
-        opprettet,
+        sistEndret,
+        sistEndretAv,
+        sistEndretAvEnhet,
     )
 
     fun lagGodkjenningAvNav(
