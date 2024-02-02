@@ -15,7 +15,7 @@ data class DeltakerEndring(
     val endret: LocalDateTime,
 ) {
     enum class Endringstype {
-        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, MAL, IKKE_AKTUELL
+        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, MAL, IKKE_AKTUELL, FORLENGELSE
     }
 
     data class Aarsak(
@@ -58,6 +58,10 @@ data class DeltakerEndring(
 
         data class EndreSluttdato(
             val sluttdato: LocalDate?,
+        ) : Endring()
+
+        data class ForlengDeltakelse(
+            val sluttdato: LocalDate,
         ) : Endring()
 
         data class IkkeAktuell(

@@ -28,6 +28,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonReque
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
@@ -73,6 +74,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/forleng") { postRequest(forlengDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
@@ -85,6 +87,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/forleng") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
     }
@@ -288,6 +291,44 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `forleng - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(sluttdato = forlengDeltakelseRequest.sluttdato.minusDays(3))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            sluttdato = forlengDeltakelseRequest.sluttdato,
+        )
+        coEvery {
+            deltakerService.oppdaterDeltaker(
+                deltaker,
+                DeltakerEndring.Endringstype.FORLENGELSE,
+                any(),
+                any(),
+                any(),
+            )
+        } returns oppdatertDeltaker
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            TestCase.assertEquals(HttpStatusCode.OK, status)
+            TestCase.assertEquals(objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse()), bodyAsText())
+        }
+    }
+
+    @Test
+    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - returnerer oppdatert deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(sluttdato = forlengDeltakelseRequest.sluttdato.plusDays(5))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            TestCase.assertEquals(HttpStatusCode.BadRequest, status)
+        }
+    }
+
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -314,4 +355,5 @@ class DeltakerApiTest {
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
+    private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3))
 }
