@@ -23,7 +23,9 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.UUID
 
 fun Routing.registerDeltakerApi(
@@ -163,6 +165,14 @@ fun Routing.registerDeltakerApi(
 
             if (deltaker.sluttdato != null && deltaker.sluttdato.isAfter(request.sluttdato)) {
                 call.respond(HttpStatusCode.BadRequest, "Ny sluttdato må være nyere enn opprinnelig sluttdato ved forlengelse")
+                return@post
+            }
+
+            if (deltaker.status.type != DeltakerStatus.Type.DELTAR && deltaker.status.type != DeltakerStatus.Type.HAR_SLUTTET) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke forlenge deltakelse for deltaker med status ${deltaker.status.type}")
+                return@post
+            } else if (deltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET && deltaker.sluttdato?.isBefore(LocalDate.now().minusMonths(2)) == true) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke forlenge deltakelse for deltaker som sluttet for mer enn to måneder siden")
                 return@post
             }
 

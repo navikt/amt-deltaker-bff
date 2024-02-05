@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -82,12 +83,24 @@ class DeltakerService(
                 sistEndret = LocalDateTime.now(),
             )
 
-            is DeltakerEndring.Endring.ForlengDeltakelse -> opprinneligDeltaker.copy(
-                sluttdato = endring.sluttdato,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
-            )
+            is DeltakerEndring.Endring.ForlengDeltakelse -> {
+                if (opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET && endring.sluttdato.isAfter(LocalDate.now())) {
+                    opprinneligDeltaker.copy(
+                        status = nyDeltakerStatus(DeltakerStatus.Type.DELTAR),
+                        sluttdato = endring.sluttdato,
+                        sistEndretAv = endretAv,
+                        sistEndretAvEnhet = endretAvEnhet,
+                        sistEndret = LocalDateTime.now(),
+                    )
+                } else {
+                    opprinneligDeltaker.copy(
+                        sluttdato = endring.sluttdato,
+                        sistEndretAv = endretAv,
+                        sistEndretAvEnhet = endretAvEnhet,
+                        sistEndret = LocalDateTime.now(),
+                    )
+                }
+            }
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {

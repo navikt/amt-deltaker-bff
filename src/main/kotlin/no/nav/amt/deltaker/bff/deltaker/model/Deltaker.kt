@@ -24,6 +24,6 @@ data class Deltaker(
     val opprettet: LocalDateTime,
 ) {
     fun harSluttet(): Boolean {
-        return status.type in AVSLUTTENDE_STATUSER || sluttdato?.isBefore(LocalDate.now().minusWeeks(2)) == true
+        return status.type in AVSLUTTENDE_STATUSER && sluttdato?.isBefore(LocalDate.now().minusMonths(2)) == true
     }
 }
