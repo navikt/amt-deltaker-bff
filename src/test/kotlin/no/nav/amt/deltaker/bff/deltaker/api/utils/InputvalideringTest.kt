@@ -24,10 +24,10 @@ class InputvalideringTest {
         val ok = input(MAX_ANNET_INNHOLD_LENGDE - 1)
 
         shouldThrow<IllegalArgumentException> {
-            validerBegrunnelse(forLang)
+            validerAnnetInnhold(forLang)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerBegrunnelse(ok)
+            validerAnnetInnhold(ok)
         }
     }
 

@@ -14,7 +14,7 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
     }
 }
 
-fun validerBegrunnelse(tekst: String?) = tekst?.let {
+fun validerAnnetInnhold(tekst: String?) = tekst?.let {
     require(it.length <= MAX_ANNET_INNHOLD_LENGDE) {
         "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
     }
