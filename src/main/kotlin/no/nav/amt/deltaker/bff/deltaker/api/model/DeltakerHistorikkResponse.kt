@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltakerliste.Mal
 import java.time.LocalDateTime
 
@@ -21,7 +21,7 @@ data class DeltakerSamtykkeResponse(
     val godkjent: LocalDateTime?,
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
-    val godkjentAvNav: GodkjenningAvNav?,
+    val godkjentAvNav: GodkjentAvNav?,
     val opprettetAv: String,
     val opprettetAvEnhet: String?,
     val opprettet: LocalDateTime,
