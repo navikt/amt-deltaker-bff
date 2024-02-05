@@ -79,19 +79,7 @@ class PameldingService(
 
         val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
 
-        samtykkeRepository.upsert(
-            DeltakerSamtykke(
-                id = samtykke?.id ?: UUID.randomUUID(),
-                deltakerId = deltaker.id,
-                godkjent = null,
-                gyldigTil = null,
-                deltakerVedSamtykke = deltaker,
-                godkjentAvNav = utkast.godkjentAvNav,
-                opprettetAv = samtykke?.opprettetAv ?: utkast.pamelding.endretAv,
-                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: utkast.pamelding.endretAvEnhet,
-                opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
-            ),
-        )
+        samtykkeRepository.upsert(oppdatertSamtykke(samtykke, utkast, deltaker))
 
         MetricRegister.DELT_UTKAST.inc()
     }
@@ -117,19 +105,7 @@ class PameldingService(
 
         val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
 
-        samtykkeRepository.upsert(
-            DeltakerSamtykke(
-                id = samtykke?.id ?: UUID.randomUUID(),
-                deltakerId = deltaker.id,
-                godkjent = LocalDateTime.now(),
-                gyldigTil = null,
-                deltakerVedSamtykke = deltaker,
-                godkjentAvNav = utkast.godkjentAvNav,
-                opprettetAv = samtykke?.opprettetAv ?: utkast.pamelding.endretAv,
-                opprettetAvEnhet = samtykke?.opprettetAvEnhet ?: utkast.pamelding.endretAvEnhet,
-                opprettet = samtykke?.opprettet ?: LocalDateTime.now(),
-            ),
-        )
+        samtykkeRepository.upsert(oppdatertSamtykke(samtykke, utkast, deltaker, LocalDateTime.now()))
 
         MetricRegister.PAMELDT_UTEN_UTKAST.inc()
     }
@@ -154,21 +130,40 @@ class PameldingService(
         deltakerliste: Deltakerliste,
         opprettetAv: String,
         opprettetAvEnhet: String?,
-    ): Deltaker =
-        Deltaker(
-            id = UUID.randomUUID(),
-            navBruker = navBruker,
-            deltakerliste = deltakerliste,
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            bakgrunnsinformasjon = null,
-            mal = emptyList(),
-            status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
-            sistEndretAv = opprettetAv,
-            sistEndret = LocalDateTime.now(),
-            sistEndretAvEnhet = opprettetAvEnhet,
-            opprettet = LocalDateTime.now(),
-        )
+    ) = Deltaker(
+        id = UUID.randomUUID(),
+        navBruker = navBruker,
+        deltakerliste = deltakerliste,
+        startdato = null,
+        sluttdato = null,
+        dagerPerUke = null,
+        deltakelsesprosent = null,
+        bakgrunnsinformasjon = null,
+        mal = emptyList(),
+        status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
+        sistEndretAv = opprettetAv,
+        sistEndret = LocalDateTime.now(),
+        sistEndretAvEnhet = opprettetAvEnhet,
+        opprettet = LocalDateTime.now(),
+    )
+
+    private fun oppdatertSamtykke(
+        original: DeltakerSamtykke?,
+        utkast: Utkast,
+        deltaker: Deltaker,
+        godkjent: LocalDateTime? = null,
+    ) = DeltakerSamtykke(
+        id = original?.id ?: UUID.randomUUID(),
+        deltakerId = deltaker.id,
+        godkjent = godkjent,
+        gyldigTil = null,
+        deltakerVedSamtykke = deltaker,
+        godkjentAvNav = utkast.godkjentAvNav,
+        opprettetAv = original?.opprettetAv ?: utkast.pamelding.endretAv,
+        opprettetAvEnhet = original?.opprettetAvEnhet ?: utkast.pamelding.endretAvEnhet,
+        opprettet = original?.opprettet ?: LocalDateTime.now(),
+        sistEndretAv = utkast.pamelding.endretAv,
+        sistEndretAvEnhet = utkast.pamelding.endretAvEnhet,
+        sistEndret = LocalDateTime.now(),
+    )
 }

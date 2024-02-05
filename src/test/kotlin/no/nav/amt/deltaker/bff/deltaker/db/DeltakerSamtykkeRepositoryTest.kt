@@ -99,4 +99,10 @@ fun sammenlignSamtykker(a: DeltakerSamtykke, b: DeltakerSamtykke) {
     a.gyldigTil shouldBeCloseTo b.gyldigTil
     sammenlignDeltakere(a.deltakerVedSamtykke, b.deltakerVedSamtykke)
     a.godkjentAvNav shouldBe b.godkjentAvNav
+    a.opprettet shouldBeCloseTo b.opprettet
+    a.opprettetAv shouldBe b.opprettetAv
+    a.opprettetAvEnhet shouldBe b.opprettetAvEnhet
+    a.sistEndret shouldBeCloseTo b.sistEndret
+    a.sistEndretAv shouldBe b.sistEndretAv
+    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
 }
