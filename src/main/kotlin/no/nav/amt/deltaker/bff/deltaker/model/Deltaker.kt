@@ -18,6 +18,7 @@ data class Deltaker(
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
     val status: DeltakerStatus,
+    val samtykke: Samtykke?,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
     val sistEndret: LocalDateTime,
@@ -26,4 +27,13 @@ data class Deltaker(
     fun harSluttet(): Boolean {
         return status.type in AVSLUTTENDE_STATUSER
     }
+
+    data class Samtykke(
+        val godkjent: LocalDateTime?,
+        val godkjentAvNav: GodkjentAvNav?,
+        val opprettet: LocalDateTime,
+        val opprettetAv: String,
+        val sistEndret: LocalDateTime,
+        val sistEndretAv: String,
+    )
 }

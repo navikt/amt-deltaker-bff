@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DeltakerRepositoryTest {
     companion object {
@@ -113,6 +114,32 @@ class DeltakerRepositoryTest {
 
         deltakerFraDb.sistEndretAv shouldBe navAnsatt.navIdent
         deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
+    }
+
+    @Test
+    fun `get - deltaker har flere samtykker, et aktivt - returnerer deltaker med aktivt samtykke`() {
+        val deltaker = TestData.lagDeltaker()
+        val samtykke1 = TestData.lagDeltakerSamtykke(
+            deltakerVedSamtykke = deltaker,
+            godkjent = LocalDateTime.now().minusMonths(2),
+            gyldigTil = LocalDateTime.now().minusDays(1),
+        )
+        val samtykke2 = TestData.lagDeltakerSamtykke(
+            deltakerVedSamtykke = deltaker,
+            godkjent = LocalDateTime.now().minusDays(1),
+        )
+
+        TestRepository.insert(deltaker)
+        TestRepository.insert(samtykke1)
+        TestRepository.insert(samtykke2)
+
+        val deltakerSamtykke = repository.get(deltaker.id).getOrThrow().samtykke!!
+        deltakerSamtykke.godkjent shouldBeCloseTo samtykke2.godkjent
+        deltakerSamtykke.godkjentAvNav shouldBe samtykke2.godkjentAvNav
+        deltakerSamtykke.opprettet shouldBeCloseTo samtykke2.opprettet
+        deltakerSamtykke.opprettetAv shouldBe samtykke2.opprettetAv
+        deltakerSamtykke.sistEndret shouldBeCloseTo samtykke2.sistEndret
+        deltakerSamtykke.sistEndretAv shouldBe samtykke2.sistEndretAv
     }
 }
 

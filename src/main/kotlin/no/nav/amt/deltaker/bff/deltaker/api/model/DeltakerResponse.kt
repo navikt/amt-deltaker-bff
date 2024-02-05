@@ -22,10 +22,20 @@ data class DeltakerResponse(
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
+    val samtykke: SamtykkeDto?,
     val sistEndret: LocalDateTime,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
-)
+) {
+    data class SamtykkeDto(
+        val godkjent: LocalDateTime?,
+        val godkjentAvNavVeileder: String?,
+        val opprettet: LocalDateTime,
+        val opprettetAv: String,
+        val sistEndret: LocalDateTime,
+        val sistEndretAv: String,
+    )
+}
 
 data class DeltakerlisteDto(
     val deltakerlisteId: UUID,
@@ -59,8 +69,18 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
         mal = mal,
+        samtykke = samtykke?.toDto(),
         sistEndret = sistEndret,
         sistEndretAv = sistEndretAv,
         sistEndretAvEnhet = sistEndretAvEnhet,
     )
 }
+
+fun Deltaker.Samtykke.toDto() = DeltakerResponse.SamtykkeDto(
+    godkjent = godkjent,
+    godkjentAvNavVeileder = godkjentAvNav?.godkjentAv,
+    opprettet = opprettet,
+    opprettetAv = opprettetAv,
+    sistEndret = sistEndret,
+    sistEndretAv = sistEndretAv,
+)

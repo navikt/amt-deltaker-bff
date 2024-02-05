@@ -141,6 +141,7 @@ class PameldingService(
         bakgrunnsinformasjon = null,
         mal = emptyList(),
         status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
+        samtykke = null,
         sistEndretAv = opprettetAv,
         sistEndret = LocalDateTime.now(),
         sistEndretAvEnhet = opprettetAvEnhet,
