@@ -33,6 +33,8 @@ data class DeltakerlisteDto(
     val tiltakstype: Tiltak.Type,
     val arrangorNavn: String,
     val oppstartstype: Deltakerliste.Oppstartstype,
+    val startdato: LocalDate,
+    val sluttdato: LocalDate?,
 )
 
 fun Deltaker.toDeltakerResponse(): DeltakerResponse {
@@ -47,6 +49,8 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
             tiltakstype = deltakerliste.tiltak.type,
             arrangorNavn = deltakerliste.arrangor.navn,
             oppstartstype = deltakerliste.getOppstartstype(),
+            startdato = deltakerliste.startDato,
+            sluttdato = deltakerliste.sluttDato,
         ),
         status = status,
         startdato = startdato,

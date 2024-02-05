@@ -90,6 +90,9 @@ class DeltakerEndringRepository {
 
             DeltakerEndring.Endringstype.IKKE_AKTUELL ->
                 objectMapper.readValue<DeltakerEndring.Endring.IkkeAktuell>(endringJson)
+
+            DeltakerEndring.Endringstype.FORLENGELSE ->
+                objectMapper.readValue<DeltakerEndring.Endring.ForlengDeltakelse>(endringJson)
         }
     }
 }
