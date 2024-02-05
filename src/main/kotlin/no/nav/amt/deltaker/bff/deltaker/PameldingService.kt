@@ -174,7 +174,7 @@ class PameldingService(
 
     suspend fun avbrytUtkast(
         opprinneligDeltaker: Deltaker,
-        enhetsnummer: String?,
+        endretAvEnhet: String?,
         navIdent: String,
         aarsak: DeltakerStatus.Aarsak,
     ) {
@@ -183,7 +183,7 @@ class PameldingService(
             throw IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
         }
         val status = nyDeltakerStatus(DeltakerStatus.Type.AVBRUTT_UTKAST, aarsak)
-        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, enhetsnummer, navIdent)
+        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, endretAvEnhet, navIdent)
 
         deltakerService.upsert(deltaker)
     }

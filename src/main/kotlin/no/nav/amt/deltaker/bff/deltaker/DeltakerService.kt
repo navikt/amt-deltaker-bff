@@ -132,13 +132,13 @@ class DeltakerService(
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
-        enhetsnummer: String?,
+        endretAvEnhet: String?,
         navIdent: String,
     ): Deltaker {
         val deltaker = opprinneligDeltaker.copy(
             status = status,
             sistEndretAv = navIdent,
-            sistEndretAvEnhet = enhetsnummer ?: opprinneligDeltaker.sistEndretAvEnhet,
+            sistEndretAvEnhet = endretAvEnhet ?: opprinneligDeltaker.sistEndretAvEnhet,
             sistEndret = LocalDateTime.now(),
         )
 

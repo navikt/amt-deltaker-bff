@@ -116,7 +116,7 @@ fun Routing.registerPameldingApi(
             pameldingService.avbrytUtkast(
                 opprinneligDeltaker = deltaker,
                 navIdent = navIdent,
-                enhetsnummer = enhetsnummer,
+                endretAvEnhet = enhetsnummer,
                 aarsak = request.aarsak,
             )
 
