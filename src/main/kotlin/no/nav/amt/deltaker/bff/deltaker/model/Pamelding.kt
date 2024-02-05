@@ -19,5 +19,5 @@ data class Kladd(
 data class Utkast(
     val opprinneligDeltaker: Deltaker,
     val pamelding: Pamelding,
-    val godkjentAvNav: GodkjenningAvNav?,
+    val godkjentAvNav: GodkjentAvNav?,
 )
