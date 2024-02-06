@@ -57,6 +57,16 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
+        vedtaksinformasjon = row.localDateTimeOrNull("sam.opprettet")?.let { opprettet ->
+            Deltaker.Vedtaksinformasjon(
+                fattet = row.localDateTimeOrNull("sam.godkjent"),
+                fattetAvNav = row.stringOrNull("sam.godkjent_av_nav")?.let { g -> objectMapper.readValue(g) },
+                opprettet = opprettet,
+                opprettetAv = row.stringOrNull("sam.opprettet_av_navn") ?: row.string("sam.opprettet_av"),
+                sistEndret = row.localDateTime("sam.sist_endret"),
+                sistEndretAv = row.stringOrNull("sam.sist_endret_av_navn") ?: row.string("sam.sist_endret_av"),
+            )
+        },
         sistEndretAv = row.stringOrNull("na.navn") ?: row.string("d.sist_endret_av"),
         sistEndretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("d.sist_endret_av_enhet"),
         sistEndret = row.localDateTime("d.modified_at"),
@@ -256,7 +266,15 @@ class DeltakerRepository {
                    dl.oppstart,
                    a.navn             AS arrangor_navn,
                    organisasjonsnummer,
-                   overordnet_arrangor_id
+                   overordnet_arrangor_id,
+                   sam.godkjent as "sam.godkjent",
+                   sam.godkjent_av_nav as "sam.godkjent_av_nav",
+                   sam.created_at as "sam.opprettet",
+                   sam.opprettet_av as "sam.opprettet_av",
+                   sam.modified_at as "sam.sist_endret",
+                   sam.sist_endret_av as "sam.sist_endret_av",
+                   na2.navn as "sam.opprettet_av_navn",
+                   na3.navn as "sam.sist_endret_av_navn"
             from deltaker d 
                 join nav_bruker nb on d.person_id = nb.person_id
                 join deltaker_status ds on d.id = ds.deltaker_id
@@ -264,5 +282,8 @@ class DeltakerRepository {
                 join arrangor a on a.id = dl.arrangor_id
                 left join nav_ansatt na on d.sist_endret_av = na.nav_ident
                 left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
+                left join deltaker_samtykke sam on d.id = sam.deltaker_id and sam.gyldig_til is null
+                left join nav_ansatt na2 on sam.opprettet_av = na2.nav_ident
+                left join nav_ansatt na3 on sam.sist_endret_av = na2.nav_ident
       """ + "\n" + where
 }
