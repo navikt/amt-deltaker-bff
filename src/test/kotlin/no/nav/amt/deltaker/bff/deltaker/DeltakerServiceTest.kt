@@ -79,7 +79,7 @@ class DeltakerServiceTest {
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
             val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
-            oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.navn
+            oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
             val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
             endring.size shouldBe 1
