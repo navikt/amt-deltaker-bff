@@ -408,7 +408,9 @@ class PameldingServiceTest {
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT_UTKAST
             oppdatertDeltaker.status.aarsak shouldNotBe null
             oppdatertDeltaker.status.aarsak?.type shouldBe aarsak.type
-            oppdatertDeltaker.status.aarsak?.beskrivelse shouldBe aarsak.type
+            oppdatertDeltaker.status.aarsak?.beskrivelse shouldBe aarsak.beskrivelse
+
+            assertProduced(oppdatertDeltaker)
         }
     }
 }
