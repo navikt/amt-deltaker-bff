@@ -35,10 +35,6 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String?,
     ): Deltaker {
-        if (opprinneligDeltaker.harSluttet()) {
-            log.warn("Kan ikke endre på deltaker med id ${opprinneligDeltaker.id}, deltaker har sluttet")
-            throw IllegalArgumentException("Kan ikke endre deltaker som har sluttet")
-        }
         val deltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
                 bakgrunnsinformasjon = endring.bakgrunnsinformasjon,

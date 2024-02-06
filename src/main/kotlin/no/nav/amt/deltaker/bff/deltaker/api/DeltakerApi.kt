@@ -46,6 +46,11 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
+            if (deltaker.harSluttet()) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke endre bakgrunnsinformasjon for deltaker som har sluttet")
+                return@post
+            }
+
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
@@ -63,6 +68,11 @@ fun Routing.registerDeltakerApi(
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            if (deltaker.harSluttet()) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke endre mål for deltaker som har sluttet")
+                return@post
+            }
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -83,6 +93,11 @@ fun Routing.registerDeltakerApi(
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            if (deltaker.harSluttet()) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke endre deltakelsesmengde for deltaker som har sluttet")
+                return@post
+            }
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -105,6 +120,11 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
+            if (deltaker.harSluttet()) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke endre startdato for deltaker som har sluttet")
+                return@post
+            }
+
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.STARTDATO,
@@ -124,6 +144,11 @@ fun Routing.registerDeltakerApi(
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            if (deltaker.harSluttet()) {
+                call.respond(HttpStatusCode.BadRequest, "Kan ikke sette deltaker som har sluttet til IKKE AKTUELL")
+                return@post
+            }
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -167,7 +192,10 @@ fun Routing.registerDeltakerApi(
                 call.respond(HttpStatusCode.BadRequest, "Ny sluttdato må være nyere enn opprinnelig sluttdato ved forlengelse")
                 return@post
             }
-
+            if (deltaker.deltakerliste.sluttDato?.isBefore(request.sluttdato) == true) {
+                call.respond(HttpStatusCode.BadRequest, "Ny sluttdato kan ikke være senere enn deltakerlistens sluttdato ved forlengelse")
+                return@post
+            }
             if (deltaker.status.type != DeltakerStatus.Type.DELTAR && deltaker.status.type != DeltakerStatus.Type.HAR_SLUTTET) {
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke forlenge deltakelse for deltaker med status ${deltaker.status.type}")
                 return@post

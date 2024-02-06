@@ -26,7 +26,6 @@ import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.test.assertFailsWith
 
 class DeltakerServiceTest {
     companion object {
@@ -118,27 +117,6 @@ class DeltakerServiceTest {
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo deltaker.sistEndret
             val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
             endring.size shouldBe 0
-        }
-    }
-
-    @Test
-    fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, deltaker har sluttet - kaster feil`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-            sluttdato = LocalDate.now().minusMonths(3),
-        )
-        TestRepository.insert(deltaker)
-
-        runBlocking {
-            assertFailsWith<IllegalArgumentException> {
-                deltakerService.oppdaterDeltaker(
-                    deltaker,
-                    DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
-                    DeltakerEndring.Endring.EndreBakgrunnsinformasjon("oppdatert informasjon"),
-                    TestData.randomNavIdent(),
-                    TestData.randomEnhetsnummer(),
-                )
-            }
         }
     }
 
