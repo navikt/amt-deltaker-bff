@@ -57,10 +57,10 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
-        samtykke = row.localDateTimeOrNull("sam.opprettet")?.let { opprettet ->
-            Deltaker.Samtykke(
-                godkjent = row.localDateTimeOrNull("sam.godkjent"),
-                godkjentAvNav = row.stringOrNull("sam.godkjent_av_nav")?.let { g -> objectMapper.readValue(g) },
+        vedtaksinformasjon = row.localDateTimeOrNull("sam.opprettet")?.let { opprettet ->
+            Deltaker.Vedtaksinformasjon(
+                fattet = row.localDateTimeOrNull("sam.godkjent"),
+                fattetAvNav = row.stringOrNull("sam.godkjent_av_nav")?.let { g -> objectMapper.readValue(g) },
                 opprettet = opprettet,
                 opprettetAv = row.stringOrNull("sam.opprettet_av_navn") ?: row.string("sam.opprettet_av"),
                 sistEndret = row.localDateTime("sam.sist_endret"),

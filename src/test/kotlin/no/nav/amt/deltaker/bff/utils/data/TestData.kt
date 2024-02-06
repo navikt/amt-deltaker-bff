@@ -81,7 +81,7 @@ object TestData {
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
         mal: List<Mal> = emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-        samtykke: Deltaker.Samtykke = lagDeltakerSamtykkeData(godkjent = LocalDateTime.now().minusMonths(4)),
+        vedtaksinformasjon: Deltaker.Vedtaksinformasjon = lagDeltakerSamtykkeData(godkjent = LocalDateTime.now().minusMonths(4)),
         sistEndretAv: String = randomNavIdent(),
         sistEndretAvEnhet: String = randomEnhetsnummer(),
         sistEndret: LocalDateTime = LocalDateTime.now(),
@@ -97,7 +97,7 @@ object TestData {
         bakgrunnsinformasjon,
         mal,
         status,
-        samtykke,
+        vedtaksinformasjon,
         sistEndretAv,
         sistEndretAvEnhet,
         sistEndret,
@@ -169,7 +169,7 @@ object TestData {
         opprettetAv: String = randomNavIdent(),
         sistEndret: LocalDateTime = opprettet,
         sistEndretAv: String = opprettetAv,
-    ) = Deltaker.Samtykke(godkjent, godkjentAvNav, opprettet, opprettetAv, sistEndret, sistEndretAv)
+    ) = Deltaker.Vedtaksinformasjon(godkjent, godkjentAvNav, opprettet, opprettetAv, sistEndret, sistEndretAv)
 
     fun lagGodkjenningAvNav(
         godkjentAv: String = randomNavIdent(),

@@ -133,13 +133,13 @@ class DeltakerRepositoryTest {
         TestRepository.insert(samtykke1)
         TestRepository.insert(samtykke2)
 
-        val deltakerSamtykke = repository.get(deltaker.id).getOrThrow().samtykke!!
-        deltakerSamtykke.godkjent shouldBeCloseTo samtykke2.godkjent
-        deltakerSamtykke.godkjentAvNav shouldBe samtykke2.godkjentAvNav
-        deltakerSamtykke.opprettet shouldBeCloseTo samtykke2.opprettet
-        deltakerSamtykke.opprettetAv shouldBe samtykke2.opprettetAv
-        deltakerSamtykke.sistEndret shouldBeCloseTo samtykke2.sistEndret
-        deltakerSamtykke.sistEndretAv shouldBe samtykke2.sistEndretAv
+        val vedtaksinformasjon = repository.get(deltaker.id).getOrThrow().vedtaksinformasjon!!
+        vedtaksinformasjon.fattet shouldBeCloseTo samtykke2.godkjent
+        vedtaksinformasjon.fattetAvNav shouldBe samtykke2.godkjentAvNav
+        vedtaksinformasjon.opprettet shouldBeCloseTo samtykke2.opprettet
+        vedtaksinformasjon.opprettetAv shouldBe samtykke2.opprettetAv
+        vedtaksinformasjon.sistEndret shouldBeCloseTo samtykke2.sistEndret
+        vedtaksinformasjon.sistEndretAv shouldBe samtykke2.sistEndretAv
     }
 }
 

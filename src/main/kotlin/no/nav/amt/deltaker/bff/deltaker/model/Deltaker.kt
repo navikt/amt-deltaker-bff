@@ -18,7 +18,7 @@ data class Deltaker(
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
     val status: DeltakerStatus,
-    val samtykke: Samtykke?,
+    val vedtaksinformasjon: Vedtaksinformasjon?,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
     val sistEndret: LocalDateTime,
@@ -28,9 +28,9 @@ data class Deltaker(
         return status.type in AVSLUTTENDE_STATUSER
     }
 
-    data class Samtykke(
-        val godkjent: LocalDateTime?,
-        val godkjentAvNav: GodkjentAvNav?,
+    data class Vedtaksinformasjon(
+        val fattet: LocalDateTime?,
+        val fattetAvNav: GodkjentAvNav?,
         val opprettet: LocalDateTime,
         val opprettetAv: String,
         val sistEndret: LocalDateTime,
