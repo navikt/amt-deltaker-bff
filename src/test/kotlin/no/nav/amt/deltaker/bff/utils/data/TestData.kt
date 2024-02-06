@@ -5,7 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -138,7 +138,7 @@ object TestData {
         deltakerId: UUID = deltakerVedSamtykke.id,
         godkjent: LocalDateTime? = null,
         gyldigTil: LocalDateTime? = null,
-        godkjentAvNav: GodkjenningAvNav? = null,
+        godkjentAvNav: GodkjentAvNav? = null,
         opprettet: LocalDateTime = LocalDateTime.now(),
         opprettetAv: String = randomNavIdent(),
         opprettetAvEnhet: String? = randomEnhetsnummer(),
@@ -161,11 +161,9 @@ object TestData {
     )
 
     fun lagGodkjenningAvNav(
-        type: String = "ANNET",
-        beskrivelse: String = "Fordi jeg kan",
         godkjentAv: String = randomNavIdent(),
         godkjentAvEnhet: String = randomEnhetsnummer(),
-    ) = GodkjenningAvNav(type, beskrivelse, godkjentAv, godkjentAvEnhet)
+    ) = GodkjentAvNav(godkjentAv, godkjentAvEnhet)
 
     fun lagPamelding(
         deltaker: Deltaker,
@@ -222,7 +220,7 @@ object TestData {
             status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         ),
         pamelding: Pamelding = lagPamelding(opprinneligDeltaker),
-        godkjentAvNav: GodkjenningAvNav? = null,
+        godkjentAvNav: GodkjentAvNav? = null,
     ) = Utkast(opprinneligDeltaker, pamelding, godkjentAvNav)
 
     fun lagDeltakerEndring(

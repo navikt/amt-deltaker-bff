@@ -21,7 +21,6 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.api.model.Begrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -226,6 +225,5 @@ class PameldingApiTest {
         "Bakgrunnen for...",
         null,
         null,
-        Begrunnelse("TELEFONKONTAKT", null),
     )
 }
