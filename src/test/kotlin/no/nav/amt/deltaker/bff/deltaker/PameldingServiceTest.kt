@@ -148,7 +148,7 @@ class PameldingServiceTest {
     @Test
     fun `opprettKladd - deltaker finnes men har sluttet - oppretter ny deltaker`() {
         val deltaker = TestData.lagDeltaker(
-            sluttdato = LocalDate.now().minusWeeks(3),
+            sluttdato = LocalDate.now().minusMonths(3),
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         )
         TestRepository.insert(deltaker)
