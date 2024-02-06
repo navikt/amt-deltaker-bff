@@ -18,12 +18,22 @@ data class Deltaker(
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
     val status: DeltakerStatus,
+    val vedtaksinformasjon: Vedtaksinformasjon?,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
     val sistEndret: LocalDateTime,
     val opprettet: LocalDateTime,
 ) {
     fun harSluttet(): Boolean {
-        return status.type in AVSLUTTENDE_STATUSER || sluttdato?.isBefore(LocalDate.now().minusWeeks(2)) == true
+        return status.type in AVSLUTTENDE_STATUSER
     }
+
+    data class Vedtaksinformasjon(
+        val fattet: LocalDateTime?,
+        val fattetAvNav: GodkjentAvNav?,
+        val opprettet: LocalDateTime,
+        val opprettetAv: String,
+        val sistEndret: LocalDateTime,
+        val sistEndretAv: String,
+    )
 }

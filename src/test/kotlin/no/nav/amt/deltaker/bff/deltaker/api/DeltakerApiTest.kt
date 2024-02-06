@@ -95,7 +95,7 @@ class DeltakerApiTest {
     @Test
     fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -150,7 +150,7 @@ class DeltakerApiTest {
     @Test
     fun `oppdater mal - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -179,7 +179,7 @@ class DeltakerApiTest {
     @Test
     fun `oppdater deltakelsesmengde - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -209,7 +209,7 @@ class DeltakerApiTest {
     @Test
     fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -294,7 +294,10 @@ class DeltakerApiTest {
     @Test
     fun `forleng - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(sluttdato = forlengDeltakelseRequest.sluttdato.minusDays(3))
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            sluttdato = forlengDeltakelseRequest.sluttdato.minusDays(3),
+        )
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
@@ -318,9 +321,24 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - returnerer oppdatert deltaker`() = testApplication {
+    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - feiler`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(sluttdato = forlengDeltakelseRequest.sluttdato.plusDays(5))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            TestCase.assertEquals(HttpStatusCode.BadRequest, status)
+        }
+    }
+
+    @Test
+    fun `forleng - har tilgang, har sluttet for mer enn to måneder siden - feiler`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
+            sluttdato = forlengDeltakelseRequest.sluttdato.minusMonths(3),
+        )
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
         setUpTestApplication()

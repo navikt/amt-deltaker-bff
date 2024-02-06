@@ -138,9 +138,29 @@ object TestRepository {
 
     fun insert(samtykke: DeltakerSamtykke) = Database.query {
         val sql = """
-            insert into deltaker_samtykke (id, deltaker_id, godkjent, gyldig_til, deltaker_ved_samtykke, godkjent_av_nav, created_at, opprettet_av, opprettet_av_enhet)
-            values (:id, :deltaker_id, :godkjent, :gyldig_til, :deltaker_ved_samtykke, :godkjent_av_nav, :created_at, :opprettet_av, :opprettet_av_enhet)
-            on conflict (id) do nothing;
+            insert into deltaker_samtykke (id,
+                                           deltaker_id,
+                                           godkjent,
+                                           gyldig_til,
+                                           deltaker_ved_samtykke,
+                                           godkjent_av_nav,
+                                           created_at,
+                                           opprettet_av,
+                                           opprettet_av_enhet,
+                                           modified_at,
+                                           sist_endret_av,
+                                           sist_endret_av_enhet)
+            values (:id,
+                    :deltaker_id,
+                    :godkjent, :gyldig_til,
+                    :deltaker_ved_samtykke,
+                    :godkjent_av_nav,
+                    :opprettet,
+                    :opprettet_av,
+                    :opprettet_av_enhet,
+                    :sist_endret,
+                    :sist_endret_av,
+                    :sist_endret_av_enhet)
         """.trimIndent()
 
         val params = mapOf(
@@ -150,9 +170,12 @@ object TestRepository {
             "gyldig_til" to samtykke.gyldigTil,
             "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
             "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
-            "created_at" to samtykke.opprettet,
+            "opprettet" to samtykke.opprettet,
             "opprettet_av" to samtykke.opprettetAv,
             "opprettet_av_enhet" to samtykke.opprettetAvEnhet,
+            "sist_endret" to samtykke.sistEndret,
+            "sist_endret_av" to samtykke.sistEndretAv,
+            "sist_endret_av_enhet" to samtykke.sistEndretAvEnhet,
         )
 
         it.update(queryOf(sql, params))

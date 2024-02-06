@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.utils
 
 const val MAX_BAKGRUNNSINFORMASJON_LENGDE = 1000
-const val MAX_BEGRUNNELSES_LENGDE = 250
+const val MAX_ANNET_INNHOLD_LENGDE = 250
 const val MAX_AARSAK_BESKRIVELSE_LENGDE = 40
 const val MIN_DAGER_PER_UKE = 1
 const val MAX_DAGER_PER_UKE = 5
@@ -14,9 +14,9 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
     }
 }
 
-fun validerBegrunnelse(tekst: String?) = tekst?.let {
-    require(it.length <= MAX_BEGRUNNELSES_LENGDE) {
-        "Begrunnelse kan ikke være lengre enn $MAX_BEGRUNNELSES_LENGDE"
+fun validerAnnetInnhold(tekst: String?) = tekst?.let {
+    require(it.length <= MAX_ANNET_INNHOLD_LENGDE) {
+        "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
     }
 }
 

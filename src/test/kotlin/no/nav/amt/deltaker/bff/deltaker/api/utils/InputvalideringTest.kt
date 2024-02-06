@@ -19,15 +19,15 @@ class InputvalideringTest {
     }
 
     @Test
-    fun testValiderBegrunnelse() {
-        val forLang = input(MAX_BEGRUNNELSES_LENGDE + 1)
-        val ok = input(MAX_BEGRUNNELSES_LENGDE - 1)
+    fun testValiderAnnetInnhold() {
+        val forLang = input(MAX_ANNET_INNHOLD_LENGDE + 1)
+        val ok = input(MAX_ANNET_INNHOLD_LENGDE - 1)
 
         shouldThrow<IllegalArgumentException> {
-            validerBegrunnelse(forLang)
+            validerAnnetInnhold(forLang)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerBegrunnelse(ok)
+            validerAnnetInnhold(ok)
         }
     }
 

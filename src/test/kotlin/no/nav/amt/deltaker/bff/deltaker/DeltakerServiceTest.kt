@@ -26,7 +26,6 @@ import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.test.assertFailsWith
 
 class DeltakerServiceTest {
     companion object {
@@ -122,27 +121,6 @@ class DeltakerServiceTest {
     }
 
     @Test
-    fun `oppdaterDeltaker - oppdatert bakgrunnsinformasjon, deltaker har sluttet - kaster feil`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-            sluttdato = LocalDate.now().minusMonths(1),
-        )
-        TestRepository.insert(deltaker)
-
-        runBlocking {
-            assertFailsWith<IllegalArgumentException> {
-                deltakerService.oppdaterDeltaker(
-                    deltaker,
-                    DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
-                    DeltakerEndring.Endring.EndreBakgrunnsinformasjon("oppdatert informasjon"),
-                    TestData.randomNavIdent(),
-                    TestData.randomEnhetsnummer(),
-                )
-            }
-        }
-    }
-
-    @Test
     fun `oppdaterDeltaker - ikke aktuell - oppdaterer deltaker og status`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         TestRepository.insert(deltaker)
@@ -167,6 +145,68 @@ class DeltakerServiceTest {
 
             val ikkeAktuellEndring = endring[0].endring as DeltakerEndring.Endring.IkkeAktuell
             ikkeAktuellEndring.aarsak shouldBe aarsak
+        }
+    }
+
+    @Test
+    fun `oppdaterDeltaker - forleng, deltar - oppdaterer deltaker med ny sluttdato`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            sluttdato = LocalDate.now().plusWeeks(1),
+        )
+        TestRepository.insert(deltaker)
+
+        val nySluttdato = LocalDate.now().plusMonths(1)
+
+        runBlocking {
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                deltaker,
+                DeltakerEndring.Endringstype.FORLENGELSE,
+                DeltakerEndring.Endring.ForlengDeltakelse(nySluttdato),
+                navAnsatt.navIdent,
+                navEnhet.enhetsnummer,
+            )
+
+            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
+            oppdatertDeltaker.sluttdato shouldBe nySluttdato
+
+            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            endring.size shouldBe 1
+            endring[0].endringstype shouldBe DeltakerEndring.Endringstype.FORLENGELSE
+
+            val forlengDeltakelseEndring = endring[0].endring as DeltakerEndring.Endring.ForlengDeltakelse
+            forlengDeltakelseEndring.sluttdato shouldBe nySluttdato
+        }
+    }
+
+    @Test
+    fun `oppdaterDeltaker - forleng, har sluttet - oppdaterer deltaker med ny sluttdato og status`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            sluttdato = LocalDate.now().minusWeeks(1),
+        )
+        TestRepository.insert(deltaker)
+
+        val nySluttdato = LocalDate.now().plusMonths(1)
+
+        runBlocking {
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                deltaker,
+                DeltakerEndring.Endringstype.FORLENGELSE,
+                DeltakerEndring.Endring.ForlengDeltakelse(nySluttdato),
+                navAnsatt.navIdent,
+                navEnhet.enhetsnummer,
+            )
+
+            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
+            oppdatertDeltaker.sluttdato shouldBe nySluttdato
+
+            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            endring.size shouldBe 1
+            endring[0].endringstype shouldBe DeltakerEndring.Endringstype.FORLENGELSE
+
+            val forlengDeltakelseEndring = endring[0].endring as DeltakerEndring.Endring.ForlengDeltakelse
+            forlengDeltakelseEndring.sluttdato shouldBe nySluttdato
         }
     }
 }

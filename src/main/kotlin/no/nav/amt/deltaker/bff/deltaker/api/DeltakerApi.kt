@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.header
@@ -37,12 +36,13 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
-            request.valider()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -62,6 +62,8 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
+            request.valider(deltaker)
+
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.MAL,
@@ -75,12 +77,13 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
-            request.valider()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -103,6 +106,8 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
+            request.valider(deltaker)
+
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.STARTDATO,
@@ -116,12 +121,13 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/ikke-aktuell") {
             val navIdent = getNavIdent()
             val request = call.receive<IkkeAktuellRequest>()
-            request.valider()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
@@ -161,10 +167,7 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            if (deltaker.sluttdato != null && deltaker.sluttdato.isAfter(request.sluttdato)) {
-                call.respond(HttpStatusCode.BadRequest, "Ny sluttdato må være nyere enn opprinnelig sluttdato ved forlengelse")
-                return@post
-            }
+            request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,

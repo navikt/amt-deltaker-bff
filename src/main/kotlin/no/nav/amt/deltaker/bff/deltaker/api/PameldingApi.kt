@@ -20,7 +20,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -144,9 +144,7 @@ fun Routing.registerPameldingApi(
                         endretAv = navIdent,
                         endretAvEnhet = enhetsnummer,
                     ),
-                    godkjentAvNav = GodkjenningAvNav(
-                        type = request.begrunnelse.type,
-                        beskrivelse = request.begrunnelse.beskrivelse,
+                    godkjentAvNav = GodkjentAvNav(
                         godkjentAv = navIdent,
                         godkjentAvEnhet = enhetsnummer,
                     ),

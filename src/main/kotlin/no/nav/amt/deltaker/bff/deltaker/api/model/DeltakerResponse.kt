@@ -22,10 +22,20 @@ data class DeltakerResponse(
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
     val mal: List<Mal>,
+    val vedtaksinformasjon: VedtaksinformasjonDto?,
     val sistEndret: LocalDateTime,
     val sistEndretAv: String,
     val sistEndretAvEnhet: String?,
-)
+) {
+    data class VedtaksinformasjonDto(
+        val fattet: LocalDateTime?,
+        val fattetAvNavVeileder: String?,
+        val opprettet: LocalDateTime,
+        val opprettetAv: String,
+        val sistEndret: LocalDateTime,
+        val sistEndretAv: String,
+    )
+}
 
 data class DeltakerlisteDto(
     val deltakerlisteId: UUID,
@@ -59,8 +69,18 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
         mal = mal,
+        vedtaksinformasjon = vedtaksinformasjon?.toDto(),
         sistEndret = sistEndret,
         sistEndretAv = sistEndretAv,
         sistEndretAvEnhet = sistEndretAvEnhet,
     )
 }
+
+fun Deltaker.Vedtaksinformasjon.toDto() = DeltakerResponse.VedtaksinformasjonDto(
+    fattet = fattet,
+    fattetAvNavVeileder = fattetAvNav?.godkjentAv,
+    opprettet = opprettet,
+    opprettetAv = opprettetAv,
+    sistEndret = sistEndret,
+    sistEndretAv = sistEndretAv,
+)

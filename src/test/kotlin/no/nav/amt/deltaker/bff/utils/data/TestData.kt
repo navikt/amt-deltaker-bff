@@ -5,7 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjenningAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -81,6 +81,7 @@ object TestData {
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
         mal: List<Mal> = emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+        vedtaksinformasjon: Deltaker.Vedtaksinformasjon = lagDeltakerSamtykkeData(godkjent = LocalDateTime.now().minusMonths(4)),
         sistEndretAv: String = randomNavIdent(),
         sistEndretAvEnhet: String = randomEnhetsnummer(),
         sistEndret: LocalDateTime = LocalDateTime.now(),
@@ -96,6 +97,7 @@ object TestData {
         bakgrunnsinformasjon,
         mal,
         status,
+        vedtaksinformasjon,
         sistEndretAv,
         sistEndretAvEnhet,
         sistEndret,
@@ -138,10 +140,13 @@ object TestData {
         deltakerId: UUID = deltakerVedSamtykke.id,
         godkjent: LocalDateTime? = null,
         gyldigTil: LocalDateTime? = null,
-        godkjentAvNav: GodkjenningAvNav? = null,
+        godkjentAvNav: GodkjentAvNav? = null,
         opprettet: LocalDateTime = LocalDateTime.now(),
         opprettetAv: String = randomNavIdent(),
         opprettetAvEnhet: String? = randomEnhetsnummer(),
+        sistEndret: LocalDateTime = opprettet,
+        sistEndretAv: String = opprettetAv,
+        sistEndretAvEnhet: String? = opprettetAvEnhet,
     ) = DeltakerSamtykke(
         id,
         deltakerId,
@@ -149,17 +154,27 @@ object TestData {
         gyldigTil,
         deltakerVedSamtykke,
         godkjentAvNav,
+        opprettet,
         opprettetAv,
         opprettetAvEnhet,
-        opprettet,
+        sistEndret,
+        sistEndretAv,
+        sistEndretAvEnhet,
     )
 
+    fun lagDeltakerSamtykkeData(
+        godkjent: LocalDateTime? = LocalDateTime.now(),
+        godkjentAvNav: GodkjentAvNav? = null,
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        opprettetAv: String = randomNavIdent(),
+        sistEndret: LocalDateTime = opprettet,
+        sistEndretAv: String = opprettetAv,
+    ) = Deltaker.Vedtaksinformasjon(godkjent, godkjentAvNav, opprettet, opprettetAv, sistEndret, sistEndretAv)
+
     fun lagGodkjenningAvNav(
-        type: String = "ANNET",
-        beskrivelse: String = "Fordi jeg kan",
         godkjentAv: String = randomNavIdent(),
         godkjentAvEnhet: String = randomEnhetsnummer(),
-    ) = GodkjenningAvNav(type, beskrivelse, godkjentAv, godkjentAvEnhet)
+    ) = GodkjentAvNav(godkjentAv, godkjentAvEnhet)
 
     fun lagPamelding(
         deltaker: Deltaker,
@@ -216,7 +231,7 @@ object TestData {
             status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         ),
         pamelding: Pamelding = lagPamelding(opprinneligDeltaker),
-        godkjentAvNav: GodkjenningAvNav? = null,
+        godkjentAvNav: GodkjentAvNav? = null,
     ) = Utkast(opprinneligDeltaker, pamelding, godkjentAvNav)
 
     fun lagDeltakerEndring(
