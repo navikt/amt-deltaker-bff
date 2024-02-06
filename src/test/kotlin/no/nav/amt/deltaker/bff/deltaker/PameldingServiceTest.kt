@@ -401,7 +401,6 @@ class PameldingServiceTest {
         TestRepository.insert(deltaker)
         TestData.lagUtkast(deltaker)
 
-
         runBlocking {
             pameldingService.avbrytUtkast(deltaker, opprettetAvEnhet, opprettetAv, aarsak)
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
