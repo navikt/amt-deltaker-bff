@@ -30,7 +30,7 @@ fun assertProduced(deltaker: Deltaker) {
         cachedDeltaker.dagerPerUke shouldBe deltaker.dagerPerUke
         cachedDeltaker.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
         cachedDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-        cachedDeltaker.mal shouldBe deltaker.mal
+        cachedDeltaker.innhold shouldBe deltaker.innhold
         cachedDeltaker.status.type shouldBe deltaker.status.type
         cachedDeltaker.status.aarsak shouldBe deltaker.status.aarsak
         cachedDeltaker.status.gyldigTil shouldBeCloseTo deltaker.status.gyldigTil

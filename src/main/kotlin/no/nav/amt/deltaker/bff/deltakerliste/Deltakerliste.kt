@@ -63,7 +63,7 @@ data class Deltakerliste(
     )
 }
 
-data class Mal(
+data class Innhold(
     val visningstekst: String,
     val type: String,
     val valgt: Boolean,

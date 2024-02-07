@@ -11,7 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
@@ -79,7 +79,7 @@ object TestData {
         dagerPerUke: Float? = 5F,
         deltakelsesprosent: Float? = 100F,
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
-        mal: List<Mal> = emptyList(),
+        innhold: List<Innhold> = emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         vedtaksinformasjon: Deltaker.Vedtaksinformasjon = lagDeltakerSamtykkeData(godkjent = LocalDateTime.now().minusMonths(4)),
         sistEndretAv: String = randomNavIdent(),
@@ -95,7 +95,7 @@ object TestData {
         dagerPerUke,
         deltakelsesprosent,
         bakgrunnsinformasjon,
-        mal,
+        innhold,
         status,
         vedtaksinformasjon,
         sistEndretAv,
@@ -178,14 +178,14 @@ object TestData {
 
     fun lagPamelding(
         deltaker: Deltaker,
-        mal: List<Mal>? = null,
+        innhold: List<Innhold>? = null,
         bakgrunnsinformasjon: String? = null,
         deltakelsesprosent: Float? = null,
         dagerPerUke: Float? = null,
         endretAv: String? = null,
         endretAvEnhet: String? = null,
     ) = lagPamelding(
-        mal = mal ?: deltaker.mal,
+        innhold = innhold ?: deltaker.innhold,
         bakgrunnsinformasjon = bakgrunnsinformasjon ?: deltaker.bakgrunnsinformasjon,
         deltakelsesprosent = deltakelsesprosent ?: deltaker.deltakelsesprosent,
         dagerPerUke = dagerPerUke ?: deltaker.dagerPerUke,
@@ -194,14 +194,14 @@ object TestData {
     )
 
     fun lagPamelding(
-        mal: List<Mal> = emptyList(),
+        innhold: List<Innhold> = emptyList(),
         bakgrunnsinformasjon: String? = "Har vært ...",
         deltakelsesprosent: Float? = 100F,
         dagerPerUke: Float? = 5F,
         endretAv: String = randomNavIdent(),
         endretAvEnhet: String? = randomEnhetsnummer(),
     ) = Pamelding(
-        mal,
+        innhold,
         bakgrunnsinformasjon,
         deltakelsesprosent,
         dagerPerUke,
@@ -215,7 +215,7 @@ object TestData {
             sluttdato = null,
             dagerPerUke = null,
             deltakelsesprosent = null,
-            mal = emptyList(),
+            innhold = emptyList(),
             status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         ),
         pamelding: Pamelding = lagPamelding(),
@@ -227,7 +227,7 @@ object TestData {
             sluttdato = null,
             dagerPerUke = null,
             deltakelsesprosent = null,
-            mal = emptyList(),
+            innhold = emptyList(),
             status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         ),
         pamelding: Pamelding = lagPamelding(opprinneligDeltaker),

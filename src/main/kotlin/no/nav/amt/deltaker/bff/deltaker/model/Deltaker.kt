@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -16,7 +16,7 @@ data class Deltaker(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val mal: List<Mal>,
+    val innhold: List<Innhold>,
     val status: DeltakerStatus,
     val vedtaksinformasjon: Vedtaksinformasjon?,
     val sistEndretAv: String,

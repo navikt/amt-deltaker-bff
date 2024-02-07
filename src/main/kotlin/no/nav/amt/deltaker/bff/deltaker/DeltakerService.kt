@@ -43,8 +43,8 @@ class DeltakerService(
                 sistEndret = LocalDateTime.now(),
             )
 
-            is DeltakerEndring.Endring.EndreMal -> opprinneligDeltaker.copy(
-                mal = endring.mal,
+            is DeltakerEndring.Endring.EndreInnhold -> opprinneligDeltaker.copy(
+                innhold = endring.innhold,
                 sistEndretAv = endretAv,
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
@@ -123,7 +123,7 @@ class DeltakerService(
         endring: Pamelding,
     ): Deltaker {
         val deltaker = opprinneligDeltaker.copy(
-            mal = endring.mal,
+            innhold = endring.innhold,
             bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
             deltakelsesprosent = endring.deltakelsesprosent,
             dagerPerUke = endring.dagerPerUke,
@@ -174,7 +174,7 @@ class DeltakerService(
     private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {
         return !(
             opprinneligDeltaker.bakgrunnsinformasjon == oppdatertDeltaker.bakgrunnsinformasjon &&
-                opprinneligDeltaker.mal == oppdatertDeltaker.mal &&
+                opprinneligDeltaker.innhold == oppdatertDeltaker.innhold &&
                 opprinneligDeltaker.deltakelsesprosent == oppdatertDeltaker.deltakelsesprosent &&
                 opprinneligDeltaker.dagerPerUke == oppdatertDeltaker.dagerPerUke &&
                 opprinneligDeltaker.startdato == oppdatertDeltaker.startdato &&

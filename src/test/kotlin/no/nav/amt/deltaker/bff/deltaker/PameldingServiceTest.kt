@@ -101,7 +101,7 @@ class PameldingServiceTest {
             deltaker.dagerPerUke shouldBe null
             deltaker.deltakelsesprosent shouldBe null
             deltaker.bakgrunnsinformasjon shouldBe null
-            deltaker.mal shouldBe emptyList()
+            deltaker.innhold shouldBe emptyList()
         }
     }
 
@@ -141,7 +141,7 @@ class PameldingServiceTest {
             eksisterendeDeltaker.dagerPerUke shouldBe deltaker.dagerPerUke
             eksisterendeDeltaker.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
             eksisterendeDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            eksisterendeDeltaker.mal shouldBe deltaker.mal
+            eksisterendeDeltaker.innhold shouldBe deltaker.innhold
         }
     }
 

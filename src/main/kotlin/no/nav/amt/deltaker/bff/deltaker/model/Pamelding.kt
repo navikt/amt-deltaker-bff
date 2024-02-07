@@ -1,9 +1,9 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 
 data class Pamelding(
-    val mal: List<Mal>,
+    val innhold: List<Innhold>,
     val bakgrunnsinformasjon: String?,
     val deltakelsesprosent: Float?,
     val dagerPerUke: Float?,

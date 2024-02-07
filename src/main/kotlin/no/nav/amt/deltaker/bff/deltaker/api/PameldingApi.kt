@@ -64,7 +64,7 @@ fun Routing.registerPameldingApi(
                 kladd = Kladd(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        mal = request.mal,
+                        innhold = request.innhold,
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -91,7 +91,7 @@ fun Routing.registerPameldingApi(
                 Utkast(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        mal = request.mal,
+                        innhold = request.innhold,
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -137,7 +137,7 @@ fun Routing.registerPameldingApi(
                 Utkast(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        mal = request.mal,
+                        innhold = request.innhold,
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),

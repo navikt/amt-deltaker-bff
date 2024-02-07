@@ -26,7 +26,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
@@ -36,7 +36,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.generateJWT
@@ -70,7 +70,7 @@ class DeltakerApiTest {
 
         setUpTestApplication()
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/mal") { postRequest(malRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/innhold") { postRequest(innholdRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.status shouldBe HttpStatusCode.Forbidden
@@ -83,7 +83,7 @@ class DeltakerApiTest {
     fun `skal teste autorisering - mangler token - returnerer 401`() = testApplication {
         setUpTestApplication()
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
-        client.post("/deltaker/${UUID.randomUUID()}/mal") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/innhold") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
@@ -148,18 +148,18 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `oppdater mal - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+    fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            mal = malRequest.mal,
+            innhold = innholdRequest.innhold,
         )
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.MAL,
+                DeltakerEndring.Endringstype.INNHOLD,
                 any(),
                 any(),
                 any(),
@@ -167,7 +167,7 @@ class DeltakerApiTest {
         } returns oppdatertDeltakerResponse
 
         setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/mal") { postRequest(malRequest) }.apply {
+        client.post("/deltaker/${deltaker.id}/innhold") { postRequest(innholdRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
             TestCase.assertEquals(
                 objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse()),
@@ -369,7 +369,7 @@ class DeltakerApiTest {
     }
 
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
-    private val malRequest = EndreMalRequest(listOf(Mal("visningstekst", "type", true, null)))
+    private val innholdRequest = EndreInnholdRequest(listOf(Innhold("visningstekst", "type", true, null)))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))

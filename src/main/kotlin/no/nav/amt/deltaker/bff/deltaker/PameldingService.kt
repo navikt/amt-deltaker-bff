@@ -139,7 +139,7 @@ class PameldingService(
         dagerPerUke = null,
         deltakelsesprosent = null,
         bakgrunnsinformasjon = null,
-        mal = emptyList(),
+        innhold = emptyList(),
         status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
         vedtaksinformasjon = null,
         sistEndretAv = opprettetAv,

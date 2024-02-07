@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.kafka
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -17,7 +17,7 @@ data class DeltakerDto(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val mal: List<Mal>,
+    val innhold: List<Innhold>,
     val status: DeltakerStatus,
     val sistEndret: LocalDateTime,
     val opprettet: LocalDateTime,
@@ -33,7 +33,7 @@ fun Deltaker.toDto() = DeltakerDto(
     dagerPerUke = dagerPerUke,
     deltakelsesprosent = deltakelsesprosent,
     bakgrunnsinformasjon = bakgrunnsinformasjon,
-    mal = mal,
+    innhold = innhold,
     status = status,
     sistEndret = sistEndret,
     opprettet = opprettet,
