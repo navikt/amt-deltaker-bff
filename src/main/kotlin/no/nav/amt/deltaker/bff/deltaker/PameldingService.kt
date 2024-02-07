@@ -1,12 +1,13 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
+import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -17,7 +18,7 @@ import java.util.UUID
 
 class PameldingService(
     private val deltakerService: DeltakerService,
-    private val samtykkeRepository: DeltakerSamtykkeRepository,
+    private val vedtakRepository: VedtakRepository,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val navBrukerService: NavBrukerService,
 ) {
@@ -77,9 +78,9 @@ class PameldingService(
 
         val deltaker = deltakerService.oppdaterDeltaker(utkast.opprinneligDeltaker, status, utkast.pamelding)
 
-        val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
+        val vedtak = vedtakRepository.getIkkeFattet(deltaker.id)
 
-        samtykkeRepository.upsert(oppdatertSamtykke(samtykke, utkast, deltaker))
+        vedtakRepository.upsert(oppdatertVedtak(vedtak, utkast, deltaker))
 
         MetricRegister.DELT_UTKAST.inc()
     }
@@ -103,9 +104,9 @@ class PameldingService(
             utkast.pamelding,
         )
 
-        val samtykke = samtykkeRepository.getIkkeGodkjent(deltaker.id)
+        val vedtak = vedtakRepository.getIkkeFattet(deltaker.id)
 
-        samtykkeRepository.upsert(oppdatertSamtykke(samtykke, utkast, deltaker, LocalDateTime.now()))
+        vedtakRepository.upsert(oppdatertVedtak(vedtak, utkast, deltaker, LocalDateTime.now()))
 
         MetricRegister.PAMELDT_UTEN_UTKAST.inc()
     }
@@ -148,18 +149,18 @@ class PameldingService(
         opprettet = LocalDateTime.now(),
     )
 
-    private fun oppdatertSamtykke(
-        original: DeltakerSamtykke?,
+    private fun oppdatertVedtak(
+        original: Vedtak?,
         utkast: Utkast,
         deltaker: Deltaker,
-        godkjent: LocalDateTime? = null,
-    ) = DeltakerSamtykke(
+        fattet: LocalDateTime? = null,
+    ) = Vedtak(
         id = original?.id ?: UUID.randomUUID(),
         deltakerId = deltaker.id,
-        godkjent = godkjent,
+        fattet = fattet,
         gyldigTil = null,
-        deltakerVedSamtykke = deltaker,
-        godkjentAvNav = utkast.godkjentAvNav,
+        deltakerVedVedtak = deltaker,
+        fattetAvNav = utkast.godkjentAvNav?.let { FattetAvNav(it.godkjentAv, it.godkjentAvEnhet) },
         opprettetAv = original?.opprettetAv ?: utkast.pamelding.endretAv,
         opprettetAvEnhet = original?.opprettetAvEnhet ?: utkast.pamelding.endretAvEnhet,
         opprettet = original?.opprettet ?: LocalDateTime.now(),

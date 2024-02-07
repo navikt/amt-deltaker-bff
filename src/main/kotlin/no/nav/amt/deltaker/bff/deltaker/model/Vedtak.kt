@@ -3,13 +3,13 @@ package no.nav.amt.deltaker.bff.deltaker.model
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class DeltakerSamtykke(
+data class Vedtak(
     val id: UUID,
     val deltakerId: UUID,
-    val godkjent: LocalDateTime?,
+    val fattet: LocalDateTime?,
     val gyldigTil: LocalDateTime?,
-    val deltakerVedSamtykke: Deltaker,
-    val godkjentAvNav: GodkjentAvNav?,
+    val deltakerVedVedtak: Deltaker,
+    val fattetAvNav: FattetAvNav?,
     val opprettet: LocalDateTime,
     val opprettetAv: String,
     val opprettetAvEnhet: String?,
@@ -18,7 +18,7 @@ data class DeltakerSamtykke(
     val sistEndretAvEnhet: String?,
 )
 
-data class GodkjentAvNav(
-    val godkjentAv: String,
-    val godkjentAvEnhet: String?,
+data class FattetAvNav(
+    val fattetAv: String,
+    val fattetAvEnhet: String?,
 )

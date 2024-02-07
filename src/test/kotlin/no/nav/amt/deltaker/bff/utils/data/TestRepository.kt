@@ -6,8 +6,8 @@ import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
@@ -136,25 +136,25 @@ object TestRepository {
         it.update(queryOf(sql, params))
     }
 
-    fun insert(samtykke: DeltakerSamtykke) = Database.query {
+    fun insert(vedtak: Vedtak) = Database.query {
         val sql = """
-            insert into deltaker_samtykke (id,
-                                           deltaker_id,
-                                           godkjent,
-                                           gyldig_til,
-                                           deltaker_ved_samtykke,
-                                           godkjent_av_nav,
-                                           created_at,
-                                           opprettet_av,
-                                           opprettet_av_enhet,
-                                           modified_at,
-                                           sist_endret_av,
-                                           sist_endret_av_enhet)
+            insert into vedtak (id,
+                                deltaker_id,
+                                fattet,
+                                gyldig_til,
+                                deltaker_ved_vedtak,
+                                fattet_av_nav,
+                                created_at,
+                                opprettet_av,
+                                opprettet_av_enhet,
+                                modified_at,
+                                sist_endret_av,
+                                sist_endret_av_enhet)
             values (:id,
                     :deltaker_id,
-                    :godkjent, :gyldig_til,
-                    :deltaker_ved_samtykke,
-                    :godkjent_av_nav,
+                    :fattet, :gyldig_til,
+                    :deltaker_ved_vedtak,
+                    :fattet_av_nav,
                     :opprettet,
                     :opprettet_av,
                     :opprettet_av_enhet,
@@ -164,18 +164,18 @@ object TestRepository {
         """.trimIndent()
 
         val params = mapOf(
-            "id" to samtykke.id,
-            "deltaker_id" to samtykke.deltakerId,
-            "godkjent" to samtykke.godkjent,
-            "gyldig_til" to samtykke.gyldigTil,
-            "deltaker_ved_samtykke" to toPGObject(samtykke.deltakerVedSamtykke),
-            "godkjent_av_nav" to samtykke.godkjentAvNav?.let(::toPGObject),
-            "opprettet" to samtykke.opprettet,
-            "opprettet_av" to samtykke.opprettetAv,
-            "opprettet_av_enhet" to samtykke.opprettetAvEnhet,
-            "sist_endret" to samtykke.sistEndret,
-            "sist_endret_av" to samtykke.sistEndretAv,
-            "sist_endret_av_enhet" to samtykke.sistEndretAvEnhet,
+            "id" to vedtak.id,
+            "deltaker_id" to vedtak.deltakerId,
+            "fattet" to vedtak.fattet,
+            "gyldig_til" to vedtak.gyldigTil,
+            "deltaker_ved_vedtak" to toPGObject(vedtak.deltakerVedVedtak),
+            "fattet_av_nav" to vedtak.fattetAvNav?.let(::toPGObject),
+            "opprettet" to vedtak.opprettet,
+            "opprettet_av" to vedtak.opprettetAv,
+            "opprettet_av_enhet" to vedtak.opprettetAvEnhet,
+            "sist_endret" to vedtak.sistEndret,
+            "sist_endret_av" to vedtak.sistEndretAv,
+            "sist_endret_av_enhet" to vedtak.sistEndretAvEnhet,
         )
 
         it.update(queryOf(sql, params))

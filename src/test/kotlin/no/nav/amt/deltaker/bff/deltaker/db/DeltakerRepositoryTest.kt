@@ -75,7 +75,7 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `delete - ingen endring eller samtykke - sletter deltaker`() {
+    fun `delete - ingen endring eller vedtak - sletter deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
 
@@ -117,29 +117,29 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `get - deltaker har flere samtykker, et aktivt - returnerer deltaker med aktivt samtykke`() {
+    fun `get - deltaker har flere vedtak, et aktivt - returnerer deltaker med aktivt vedtak`() {
         val deltaker = TestData.lagDeltaker()
-        val samtykke1 = TestData.lagDeltakerSamtykke(
-            deltakerVedSamtykke = deltaker,
-            godkjent = LocalDateTime.now().minusMonths(2),
+        val vedtak1 = TestData.lagVedtak(
+            deltakerVedVedtak = deltaker,
+            fattet = LocalDateTime.now().minusMonths(2),
             gyldigTil = LocalDateTime.now().minusDays(1),
         )
-        val samtykke2 = TestData.lagDeltakerSamtykke(
-            deltakerVedSamtykke = deltaker,
-            godkjent = LocalDateTime.now().minusDays(1),
+        val vedtak2 = TestData.lagVedtak(
+            deltakerVedVedtak = deltaker,
+            fattet = LocalDateTime.now().minusDays(1),
         )
 
         TestRepository.insert(deltaker)
-        TestRepository.insert(samtykke1)
-        TestRepository.insert(samtykke2)
+        TestRepository.insert(vedtak1)
+        TestRepository.insert(vedtak2)
 
         val vedtaksinformasjon = repository.get(deltaker.id).getOrThrow().vedtaksinformasjon!!
-        vedtaksinformasjon.fattet shouldBeCloseTo samtykke2.godkjent
-        vedtaksinformasjon.fattetAvNav shouldBe samtykke2.godkjentAvNav
-        vedtaksinformasjon.opprettet shouldBeCloseTo samtykke2.opprettet
-        vedtaksinformasjon.opprettetAv shouldBe samtykke2.opprettetAv
-        vedtaksinformasjon.sistEndret shouldBeCloseTo samtykke2.sistEndret
-        vedtaksinformasjon.sistEndretAv shouldBe samtykke2.sistEndretAv
+        vedtaksinformasjon.fattet shouldBeCloseTo vedtak2.fattet
+        vedtaksinformasjon.fattetAvNav shouldBe vedtak2.fattetAvNav
+        vedtaksinformasjon.opprettet shouldBeCloseTo vedtak2.opprettet
+        vedtaksinformasjon.opprettetAv shouldBe vedtak2.opprettetAv
+        vedtaksinformasjon.sistEndret shouldBeCloseTo vedtak2.sistEndret
+        vedtaksinformasjon.sistEndretAv shouldBe vedtak2.sistEndretAv
     }
 }
 

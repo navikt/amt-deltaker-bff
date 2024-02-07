@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
+import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
@@ -17,7 +17,7 @@ class DeltakerHistorikkServiceTest {
     companion object {
         private val service = DeltakerHistorikkService(
             DeltakerEndringRepository(),
-            DeltakerSamtykkeRepository(),
+            VedtakRepository(),
         )
 
         @BeforeClass
@@ -28,11 +28,11 @@ class DeltakerHistorikkServiceTest {
     }
 
     @Test
-    fun `getForDeltaker - ett samtykke flere endringer - returner liste riktig sortert`() {
+    fun `getForDeltaker - ett vedtak flere endringer - returner liste riktig sortert`() {
         val deltaker = TestData.lagDeltaker()
-        val samtykke = TestData.lagDeltakerSamtykke(
+        val vedtak = TestData.lagVedtak(
             deltakerId = deltaker.id,
-            godkjent = LocalDateTime.now().minusMonths(1),
+            fattet = LocalDateTime.now().minusMonths(1),
         )
         val gammelEndring = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
@@ -43,7 +43,7 @@ class DeltakerHistorikkServiceTest {
             endret = LocalDateTime.now().minusDays(1),
         )
         TestRepository.insert(deltaker)
-        TestRepository.insert(samtykke)
+        TestRepository.insert(vedtak)
         TestRepository.insert(gammelEndring)
         TestRepository.insert(nyEndring)
 
@@ -52,7 +52,7 @@ class DeltakerHistorikkServiceTest {
         historikk.size shouldBe 3
         sammenlignHistorikk(historikk[0], DeltakerHistorikk.Endring(nyEndring))
         sammenlignHistorikk(historikk[1], DeltakerHistorikk.Endring(gammelEndring))
-        sammenlignHistorikk(historikk[2], DeltakerHistorikk.Samtykke(samtykke))
+        sammenlignHistorikk(historikk[2], DeltakerHistorikk.Vedtak(vedtak))
     }
 
     @Test
@@ -76,16 +76,16 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.endring.endret shouldBeCloseTo b.endring.endret
         }
 
-        is DeltakerHistorikk.Samtykke -> {
-            b as DeltakerHistorikk.Samtykke
-            a.samtykke.id shouldBe b.samtykke.id
-            a.samtykke.deltakerId shouldBe b.samtykke.deltakerId
-            a.samtykke.godkjent shouldBeCloseTo b.samtykke.godkjent
-            a.samtykke.gyldigTil shouldBeCloseTo b.samtykke.gyldigTil
-            sammenlignDeltakere(a.samtykke.deltakerVedSamtykke, b.samtykke.deltakerVedSamtykke)
-            a.samtykke.opprettetAv shouldBe b.samtykke.opprettetAv
-            a.samtykke.opprettetAvEnhet shouldBe b.samtykke.opprettetAvEnhet
-            a.samtykke.opprettet shouldBeCloseTo b.samtykke.opprettet
+        is DeltakerHistorikk.Vedtak -> {
+            b as DeltakerHistorikk.Vedtak
+            a.vedtak.id shouldBe b.vedtak.id
+            a.vedtak.deltakerId shouldBe b.vedtak.deltakerId
+            a.vedtak.fattet shouldBeCloseTo b.vedtak.fattet
+            a.vedtak.gyldigTil shouldBeCloseTo b.vedtak.gyldigTil
+            sammenlignDeltakere(a.vedtak.deltakerVedVedtak, b.vedtak.deltakerVedVedtak)
+            a.vedtak.opprettetAv shouldBe b.vedtak.opprettetAv
+            a.vedtak.opprettetAvEnhet shouldBe b.vedtak.opprettetAvEnhet
+            a.vedtak.opprettet shouldBeCloseTo b.vedtak.opprettet
         }
     }
 }

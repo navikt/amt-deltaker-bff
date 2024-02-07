@@ -2,8 +2,8 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerSamtykke
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import java.time.LocalDateTime
 
@@ -17,11 +17,11 @@ data class DeltakerEndringResponse(
     val endret: LocalDateTime,
 ) : DeltakerHistorikkResponse
 
-data class DeltakerSamtykkeResponse(
-    val godkjent: LocalDateTime?,
+data class VedtakResponse(
+    val fattet: LocalDateTime?,
     val bakgrunnsinformasjon: String?,
+    val fattetAvNav: FattetAvNav?,
     val innhold: List<Innhold>,
-    val godkjentAvNav: GodkjentAvNav?,
     val opprettetAv: String,
     val opprettetAvEnhet: String?,
     val opprettet: LocalDateTime,
@@ -31,7 +31,7 @@ fun List<DeltakerHistorikk>.toResponse(): List<DeltakerHistorikkResponse> {
     return this.map {
         when (it) {
             is DeltakerHistorikk.Endring -> it.endring.toResponse()
-            is DeltakerHistorikk.Samtykke -> it.samtykke.toResponse()
+            is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse()
         }
     }
 }
@@ -44,11 +44,11 @@ fun DeltakerEndring.toResponse() = DeltakerEndringResponse(
     endret = endret,
 )
 
-fun DeltakerSamtykke.toResponse() = DeltakerSamtykkeResponse(
-    godkjent = godkjent,
-    bakgrunnsinformasjon = deltakerVedSamtykke.bakgrunnsinformasjon,
-    innhold = deltakerVedSamtykke.innhold,
-    godkjentAvNav = godkjentAvNav,
+fun Vedtak.toResponse() = VedtakResponse(
+    fattet = fattet,
+    bakgrunnsinformasjon = deltakerVedVedtak.bakgrunnsinformasjon,
+    innhold = deltakerVedVedtak.innhold,
+    fattetAvNav = fattetAvNav,
     opprettetAv = opprettetAv,
     opprettetAvEnhet = opprettetAvEnhet,
     opprettet = opprettet,

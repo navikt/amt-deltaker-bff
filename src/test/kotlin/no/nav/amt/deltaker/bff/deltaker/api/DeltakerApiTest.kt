@@ -279,9 +279,9 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        val samtykke = DeltakerHistorikk.Samtykke(TestData.lagDeltakerSamtykke())
+        val vedtak = DeltakerHistorikk.Vedtak(TestData.lagVedtak())
         val endring = DeltakerHistorikk.Endring(TestData.lagDeltakerEndring())
-        val historikk = listOf(samtykke, endring)
+        val historikk = listOf(vedtak, endring)
         every { deltakerHistorikkService.getForDeltaker(deltaker.id) } returns historikk
 
         setUpTestApplication()
