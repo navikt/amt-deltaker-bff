@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -64,6 +65,7 @@ class PameldingApiTest {
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { postRequest(kladdRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { postRequest(avbrytUtkastRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -74,6 +76,7 @@ class PameldingApiTest {
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -209,6 +212,42 @@ class PameldingApiTest {
         }
     }
 
+    @Test
+    fun `avbryt utkast - har tilgang, deltakerstatus er UTKAST_TIL_PAMELDING - avbryter utkast og returnerer 200`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        coEvery { pameldingService.avbrytUtkast(deltaker, any(), any(), any()) } returns Unit
+
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+        }
+    }
+
+    @Test
+    fun `avbryt utkast - har tilgang, deltakerstatus er ikke UTKAST_TIL_PAMELDING - returnerer 400`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VURDERES))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        coEvery { pameldingService.avbrytUtkast(deltaker, any(), any(), any()) } throws IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id 123")
+
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
+        }
+    }
+
+    @Test
+    fun `avbryt utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
+        every { deltakerService.get(any()) } throws NoSuchElementException()
+
+        setUpTestApplication()
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+            status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
     private fun ApplicationTestBuilder.setUpTestApplication() {
         application {
             configureSerialization()
@@ -218,6 +257,7 @@ class PameldingApiTest {
     }
 
     private val utkastRequest = UtkastRequest(emptyList(), "Bakgrunnen for...", null, null)
+    private val avbrytUtkastRequest = AvbrytUtkastRequest(DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.FATT_JOBB, null))
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
     private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
