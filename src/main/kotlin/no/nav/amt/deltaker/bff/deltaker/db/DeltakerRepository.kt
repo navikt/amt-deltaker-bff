@@ -48,7 +48,7 @@ class DeltakerRepository {
         dagerPerUke = row.floatOrNull("d.dager_per_uke"),
         deltakelsesprosent = row.floatOrNull("d.deltakelsesprosent"),
         bakgrunnsinformasjon = row.stringOrNull("d.bakgrunnsinformasjon"),
-        mal = row.string("d.mal").let { objectMapper.readValue(it) },
+        innhold = row.string("d.innhold").let { objectMapper.readValue(it) },
         status = DeltakerStatus(
             id = row.uuid("ds.id"),
             type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
@@ -77,11 +77,11 @@ class DeltakerRepository {
         val sql = """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, mal, sist_endret_av, sist_endret_av_enhet, modified_at
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, sist_endret_av, sist_endret_av_enhet, modified_at
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :mal, :sistEndretAv, :sistEndretAvEnhet, :sistEndret
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :sistEndretAv, :sistEndretAvEnhet, :sistEndret
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -90,7 +90,7 @@ class DeltakerRepository {
                 dager_per_uke        = :dagerPerUke,
                 deltakelsesprosent   = :deltakelsesprosent,
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
-                mal                  = :mal,
+                innhold              = :innhold,
                 sist_endret_av       = :sistEndretAv,
                 sist_endret_av_enhet = :sistEndretAvEnhet,
                 modified_at          = :sistEndret
@@ -105,7 +105,7 @@ class DeltakerRepository {
             "dagerPerUke" to deltaker.dagerPerUke,
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
-            "mal" to toPGObject(deltaker.mal),
+            "innhold" to toPGObject(deltaker.innhold),
             "sistEndretAv" to deltaker.sistEndretAv,
             "sistEndretAvEnhet" to deltaker.sistEndretAvEnhet,
             "sistEndret" to deltaker.sistEndret,
@@ -236,7 +236,7 @@ class DeltakerRepository {
                    d.dager_per_uke as "d.dager_per_uke",
                    d.deltakelsesprosent as "d.deltakelsesprosent",
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
-                   d.mal as "d.mal",
+                   d.innhold as "d.innhold",
                    d.sist_endret_av as "d.sist_endret_av",
                    d.sist_endret_av_enhet as "d.sist_endret_av_enhet",
                    d.created_at as "d.created_at",

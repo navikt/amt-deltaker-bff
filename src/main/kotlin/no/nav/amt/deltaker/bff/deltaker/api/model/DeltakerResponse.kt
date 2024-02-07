@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -21,7 +21,7 @@ data class DeltakerResponse(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val mal: List<Mal>,
+    val innhold: List<Innhold>,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
     val sistEndret: LocalDateTime,
     val sistEndretAv: String,
@@ -68,7 +68,7 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
         dagerPerUke = dagerPerUke,
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
-        mal = mal,
+        innhold = innhold,
         vedtaksinformasjon = vedtaksinformasjon?.toDto(),
         sistEndret = sistEndret,
         sistEndretAv = sistEndretAv,

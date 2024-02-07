@@ -15,7 +15,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreMalRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
@@ -54,9 +54,9 @@ fun Routing.registerDeltakerApi(
             call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
 
-        post("/deltaker/{deltakerId}/mal") {
+        post("/deltaker/{deltakerId}/innhold") {
             val navIdent = getNavIdent()
-            val request = call.receive<EndreMalRequest>()
+            val request = call.receive<EndreInnholdRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
 
@@ -66,8 +66,8 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.MAL,
-                endring = DeltakerEndring.Endring.EndreMal(request.mal),
+                endringstype = DeltakerEndring.Endringstype.INNHOLD,
+                endring = DeltakerEndring.Endring.EndreInnhold(request.innhold),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )

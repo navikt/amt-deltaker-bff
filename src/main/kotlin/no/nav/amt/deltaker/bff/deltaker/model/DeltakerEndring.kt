@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -15,7 +15,7 @@ data class DeltakerEndring(
     val endret: LocalDateTime,
 ) {
     enum class Endringstype {
-        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, MAL, IKKE_AKTUELL, FORLENGELSE
+        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, INNHOLD, IKKE_AKTUELL, FORLENGELSE
     }
 
     data class Aarsak(
@@ -43,8 +43,8 @@ data class DeltakerEndring(
             val bakgrunnsinformasjon: String?,
         ) : Endring()
 
-        data class EndreMal(
-            val mal: List<Mal>,
+        data class EndreInnhold(
+            val innhold: List<Innhold>,
         ) : Endring()
 
         data class EndreDeltakelsesmengde(

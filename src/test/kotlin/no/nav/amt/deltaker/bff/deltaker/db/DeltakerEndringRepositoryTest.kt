@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltakerliste.Mal
+import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -41,8 +41,8 @@ class DeltakerEndringRepositoryTest {
         val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
         val deltakerEndring2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
-            endringstype = DeltakerEndring.Endringstype.MAL,
-            endring = DeltakerEndring.Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
+            endringstype = DeltakerEndring.Endringstype.INNHOLD,
+            endring = DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst", "type", true, null))),
         )
         TestRepository.insert(deltaker)
         repository.upsert(deltakerEndring)
@@ -73,8 +73,8 @@ class DeltakerEndringRepositoryTest {
         )
         val deltakerEndring2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
-            endringstype = DeltakerEndring.Endringstype.MAL,
-            endring = DeltakerEndring.Endring.EndreMal(listOf(Mal("tekst", "type", true, null))),
+            endringstype = DeltakerEndring.Endringstype.INNHOLD,
+            endring = DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst", "type", true, null))),
             endretAv = navAnsatt2.navIdent,
             endretAvEnhet = navEnhet2.enhetsnummer,
         )

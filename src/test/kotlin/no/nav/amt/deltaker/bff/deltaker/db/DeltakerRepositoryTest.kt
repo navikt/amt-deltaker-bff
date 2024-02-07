@@ -151,7 +151,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.dagerPerUke shouldBe b.dagerPerUke
     a.deltakelsesprosent shouldBe b.deltakelsesprosent
     a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
-    a.mal shouldBe b.mal
+    a.innhold shouldBe b.innhold
     a.status.id shouldBe b.status.id
     a.status.type shouldBe b.status.type
     a.status.aarsak shouldBe b.status.aarsak

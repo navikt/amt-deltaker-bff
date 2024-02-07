@@ -76,8 +76,8 @@ class DeltakerEndringRepository {
             DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON ->
                 objectMapper.readValue<DeltakerEndring.Endring.EndreBakgrunnsinformasjon>(endringJson)
 
-            DeltakerEndring.Endringstype.MAL ->
-                objectMapper.readValue<DeltakerEndring.Endring.EndreMal>(endringJson)
+            DeltakerEndring.Endringstype.INNHOLD ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreInnhold>(endringJson)
 
             DeltakerEndring.Endringstype.DELTAKELSESMENGDE ->
                 objectMapper.readValue<DeltakerEndring.Endring.EndreDeltakelsesmengde>(endringJson)
