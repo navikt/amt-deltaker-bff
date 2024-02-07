@@ -21,3 +21,8 @@ data class Utkast(
     val pamelding: Pamelding,
     val godkjentAvNav: GodkjentAvNav?,
 )
+
+data class GodkjentAvNav(
+    val godkjentAv: String,
+    val godkjentAvEnhet: String?,
+)

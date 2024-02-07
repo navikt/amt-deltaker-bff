@@ -78,7 +78,7 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
 
 fun Deltaker.Vedtaksinformasjon.toDto() = DeltakerResponse.VedtaksinformasjonDto(
     fattet = fattet,
-    fattetAvNavVeileder = fattetAvNav?.godkjentAv,
+    fattetAvNavVeileder = fattetAvNav?.fattetAv,
     opprettet = opprettet,
     opprettetAv = opprettetAv,
     sistEndret = sistEndret,

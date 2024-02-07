@@ -27,7 +27,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerSamtykkeRepository
+import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
@@ -120,7 +120,7 @@ fun Application.module() {
     )
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
-    val samtykkeRepository = DeltakerSamtykkeRepository()
+    val vedtakRepository = VedtakRepository()
     val deltakerEndringRepository = DeltakerEndringRepository()
     val deltakerService = DeltakerService(
         deltakerRepository,
@@ -130,8 +130,8 @@ fun Application.module() {
         DeltakerProducer(),
     )
 
-    val pameldingService = PameldingService(deltakerService, samtykkeRepository, deltakerlisteRepository, navBrukerService)
-    val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, samtykkeRepository)
+    val pameldingService = PameldingService(deltakerService, vedtakRepository, deltakerlisteRepository, navBrukerService)
+    val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, vedtakRepository)
 
     val endringsmeldingRepository = EndringsmeldingRepository()
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
