@@ -99,7 +99,7 @@ class DeltakerRepositoryTest {
         val deltakerFraDb = repository.get(deltaker.id).getOrThrow()
 
         deltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
-        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.navn
+        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
     }
 
     @Test

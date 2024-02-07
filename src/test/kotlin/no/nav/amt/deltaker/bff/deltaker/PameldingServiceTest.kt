@@ -376,4 +376,40 @@ class PameldingServiceTest {
             }
         }
     }
+
+    @Test
+    fun `avbrytUtkast - har ikke status utkast til paamelding - kaster feil`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VURDERES))
+        val opprettetAv = TestData.randomNavIdent()
+        val opprettetAvEnhet = TestData.randomEnhetsnummer()
+        val aarsak = DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.ANNET, "Flyttet til Spania")
+        TestRepository.insert(deltaker)
+
+        runBlocking {
+            assertFailsWith<IllegalArgumentException> {
+                pameldingService.avbrytUtkast(deltaker, opprettetAvEnhet, opprettetAv, aarsak)
+            }
+        }
+    }
+
+    @Test
+    fun `avbrytUtkast - deltaker har status UTKAST_TIL_PAMELDING - avbryter utkast`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+        val opprettetAv = TestData.randomNavIdent()
+        val opprettetAvEnhet = TestData.randomEnhetsnummer()
+        val aarsak = DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.ANNET, "Flyttet til Spania")
+        TestRepository.insert(deltaker)
+        TestData.lagUtkast(deltaker)
+
+        runBlocking {
+            pameldingService.avbrytUtkast(deltaker, opprettetAvEnhet, opprettetAv, aarsak)
+            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT_UTKAST
+            oppdatertDeltaker.status.aarsak shouldNotBe null
+            oppdatertDeltaker.status.aarsak?.type shouldBe aarsak.type
+            oppdatertDeltaker.status.aarsak?.beskrivelse shouldBe aarsak.beskrivelse
+
+            assertProduced(oppdatertDeltaker)
+        }
+    }
 }

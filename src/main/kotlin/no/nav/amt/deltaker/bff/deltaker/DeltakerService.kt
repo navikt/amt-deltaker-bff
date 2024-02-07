@@ -138,6 +138,24 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
+    suspend fun oppdaterDeltaker(
+        opprinneligDeltaker: Deltaker,
+        status: DeltakerStatus,
+        endretAvEnhet: String?,
+        navIdent: String,
+    ): Deltaker {
+        val deltaker = opprinneligDeltaker.copy(
+            status = status,
+            sistEndretAv = navIdent,
+            sistEndretAvEnhet = endretAvEnhet ?: opprinneligDeltaker.sistEndretAvEnhet,
+            sistEndret = LocalDateTime.now(),
+        )
+
+        upsert(deltaker)
+
+        return deltakerRepository.get(deltaker.id).getOrThrow()
+    }
+
     fun delete(deltakerId: UUID) {
         deltakerRepository.delete(deltakerId)
     }

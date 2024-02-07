@@ -39,6 +39,7 @@ val AVSLUTTENDE_STATUSER = listOf(
     DeltakerStatus.Type.FEILREGISTRERT,
     DeltakerStatus.Type.AVBRUTT,
     DeltakerStatus.Type.FULLFORT,
+    DeltakerStatus.Type.AVBRUTT_UTKAST,
 )
 
 val VENTER_PAA_PLASS_STATUSER = listOf(

@@ -68,7 +68,7 @@ class DeltakerRepository {
             )
         },
         sistEndretAv = row.stringOrNull("na.navn") ?: row.string("d.sist_endret_av"),
-        sistEndretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("d.sist_endret_av_enhet"),
+        sistEndretAvEnhet = row.stringOrNull("d.sist_endret_av_enhet"),
         sistEndret = row.localDateTime("d.modified_at"),
         opprettet = row.localDateTime("d.created_at"),
     )

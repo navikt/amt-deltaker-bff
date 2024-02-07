@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -99,6 +100,24 @@ fun Routing.registerPameldingApi(
                     ),
                     godkjentAvNav = null,
                 ),
+            )
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post("/pamelding/{deltakerId}/avbryt") {
+            val navIdent = getNavIdent()
+            val request = call.receive<AvbrytUtkastRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            pameldingService.avbrytUtkast(
+                opprinneligDeltaker = deltaker,
+                navIdent = navIdent,
+                endretAvEnhet = enhetsnummer,
+                aarsak = request.aarsak,
             )
 
             call.respond(HttpStatusCode.OK)
