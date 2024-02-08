@@ -37,6 +37,8 @@ import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
+import no.nav.amt.deltaker.bff.job.StatusUpdateJob
+import no.nav.amt.deltaker.bff.job.leaderelection.LeaderElection
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -75,6 +77,8 @@ fun Application.module() {
             jackson { applicationConfig() }
         }
     }
+
+    val leaderElection = LeaderElection(httpClient, environment.electorPath)
 
     val azureAdTokenClient = AzureAdTokenClient(
         azureAdTokenUrl = environment.azureAdTokenUrl,
@@ -148,6 +152,9 @@ fun Application.module() {
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
     configureMonitoring()
+
+    val statusUpdateJob = StatusUpdateJob(leaderElection, attributes)
+    statusUpdateJob.startJob()
 
     attributes.put(isReadyKey, true)
 }
