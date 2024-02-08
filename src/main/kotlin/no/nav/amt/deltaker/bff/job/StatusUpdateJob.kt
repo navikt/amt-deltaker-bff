@@ -1,7 +1,10 @@
 package no.nav.amt.deltaker.bff.job
 
 import io.ktor.util.Attributes
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.job.leaderelection.LeaderElection
 import org.slf4j.Logger
@@ -16,14 +19,16 @@ class StatusUpdateJob(
     private val attributes: Attributes,
 ) {
     private val log: Logger = LoggerFactory.getLogger(javaClass)
+    private val job = Job()
+    private val scope = CoroutineScope(Dispatchers.IO + job)
 
     fun startJob(): Timer {
         return fixedRateTimer(
             name = this.javaClass.simpleName,
-            initialDelay = Duration.of(5, ChronoUnit.MINUTES).toMillis(),
-            period = Duration.of(15, ChronoUnit.MINUTES).toMillis(),
+            initialDelay = Duration.of(2, ChronoUnit.MINUTES).toMillis(),
+            period = Duration.of(10, ChronoUnit.MINUTES).toMillis(),
         ) {
-            runBlocking {
+            scope.launch {
                 if (leaderElection.isLeader() && attributes.getOrNull(isReadyKey) == true) {
                     try {
                         log.info("Kjører jobb")
