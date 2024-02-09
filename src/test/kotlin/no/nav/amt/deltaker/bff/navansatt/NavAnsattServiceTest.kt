@@ -4,22 +4,27 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.deltaker.bff.utils.mockHttpClient
 import org.junit.BeforeClass
 import org.junit.Test
+import java.time.LocalDateTime
 
 class NavAnsattServiceTest {
     companion object {
         lateinit var repository: NavAnsattRepository
+        lateinit var service: NavAnsattService
 
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
             repository = NavAnsattRepository()
+            service = NavAnsattService(repository, mockk())
         }
     }
 
@@ -27,10 +32,9 @@ class NavAnsattServiceTest {
     fun `hentEllerOpprettNavAnsatt - navansatt finnes i db - henter fra db`() {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
-        val navAnsattService = NavAnsattService(repository, mockk<AmtPersonServiceClient>())
 
         runBlocking {
-            val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
+            val navAnsattFraDb = service.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
             navAnsattFraDb shouldBe navAnsatt
         }
     }
@@ -60,9 +64,8 @@ class NavAnsattServiceTest {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
-        val navAnsattService = NavAnsattService(repository, mockk<AmtPersonServiceClient>())
 
-        navAnsattService.oppdaterNavAnsatt(oppdatertNavAnsatt)
+        service.oppdaterNavAnsatt(oppdatertNavAnsatt)
 
         repository.get(navAnsatt.id) shouldBe oppdatertNavAnsatt
     }
@@ -71,10 +74,49 @@ class NavAnsattServiceTest {
     fun `slettNavAnsatt - navansatt blir slettet`() {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
-        val navAnsattService = NavAnsattService(repository, mockk<AmtPersonServiceClient>())
 
-        navAnsattService.slettNavAnsatt(navAnsatt.id)
+        service.slettNavAnsatt(navAnsatt.id)
 
         repository.get(navAnsatt.id) shouldBe null
+    }
+
+    @Test
+    fun `hentAnsatteForDeltaker - deltaker endret av flere ansatte - returnerer alle ansatte`() {
+        val deltaker = TestData.lagDeltaker()
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker)
+
+        ansatte.forEach { TestRepository.insert(it) }
+        TestRepository.insert(deltaker)
+
+        val faktiskeAnsatte = service.hentAnsatteForDeltaker(deltaker)
+        faktiskeAnsatte.size shouldBe ansatte.size
+
+        faktiskeAnsatte.toList().map { it.second }.containsAll(ansatte) shouldBe true
+    }
+
+    @Test
+    fun `hentAnsatteForHistorikk - historikk endret av flere ansatte - returnerer alle ansatte`() {
+        val deltaker = TestData.lagDeltaker()
+        val vedtak = TestData.lagVedtak(
+            deltakerVedVedtak = deltaker,
+            fattet = LocalDateTime.now(),
+            fattetAvNav = TestData.lagFattetAvNav(),
+        )
+        val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
+
+        val historikk = listOf(
+            DeltakerHistorikk.Endring(deltakerEndring),
+            DeltakerHistorikk.Vedtak(vedtak),
+        )
+
+        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk)
+
+        ansatte.forEach { TestRepository.insert(it) }
+        TestRepository.insert(deltaker)
+
+        val faktiskeAnsatte = service.hentAnsatteForHistorikk(historikk)
+        faktiskeAnsatte.size shouldBe ansatte.size
+
+        faktiskeAnsatte.toList().map { it.second }.containsAll(ansatte) shouldBe true
     }
 }

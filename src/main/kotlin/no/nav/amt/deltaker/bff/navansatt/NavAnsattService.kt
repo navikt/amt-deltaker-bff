@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff.navansatt
 
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -32,4 +34,37 @@ class NavAnsattService(
     fun slettNavAnsatt(navAnsattId: UUID) {
         repository.delete(navAnsattId)
     }
+
+    fun hentAnsatteForDeltaker(deltaker: Deltaker): Map<String, NavAnsatt> {
+        val veilederIdenter = listOfNotNull(
+            deltaker.sistEndretAv,
+            deltaker.vedtaksinformasjon?.opprettetAv,
+            deltaker.vedtaksinformasjon?.sistEndretAv,
+            deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
+        ).distinct()
+
+        return hentAnsatte(veilederIdenter)
+    }
+
+    fun hentAnsatteForHistorikk(historikk: List<DeltakerHistorikk>): Map<String, NavAnsatt> {
+        val veilederIdenter = historikk.flatMap {
+            when (it) {
+                is DeltakerHistorikk.Endring -> {
+                    listOf(it.endring.endretAv)
+                }
+
+                is DeltakerHistorikk.Vedtak -> {
+                    listOfNotNull(
+                        it.vedtak.sistEndretAv,
+                        it.vedtak.opprettetAv,
+                        it.vedtak.fattetAvNav?.fattetAv,
+                    )
+                }
+            }
+        }.distinct()
+
+        return hentAnsatte(veilederIdenter)
+    }
+
+    fun hentAnsatte(veilederIdenter: List<String>) = repository.getMany(veilederIdenter).associateBy { it.navIdent }
 }

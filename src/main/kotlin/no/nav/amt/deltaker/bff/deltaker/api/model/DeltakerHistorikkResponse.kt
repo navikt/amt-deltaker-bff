@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import java.time.LocalDateTime
 
 sealed interface DeltakerHistorikkResponse
@@ -27,29 +28,29 @@ data class VedtakResponse(
     val opprettet: LocalDateTime,
 ) : DeltakerHistorikkResponse
 
-fun List<DeltakerHistorikk>.toResponse(): List<DeltakerHistorikkResponse> {
+fun List<DeltakerHistorikk>.toResponse(ansatte: Map<String, NavAnsatt>): List<DeltakerHistorikkResponse> {
     return this.map {
         when (it) {
-            is DeltakerHistorikk.Endring -> it.endring.toResponse()
-            is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse()
+            is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte)
+            is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte)
         }
     }
 }
 
-fun DeltakerEndring.toResponse() = DeltakerEndringResponse(
+fun DeltakerEndring.toResponse(ansatte: Map<String, NavAnsatt>) = DeltakerEndringResponse(
     endringstype = endringstype,
     endring = endring,
-    endretAv = endretAv,
+    endretAv = ansatte[endretAv]?.navn ?: endretAv,
     endretAvEnhet = endretAvEnhet,
     endret = endret,
 )
 
-fun Vedtak.toResponse() = VedtakResponse(
+fun Vedtak.toResponse(ansatte: Map<String, NavAnsatt>) = VedtakResponse(
     fattet = fattet,
     bakgrunnsinformasjon = deltakerVedVedtak.bakgrunnsinformasjon,
     innhold = deltakerVedVedtak.innhold,
-    fattetAvNav = fattetAvNav,
-    opprettetAv = opprettetAv,
+    fattetAvNav = fattetAvNav?.let { FattetAvNav(ansatte[it.fattetAv]?.navn ?: it.fattetAv, it.fattetAvEnhet) },
+    opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv,
     opprettetAvEnhet = opprettetAvEnhet,
     opprettet = opprettet,
 )
