@@ -55,3 +55,9 @@ val STATUSER_SOM_KAN_SKJULES = listOf(
     DeltakerStatus.Type.AVBRUTT,
     DeltakerStatus.Type.FULLFORT,
 )
+
+val HAR_IKKE_STARTET_STATUSER = listOf(DeltakerStatus.Type.VENTER_PA_OPPSTART).plus(VENTER_PAA_PLASS_STATUSER)
+
+fun DeltakerStatus.harIkkeStartet(): Boolean {
+    return type in HAR_IKKE_STARTET_STATUSER
+}

@@ -17,6 +17,7 @@ import kotlin.concurrent.fixedRateTimer
 class StatusUpdateJob(
     private val leaderElection: LeaderElection,
     private val attributes: Attributes,
+    private val deltakerStatusOppdateringService: DeltakerStatusOppdateringService,
 ) {
     private val log: Logger = LoggerFactory.getLogger(javaClass)
     private val job = Job()
@@ -31,7 +32,9 @@ class StatusUpdateJob(
             scope.launch {
                 if (leaderElection.isLeader() && attributes.getOrNull(isReadyKey) == true) {
                     try {
-                        log.info("Kjører jobb")
+                        log.info("Kjører jobb for å oppdatere deltakerstatuser")
+                        deltakerStatusOppdateringService.oppdaterDeltakerStatuser()
+                        log.info("Ferdig med å oppdatere deltakerstatuser")
                     } catch (e: Exception) {
                         log.error("Noe gikk galt ved oppdatering av deltakerstatus", e)
                     }

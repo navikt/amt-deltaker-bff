@@ -28,6 +28,10 @@ data class Deltaker(
         return status.type in AVSLUTTENDE_STATUSER
     }
 
+    fun deltarPaKurs(): Boolean {
+        return deltakerliste.erKurs()
+    }
+
     data class Vedtaksinformasjon(
         val fattet: LocalDateTime?,
         val fattetAvNav: FattetAvNav?,
