@@ -140,7 +140,7 @@ class DeltakerStatusOppdateringServiceTest {
     }
 
     @Test
-    fun `oppdaterDeltakerStatuser - deltakerliste avsluttet, status VENTER_PA_OPPSTRT - setter status IKKE_AKTUELL`() {
+    fun `oppdaterDeltakerStatuser - deltakerliste avsluttet, status VENTER_PA_OPPSTART - setter status IKKE_AKTUELL`() {
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = null,

@@ -26,8 +26,8 @@ class StatusUpdateJob(
     fun startJob(): Timer {
         return fixedRateTimer(
             name = this.javaClass.simpleName,
-            initialDelay = Duration.of(2, ChronoUnit.MINUTES).toMillis(),
-            period = Duration.of(10, ChronoUnit.MINUTES).toMillis(),
+            initialDelay = Duration.of(5, ChronoUnit.MINUTES).toMillis(),
+            period = Duration.of(1, ChronoUnit.HOURS).toMillis(),
         ) {
             scope.launch {
                 if (leaderElection.isLeader() && attributes.getOrNull(isReadyKey) == true) {
