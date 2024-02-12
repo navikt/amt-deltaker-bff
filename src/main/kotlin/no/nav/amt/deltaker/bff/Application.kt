@@ -34,6 +34,8 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka.TiltakstypeConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
@@ -143,6 +145,8 @@ fun Application.module() {
     val endringsmeldingRepository = EndringsmeldingRepository()
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
 
+    val tiltakstypeRepository = TiltakstypeRepository()
+
     val deltakerStatusOppdateringService = DeltakerStatusOppdateringService(deltakerRepository, deltakerProducer)
 
     val consumers = listOf(
@@ -151,6 +155,7 @@ fun Application.module() {
         DeltakerlisteConsumer(deltakerlisteRepository, arrangorService),
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository),
+        TiltakstypeConsumer(tiltakstypeRepository),
     )
     consumers.forEach { it.run() }
 

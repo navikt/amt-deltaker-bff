@@ -16,6 +16,9 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
@@ -49,6 +52,18 @@ object TestData {
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
         oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.type),
     ) = Deltakerliste(id, tiltak, navn, status, startDato, sluttDato, oppstart, arrangor)
+
+    fun lagTiltakstype(
+        id: UUID = UUID.randomUUID(),
+        type: Tiltak.Type = Tiltak.Type.entries.random(),
+        navn: String = "Test tiltak $type",
+        innhold: DeltakerRegistreringInnhold = lagDeltakerRegistreringInnhold(),
+    ) = Tiltakstype(id, navn, type, innhold)
+
+    fun lagDeltakerRegistreringInnhold(
+        innholdselementer: List<Innholdselement> = listOf(Innholdselement("Tekst", "kode")),
+        ledetekst: String = "Beskrivelse av tilaket",
+    ) = DeltakerRegistreringInnhold(innholdselementer, ledetekst)
 
     fun lagTiltak(
         type: Tiltak.Type = Tiltak.Type.entries.random(),
