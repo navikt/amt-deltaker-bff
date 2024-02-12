@@ -92,24 +92,6 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `get - deltaker, ansatt og enhet finnes - returnerer navn for ansatt og enhet`() {
-        val navAnsatt = TestData.lagNavAnsatt()
-        TestRepository.insert(navAnsatt)
-        val navEnhet = TestData.lagNavEnhet()
-        TestRepository.insert(navEnhet)
-        val deltaker = TestData.lagDeltaker(
-            sistEndretAv = navAnsatt.navIdent,
-            sistEndretAvEnhet = navEnhet.enhetsnummer,
-        )
-        TestRepository.insert(deltaker)
-
-        val deltakerFraDb = repository.get(deltaker.id).getOrThrow()
-
-        deltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
-        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
-    }
-
-    @Test
     fun `get - deltaker, ansatt og enhet finnes ikke - returnerer navident og enhetsnummer`() {
         val navAnsatt = TestData.lagNavAnsatt()
         val navEnhet = TestData.lagNavEnhet()

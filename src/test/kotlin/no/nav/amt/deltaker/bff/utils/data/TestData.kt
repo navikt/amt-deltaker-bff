@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.utils.data
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
@@ -82,7 +83,9 @@ object TestData {
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
         innhold: List<Innhold> = emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-        vedtaksinformasjon: Deltaker.Vedtaksinformasjon = lagVedtaksinformasjon(fattet = LocalDateTime.now().minusMonths(4)),
+        vedtaksinformasjon: Deltaker.Vedtaksinformasjon = lagVedtaksinformasjon(
+            fattet = LocalDateTime.now().minusMonths(4),
+        ),
         sistEndretAv: String = randomNavIdent(),
         sistEndretAvEnhet: String = randomEnhetsnummer(),
         sistEndret: LocalDateTime = LocalDateTime.now(),
@@ -302,4 +305,27 @@ object TestData {
 
         else -> Deltakerliste.Oppstartstype.LOPENDE
     }
+
+    fun lagNavAnsatteForDeltaker(deltaker: Deltaker) = listOfNotNull(
+        deltaker.sistEndretAv,
+        deltaker.vedtaksinformasjon?.sistEndretAv,
+        deltaker.vedtaksinformasjon?.opprettetAv,
+        deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
+    ).distinct().map { lagNavAnsatt(navIdent = it) }
+
+    fun lagNavAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
+        when (it) {
+            is DeltakerHistorikk.Endring -> {
+                listOf(it.endring.endretAv)
+            }
+
+            is DeltakerHistorikk.Vedtak -> {
+                listOfNotNull(
+                    it.vedtak.sistEndretAv,
+                    it.vedtak.opprettetAv,
+                    it.vedtak.fattetAvNav?.fattetAv,
+                )
+            }
+        }
+    }.distinct().map { lagNavAnsatt(navIdent = it) }
 }

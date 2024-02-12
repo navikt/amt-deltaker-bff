@@ -68,4 +68,15 @@ class NavAnsattRepository {
         )
         it.update(query)
     }
+
+    fun getMany(veilederIdenter: List<String>) = Database.query {
+        val statement = "select * from nav_ansatt where nav_ident in (${veilederIdenter.joinToString { "?" }})"
+
+        val query = queryOf(
+            statement,
+            *veilederIdenter.toTypedArray(),
+        )
+
+        it.run(query.map(::rowMapper).asList)
+    }
 }

@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -48,6 +49,10 @@ data class DeltakerlisteDto(
 )
 
 fun Deltaker.toDeltakerResponse(): DeltakerResponse {
+    return this.toDeltakerResponse(emptyMap())
+}
+
+fun Deltaker.toDeltakerResponse(ansatte: Map<String, NavAnsatt>): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
         fornavn = navBruker.fornavn,
@@ -69,18 +74,18 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
         innhold = innhold,
-        vedtaksinformasjon = vedtaksinformasjon?.toDto(),
+        vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte),
         sistEndret = sistEndret,
-        sistEndretAv = sistEndretAv,
+        sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
         sistEndretAvEnhet = sistEndretAvEnhet,
     )
 }
 
-fun Deltaker.Vedtaksinformasjon.toDto() = DeltakerResponse.VedtaksinformasjonDto(
+fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<String, NavAnsatt>) = DeltakerResponse.VedtaksinformasjonDto(
     fattet = fattet,
-    fattetAvNavVeileder = fattetAvNav?.fattetAv,
+    fattetAvNavVeileder = fattetAvNav?.let { ansatte[it.fattetAv]?.navn } ?: fattetAvNav?.fattetAv,
     opprettet = opprettet,
-    opprettetAv = opprettetAv,
+    opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv,
     sistEndret = sistEndret,
-    sistEndretAv = sistEndretAv,
+    sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
 )

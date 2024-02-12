@@ -30,6 +30,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.poao_tilgang.client.Decision
@@ -45,6 +46,7 @@ class PameldingApiTest {
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
+    private val navAnsattService = mockk<NavAnsattService>()
 
     @Before
     fun setup() {
@@ -82,12 +84,17 @@ class PameldingApiTest {
     @Test
     fun `post pamelding - har tilgang - returnerer deltaker`() = testApplication {
         val deltaker = TestData.lagDeltaker()
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.navIdent }
+
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery { pameldingService.opprettKladd(any(), any(), any(), any()) } returns deltaker
+        coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
+
         setUpTestApplication()
+
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(deltaker.toDeltakerResponse()), bodyAsText())
+            TestCase.assertEquals(objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte)), bodyAsText())
         }
     }
 
@@ -252,7 +259,7 @@ class PameldingApiTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
+            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService, navAnsattService)
         }
     }
 

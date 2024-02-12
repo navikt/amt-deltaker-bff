@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
@@ -28,6 +29,7 @@ fun Application.configureRouting(
     deltakerService: DeltakerService,
     pameldingService: PameldingService,
     deltakerHistorikkService: DeltakerHistorikkService,
+    navAnsattService: NavAnsattService,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -54,8 +56,8 @@ fun Application.configureRouting(
     routing {
         registerHealthApi()
 
-        registerDeltakerApi(tilgangskontrollService, deltakerService, deltakerHistorikkService)
-        registerPameldingApi(tilgangskontrollService, deltakerService, pameldingService)
+        registerDeltakerApi(tilgangskontrollService, deltakerService, deltakerHistorikkService, navAnsattService)
+        registerPameldingApi(tilgangskontrollService, deltakerService, pameldingService, navAnsattService)
 
         val catchAllRoute = "{...}"
         route(catchAllRoute) {

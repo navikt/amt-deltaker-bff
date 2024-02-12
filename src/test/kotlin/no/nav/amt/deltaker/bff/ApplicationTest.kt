@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import org.junit.Test
 
@@ -21,6 +22,7 @@ class ApplicationTest {
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
+    private val navAnsattService = mockk<NavAnsattService>()
 
     @Test
     fun testRoot() = testApplication {
@@ -28,7 +30,13 @@ class ApplicationTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
+            configureRouting(
+                tilgangskontrollService,
+                deltakerService,
+                pameldingService,
+                deltakerHistorikkService,
+                navAnsattService,
+            )
         }
         client.get("/internal/health/liveness").apply {
             assertEquals(HttpStatusCode.OK, status)
