@@ -19,6 +19,30 @@ import java.util.UUID
 
 object TestRepository {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    fun cleanDatabase() = Database.query { session ->
+        val tables = listOf(
+            "vedtak",
+            "deltaker_endring",
+            "deltaker_status",
+            "endringsmelding",
+            "nav_ansatt",
+            "nav_enhet",
+            "deltaker",
+            "nav_bruker",
+            "deltakerliste",
+            "arrangor",
+        )
+        tables.forEach {
+            val query = queryOf(
+                """delete from $it""",
+                emptyMap(),
+            )
+
+            session.update(query)
+        }
+    }
+
     fun insert(arrangor: Arrangor) {
         val sql = """
             INSERT INTO arrangor(id, navn, organisasjonsnummer, overordnet_arrangor_id)

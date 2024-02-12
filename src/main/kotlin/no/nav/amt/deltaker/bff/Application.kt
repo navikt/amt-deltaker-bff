@@ -37,6 +37,9 @@ import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
+import no.nav.amt.deltaker.bff.job.DeltakerStatusOppdateringService
+import no.nav.amt.deltaker.bff.job.StatusUpdateJob
+import no.nav.amt.deltaker.bff.job.leaderelection.LeaderElection
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -76,6 +79,8 @@ fun Application.module() {
         }
     }
 
+    val leaderElection = LeaderElection(httpClient, environment.electorPath)
+
     val azureAdTokenClient = AzureAdTokenClient(
         azureAdTokenUrl = environment.azureAdTokenUrl,
         clientId = environment.azureClientId,
@@ -112,6 +117,8 @@ fun Application.module() {
     val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
     val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
 
+    val deltakerProducer = DeltakerProducer()
+
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
             baseUrl = environment.poaoTilgangUrl,
@@ -127,7 +134,7 @@ fun Application.module() {
         deltakerEndringRepository,
         navAnsattService,
         navEnhetService,
-        DeltakerProducer(),
+        deltakerProducer,
     )
 
     val pameldingService = PameldingService(deltakerService, vedtakRepository, deltakerlisteRepository, navBrukerService)
@@ -135,6 +142,8 @@ fun Application.module() {
 
     val endringsmeldingRepository = EndringsmeldingRepository()
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
+
+    val deltakerStatusOppdateringService = DeltakerStatusOppdateringService(deltakerRepository, deltakerProducer)
 
     val consumers = listOf(
         EndringsmeldingConsumer(endringsmeldingService),
@@ -148,6 +157,9 @@ fun Application.module() {
     configureAuthentication(environment)
     configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
     configureMonitoring()
+
+    val statusUpdateJob = StatusUpdateJob(leaderElection, attributes, deltakerStatusOppdateringService)
+    statusUpdateJob.startJob()
 
     attributes.put(isReadyKey, true)
 }
