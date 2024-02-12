@@ -87,11 +87,11 @@ class DeltakerEndringRepositoryTest {
         endringFraDb.size shouldBe 2
         sammenlignDeltakerEndring(
             endringFraDb.find { it.id == deltakerEndring.id }!!,
-            deltakerEndring.copy(endretAv = navAnsatt1.navn, endretAvEnhet = navEnhet1.navn),
+            deltakerEndring.copy(endretAv = navAnsatt1.navIdent, endretAvEnhet = navEnhet1.enhetsnummer),
         )
         sammenlignDeltakerEndring(
             endringFraDb.find { it.id == deltakerEndring2.id }!!,
-            deltakerEndring2.copy(endretAv = navAnsatt2.navn, endretAvEnhet = navEnhet2.navn),
+            deltakerEndring2.copy(endretAv = navAnsatt2.navIdent, endretAvEnhet = navEnhet2.enhetsnummer),
         )
     }
 

@@ -37,6 +37,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.generateJWT
@@ -54,6 +55,7 @@ class DeltakerApiTest {
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
+    private val navAnsattService = mockk<NavAnsattService>()
 
     @Before
     fun setup() {
@@ -95,7 +97,8 @@ class DeltakerApiTest {
     @Test
     fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -150,7 +153,8 @@ class DeltakerApiTest {
     @Test
     fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -179,7 +183,8 @@ class DeltakerApiTest {
     @Test
     fun `oppdater deltakelsesmengde - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -209,7 +214,8 @@ class DeltakerApiTest {
     @Test
     fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -282,12 +288,17 @@ class DeltakerApiTest {
         val vedtak = DeltakerHistorikk.Vedtak(TestData.lagVedtak())
         val endring = DeltakerHistorikk.Endring(TestData.lagDeltakerEndring())
         val historikk = listOf(vedtak, endring)
+
+        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.navIdent }
+
+        every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+
         every { deltakerHistorikkService.getForDeltaker(deltaker.id) } returns historikk
 
         setUpTestApplication()
         client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse())
+            bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse(ansatte))
         }
     }
 
@@ -364,7 +375,13 @@ class DeltakerApiTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService)
+            configureRouting(
+                tilgangskontrollService,
+                deltakerService,
+                pameldingService,
+                deltakerHistorikkService,
+                navAnsattService,
+            )
         }
     }
 

@@ -17,8 +17,8 @@ class DeltakerEndringRepository {
             deltakerId = row.uuid("deltaker_id"),
             endringstype = endringstype,
             endring = parseDeltakerEndringJson(row.string("endring"), endringstype),
-            endretAv = row.stringOrNull("na.navn") ?: row.string("endret_av"),
-            endretAvEnhet = row.stringOrNull("ne.navn") ?: row.stringOrNull("endret_av_enhet"),
+            endretAv = row.string("endret_av"),
+            endretAvEnhet = row.stringOrNull("endret_av_enhet"),
             endret = row.localDateTime("dh.modified_at"),
         )
     }
@@ -57,12 +57,8 @@ class DeltakerEndringRepository {
                        dh.endring         AS endring,
                        dh.endret_av       AS endret_av,
                        dh.endret_av_enhet AS endret_av_enhet,
-                       dh.modified_at     AS "dh.modified_at",
-                       na.navn            AS "na.navn",
-                       ne.navn            AS "ne.navn"
+                       dh.modified_at     AS "dh.modified_at"
                 FROM deltaker_endring dh
-                         LEFT JOIN nav_ansatt na ON dh.endret_av = na.nav_ident
-                         LEFT JOIN nav_enhet ne ON dh.endret_av_enhet = ne.nav_enhet_nummer
                 WHERE deltaker_id = :deltaker_id
                 ORDER BY dh.created_at;
             """.trimIndent(),

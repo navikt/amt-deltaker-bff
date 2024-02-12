@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -29,6 +30,7 @@ fun Routing.registerDeltakerApi(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
     deltakerHistorikkService: DeltakerHistorikkService,
+    navAnsattService: NavAnsattService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -156,7 +158,9 @@ fun Routing.registerDeltakerApi(
 
             val historikk = deltakerHistorikkService.getForDeltaker(deltaker.id)
 
-            call.respond(historikk.toResponse())
+            val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
+
+            call.respond(historikk.toResponse(ansatte))
         }
 
         post("/deltaker/{deltakerId}/forleng") {

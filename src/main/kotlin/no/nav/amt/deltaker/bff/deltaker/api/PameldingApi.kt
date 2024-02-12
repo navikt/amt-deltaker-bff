@@ -24,6 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -31,6 +32,7 @@ fun Routing.registerPameldingApi(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
     pameldingService: PameldingService,
+    navAnsattService: NavAnsattService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -47,7 +49,10 @@ fun Routing.registerPameldingApi(
                 opprettetAv = navIdent,
                 opprettetAvEnhet = enhetsnummer,
             )
-            call.respond(deltaker.toDeltakerResponse())
+
+            val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
+
+            call.respond(deltaker.toDeltakerResponse(ansatte))
         }
 
         post("/pamelding/{deltakerId}/kladd") {

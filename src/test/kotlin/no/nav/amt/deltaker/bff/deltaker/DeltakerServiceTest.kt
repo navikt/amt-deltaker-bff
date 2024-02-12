@@ -78,7 +78,7 @@ class DeltakerServiceTest {
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
             val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navn
+            oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navIdent
             oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
             oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
             val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
@@ -88,8 +88,8 @@ class DeltakerServiceTest {
                 oppdatertBakgrunnsinformasjon,
             )
             endring.first().endret shouldBeCloseTo LocalDateTime.now()
-            endring.first().endretAv shouldBe navAnsatt.navn
-            endring.first().endretAvEnhet shouldBe navEnhet.navn
+            endring.first().endretAv shouldBe navAnsatt.navIdent
+            endring.first().endretAvEnhet shouldBe navEnhet.enhetsnummer
 
             assertProduced(oppdatertDeltakerFraDb)
         }
