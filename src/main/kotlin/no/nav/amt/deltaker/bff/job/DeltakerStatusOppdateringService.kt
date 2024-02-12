@@ -52,6 +52,7 @@ class DeltakerStatusOppdateringService(
                 ),
             )
         }
+        log.info("Endret status til IKKE AKTUELL for ${skalBliIkkeAktuell.size}")
 
         skalBliAvbrutt.forEach {
             oppdaterDeltaker(
@@ -67,6 +68,7 @@ class DeltakerStatusOppdateringService(
                 ),
             )
         }
+        log.info("Endret status til AVBRUTT for ${skalBliAvbrutt.size}")
 
         skalBliHarSluttet.forEach {
             oppdaterDeltaker(
@@ -82,6 +84,7 @@ class DeltakerStatusOppdateringService(
                 ),
             )
         }
+        log.info("Endret status til HAR SLUTTET for ${skalBliHarSluttet.size}")
 
         skalBliFullfort.forEach {
             oppdaterDeltaker(
@@ -97,10 +100,11 @@ class DeltakerStatusOppdateringService(
                 ),
             )
         }
+        log.info("Endret status til FULLFØRT for ${skalBliFullfort.size}")
     }
 
     private fun oppdaterStatusTilDeltar() {
-        val deltakere = deltakerRepository.skalHaStatusDeltar()
+        val deltakere = deltakerRepository.skalHaStatusDeltar().distinct()
 
         deltakere.forEach {
             oppdaterDeltaker(
@@ -116,6 +120,7 @@ class DeltakerStatusOppdateringService(
                 ),
             )
         }
+        log.info("Endret status til DELTAR for ${deltakere.size}")
     }
 
     private fun oppdaterDeltaker(deltaker: Deltaker) {
