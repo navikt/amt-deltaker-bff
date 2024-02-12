@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -31,6 +32,7 @@ fun Routing.registerDeltakerApi(
     deltakerService: DeltakerService,
     deltakerHistorikkService: DeltakerHistorikkService,
     navAnsattService: NavAnsattService,
+    navEnhetService: NavEnhetService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -147,7 +149,10 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id ${deltaker.id}")
 
-            call.respond(deltaker.toDeltakerResponse())
+            val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
+            val navEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
+
+            call.respond(deltaker.toDeltakerResponse(ansatte, navEnhet))
         }
 
         get("/deltaker/{deltakerId}/historikk") {

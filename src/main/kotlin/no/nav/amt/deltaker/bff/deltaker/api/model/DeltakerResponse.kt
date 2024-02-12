@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -30,11 +31,12 @@ data class DeltakerResponse(
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
-        val fattetAvNavVeileder: String?,
+        val fattetAvNav: Boolean,
         val opprettet: LocalDateTime,
         val opprettetAv: String,
         val sistEndret: LocalDateTime,
         val sistEndretAv: String,
+        val sistEndretAvEnhet: String?,
     )
 }
 
@@ -52,7 +54,10 @@ fun Deltaker.toDeltakerResponse(): DeltakerResponse {
     return this.toDeltakerResponse(emptyMap())
 }
 
-fun Deltaker.toDeltakerResponse(ansatte: Map<String, NavAnsatt>): DeltakerResponse {
+fun Deltaker.toDeltakerResponse(
+    ansatte: Map<String, NavAnsatt>,
+    vedtakSistEndretAvEnhet: NavEnhet? = null,
+): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
         fornavn = navBruker.fornavn,
@@ -74,18 +79,21 @@ fun Deltaker.toDeltakerResponse(ansatte: Map<String, NavAnsatt>): DeltakerRespon
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
         innhold = innhold,
-        vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte),
+        vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         sistEndret = sistEndret,
         sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
         sistEndretAvEnhet = sistEndretAvEnhet,
     )
 }
 
-fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<String, NavAnsatt>) = DeltakerResponse.VedtaksinformasjonDto(
-    fattet = fattet,
-    fattetAvNavVeileder = fattetAvNav?.let { ansatte[it.fattetAv]?.navn } ?: fattetAvNav?.fattetAv,
-    opprettet = opprettet,
-    opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv,
-    sistEndret = sistEndret,
-    sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
-)
+fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<String, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =
+    DeltakerResponse.VedtaksinformasjonDto(
+        fattet = fattet,
+        fattetAvNav = fattetAvNav?.let { true } ?: false,
+        opprettet = opprettet,
+        opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv,
+        sistEndret = sistEndret,
+        sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
+        sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet,
+
+    )

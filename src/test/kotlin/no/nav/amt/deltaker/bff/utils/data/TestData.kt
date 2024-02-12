@@ -188,7 +188,16 @@ object TestData {
         opprettetAv: String = randomNavIdent(),
         sistEndret: LocalDateTime = opprettet,
         sistEndretAv: String = opprettetAv,
-    ) = Deltaker.Vedtaksinformasjon(fattet, fattetAvNav, opprettet, opprettetAv, sistEndret, sistEndretAv)
+        sistEndretAvEnhet: String = randomEnhetsnummer(),
+    ) = Deltaker.Vedtaksinformasjon(
+        fattet,
+        fattetAvNav,
+        opprettet,
+        opprettetAv,
+        sistEndret,
+        sistEndretAv,
+        sistEndretAvEnhet,
+    )
 
     fun lagFattetAvNav(
         fattetAv: String = randomNavIdent(),

@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import org.junit.Test
 
@@ -23,6 +24,7 @@ class ApplicationTest {
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
+    private val navEnhetService = mockk<NavEnhetService>()
 
     @Test
     fun testRoot() = testApplication {
@@ -36,6 +38,7 @@ class ApplicationTest {
                 pameldingService,
                 deltakerHistorikkService,
                 navAnsattService,
+                navEnhetService,
             )
         }
         client.get("/internal/health/liveness").apply {

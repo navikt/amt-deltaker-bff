@@ -31,6 +31,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.poao_tilgang.client.Decision
@@ -47,6 +48,7 @@ class PameldingApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
+    private val navEnhetService = mockk<NavEnhetService>()
 
     @Before
     fun setup() {
@@ -85,16 +87,21 @@ class PameldingApiTest {
     fun `post pamelding - har tilgang - returnerer deltaker`() = testApplication {
         val deltaker = TestData.lagDeltaker()
         val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.navIdent }
+        val navEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet!!)
 
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery { pameldingService.opprettKladd(any(), any(), any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
+        coEvery { navEnhetService.hentEnhet(navEnhet.enhetsnummer) } returns navEnhet
 
         setUpTestApplication()
 
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte)), bodyAsText())
+            TestCase.assertEquals(
+                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet)),
+                bodyAsText(),
+            )
         }
     }
 
@@ -220,30 +227,41 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `avbryt utkast - har tilgang, deltakerstatus er UTKAST_TIL_PAMELDING - avbryter utkast og returnerer 200`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery { pameldingService.avbrytUtkast(deltaker, any(), any(), any()) } returns Unit
+    fun `avbryt utkast - har tilgang, deltakerstatus er UTKAST_TIL_PAMELDING - avbryter utkast og returnerer 200`() =
+        testApplication {
+            coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+            val deltaker =
+                TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+            every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+            coEvery { pameldingService.avbrytUtkast(deltaker, any(), any(), any()) } returns Unit
 
-        setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
+            setUpTestApplication()
+            client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+            }
         }
-    }
 
     @Test
-    fun `avbryt utkast - har tilgang, deltakerstatus er ikke UTKAST_TIL_PAMELDING - returnerer 400`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VURDERES))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery { pameldingService.avbrytUtkast(deltaker, any(), any(), any()) } throws IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id 123")
+    fun `avbryt utkast - har tilgang, deltakerstatus er ikke UTKAST_TIL_PAMELDING - returnerer 400`() =
+        testApplication {
+            coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+            val deltaker =
+                TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VURDERES))
+            every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+            coEvery {
+                pameldingService.avbrytUtkast(
+                    deltaker,
+                    any(),
+                    any(),
+                    any(),
+                )
+            } throws IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id 123")
 
-        setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
-            status shouldBe HttpStatusCode.BadRequest
+            setUpTestApplication()
+            client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
         }
-    }
 
     @Test
     fun `avbryt utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
@@ -259,12 +277,20 @@ class PameldingApiTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService, navAnsattService)
+            configureRouting(
+                tilgangskontrollService,
+                deltakerService,
+                pameldingService,
+                deltakerHistorikkService,
+                navAnsattService,
+                navEnhetService,
+            )
         }
     }
 
     private val utkastRequest = UtkastRequest(emptyList(), "Bakgrunnen for...", null, null)
-    private val avbrytUtkastRequest = AvbrytUtkastRequest(DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.FATT_JOBB, null))
+    private val avbrytUtkastRequest =
+        AvbrytUtkastRequest(DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.FATT_JOBB, null))
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
     private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
