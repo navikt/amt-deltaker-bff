@@ -346,6 +346,6 @@ class DeltakerRepository {
                 left join nav_enhet ne on d.sist_endret_av_enhet = ne.nav_enhet_nummer
                 left join vedtak v on d.id = v.deltaker_id and v.gyldig_til is null
                 left join nav_ansatt na2 on v.opprettet_av = na2.nav_ident
-                left join nav_ansatt na3 on v.sist_endret_av = na2.nav_ident
+                left join nav_ansatt na3 on v.sist_endret_av = na3.nav_ident
       """ + "\n" + where
 }
