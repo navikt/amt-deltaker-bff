@@ -66,6 +66,7 @@ class DeltakerRepository {
                 opprettetAv = row.string("v.opprettet_av"),
                 sistEndret = row.localDateTime("v.sist_endret"),
                 sistEndretAv = row.string("v.sist_endret_av"),
+                sistEndretAvEnhet = row.stringOrNull("v.sist_endret_av_enhet"),
             )
         },
         sistEndretAv = row.string("d.sist_endret_av"),
@@ -332,7 +333,8 @@ class DeltakerRepository {
                    v.created_at as "v.opprettet",
                    v.opprettet_av as "v.opprettet_av",
                    v.modified_at as "v.sist_endret",
-                   v.sist_endret_av as "v.sist_endret_av"
+                   v.sist_endret_av as "v.sist_endret_av",
+                   v.sist_endret_av_enhet as "v.sist_endret_av_enhet"
             from deltaker d 
                 join nav_bruker nb on d.person_id = nb.person_id
                 join deltaker_status ds on d.id = ds.deltaker_id

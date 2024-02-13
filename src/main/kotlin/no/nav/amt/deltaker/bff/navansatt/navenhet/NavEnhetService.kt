@@ -16,4 +16,6 @@ class NavEnhetService(
         val navEnhet = amtPersonServiceClient.hentNavEnhet(enhetsnummer)
         return repository.upsert(navEnhet)
     }
+
+    fun hentEnhet(enhetsnummer: String) = repository.get(enhetsnummer)
 }

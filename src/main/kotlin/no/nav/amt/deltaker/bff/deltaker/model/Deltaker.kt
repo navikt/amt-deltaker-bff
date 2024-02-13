@@ -39,5 +39,6 @@ data class Deltaker(
         val opprettetAv: String,
         val sistEndret: LocalDateTime,
         val sistEndretAv: String,
+        val sistEndretAvEnhet: String?,
     )
 }

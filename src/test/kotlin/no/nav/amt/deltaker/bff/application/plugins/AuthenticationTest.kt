@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.generateJWT
 import no.nav.poao_tilgang.client.Decision
@@ -38,6 +39,7 @@ class AuthenticationTest {
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
+    private val navEnhetService = mockk<NavEnhetService>()
 
     @Before
     fun setup() {
@@ -49,7 +51,10 @@ class AuthenticationTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         setUpTestApplication()
         client.get("/fnr/12345678910") {
-            header(HttpHeaders.Authorization, "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}")
+            header(
+                HttpHeaders.Authorization,
+                "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
+            )
         }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
             TestCase.assertEquals("Veileder har tilgang!", bodyAsText())
@@ -58,10 +63,16 @@ class AuthenticationTest {
 
     @Test
     fun `testAuthentication - gyldig token, ansatt har ikke tilgang - returnerer 403`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Deny("Ikke tilgang", ""))
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
+            null,
+            Decision.Deny("Ikke tilgang", ""),
+        )
         setUpTestApplication()
         client.get("/fnr/12345678910") {
-            header(HttpHeaders.Authorization, "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}")
+            header(
+                HttpHeaders.Authorization,
+                "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
+            )
         }.apply {
             TestCase.assertEquals(HttpStatusCode.Forbidden, status)
         }
@@ -72,7 +83,17 @@ class AuthenticationTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         setUpTestApplication()
         client.get("/fnr/12345678910") {
-            header(HttpHeaders.Authorization, "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff", issuer = "annenIssuer")}")
+            header(
+                HttpHeaders.Authorization,
+                "Bearer ${
+                    generateJWT(
+                        "frontend-clientid",
+                        UUID.randomUUID().toString(),
+                        "deltaker-bff",
+                        issuer = "annenIssuer",
+                    )
+                }",
+            )
         }.apply {
             TestCase.assertEquals(HttpStatusCode.Unauthorized, status)
         }
@@ -82,7 +103,14 @@ class AuthenticationTest {
         application {
             configureSerialization()
             configureAuthentication(Environment())
-            configureRouting(tilgangskontrollService, deltakerService, pameldingService, deltakerHistorikkService, navAnsattService)
+            configureRouting(
+                tilgangskontrollService,
+                deltakerService,
+                pameldingService,
+                deltakerHistorikkService,
+                navAnsattService,
+                navEnhetService,
+            )
             setUpTestRoute()
         }
     }

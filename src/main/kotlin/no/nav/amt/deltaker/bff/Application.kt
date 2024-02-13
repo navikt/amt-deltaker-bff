@@ -166,6 +166,7 @@ fun Application.module() {
         pameldingService,
         deltakerHistorikkService,
         navAnsattService,
+        navEnhetService,
     )
     configureMonitoring()
 

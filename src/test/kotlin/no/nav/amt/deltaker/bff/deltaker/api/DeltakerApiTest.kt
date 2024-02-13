@@ -38,6 +38,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.generateJWT
@@ -56,6 +57,7 @@ class DeltakerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
+    private val navEnhetService = mockk<NavEnhetService>()
 
     @Before
     fun setup() {
@@ -271,12 +273,19 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.navIdent }
+        val navEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet!!)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
+        every { navEnhetService.hentEnhet(navEnhet.enhetsnummer) } returns navEnhet
 
         setUpTestApplication()
         client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(objectMapper.writeValueAsString(deltaker.toDeltakerResponse()), bodyAsText())
+            TestCase.assertEquals(
+                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet)),
+                bodyAsText(),
+            )
         }
     }
 
@@ -381,6 +390,7 @@ class DeltakerApiTest {
                 pameldingService,
                 deltakerHistorikkService,
                 navAnsattService,
+                navEnhetService,
             )
         }
     }
