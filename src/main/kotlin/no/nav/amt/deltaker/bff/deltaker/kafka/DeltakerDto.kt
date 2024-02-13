@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.kafka
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltakerliste.Innhold
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID

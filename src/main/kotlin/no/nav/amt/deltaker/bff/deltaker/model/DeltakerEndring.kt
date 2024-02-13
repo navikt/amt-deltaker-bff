@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID

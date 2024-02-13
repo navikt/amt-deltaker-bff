@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -18,12 +19,14 @@ class DeltakerlisteConsumerTest {
 
     companion object {
         lateinit var repository: DeltakerlisteRepository
+        lateinit var tiltakstypeRepository: TiltakstypeRepository
 
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
             repository = DeltakerlisteRepository()
+            tiltakstypeRepository = TiltakstypeRepository()
         }
     }
 
@@ -32,7 +35,7 @@ class DeltakerlisteConsumerTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
-        val consumer = DeltakerlisteConsumer(repository, arrangorService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository)
 
         runBlocking {
             consumer.consume(
@@ -51,7 +54,7 @@ class DeltakerlisteConsumerTest {
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
         TestRepository.insert(deltakerliste)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository)
 
         val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now())
 
@@ -72,7 +75,7 @@ class DeltakerlisteConsumerTest {
 
         TestRepository.insert(deltakerliste)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository)
 
         runBlocking {
             consumer.consume(deltakerliste.id, null)

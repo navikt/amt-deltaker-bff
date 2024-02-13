@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
@@ -63,7 +64,38 @@ object TestRepository {
         }
     }
 
+    fun insert(tiltakstype: Tiltakstype) = Database.query {
+        val sql = """
+            INSERT INTO tiltakstype(
+                id, 
+                navn, 
+                type, 
+                innhold)
+            VALUES (:id,
+                    :navn,
+                    :type,
+                    :innhold)
+        """.trimIndent()
+
+        it.update(
+            queryOf(
+                sql,
+                mapOf(
+                    "id" to tiltakstype.id,
+                    "navn" to tiltakstype.navn,
+                    "type" to tiltakstype.type.name,
+                    "innhold" to toPGObject(tiltakstype.innhold),
+                ),
+            ),
+        )
+    }
+
     fun insert(deltakerliste: Deltakerliste) {
+        try {
+            insert(deltakerliste.tiltak)
+        } catch (e: Exception) {
+            log.warn("Tiltakstype  ${deltakerliste.tiltak.type} er allerede opprettet")
+        }
         try {
             insert(deltakerliste.arrangor)
         } catch (e: Exception) {

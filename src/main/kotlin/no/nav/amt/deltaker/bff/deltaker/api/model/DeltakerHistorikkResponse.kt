@@ -3,8 +3,8 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
-import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import java.time.LocalDateTime
 

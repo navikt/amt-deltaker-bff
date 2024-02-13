@@ -1,12 +1,13 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
 
 data class Deltakerliste(
     val id: UUID,
-    val tiltak: Tiltak,
+    val tiltak: Tiltakstype,
     val navn: String,
     val status: Status,
     val startDato: LocalDate,
@@ -62,10 +63,3 @@ data class Deltakerliste(
         Tiltak.Type.GRUFAGYRKE,
     )
 }
-
-data class Innhold(
-    val visningstekst: String,
-    val type: String,
-    val valgt: Boolean,
-    val beskrivelse: String?,
-)
