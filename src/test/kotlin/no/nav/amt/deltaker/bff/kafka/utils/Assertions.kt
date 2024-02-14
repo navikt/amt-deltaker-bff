@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerDto
+import no.nav.amt.deltaker.bff.deltaker.kafka.toDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.utils.AsyncUtils
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
@@ -30,7 +31,8 @@ fun assertProduced(deltaker: Deltaker) {
         cachedDeltaker.dagerPerUke shouldBe deltaker.dagerPerUke
         cachedDeltaker.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
         cachedDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-        cachedDeltaker.innhold shouldBe deltaker.innhold
+        cachedDeltaker.innhold?.ledetekst shouldBe deltaker.deltakerliste.tiltak.innhold?.ledetekst
+        cachedDeltaker.innhold?.innhold shouldBe deltaker.innhold.toDto()
         cachedDeltaker.status.type shouldBe deltaker.status.type
         cachedDeltaker.status.aarsak shouldBe deltaker.status.aarsak
         cachedDeltaker.status.gyldigTil shouldBeCloseTo deltaker.status.gyldigTil

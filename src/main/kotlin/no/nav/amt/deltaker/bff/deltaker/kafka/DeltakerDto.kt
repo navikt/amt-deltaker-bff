@@ -17,11 +17,16 @@ data class DeltakerDto(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val innhold: List<Innhold>,
+    val innhold: DeltakelsesinnholdDto?,
     val status: DeltakerStatus,
     val sistEndret: LocalDateTime,
     val opprettet: LocalDateTime,
-)
+) {
+    data class DeltakelsesinnholdDto(
+        val ledetekst: String,
+        val innhold: List<InnholdDto>,
+    )
+}
 
 fun Deltaker.toDto() = DeltakerDto(
     id = id,
@@ -33,8 +38,21 @@ fun Deltaker.toDto() = DeltakerDto(
     dagerPerUke = dagerPerUke,
     deltakelsesprosent = deltakelsesprosent,
     bakgrunnsinformasjon = bakgrunnsinformasjon,
-    innhold = innhold,
+    innhold = deltakerliste.tiltak.innhold?.let {
+        DeltakerDto.DeltakelsesinnholdDto(
+            it.ledetekst,
+            innhold.toDto(),
+        )
+    },
     status = status,
     sistEndret = sistEndret,
     opprettet = opprettet,
 )
+
+data class InnholdDto(
+    val tekst: String,
+    val innholdskode: String,
+    val beskrivelse: String?,
+)
+
+fun List<Innhold>.toDto() = this.map { InnholdDto(it.tekst, it.innholdskode, it.beskrivelse) }
