@@ -25,11 +25,10 @@ data class DeltakerResponse(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val innhold: List<Innhold>,
+    val deltakelsesinnhold: DeltakelsesinnholdDto?,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
     val sistEndret: LocalDateTime,
     val sistEndretAv: String,
-    val sistEndretAvEnhet: String?,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -42,6 +41,11 @@ data class DeltakerResponse(
     )
 }
 
+data class DeltakelsesinnholdDto(
+    val ledetekst: String,
+    val innhold: List<Innhold>,
+)
+
 data class DeltakerlisteDto(
     val deltakerlisteId: UUID,
     val deltakerlisteNavn: String,
@@ -50,7 +54,6 @@ data class DeltakerlisteDto(
     val oppstartstype: Deltakerliste.Oppstartstype,
     val startdato: LocalDate,
     val sluttdato: LocalDate?,
-    val ledetekst: String?,
 )
 
 fun Deltaker.toDeltakerResponse(): DeltakerResponse {
@@ -74,7 +77,6 @@ fun Deltaker.toDeltakerResponse(
             oppstartstype = deltakerliste.getOppstartstype(),
             startdato = deltakerliste.startDato,
             sluttdato = deltakerliste.sluttDato,
-            ledetekst = deltakerliste.tiltak.innhold?.ledetekst,
         ),
         status = status,
         startdato = startdato,
@@ -82,25 +84,33 @@ fun Deltaker.toDeltakerResponse(
         dagerPerUke = dagerPerUke,
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
-        innhold = fulltInnhold(innhold, deltakerliste.tiltak.innhold?.innholdselementer),
+        deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
+            DeltakelsesinnholdDto(
+                ledetekst = it.ledetekst,
+                innhold = fulltInnhold(innhold, it.innholdselementer),
+            )
+        },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         sistEndret = sistEndret,
         sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
-        sistEndretAvEnhet = sistEndretAvEnhet,
     )
 }
 
-fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>?): List<Innhold> {
-    if (innholdselementer == null) return valgtInnhold
-
+fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {
     return innholdselementer
         .asSequence()
         .plus(annetInnholdselement)
         .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
         .map { it.toInnhold() }
         .plus(valgtInnhold)
-        .sortedBy { it.tekst }
+        .sortedWith(sortertAlfabetiskMedAnnetSist())
         .toList()
+}
+
+private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
+    it.tekst == annetInnholdselement.tekst
+}.thenBy {
+    it.tekst
 }
 
 fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<String, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =

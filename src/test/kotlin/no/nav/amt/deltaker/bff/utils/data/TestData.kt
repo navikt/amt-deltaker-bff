@@ -73,11 +73,6 @@ object TestData {
         ledetekst: String = "Beskrivelse av tilaket",
     ) = DeltakerRegistreringInnhold(innholdselementer, ledetekst)
 
-    fun lagTiltak(
-        type: Tiltak.Type = Tiltak.Type.entries.random(),
-        navn: String = "Test tiltak $type",
-    ) = Tiltak(navn, type)
-
     fun lagDeltakerlisteDto(
         arrangor: Arrangor = lagArrangor(),
         deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),

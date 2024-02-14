@@ -20,11 +20,11 @@ data class Innholdselement(
     val tekst: String,
     val innholdskode: String,
 ) {
-    fun toInnhold() = Innhold(
+    fun toInnhold(valgt: Boolean = false, beskrivelse: String? = null) = Innhold(
         tekst = tekst,
         innholdskode = innholdskode,
-        valgt = false,
-        beskrivelse = null,
+        valgt = valgt,
+        beskrivelse = beskrivelse,
     )
 }
 
