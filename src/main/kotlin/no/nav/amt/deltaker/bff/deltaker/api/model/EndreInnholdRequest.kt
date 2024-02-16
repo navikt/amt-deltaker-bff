@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltakerliste.Innhold
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 
 data class EndreInnholdRequest(
     val innhold: List<Innhold>,

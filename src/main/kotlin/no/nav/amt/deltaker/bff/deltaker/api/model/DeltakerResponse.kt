@@ -2,9 +2,11 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import java.time.LocalDate
@@ -23,11 +25,10 @@ data class DeltakerResponse(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val innhold: List<Innhold>,
+    val deltakelsesinnhold: DeltakelsesinnholdDto?,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
     val sistEndret: LocalDateTime,
     val sistEndretAv: String,
-    val sistEndretAvEnhet: String?,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -39,6 +40,11 @@ data class DeltakerResponse(
         val sistEndretAvEnhet: String?,
     )
 }
+
+data class DeltakelsesinnholdDto(
+    val ledetekst: String,
+    val innhold: List<Innhold>,
+)
 
 data class DeltakerlisteDto(
     val deltakerlisteId: UUID,
@@ -78,12 +84,33 @@ fun Deltaker.toDeltakerResponse(
         dagerPerUke = dagerPerUke,
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
-        innhold = innhold,
+        deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
+            DeltakelsesinnholdDto(
+                ledetekst = it.ledetekst,
+                innhold = fulltInnhold(innhold, it.innholdselementer),
+            )
+        },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         sistEndret = sistEndret,
         sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
-        sistEndretAvEnhet = sistEndretAvEnhet,
     )
+}
+
+fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {
+    return innholdselementer
+        .asSequence()
+        .plus(annetInnholdselement)
+        .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
+        .map { it.toInnhold() }
+        .plus(valgtInnhold)
+        .sortedWith(sortertAlfabetiskMedAnnetSist())
+        .toList()
+}
+
+private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
+    it.tekst == annetInnholdselement.tekst
+}.thenBy {
+    it.tekst
 }
 
 fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<String, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =

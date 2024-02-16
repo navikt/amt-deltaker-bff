@@ -1,9 +1,12 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -12,9 +15,11 @@ class DeltakerlisteRepository {
 
     private fun rowMapper(row: Row) = Deltakerliste(
         id = row.uuid("deltakerliste_id"),
-        tiltak = Tiltak(
-            navn = row.string("tiltaksnavn"),
-            type = Tiltak.Type.valueOf(row.string("tiltakstype")),
+        tiltak = Tiltakstype(
+            id = row.uuid("t.id"),
+            navn = row.string("t.navn"),
+            type = Tiltak.Type.valueOf(row.string("t.type")),
+            innhold = row.stringOrNull("t.innhold")?.let { objectMapper.readValue(it) },
         ),
         navn = row.string("deltakerliste_navn"),
         status = Deltakerliste.Status.valueOf(row.string("status")),
@@ -95,21 +100,26 @@ class DeltakerlisteRepository {
     fun get(id: UUID) = Database.query {
         val query = queryOf(
             """
-                SELECT deltakerliste.id   AS deltakerliste_id,
-                   arrangor_id,
-                   tiltaksnavn,
-                   tiltakstype,
-                   deltakerliste.navn AS deltakerliste_navn,
-                   status,
-                   start_dato,
-                   slutt_dato,
-                   oppstart,
-                   a.navn             AS arrangor_navn,
-                   organisasjonsnummer,
-                   overordnet_arrangor_id
-                FROM deltakerliste
-                     INNER JOIN arrangor a ON a.id = deltakerliste.arrangor_id
-                WHERE deltakerliste.id = :id
+                SELECT d.id   AS deltakerliste_id,
+                       arrangor_id,
+                       tiltaksnavn,
+                       tiltakstype,
+                       d.navn AS deltakerliste_navn,
+                       status,
+                       start_dato,
+                       slutt_dato,
+                       oppstart,
+                       a.navn             AS arrangor_navn,
+                       organisasjonsnummer,
+                       overordnet_arrangor_id,
+                       t.id as "t.id",
+                       t.navn as "t.navn",
+                       t.type as "t.type",
+                       t.innhold as "t.innhold"
+                FROM deltakerliste d
+                         JOIN arrangor a ON a.id = d.arrangor_id
+                         LEFT JOIN tiltakstype t ON d.tiltakstype = t.type
+                WHERE d.id = :id
             """.trimIndent(),
             mapOf("id" to id),
         ).map(::rowMapper).asSingle

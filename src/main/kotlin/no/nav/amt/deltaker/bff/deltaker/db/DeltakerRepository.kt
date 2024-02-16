@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import java.util.UUID
 
 class DeltakerRepository {
@@ -28,9 +29,11 @@ class DeltakerRepository {
         ),
         deltakerliste = Deltakerliste(
             id = row.uuid("deltakerliste_id"),
-            tiltak = Tiltak(
-                navn = row.string("tiltaksnavn"),
-                type = Tiltak.Type.valueOf(row.string("tiltakstype")),
+            tiltak = Tiltakstype(
+                id = row.uuid("t.id"),
+                navn = row.string("t.navn"),
+                type = Tiltak.Type.valueOf(row.string("t.type")),
+                innhold = row.stringOrNull("t.innhold")?.let { objectMapper.readValue(it) },
             ),
             navn = row.string("deltakerliste_navn"),
             status = Deltakerliste.Status.valueOf(row.string("status")),
@@ -49,7 +52,7 @@ class DeltakerRepository {
         dagerPerUke = row.floatOrNull("d.dager_per_uke"),
         deltakelsesprosent = row.floatOrNull("d.deltakelsesprosent"),
         bakgrunnsinformasjon = row.stringOrNull("d.bakgrunnsinformasjon"),
-        innhold = row.string("d.innhold").let { objectMapper.readValue(it) },
+        innhold = objectMapper.readValue(row.string("d.innhold")),
         status = DeltakerStatus(
             id = row.uuid("ds.id"),
             type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
@@ -196,7 +199,7 @@ class DeltakerRepository {
 
         val sql = getDeltakerSql(
             """ where ds.gyldig_til is null
-                and ds.type in (${deltakerstatuser.joinToString{ "?" }})
+                and ds.type in (${deltakerstatuser.joinToString { "?" }})
                 and d.sluttdato < CURRENT_DATE
             """.trimMargin(),
         )
@@ -219,8 +222,8 @@ class DeltakerRepository {
         )
         val sql = getDeltakerSql(
             """ where ds.gyldig_til is null
-                and ds.type not in (${avsluttendeDeltakerStatuser.joinToString{ "?" }})
-                and dl.status in (${avsluttendeDeltakerlisteStatuser.joinToString{ "?" }})
+                and ds.type not in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
+                and dl.status in (${avsluttendeDeltakerlisteStatuser.joinToString { "?" }})
             """.trimMargin(),
         )
 
@@ -334,12 +337,17 @@ class DeltakerRepository {
                    v.opprettet_av as "v.opprettet_av",
                    v.modified_at as "v.sist_endret",
                    v.sist_endret_av as "v.sist_endret_av",
-                   v.sist_endret_av_enhet as "v.sist_endret_av_enhet"
+                   v.sist_endret_av_enhet as "v.sist_endret_av_enhet",
+                   t.id as "t.id",
+                   t.navn as "t.navn",
+                   t.type as "t.type",
+                   t.innhold as "t.innhold"
             from deltaker d 
                 join nav_bruker nb on d.person_id = nb.person_id
                 join deltaker_status ds on d.id = ds.deltaker_id
                 join deltakerliste dl on d.deltakerliste_id = dl.id
                 join arrangor a on a.id = dl.arrangor_id
+                join tiltakstype t on t.type = dl.tiltakstype
                 left join vedtak v on d.id = v.deltaker_id and v.gyldig_til is null
                 $where
       """

@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste.tiltakstype
 
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.util.UUID
 
@@ -18,4 +19,13 @@ data class DeltakerRegistreringInnhold(
 data class Innholdselement(
     val tekst: String,
     val innholdskode: String,
-)
+) {
+    fun toInnhold(valgt: Boolean = false, beskrivelse: String? = null) = Innhold(
+        tekst = tekst,
+        innholdskode = innholdskode,
+        valgt = valgt,
+        beskrivelse = beskrivelse,
+    )
+}
+
+val annetInnholdselement = Innholdselement("Annet", "annet")

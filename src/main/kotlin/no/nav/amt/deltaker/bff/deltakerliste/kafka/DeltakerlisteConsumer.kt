@@ -5,6 +5,8 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.kafka.Consumer
 import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
 import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
@@ -17,6 +19,7 @@ import java.util.UUID
 class DeltakerlisteConsumer(
     private val repository: DeltakerlisteRepository,
     private val arrangorService: ArrangorService,
+    private val tiltakstypeRepository: TiltakstypeRepository,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
     private val consumer = ManagedKafkaConsumer(
@@ -43,6 +46,7 @@ class DeltakerlisteConsumer(
         if (!deltakerliste.tiltakstype.erStottet()) return
 
         val arrangor = arrangorService.hentArrangor(deltakerliste.virksomhetsnummer)
-        repository.upsert(deltakerliste.toModel(arrangor))
+        val tiltakstype = tiltakstypeRepository.get(Tiltak.Type.valueOf(deltakerliste.tiltakstype.arenaKode)).getOrThrow()
+        repository.upsert(deltakerliste.toModel(arrangor, tiltakstype))
     }
 }

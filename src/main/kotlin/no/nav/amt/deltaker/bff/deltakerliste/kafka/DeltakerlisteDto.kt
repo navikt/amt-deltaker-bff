@@ -4,12 +4,13 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.arenaKodeTilTiltakstype
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlisteDto(
     val id: UUID,
-    val tiltakstype: Tiltakstype,
+    val tiltakstype: TiltakstypeDto,
     val navn: String,
     val startDato: LocalDate,
     val sluttDato: LocalDate? = null,
@@ -17,7 +18,7 @@ data class DeltakerlisteDto(
     val virksomhetsnummer: String,
     val oppstart: Deltakerliste.Oppstartstype?,
 ) {
-    data class Tiltakstype(
+    data class TiltakstypeDto(
         val navn: String,
         val arenaKode: String,
     ) {
@@ -39,9 +40,9 @@ data class DeltakerlisteDto(
         )
     }
 
-    fun toModel(arrangor: Arrangor) = Deltakerliste(
+    fun toModel(arrangor: Arrangor, tiltakstype: Tiltakstype) = Deltakerliste(
         id = this.id,
-        tiltak = this.tiltakstype.toModel(),
+        tiltak = tiltakstype,
         navn = this.navn,
         status = Deltakerliste.Status.fromString(this.status),
         startDato = this.startDato,
