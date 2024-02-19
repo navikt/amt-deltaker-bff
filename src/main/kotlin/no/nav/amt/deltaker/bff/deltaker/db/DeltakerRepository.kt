@@ -14,7 +14,9 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import java.util.UUID
 
 class DeltakerRepository {
@@ -33,7 +35,15 @@ class DeltakerRepository {
                 id = row.uuid("t.id"),
                 navn = row.string("t.navn"),
                 type = Tiltak.Type.valueOf(row.string("t.type")),
-                innhold = row.stringOrNull("t.innhold")?.let { objectMapper.readValue(it) },
+                innhold = row.stringOrNull("t.innhold")?.let {
+                    objectMapper.readValue<DeltakerRegistreringInnhold?>(it)?.let { i ->
+                        if (i.innholdselementer.isNotEmpty()) {
+                            i.copy(innholdselementer = i.innholdselementer.plus(annetInnholdselement))
+                        } else {
+                            i
+                        }
+                    }
+                },
             ),
             navn = row.string("deltakerliste_navn"),
             status = Deltakerliste.Status.valueOf(row.string("status")),

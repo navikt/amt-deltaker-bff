@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -71,7 +72,7 @@ fun Routing.registerDeltakerApi(
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.INNHOLD,
-                endring = DeltakerEndring.Endring.EndreInnhold(request.innhold),
+                endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )

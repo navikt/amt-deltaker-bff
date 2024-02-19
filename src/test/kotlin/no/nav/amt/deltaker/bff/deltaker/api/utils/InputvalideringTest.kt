@@ -2,6 +2,10 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.deltaker.bff.utils.data.TestData
 import org.junit.Test
 
 class InputvalideringTest {
@@ -73,6 +77,38 @@ class InputvalideringTest {
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesProsent(MAX_DELTAKELSESPROSENT)
+        }
+    }
+
+    @Test
+    fun testValiderInnhold() {
+        val tiltaksinnhold = TestData.lagDeltakerRegistreringInnhold(
+            innholdselementer = listOf(
+                Innholdselement("Type", "type"),
+                annetInnholdselement,
+            ),
+        )
+
+        shouldThrow<IllegalArgumentException> {
+            validerInnhold(emptyList(), null)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerInnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerInnhold(
+                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet innhold må ha beskrivelse")),
+                tiltaksinnhold,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerInnhold(listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")), tiltaksinnhold)
         }
     }
 
