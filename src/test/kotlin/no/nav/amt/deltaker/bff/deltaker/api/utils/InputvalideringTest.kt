@@ -99,13 +99,16 @@ class InputvalideringTest {
             validerInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
-        }
-        shouldNotThrow<IllegalArgumentException> {
             validerInnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet innhold må ha beskrivelse")),
                 tiltaksinnhold,
             )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerInnhold(listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")), tiltaksinnhold)
         }
     }
 

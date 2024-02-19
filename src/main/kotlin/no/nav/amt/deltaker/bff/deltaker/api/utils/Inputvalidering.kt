@@ -60,6 +60,10 @@ fun validerInnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreri
                 "Innhold med innholdskode: ${it.innholdskode} må ha en beskrivelse"
             }
             validerAnnetInnhold(it.beskrivelse)
+        } else {
+            require(it.beskrivelse == null) {
+                "Innhold med innholdskode: ${it.innholdskode} kan ikke ha en beskrivelse"
+            }
         }
     }
 }
