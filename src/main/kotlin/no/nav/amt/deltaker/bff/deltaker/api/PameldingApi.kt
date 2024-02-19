@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
@@ -61,9 +62,10 @@ fun Routing.registerPameldingApi(
         post("/pamelding/{deltakerId}/kladd") {
             val navIdent = getNavIdent()
             val request = call.receive<KladdRequest>()
-            request.valider()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            request.valider(deltaker)
+
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -72,7 +74,7 @@ fun Routing.registerPameldingApi(
                 kladd = Kladd(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        innhold = request.innhold,
+                        innhold = finnValgtInnhold(request.innhold, deltaker),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -88,9 +90,10 @@ fun Routing.registerPameldingApi(
         post("/pamelding/{deltakerId}") {
             val navIdent = getNavIdent()
             val request = call.receive<UtkastRequest>()
-            request.valider()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            request.valider(deltaker)
+
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -99,7 +102,7 @@ fun Routing.registerPameldingApi(
                 Utkast(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        innhold = request.innhold,
+                        innhold = finnValgtInnhold(request.innhold, deltaker),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -134,9 +137,10 @@ fun Routing.registerPameldingApi(
         post("/pamelding/{deltakerId}/utenGodkjenning") {
             val navIdent = getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
-            request.valider()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            request.valider(deltaker)
+
             val enhetsnummer = call.request.header("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -145,7 +149,7 @@ fun Routing.registerPameldingApi(
                 Utkast(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        innhold = request.innhold,
+                        innhold = finnValgtInnhold(request.innhold, deltaker),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),

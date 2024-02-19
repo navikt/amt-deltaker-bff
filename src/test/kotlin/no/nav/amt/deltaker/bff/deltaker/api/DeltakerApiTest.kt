@@ -30,13 +30,14 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -160,7 +161,7 @@ class DeltakerApiTest {
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltakerResponse = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            innhold = innholdRequest.innhold,
+            innhold = finnValgtInnhold(innholdRequest.innhold, deltaker),
         )
         coEvery {
             deltakerService.oppdaterDeltaker(
@@ -396,7 +397,7 @@ class DeltakerApiTest {
     }
 
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
-    private val innholdRequest = EndreInnholdRequest(listOf(Innhold("visningstekst", "type", true, null)))
+    private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))

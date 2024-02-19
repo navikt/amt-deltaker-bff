@@ -8,6 +8,7 @@ import org.junit.Test
 class DeltakerResponseTest {
 
     val innholdselementer = listOf(
+        annetInnholdselement,
         Innholdselement("Innhold 4", "innhold-4"),
         Innholdselement("Innhold 3", "innhold-3"),
         Innholdselement("Innhold 2", "innhold-2"),
@@ -17,7 +18,7 @@ class DeltakerResponseTest {
     @Test
     fun `fulltInnhold - ingen innhold er valgt - returner liste med innhold som ikke er valgt og riktig sortert`() {
         val innhold = fulltInnhold(emptyList(), innholdselementer)
-        innhold.size shouldBe innholdselementer.size + 1
+        innhold.size shouldBe innholdselementer.size
         innhold.forEach { it.valgt shouldBe false }
         innhold.forEachIndexed { index, innholdelement ->
             if (index == (innhold.size - 1)) {
@@ -31,12 +32,12 @@ class DeltakerResponseTest {
     @Test
     fun `fulltInnhold - noe innhold er valgt - returner liste med innhold som er valgt og ikke er valgt`() {
         val valgtInnhold = listOf(
-            innholdselementer.first().toInnhold(valgt = true),
+            innholdselementer.last().toInnhold(valgt = true),
             annetInnholdselement.toInnhold(valgt = true, beskrivelse = "fordi"),
         )
 
         val innhold = fulltInnhold(valgtInnhold, innholdselementer)
-        innhold.size shouldBe innholdselementer.size + 1
+        innhold.size shouldBe innholdselementer.size
         innhold.forEach {
             when (it.innholdskode) {
                 valgtInnhold[0].innholdskode -> it.valgt shouldBe true
