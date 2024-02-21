@@ -18,6 +18,8 @@ data class Environment(
     val amtPersonServiceUrl: String = getEnvVar(AMT_PERSONSERVICE_URL_KEY),
     val amtPersonServiceScope: String = getEnvVar(AMT_PERSONSERVICE_SCOPE_KEY),
     val electorPath: String = getEnvVar(ELECTOR_PATH),
+    val amtDeltakerUrl: String = getEnvVar(AMT_DELTAKER_URL_KEY),
+    val amtDeltakerScope: String = getEnvVar(AMT_DELTAKER_SCOPE_KEY),
 ) {
 
     companion object {
@@ -41,6 +43,9 @@ data class Environment(
         const val AMT_NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
         const val AMT_PERSONSERVICE_URL_KEY = "AMT_PERSONSERVICE_URL"
         const val AMT_PERSONSERVICE_SCOPE_KEY = "AMT_PERSONSERVICE_SCOPE"
+
+        const val AMT_DELTAKER_URL_KEY = "AMT_DELTAKER_URL"
+        const val AMT_DELTAKER_SCOPE_KEY = "AMT_DELTAKER_SCOPE"
 
         const val AZURE_AD_TOKEN_URL_KEY = "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
         const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"

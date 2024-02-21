@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
@@ -104,6 +105,13 @@ fun Application.module() {
         azureAdTokenClient = azureAdTokenClient,
     )
 
+    val amtDeltakerClient = AmtDeltakerClient(
+        baseUrl = environment.amtDeltakerUrl,
+        scope = environment.amtDeltakerScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
+    )
+
     val arrangorRepository = ArrangorRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattRepository = NavAnsattRepository()
@@ -112,7 +120,6 @@ fun Application.module() {
     val navBrukerRepository = NavBrukerRepository()
     val navBrukerService = NavBrukerService(
         navBrukerRepository,
-        amtPersonServiceClient,
     )
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
@@ -139,7 +146,12 @@ fun Application.module() {
         deltakerProducer,
     )
 
-    val pameldingService = PameldingService(deltakerService, vedtakRepository, deltakerlisteRepository, navBrukerService)
+    val pameldingService = PameldingService(
+        deltakerService = deltakerService,
+        vedtakRepository = vedtakRepository,
+        navBrukerService = navBrukerService,
+        amtDeltakerClient = amtDeltakerClient,
+    )
     val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, vedtakRepository)
 
     val endringsmeldingRepository = EndringsmeldingRepository()
