@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtArrangorClient
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -30,10 +31,16 @@ class DeltakerlisteConsumerTest {
         }
     }
 
+    @Before
+    fun cleanDatabase() {
+        TestRepository.cleanDatabase()
+    }
+
     @Test
     fun `consumeDeltakerliste - ny liste og arrangor - lagrer deltakerliste`() {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
         val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository)
 

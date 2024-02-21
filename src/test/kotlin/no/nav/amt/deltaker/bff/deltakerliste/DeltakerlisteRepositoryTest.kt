@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -19,6 +20,11 @@ class DeltakerlisteRepositoryTest {
             SingletonPostgresContainer.start()
             repository = DeltakerlisteRepository()
         }
+    }
+
+    @Before
+    fun cleanDatabase() {
+        TestRepository.cleanDatabase()
     }
 
     @Test
@@ -65,8 +71,10 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `get - deltakerliste og arrangor finnes - henter deltakerliste`() {
-        val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        val overordnetArrangor = TestData.lagArrangor()
+        val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
+        TestRepository.insert(overordnetArrangor)
         TestRepository.insert(arrangor)
         TestRepository.insert(deltakerliste.tiltak)
         repository.upsert(deltakerliste)
@@ -75,6 +83,7 @@ class DeltakerlisteRepositoryTest {
 
         deltakerlisteMedArrangor shouldNotBe null
         deltakerlisteMedArrangor.navn shouldBe deltakerliste.navn
-        deltakerlisteMedArrangor.arrangor.navn shouldBe arrangor.navn
+        deltakerlisteMedArrangor.arrangor.arrangor.navn shouldBe arrangor.navn
+        deltakerlisteMedArrangor.arrangor.overordnetArrangorNavn shouldBe overordnetArrangor.navn
     }
 }

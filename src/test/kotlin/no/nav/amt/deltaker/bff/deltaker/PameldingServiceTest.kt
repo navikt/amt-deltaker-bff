@@ -73,12 +73,13 @@ class PameldingServiceTest {
 
     @Test
     fun `opprettKladd - deltaker finnes ikke - oppretter ny deltaker`() {
-        val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        val overordnetArrangor = TestData.lagArrangor()
+        val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
         val navBruker = TestData.lagNavBruker()
         val opprettetAv = TestData.randomNavIdent()
         val opprettetAvEnhet = TestData.randomEnhetsnummer()
-        TestRepository.insert(deltakerliste)
+        TestRepository.insert(deltakerliste, overordnetArrangor)
         mockPameldingService(navBruker = navBruker)
 
         runBlocking {
@@ -93,7 +94,8 @@ class PameldingServiceTest {
             deltaker.deltakerliste.id shouldBe deltakerliste.id
             deltaker.deltakerliste.navn shouldBe deltakerliste.navn
             deltaker.deltakerliste.tiltak.type shouldBe deltakerliste.tiltak.type
-            deltaker.deltakerliste.arrangor.navn shouldBe arrangor.navn
+            deltaker.deltakerliste.arrangor.arrangor shouldBe arrangor
+            deltaker.deltakerliste.arrangor.overordnetArrangorNavn shouldBe overordnetArrangor.navn
             deltaker.deltakerliste.getOppstartstype() shouldBe deltakerliste.getOppstartstype()
             deltaker.status.type shouldBe DeltakerStatus.Type.KLADD
             deltaker.startdato shouldBe null

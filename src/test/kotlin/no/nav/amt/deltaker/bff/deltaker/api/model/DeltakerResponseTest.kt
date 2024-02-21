@@ -1,9 +1,13 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.deltaker.bff.utils.data.TestData
 import org.junit.Test
+import java.util.UUID
 
 class DeltakerResponseTest {
 
@@ -49,5 +53,35 @@ class DeltakerResponseTest {
                 else -> it.valgt shouldBe false
             }
         }
+    }
+
+    @Test
+    fun `getArrangorNavn - har ikke overordnet arrangor - bruker arrangornavn i titlecase`() {
+        val arrangor = Deltakerliste.Arrangor(
+            arrangor = Arrangor(
+                id = UUID.randomUUID(),
+                navn = "DIN ARRANGØR AS",
+                organisasjonsnummer = TestData.randomOrgnr(),
+                overordnetArrangorId = null,
+            ),
+            overordnetArrangorNavn = null,
+        )
+
+        arrangor.getArrangorNavn() shouldBe "Din Arrangør AS"
+    }
+
+    @Test
+    fun `getArrangorNavn - har overordnet arrangor - bruker overordnet arrangornavn i titlecase`() {
+        val arrangor = Deltakerliste.Arrangor(
+            arrangor = Arrangor(
+                id = UUID.randomUUID(),
+                navn = "DIN ARRANGØR AS",
+                organisasjonsnummer = TestData.randomOrgnr(),
+                overordnetArrangorId = UUID.randomUUID(),
+            ),
+            overordnetArrangorNavn = "TILTAK OG MULIGHETER",
+        )
+
+        arrangor.getArrangorNavn() shouldBe "Tiltak og Muligheter"
     }
 }

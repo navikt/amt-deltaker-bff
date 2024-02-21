@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
@@ -15,6 +14,11 @@ data class Deltakerliste(
     val oppstart: Oppstartstype?,
     val arrangor: Arrangor,
 ) {
+    data class Arrangor(
+        val arrangor: no.nav.amt.deltaker.bff.arrangor.Arrangor,
+        val overordnetArrangorNavn: String?,
+    )
+
     enum class Oppstartstype {
         LOPENDE,
         FELLES,

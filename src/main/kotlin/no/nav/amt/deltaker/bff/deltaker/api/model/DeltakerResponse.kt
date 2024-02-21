@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.utils.toTitleCase
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -73,7 +74,7 @@ fun Deltaker.toDeltakerResponse(
             deltakerlisteId = deltakerliste.id,
             deltakerlisteNavn = deltakerliste.navn,
             tiltakstype = deltakerliste.tiltak.type,
-            arrangorNavn = deltakerliste.arrangor.navn,
+            arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
             oppstartstype = deltakerliste.getOppstartstype(),
             startdato = deltakerliste.startDato,
             sluttdato = deltakerliste.sluttDato,
@@ -94,6 +95,16 @@ fun Deltaker.toDeltakerResponse(
         sistEndret = sistEndret,
         sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
     )
+}
+
+fun Deltakerliste.Arrangor.getArrangorNavn(): String {
+    val arrangorNavnForDeltakerliste =
+        if (overordnetArrangorNavn.isNullOrEmpty() || overordnetArrangorNavn == "Ukjent Virksomhet") {
+            arrangor.navn
+        } else {
+            overordnetArrangorNavn
+        }
+    return toTitleCase(arrangorNavnForDeltakerliste)
 }
 
 fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {

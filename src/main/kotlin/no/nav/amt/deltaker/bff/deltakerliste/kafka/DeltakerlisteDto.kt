@@ -48,6 +48,9 @@ data class DeltakerlisteDto(
         startDato = this.startDato,
         sluttDato = this.sluttDato,
         oppstart = this.oppstart,
-        arrangor = arrangor,
+        arrangor = Deltakerliste.Arrangor(
+            arrangor = arrangor,
+            overordnetArrangorNavn = null,
+        ),
     )
 }
