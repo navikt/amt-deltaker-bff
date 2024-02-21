@@ -134,7 +134,17 @@ object MockResponseHandler {
                 responseBody = AmtDeltakerDto(
                     id = deltaker.id,
                     navBruker = deltaker.navBruker,
-                    deltakerliste = deltaker.deltakerliste,
+                    deltakerliste = AmtDeltakerDto.DeltakerlisteDto(
+                        id = deltaker.deltakerliste.id,
+                        tiltakstype = deltaker.deltakerliste.tiltak,
+                        navn = deltaker.deltakerliste.navn,
+                        status = deltaker.deltakerliste.status,
+                        startDato = deltaker.deltakerliste.startDato,
+                        sluttDato = deltaker.deltakerliste.sluttDato,
+                        oppstart = deltaker.deltakerliste.oppstart,
+                        arrangor = deltaker.deltakerliste.arrangor.arrangor,
+
+                    ),
                     startdato = deltaker.startdato,
                     sluttdato = deltaker.sluttdato,
                     dagerPerUke = deltaker.dagerPerUke,
