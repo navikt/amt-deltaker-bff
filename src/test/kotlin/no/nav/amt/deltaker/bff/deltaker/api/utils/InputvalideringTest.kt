@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.input
 import org.junit.Test
 
 class InputvalideringTest {
@@ -81,7 +82,7 @@ class InputvalideringTest {
     }
 
     @Test
-    fun testValiderInnhold() {
+    fun testValiderDeltakelsesinnhold() {
         val tiltaksinnhold = TestData.lagDeltakerRegistreringInnhold(
             innholdselementer = listOf(
                 Innholdselement("Type", "type"),
@@ -90,27 +91,93 @@ class InputvalideringTest {
         )
 
         shouldThrow<IllegalArgumentException> {
-            validerInnhold(emptyList(), null)
+            validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), null)
         }
         shouldThrow<IllegalArgumentException> {
-            validerInnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold)
+            validerDeltakelsesinnhold(
+                listOf(InnholdDto("type", null)),
+                TestData.lagDeltakerRegistreringInnhold(innholdselementer = emptyList()),
+            )
         }
         shouldThrow<IllegalArgumentException> {
-            validerInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
+            validerDeltakelsesinnhold(emptyList(), tiltaksinnhold)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerInnhold(
+            validerDeltakelsesinnhold(emptyList(), null)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, "")), tiltaksinnhold)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet innhold må ha beskrivelse")),
                 tiltaksinnhold,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
+            validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
         }
         shouldThrow<IllegalArgumentException> {
-            validerInnhold(listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")), tiltaksinnhold)
+            validerDeltakelsesinnhold(
+                listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")),
+                tiltaksinnhold,
+            )
         }
     }
 
-    private fun input(n: Int) = (1..n).map { ('a'..'z').random() }.joinToString("")
+    @Test
+    fun testValiderKladdInnhold() {
+        val tiltaksinnhold = TestData.lagDeltakerRegistreringInnhold(
+            innholdselementer = listOf(
+                Innholdselement("Type", "type"),
+                annetInnholdselement,
+            ),
+        )
+
+        shouldThrow<IllegalArgumentException> {
+            validerKladdInnhold(listOf(InnholdDto("type", null)), null)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerKladdInnhold(
+                listOf(InnholdDto("type", null)),
+                TestData.lagDeltakerRegistreringInnhold(innholdselementer = emptyList()),
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerKladdInnhold(emptyList(), tiltaksinnhold)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerKladdInnhold(emptyList(), null)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerKladdInnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerKladdInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerKladdInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, "")), tiltaksinnhold)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerKladdInnhold(
+                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet innhold må ha beskrivelse")),
+                tiltaksinnhold,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerKladdInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerKladdInnhold(
+                listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")),
+                tiltaksinnhold,
+            )
+        }
+    }
 }

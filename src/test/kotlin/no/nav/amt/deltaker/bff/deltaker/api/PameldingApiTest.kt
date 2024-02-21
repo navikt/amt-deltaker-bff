@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -30,6 +31,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -57,6 +59,7 @@ class PameldingApiTest {
 
     @Test
     fun `skal teste autentisering - har ikke tilgang - returnerer 403`() = testApplication {
+        val deltaker = TestData.lagDeltaker()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
             null,
             Decision.Deny("Ikke tilgang", ""),
@@ -65,9 +68,17 @@ class PameldingApiTest {
 
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}") {
+            postRequest(utkastRequest(deltaker.innhold.toInnholdDto()))
+        }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { postRequest(kladdRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") {
+            postRequest(
+                pameldingUtenGodkjenningRequest(
+                    deltaker.innhold.toInnholdDto(),
+                ),
+            )
+        }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/avbryt") { postRequest(avbrytUtkastRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
@@ -158,7 +169,7 @@ class PameldingApiTest {
         coEvery { pameldingService.upsertUtkast(any()) } returns Unit
 
         setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest) }.apply {
+        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
             status shouldBe HttpStatusCode.OK
         }
     }
@@ -168,7 +179,7 @@ class PameldingApiTest {
         every { deltakerService.get(any()) } throws NoSuchElementException()
 
         setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest) }.apply {
+        client.post("/pamelding/${UUID.randomUUID()}") { postRequest(utkastRequest()) }.apply {
             status shouldBe HttpStatusCode.NotFound
         }
     }
@@ -182,7 +193,13 @@ class PameldingApiTest {
             coEvery { pameldingService.meldPaUtenGodkjenning(any()) } returns Unit
 
             setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }
+            client.post("/pamelding/${deltaker.id}/utenGodkjenning") {
+                postRequest(
+                    pameldingUtenGodkjenningRequest(
+                        deltaker.innhold.toInnholdDto(),
+                    ),
+                )
+            }
                 .apply {
                     status shouldBe HttpStatusCode.OK
                 }
@@ -193,7 +210,7 @@ class PameldingApiTest {
         every { deltakerService.get(any()) } throws NoSuchElementException()
 
         setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest) }
+        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest()) }
             .apply {
                 status shouldBe HttpStatusCode.NotFound
             }
@@ -288,15 +305,22 @@ class PameldingApiTest {
         }
     }
 
-    private val utkastRequest = UtkastRequest(emptyList(), "Bakgrunnen for...", null, null)
+    fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
     private val avbrytUtkastRequest =
         AvbrytUtkastRequest(DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.FATT_JOBB, null))
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
-    private val pameldingUtenGodkjenningRequest = PameldingUtenGodkjenningRequest(
-        emptyList(),
+    fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
+        innhold,
         "Bakgrunnen for...",
         null,
         null,
+    )
+}
+
+private fun List<Innhold>.toInnholdDto() = this.map {
+    InnholdDto(
+        it.innholdskode,
+        it.beskrivelse,
     )
 }

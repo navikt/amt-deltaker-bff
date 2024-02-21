@@ -18,8 +18,11 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
     }
 }
 
-fun validerAnnetInnhold(tekst: String?) = tekst?.let {
-    require(it.length <= MAX_ANNET_INNHOLD_LENGDE) {
+fun validerAnnetInnhold(tekst: String?) {
+    require(tekst != null && tekst != "") {
+        "Innhold med innholdskode: ${annetInnholdselement.innholdskode} må ha en beskrivelse"
+    }
+    require(tekst.length <= MAX_ANNET_INNHOLD_LENGDE) {
         "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
     }
 }
@@ -42,28 +45,48 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
-fun validerInnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
-    require(tiltaksinnhold != null) {
-        "Kan ikke validere innhold for tiltakstype uten innhold"
-    }
+fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
+    validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->
+        require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
 
-    val innholdskoder = tiltaksinnhold
-        .innholdselementer
-        .map { it.innholdskode }
-        .plus(annetInnholdselement.innholdskode)
+        innhold.forEach {
+            require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
 
-    innhold.forEach {
-        require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
-
-        if (it.innholdskode == annetInnholdselement.innholdskode) {
-            require(it.beskrivelse != null) {
-                "Innhold med innholdskode: ${it.innholdskode} må ha en beskrivelse"
-            }
-            validerAnnetInnhold(it.beskrivelse)
-        } else {
-            require(it.beskrivelse == null) {
-                "Innhold med innholdskode: ${it.innholdskode} kan ikke ha en beskrivelse"
+            if (it.innholdskode == annetInnholdselement.innholdskode) {
+                validerAnnetInnhold(it.beskrivelse)
+            } else {
+                require(it.beskrivelse == null) {
+                    "Innhold med innholdskode: ${it.innholdskode} kan ikke ha en beskrivelse"
+                }
             }
         }
+    }
+}
+
+fun validerKladdInnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
+    validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->
+        innhold.forEach {
+            require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
+
+            if (it.innholdskode != annetInnholdselement.innholdskode) {
+                require(it.beskrivelse == null) {
+                    "Innhold med innholdskode: ${it.innholdskode} kan ikke ha en beskrivelse"
+                }
+            }
+        }
+    }
+}
+
+private fun validerInnhold(
+    innhold: List<InnholdDto>,
+    tiltaksinnhold: DeltakerRegistreringInnhold?,
+    valider: (innholdskoder: List<String>) -> Unit,
+) {
+    val innholdskoder = tiltaksinnhold?.innholdselementer?.map { it.innholdskode }
+
+    if (innholdskoder.isNullOrEmpty()) {
+        require(innhold.isEmpty()) { "Et tiltak uten innholdselementer kan ikke ha noe innhold" }
+    } else {
+        valider(innholdskoder)
     }
 }

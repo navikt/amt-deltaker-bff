@@ -32,7 +32,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
-        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
+        TestRepository.insert(deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -44,7 +44,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
-        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
+        TestRepository.insert(deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -60,7 +60,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
-        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
+        TestRepository.insert(deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -76,7 +76,7 @@ class DeltakerlisteRepositoryTest {
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
         TestRepository.insert(overordnetArrangor)
         TestRepository.insert(arrangor)
-        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
+        TestRepository.insert(deltakerliste.tiltak)
         repository.upsert(deltakerliste)
 
         val deltakerlisteMedArrangor = repository.get(deltakerliste.id).getOrThrow()

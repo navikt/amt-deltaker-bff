@@ -174,7 +174,11 @@ class DeltakerApiTest {
         } returns oppdatertDeltakerResponse
 
         setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/innhold") { postRequest(innholdRequest) }.apply {
+        client.post("/deltaker/${deltaker.id}/innhold") {
+            postRequest(
+                EndreInnholdRequest(listOf(InnholdDto(deltaker.innhold[0].innholdskode, null))),
+            )
+        }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
             TestCase.assertEquals(
                 objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse()),
