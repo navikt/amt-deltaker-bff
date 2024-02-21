@@ -26,6 +26,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -37,6 +38,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -52,6 +54,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -65,6 +68,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(deltakerliste.tiltak)
         repository.upsert(deltakerliste)
 
         val deltakerlisteMedArrangor = repository.get(deltakerliste.id).getOrThrow()

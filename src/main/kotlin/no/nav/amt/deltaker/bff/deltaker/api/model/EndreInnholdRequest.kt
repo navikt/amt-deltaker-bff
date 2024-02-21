@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
-import no.nav.amt.deltaker.bff.deltaker.api.utils.validerInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 
 data class EndreInnholdRequest(
@@ -10,6 +10,6 @@ data class EndreInnholdRequest(
         require(!opprinneligDeltaker.harSluttet()) {
             "Kan ikke endre innhold for deltaker som har sluttet"
         }
-        validerInnhold(innhold, opprinneligDeltaker.deltakerliste.tiltak.innhold)
+        validerDeltakelsesinnhold(innhold, opprinneligDeltaker.deltakerliste.tiltak.innhold)
     }
 }

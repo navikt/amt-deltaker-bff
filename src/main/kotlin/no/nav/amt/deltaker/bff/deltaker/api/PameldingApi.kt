@@ -61,7 +61,7 @@ fun Routing.registerPameldingApi(
 
         post("/pamelding/{deltakerId}/kladd") {
             val navIdent = getNavIdent()
-            val request = call.receive<KladdRequest>()
+            val request = call.receive<KladdRequest>().sanitize()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)

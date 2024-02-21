@@ -35,6 +35,8 @@ object TestData {
 
     fun randomOrgnr() = (900_000_000..999_999_998).random().toString()
 
+    fun input(n: Int) = (1..n).map { ('a'..'z').random() }.joinToString("")
+
     fun lagArrangor(
         id: UUID = UUID.randomUUID(),
         navn: String = "Arrangor 1",
@@ -99,7 +101,7 @@ object TestData {
         dagerPerUke: Float? = 5F,
         deltakelsesprosent: Float? = 100F,
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
-        innhold: List<Innhold> = emptyList(),
+        innhold: List<Innhold> = deltakerliste.tiltak.innhold?.innholdselementer?.map { it.toInnhold() } ?: emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         vedtaksinformasjon: Deltaker.Vedtaksinformasjon = lagVedtaksinformasjon(
             fattet = LocalDateTime.now().minusMonths(4),
@@ -286,11 +288,17 @@ object TestData {
         navn: String = "Veileder Veiledersen",
     ) = NavAnsatt(id, navIdent, navn)
 
+    private val navEnhetCache = mutableMapOf<String, NavEnhet>()
+
     fun lagNavEnhet(
         id: UUID = UUID.randomUUID(),
         enhetsnummer: String = randomEnhetsnummer(),
         navn: String = "NAV Testheim",
-    ) = NavEnhet(id, enhetsnummer, navn)
+    ): NavEnhet {
+        val enhet = navEnhetCache[enhetsnummer] ?: NavEnhet(id, enhetsnummer, navn)
+        navEnhetCache[enhetsnummer] = enhet
+        return enhet
+    }
 
     fun lagEndringsmelding(
         id: UUID = UUID.randomUUID(),

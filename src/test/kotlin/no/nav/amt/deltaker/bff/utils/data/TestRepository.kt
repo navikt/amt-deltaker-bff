@@ -65,29 +65,33 @@ object TestRepository {
     }
 
     fun insert(tiltakstype: Tiltakstype) = Database.query {
-        val sql = """
-            INSERT INTO tiltakstype(
-                id, 
-                navn, 
-                type, 
-                innhold)
-            VALUES (:id,
-                    :navn,
-                    :type,
-                    :innhold)
-        """.trimIndent()
+        try {
+            val sql = """
+                INSERT INTO tiltakstype(
+                    id, 
+                    navn, 
+                    type, 
+                    innhold)
+                VALUES (:id,
+                        :navn,
+                        :type,
+                        :innhold)
+            """.trimIndent()
 
-        it.update(
-            queryOf(
-                sql,
-                mapOf(
-                    "id" to tiltakstype.id,
-                    "navn" to tiltakstype.navn,
-                    "type" to tiltakstype.type.name,
-                    "innhold" to toPGObject(tiltakstype.innhold),
+            it.update(
+                queryOf(
+                    sql,
+                    mapOf(
+                        "id" to tiltakstype.id,
+                        "navn" to tiltakstype.navn,
+                        "type" to tiltakstype.type.name,
+                        "innhold" to toPGObject(tiltakstype.innhold),
+                    ),
                 ),
-            ),
-        )
+            )
+        } catch (e: Exception) {
+            log.warn("Tiltakstype ${tiltakstype.navn} er allerede opprettet")
+        }
     }
 
     fun insert(deltakerliste: Deltakerliste) {
