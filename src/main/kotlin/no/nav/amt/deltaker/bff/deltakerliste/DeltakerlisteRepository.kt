@@ -26,11 +26,16 @@ class DeltakerlisteRepository {
         startDato = row.localDate("start_dato"),
         sluttDato = row.localDate("slutt_dato"),
         oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
-        arrangor = Arrangor(
-            id = row.uuid("arrangor_id"),
-            navn = row.string("arrangor_navn"),
-            organisasjonsnummer = row.string("organisasjonsnummer"),
-            overordnetArrangorId = row.uuidOrNull("overordnet_arrangor_id"),
+        arrangor = Deltakerliste.Arrangor(
+            arrangor = Arrangor(
+                id = row.uuid("arrangor_id"),
+                navn = row.string("arrangor_navn"),
+                organisasjonsnummer = row.string("a.organisasjonsnummer"),
+                overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
+            ),
+            overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
+                row.string("overordnet_arrangor_navn")
+            },
         ),
     )
 
@@ -74,7 +79,7 @@ class DeltakerlisteRepository {
                     "id" to deltakerliste.id,
                     "navn" to deltakerliste.navn,
                     "status" to deltakerliste.status.name,
-                    "arrangor_id" to deltakerliste.arrangor.id,
+                    "arrangor_id" to deltakerliste.arrangor.arrangor.id,
                     "tiltaksnavn" to deltakerliste.tiltak.navn,
                     "tiltakstype" to deltakerliste.tiltak.type.name,
                     "start_dato" to deltakerliste.startDato,
@@ -110,14 +115,16 @@ class DeltakerlisteRepository {
                        slutt_dato,
                        oppstart,
                        a.navn             AS arrangor_navn,
-                       organisasjonsnummer,
-                       overordnet_arrangor_id,
+                       a.organisasjonsnummer as "a.organisasjonsnummer",
+                       a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
+                       oa.navn as overordnet_arrangor_navn,
                        t.id as "t.id",
                        t.navn as "t.navn",
                        t.type as "t.type",
                        t.innhold as "t.innhold"
                 FROM deltakerliste d
                          JOIN arrangor a ON a.id = d.arrangor_id
+                         LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
                          LEFT JOIN tiltakstype t ON d.tiltakstype = t.type
                 WHERE d.id = :id
             """.trimIndent(),

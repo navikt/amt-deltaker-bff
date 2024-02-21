@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -21,11 +22,17 @@ class DeltakerlisteRepositoryTest {
         }
     }
 
+    @Before
+    fun cleanDatabase() {
+        TestRepository.cleanDatabase()
+    }
+
     @Test
     fun `upsert - ny deltakerliste - inserter`() {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -37,6 +44,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -52,6 +60,7 @@ class DeltakerlisteRepositoryTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
 
         repository.upsert(deltakerliste)
 
@@ -62,15 +71,19 @@ class DeltakerlisteRepositoryTest {
 
     @Test
     fun `get - deltakerliste og arrangor finnes - henter deltakerliste`() {
-        val arrangor = TestData.lagArrangor()
-        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
+        val overordnetArrangor = TestData.lagArrangor()
+        val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
+        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
+        TestRepository.insert(overordnetArrangor)
         TestRepository.insert(arrangor)
+        TestRepository.insert(tiltakstype = deltakerliste.tiltak)
         repository.upsert(deltakerliste)
 
         val deltakerlisteMedArrangor = repository.get(deltakerliste.id).getOrThrow()
 
         deltakerlisteMedArrangor shouldNotBe null
         deltakerlisteMedArrangor.navn shouldBe deltakerliste.navn
-        deltakerlisteMedArrangor.arrangor.navn shouldBe arrangor.navn
+        deltakerlisteMedArrangor.arrangor.arrangor.navn shouldBe arrangor.navn
+        deltakerlisteMedArrangor.arrangor.overordnetArrangorNavn shouldBe overordnetArrangor.navn
     }
 }

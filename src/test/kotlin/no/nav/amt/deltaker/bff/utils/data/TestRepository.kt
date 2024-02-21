@@ -65,7 +65,8 @@ object TestRepository {
     }
 
     fun insert(tiltakstype: Tiltakstype) = Database.query {
-        val sql = """
+        try {
+            val sql = """
             INSERT INTO tiltakstype(
                 id, 
                 navn, 
@@ -75,31 +76,41 @@ object TestRepository {
                     :navn,
                     :type,
                     :innhold)
-        """.trimIndent()
+            """.trimIndent()
 
-        it.update(
-            queryOf(
-                sql,
-                mapOf(
-                    "id" to tiltakstype.id,
-                    "navn" to tiltakstype.navn,
-                    "type" to tiltakstype.type.name,
-                    "innhold" to toPGObject(tiltakstype.innhold),
+            it.update(
+                queryOf(
+                    sql,
+                    mapOf(
+                        "id" to tiltakstype.id,
+                        "navn" to tiltakstype.navn,
+                        "type" to tiltakstype.type.name,
+                        "innhold" to toPGObject(tiltakstype.innhold),
+                    ),
                 ),
-            ),
-        )
+            )
+        } catch (e: Exception) {
+            log.warn("Tiltakstype  ${tiltakstype.type} er allerede opprettet")
+        }
     }
 
-    fun insert(deltakerliste: Deltakerliste) {
+    fun insert(deltakerliste: Deltakerliste, overordnetArrangor: Arrangor? = null) {
         try {
             insert(deltakerliste.tiltak)
         } catch (e: Exception) {
             log.warn("Tiltakstype  ${deltakerliste.tiltak.type} er allerede opprettet")
         }
+        if (overordnetArrangor != null) {
+            try {
+                insert(overordnetArrangor)
+            } catch (e: Exception) {
+                log.warn("Overordnet arrangor med id ${overordnetArrangor.id} er allerede opprettet")
+            }
+        }
         try {
-            insert(deltakerliste.arrangor)
+            insert(deltakerliste.arrangor.arrangor)
         } catch (e: Exception) {
-            log.warn("Arrangor med id ${deltakerliste.arrangor.id} er allerede opprettet")
+            log.warn("Arrangor med id ${deltakerliste.arrangor.arrangor.id} er allerede opprettet")
         }
 
         Database.query {
@@ -115,7 +126,7 @@ object TestRepository {
                         "id" to deltakerliste.id,
                         "navn" to deltakerliste.navn,
                         "status" to deltakerliste.status.name,
-                        "arrangor_id" to deltakerliste.arrangor.id,
+                        "arrangor_id" to deltakerliste.arrangor.arrangor.id,
                         "tiltaksnavn" to deltakerliste.tiltak.navn,
                         "tiltakstype" to deltakerliste.tiltak.type.name,
                         "start_dato" to deltakerliste.startDato,

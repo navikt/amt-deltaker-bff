@@ -50,11 +50,16 @@ class DeltakerRepository {
             startDato = row.localDate("start_dato"),
             sluttDato = row.localDate("slutt_dato"),
             oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
-            arrangor = Arrangor(
-                id = row.uuid("arrangor_id"),
-                navn = row.string("arrangor_navn"),
-                organisasjonsnummer = row.string("organisasjonsnummer"),
-                overordnetArrangorId = row.uuidOrNull("overordnet_arrangor_id"),
+            arrangor = Deltakerliste.Arrangor(
+                arrangor = Arrangor(
+                    id = row.uuid("arrangor_id"),
+                    navn = row.string("arrangor_navn"),
+                    organisasjonsnummer = row.string("a.organisasjonsnummer"),
+                    overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
+                ),
+                overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
+                    row.string("overordnet_arrangor_navn")
+                },
             ),
         ),
         startdato = row.localDateOrNull("d.startdato"),
@@ -339,8 +344,9 @@ class DeltakerRepository {
                    dl.slutt_dato,
                    dl.oppstart,
                    a.navn             AS arrangor_navn,
-                   organisasjonsnummer,
-                   overordnet_arrangor_id,
+                   a.organisasjonsnummer as "a.organisasjonsnummer",
+                   a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
+                   oa.navn  AS overordnet_arrangor_navn,
                    v.fattet as "v.fattet",
                    v.fattet_av_nav as "v.fattet_av_nav",
                    v.created_at as "v.opprettet",
@@ -358,6 +364,7 @@ class DeltakerRepository {
                 join deltakerliste dl on d.deltakerliste_id = dl.id
                 join arrangor a on a.id = dl.arrangor_id
                 join tiltakstype t on t.type = dl.tiltakstype
+                left join arrangor oa on oa.id = a.overordnet_arrangor_id
                 left join vedtak v on d.id = v.deltaker_id and v.gyldig_til is null
                 $where
       """

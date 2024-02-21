@@ -44,14 +44,15 @@ object TestData {
 
     fun lagDeltakerliste(
         id: UUID = UUID.randomUUID(),
-        arrangor: Arrangor = lagArrangor(),
+        overordnetArrangor: Arrangor? = null,
+        arrangor: Arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor?.id),
         tiltak: Tiltakstype = lagTiltakstype(),
         navn: String = "Test Deltakerliste ${tiltak.type}",
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
         oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.type),
-    ) = Deltakerliste(id, tiltak, navn, status, startDato, sluttDato, oppstart, arrangor)
+    ) = Deltakerliste(id, tiltak, navn, status, startDato, sluttDato, oppstart, Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn))
 
     val tiltakstypeCache = mutableMapOf<Tiltak.Type, Tiltakstype>()
 
