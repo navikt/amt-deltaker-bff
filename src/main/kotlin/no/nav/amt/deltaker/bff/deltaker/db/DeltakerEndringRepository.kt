@@ -89,6 +89,9 @@ class DeltakerEndringRepository {
 
             DeltakerEndring.Endringstype.FORLENGELSE ->
                 objectMapper.readValue<DeltakerEndring.Endring.ForlengDeltakelse>(endringJson)
+
+            DeltakerEndring.Endringstype.AVSLUTT_DELTAKELSE ->
+                objectMapper.readValue<DeltakerEndring.Endring.AvsluttDeltakelse>(endringJson)
         }
     }
 }
