@@ -21,7 +21,6 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.api.model.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
@@ -58,7 +57,7 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `skal teste autentisering - har ikke tilgang - returnerer 403`() = testApplication {
+    fun `skal teste tilgangskontroll - har ikke tilgang - returnerer 403`() = testApplication {
         val deltaker = TestData.lagDeltaker()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
             null,
@@ -80,11 +79,11 @@ class PameldingApiTest {
             )
         }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { postRequest(avbrytUtkastRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
-    fun `skal teste autorisering - mangler token - returnerer 401`() = testApplication {
+    fun `skal teste autentisering - mangler token - returnerer 401`() = testApplication {
         setUpTestApplication()
         client.post("/pamelding") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
@@ -250,10 +249,10 @@ class PameldingApiTest {
             val deltaker =
                 TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
             every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { pameldingService.avbrytUtkast(deltaker, any(), any(), any()) } returns Unit
+            coEvery { pameldingService.avbrytUtkast(deltaker, any(), any()) } returns Unit
 
             setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+            client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
             }
         }
@@ -270,12 +269,11 @@ class PameldingApiTest {
                     deltaker,
                     any(),
                     any(),
-                    any(),
                 )
             } throws IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id 123")
 
             setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+            client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.BadRequest
             }
         }
@@ -285,7 +283,7 @@ class PameldingApiTest {
         every { deltakerService.get(any()) } throws NoSuchElementException()
 
         setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { postRequest(avbrytUtkastRequest) }.apply {
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.apply {
             status shouldBe HttpStatusCode.NotFound
         }
     }
@@ -306,8 +304,6 @@ class PameldingApiTest {
     }
 
     fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
-    private val avbrytUtkastRequest =
-        AvbrytUtkastRequest(DeltakerStatus.Aarsak(DeltakerStatus.Aarsak.Type.FATT_JOBB, null))
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
     fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
