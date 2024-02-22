@@ -1,8 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.api.utils
 
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import java.time.LocalDate
 
 const val MAX_BAKGRUNNSINFORMASJON_LENGDE = 1000
 const val MAX_ANNET_INNHOLD_LENGDE = 250
@@ -44,6 +46,11 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
         "Deltakelsesprosent kan ikke være mindre enn $MIN_DELTAKELSESPROSENT eller større enn $MAX_DELTAKELSESPROSENT"
     }
 }
+
+fun validerSluttdatoForDeltaker(sluttdato: LocalDate, opprinneligDeltaker: Deltaker) =
+    require(opprinneligDeltaker.deltakerliste.sluttDato == null || !sluttdato.isAfter(opprinneligDeltaker.deltakerliste.sluttDato)) {
+        "Sluttdato kan ikke være senere enn deltakerlistens sluttdato"
+    }
 
 fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
     validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->

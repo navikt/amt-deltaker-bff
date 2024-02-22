@@ -97,6 +97,14 @@ class DeltakerService(
                     )
                 }
             }
+
+            is DeltakerEndring.Endring.AvsluttDeltakelse -> opprinneligDeltaker.copy(
+                status = nyDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, endring.aarsak.toDeltakerStatusAarsak()),
+                sluttdato = endring.sluttdato,
+                sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
+                sistEndret = LocalDateTime.now(),
+            )
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
