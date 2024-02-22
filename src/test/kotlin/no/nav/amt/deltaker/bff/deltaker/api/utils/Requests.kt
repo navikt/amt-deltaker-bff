@@ -36,4 +36,5 @@ internal fun HttpRequestBuilder.noBodyRequest() {
             )
         }",
     )
+    header("aktiv-enhet", "0101")
 }
