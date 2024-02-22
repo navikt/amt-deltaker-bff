@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -8,10 +9,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
-import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
@@ -19,8 +17,8 @@ import java.util.UUID
 class PameldingService(
     private val deltakerService: DeltakerService,
     private val vedtakRepository: VedtakRepository,
-    private val deltakerlisteRepository: DeltakerlisteRepository,
     private val navBrukerService: NavBrukerService,
+    private val amtDeltakerClient: AmtDeltakerClient,
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -29,7 +27,7 @@ class PameldingService(
         deltakerlisteId: UUID,
         personident: String,
         opprettetAv: String,
-        opprettetAvEnhet: String?,
+        opprettetAvEnhet: String,
     ): Deltaker {
         val eksisterendeDeltaker = deltakerService
             .getDeltakelser(personident, deltakerlisteId)
@@ -40,10 +38,14 @@ class PameldingService(
             return eksisterendeDeltaker
         }
 
-        val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
-        val navBruker = navBrukerService.get(personident).getOrThrow()
-        val deltaker = nyDeltakerKladd(navBruker, deltakerliste, opprettetAv, opprettetAvEnhet)
+        val deltaker = amtDeltakerClient.opprettKladd(
+            deltakerlisteId = deltakerlisteId,
+            personident = personident,
+            opprettetAv = opprettetAv,
+            opprettetAvEnhet = opprettetAvEnhet,
+        )
 
+        navBrukerService.upsert(deltaker.navBruker)
         deltakerService.upsert(deltaker)
 
         MetricRegister.OPPRETTET_KLADD.inc()
@@ -125,29 +127,6 @@ class PameldingService(
             DeltakerStatus.Type.KLADD,
             DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
         )
-
-    private fun nyDeltakerKladd(
-        navBruker: NavBruker,
-        deltakerliste: Deltakerliste,
-        opprettetAv: String,
-        opprettetAvEnhet: String?,
-    ) = Deltaker(
-        id = UUID.randomUUID(),
-        navBruker = navBruker,
-        deltakerliste = deltakerliste,
-        startdato = null,
-        sluttdato = null,
-        dagerPerUke = null,
-        deltakelsesprosent = null,
-        bakgrunnsinformasjon = null,
-        innhold = emptyList(),
-        status = nyDeltakerStatus(DeltakerStatus.Type.KLADD),
-        vedtaksinformasjon = null,
-        sistEndretAv = opprettetAv,
-        sistEndret = LocalDateTime.now(),
-        sistEndretAvEnhet = opprettetAvEnhet,
-        opprettet = LocalDateTime.now(),
-    )
 
     private fun oppdatertVedtak(
         original: Vedtak?,

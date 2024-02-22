@@ -10,10 +10,8 @@ import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
@@ -21,13 +19,14 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavAnsatt
-import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavBruker
-import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavEnhet
+import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonClient
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -40,19 +39,21 @@ class PameldingServiceTest {
     companion object {
 
         private val vedtakRepository = VedtakRepository()
+        private val amtPersonClient = mockAmtPersonClient()
+
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             deltakerEndringRepository = DeltakerEndringRepository(),
-            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClientNavAnsatt()),
-            navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClientNavEnhet()),
+            navAnsattService = NavAnsattService(NavAnsattRepository(), amtPersonClient),
+            navEnhetService = NavEnhetService(NavEnhetRepository(), amtPersonClient),
             deltakerProducer = DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),
         )
 
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
             vedtakRepository = vedtakRepository,
-            deltakerlisteRepository = DeltakerlisteRepository(),
-            navBrukerService = NavBrukerService(NavBrukerRepository(), mockAmtPersonServiceClientNavBruker()),
+            navBrukerService = NavBrukerService(NavBrukerRepository()),
+            amtDeltakerClient = mockAmtDeltakerClient(),
         )
 
         @JvmStatic
@@ -62,13 +63,10 @@ class PameldingServiceTest {
         }
     }
 
-    fun mockPameldingService(navBruker: NavBruker) {
-        pameldingService = PameldingService(
-            deltakerService,
-            vedtakRepository,
-            deltakerlisteRepository = DeltakerlisteRepository(),
-            navBrukerService = NavBrukerService(NavBrukerRepository(), mockAmtPersonServiceClientNavBruker(navBruker)),
-        )
+    @Before
+    fun foo() {
+        MockResponseHandler.addNavAnsattResponse(TestData.lagNavAnsatt())
+        MockResponseHandler.addNavEnhetResponse(TestData.lagNavEnhet())
     }
 
     @Test
@@ -76,21 +74,21 @@ class PameldingServiceTest {
         val overordnetArrangor = TestData.lagArrangor()
         val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
-        val navBruker = TestData.lagNavBruker()
-        val opprettetAv = TestData.randomNavIdent()
-        val opprettetAvEnhet = TestData.randomEnhetsnummer()
+        val kladd = TestData.lagDeltakerKladd(deltakerliste = deltakerliste)
         TestRepository.insert(deltakerliste, overordnetArrangor)
-        mockPameldingService(navBruker = navBruker)
+
+        MockResponseHandler.addOpprettKladdResponse(kladd)
 
         runBlocking {
             val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = deltakerliste.id,
-                personident = navBruker.personident,
-                opprettetAv = opprettetAv,
-                opprettetAvEnhet = opprettetAvEnhet,
+                personident = kladd.navBruker.personident,
+                opprettetAv = kladd.sistEndretAv,
+                opprettetAvEnhet = kladd.sistEndretAvEnhet!!,
             )
 
-            deltaker.id shouldBe deltakerService.getDeltakelser(navBruker.personident, deltakerliste.id).first().id
+            deltaker.id shouldBe deltakerService.getDeltakelser(kladd.navBruker.personident, deltakerliste.id)
+                .first().id
             deltaker.deltakerliste.id shouldBe deltakerliste.id
             deltaker.deltakerliste.navn shouldBe deltakerliste.navn
             deltaker.deltakerliste.tiltak.type shouldBe deltakerliste.tiltak.type
@@ -108,12 +106,13 @@ class PameldingServiceTest {
     }
 
     @Test
-    fun `opprettKladd - deltakerliste finnes ikke - kaster NoSuchElementException`() {
+    fun `opprettKladd - kall til amt-deltaker feiler - kaster exception`() {
         val personident = TestData.randomIdent()
         val opprettetAv = TestData.randomNavIdent()
         val opprettetAvEnhet = TestData.randomEnhetsnummer()
+        MockResponseHandler.addOpprettKladdResponse(null)
         runBlocking {
-            assertFailsWith<NoSuchElementException> {
+            assertFailsWith<IllegalStateException> {
                 pameldingService.opprettKladd(UUID.randomUUID(), personident, opprettetAv, opprettetAvEnhet)
             }
         }
@@ -133,7 +132,7 @@ class PameldingServiceTest {
                     deltaker.deltakerliste.id,
                     deltaker.navBruker.personident,
                     deltaker.sistEndretAv,
-                    deltaker.sistEndretAvEnhet,
+                    deltaker.sistEndretAvEnhet!!,
                 )
 
             eksisterendeDeltaker.id shouldBe deltaker.id
@@ -155,13 +154,16 @@ class PameldingServiceTest {
         )
         TestRepository.insert(deltaker)
 
+        val kladd = TestData.lagDeltakerKladd(deltakerliste = deltaker.deltakerliste)
+        MockResponseHandler.addOpprettKladdResponse(kladd)
+
         runBlocking {
             val nyDeltaker =
                 pameldingService.opprettKladd(
                     deltaker.deltakerliste.id,
                     deltaker.navBruker.personident,
                     deltaker.sistEndretAv,
-                    deltaker.sistEndretAvEnhet,
+                    deltaker.sistEndretAvEnhet!!,
                 )
 
             nyDeltaker.id shouldNotBe deltaker.id
@@ -349,6 +351,9 @@ class PameldingServiceTest {
             ),
             godkjentAvNav = godkjentAvNav,
         )
+
+        MockResponseHandler.addNavAnsattResponse(TestData.lagNavAnsatt(navIdent = deltaker.sistEndretAv))
+        MockResponseHandler.addNavEnhetResponse(TestData.lagNavEnhet(enhetsnummer = deltaker.sistEndretAvEnhet!!))
 
         runBlocking {
             pameldingService.meldPaUtenGodkjenning(utkast)

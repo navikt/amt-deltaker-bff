@@ -56,6 +56,7 @@ spec:
       rules:
         - application: amt-arrangor
         - application: amt-person-service
+        - application: amt-deltaker
         - application: poao-tilgang
           namespace: poao
   env:
@@ -71,6 +72,10 @@ spec:
       value: api://dev-gcp.amt.amt-person-service/.default
     - name: AMT_PERSONSERVICE_URL
       value: http://amt-person-service
+    - name: AMT_DELTAKER_SCOPE
+      value: api://dev-gcp.amt.amt-deltaker/.default
+    - name: AMT_DELTAKER_URL
+      value: http://amt-deltaker
 
   gcp:
     sqlInstances:

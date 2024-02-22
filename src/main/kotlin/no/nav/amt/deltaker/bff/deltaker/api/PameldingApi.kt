@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
+import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -44,7 +45,8 @@ fun Routing.registerPameldingApi(
             val navIdent = getNavIdent()
             val request = call.receive<PameldingRequest>()
 
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), request.personident)
             val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = request.deltakerlisteId,
@@ -182,4 +184,10 @@ fun Routing.registerPameldingApi(
             call.respond(HttpStatusCode.OK)
         }
     }
+}
+
+private fun ApplicationRequest.headerNotNull(navn: String): String {
+    val header = call.request.header(navn)
+    require(header != null) { "Påkrevd header: $navn er null" }
+    return header
 }

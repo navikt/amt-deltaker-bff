@@ -10,18 +10,20 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
 import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
+import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavAnsatt
-import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClientNavEnhet
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonClient
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -36,6 +38,7 @@ class DeltakerServiceTest {
         lateinit var deltakerEndringRepository: DeltakerEndringRepository
         lateinit var navAnsattService: NavAnsattService
         lateinit var navEnhetService: NavEnhetService
+        lateinit var amtPersonClient: AmtPersonServiceClient
 
         @JvmStatic
         @BeforeClass
@@ -45,10 +48,11 @@ class DeltakerServiceTest {
             navEnhet = TestData.lagNavEnhet()
             deltakerRepository = DeltakerRepository()
             deltakerEndringRepository = DeltakerEndringRepository()
+            amtPersonClient = mockAmtPersonClient()
             navAnsattService =
-                NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClientNavAnsatt(navAnsatt = navAnsatt))
+                NavAnsattService(NavAnsattRepository(), amtPersonClient)
             navEnhetService =
-                NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClientNavEnhet(navEnhet = navEnhet))
+                NavEnhetService(NavEnhetRepository(), amtPersonClient)
             deltakerService = DeltakerService(
                 deltakerRepository,
                 deltakerEndringRepository,
@@ -57,6 +61,12 @@ class DeltakerServiceTest {
                 DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),
             )
         }
+    }
+
+    @Before
+    fun setupMocks() {
+        MockResponseHandler.addNavAnsattResponse(navAnsatt)
+        MockResponseHandler.addNavEnhetResponse(navEnhet)
     }
 
     @Test
