@@ -27,6 +27,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttarsakRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
@@ -315,6 +316,35 @@ class DeltakerApiTest {
     }
 
     @Test
+    fun `endre sluttarsak - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, aarsak = null))
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsak = sluttarsakRequest.aarsak.toDeltakerStatusAarsak(),
+            ),
+        )
+        coEvery {
+            deltakerService.oppdaterDeltaker(
+                deltaker,
+                DeltakerEndring.Endringstype.SLUTTARSAK,
+                any(),
+                any(),
+                any(),
+            )
+        } returns oppdatertDeltaker
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/sluttarsak") { postRequest(sluttarsakRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        }
+    }
+
+    @Test
     fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker =
@@ -487,4 +517,5 @@ class DeltakerApiTest {
     private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3))
     private val avsluttDeltakelseRequest = AvsluttDeltakelseRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), LocalDate.now())
     private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
+    private val sluttarsakRequest = EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
 }
