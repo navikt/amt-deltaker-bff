@@ -17,6 +17,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
@@ -118,6 +119,26 @@ fun Routing.registerDeltakerApi(
                 opprinneligDeltaker = deltaker,
                 endringstype = DeltakerEndring.Endringstype.STARTDATO,
                 endring = DeltakerEndring.Endring.EndreStartdato(request.startdato),
+                endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
+            )
+            call.respond(oppdatertDeltaker.toDeltakerResponse())
+        }
+
+        post("/deltaker/{deltakerId}/sluttdato") {
+            val navIdent = getNavIdent()
+            val request = call.receive<EndreSluttdatoRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.header("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            request.valider(deltaker)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                opprinneligDeltaker = deltaker,
+                endringstype = DeltakerEndring.Endringstype.SLUTTDATO,
+                endring = DeltakerEndring.Endring.EndreSluttdato(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
