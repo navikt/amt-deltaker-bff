@@ -27,6 +27,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
@@ -78,6 +79,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/innhold") { postRequest(innholdRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/sluttdato") { postRequest(sluttdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/forleng") { postRequest(forlengDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/avslutt") { postRequest(avsluttDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
@@ -92,6 +94,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/innhold") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/sluttdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/forleng") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/avslutt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
@@ -235,6 +238,51 @@ class DeltakerApiTest {
         client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
             status shouldBe HttpStatusCode.OK
             bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        }
+    }
+
+    @Test
+    fun `endre sluttdato - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker =
+            TestData.lagDeltaker(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                sluttdato = LocalDate.now().minusDays(3),
+            )
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        val oppdatertDeltaker = deltaker.copy(
+            sluttdato = sluttdatoRequest.sluttdato,
+        )
+        coEvery {
+            deltakerService.oppdaterDeltaker(
+                deltaker,
+                DeltakerEndring.Endringstype.SLUTTDATO,
+                any(),
+                any(),
+                any(),
+            )
+        } returns oppdatertDeltaker
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        }
+    }
+
+    @Test
+    fun `endre sluttdato - har tilgang, deltaker har status IKKE AKTUELL - feiler`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker =
+            TestData.lagDeltaker(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+                sluttdato = LocalDate.now().minusDays(3),
+            )
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+
+        setUpTestApplication()
+        client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
@@ -438,4 +486,5 @@ class DeltakerApiTest {
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
     private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3))
     private val avsluttDeltakelseRequest = AvsluttDeltakelseRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), LocalDate.now())
+    private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
 }

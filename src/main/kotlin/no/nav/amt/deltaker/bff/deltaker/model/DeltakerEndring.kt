@@ -56,7 +56,7 @@ data class DeltakerEndring(
         ) : Endring()
 
         data class EndreSluttdato(
-            val sluttdato: LocalDate?,
+            val sluttdato: LocalDate,
         ) : Endring()
 
         data class ForlengDeltakelse(
