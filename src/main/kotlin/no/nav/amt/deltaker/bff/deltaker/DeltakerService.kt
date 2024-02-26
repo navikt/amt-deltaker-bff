@@ -105,6 +105,13 @@ class DeltakerService(
                 sistEndretAvEnhet = endretAvEnhet,
                 sistEndret = LocalDateTime.now(),
             )
+
+            is DeltakerEndring.Endring.EndreSluttarsak -> opprinneligDeltaker.copy(
+                status = nyDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, endring.aarsak.toDeltakerStatusAarsak()),
+                sistEndretAv = endretAv,
+                sistEndretAvEnhet = endretAvEnhet,
+                sistEndret = LocalDateTime.now(),
+            )
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {

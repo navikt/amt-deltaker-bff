@@ -92,6 +92,9 @@ class DeltakerEndringRepository {
 
             DeltakerEndring.Endringstype.AVSLUTT_DELTAKELSE ->
                 objectMapper.readValue<DeltakerEndring.Endring.AvsluttDeltakelse>(endringJson)
+
+            DeltakerEndring.Endringstype.SLUTTARSAK ->
+                objectMapper.readValue<DeltakerEndring.Endring.EndreSluttarsak>(endringJson)
         }
     }
 }
