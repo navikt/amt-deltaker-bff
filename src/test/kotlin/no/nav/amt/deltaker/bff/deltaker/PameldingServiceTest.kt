@@ -9,7 +9,9 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
@@ -236,7 +238,7 @@ class PameldingServiceTest {
             vedtak.deltakerId shouldBe deltaker.id
             vedtak.fattet shouldBe null
             vedtak.gyldigTil shouldBe null
-            sammenlignDeltakere(vedtak.deltakerVedVedtak, oppdatertDeltaker)
+            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
             vedtak.fattetAvNav shouldBe null
 
             assertProduced(oppdatertDeltaker)
@@ -269,7 +271,7 @@ class PameldingServiceTest {
             vedtak.deltakerId shouldBe deltaker.id
             vedtak.fattet shouldBe null
             vedtak.gyldigTil shouldBe null
-            sammenlignDeltakere(vedtak.deltakerVedVedtak, oppdatertDeltaker)
+            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
             vedtak.fattetAvNav shouldBe null
 
             assertProduced(oppdatertDeltaker)
@@ -324,7 +326,7 @@ class PameldingServiceTest {
             vedtak.deltakerId shouldBe deltaker.id
             vedtak.fattet shouldBeCloseTo LocalDateTime.now()
             vedtak.gyldigTil shouldBe null
-            sammenlignDeltakere(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
+            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
             vedtak.fattetAvNav?.fattetAv shouldBe godkjentAvNav.godkjentAv
             vedtak.fattetAvNav?.fattetAvEnhet shouldBe godkjentAvNav.godkjentAvEnhet
 
@@ -365,7 +367,7 @@ class PameldingServiceTest {
             vedtak.deltakerId shouldBe deltaker.id
             vedtak.fattet shouldBeCloseTo LocalDateTime.now()
             vedtak.gyldigTil shouldBe null
-            sammenlignDeltakere(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
+            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
             vedtak.fattetAvNav?.fattetAv shouldBe godkjentAvNav.godkjentAv
             vedtak.fattetAvNav?.fattetAvEnhet shouldBe godkjentAvNav.godkjentAvEnhet
 
@@ -419,3 +421,40 @@ class PameldingServiceTest {
         }
     }
 }
+
+fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: Deltaker) {
+    sammenlignDeltakereVedVedtak(a, b.toDeltakerVedVedtak())
+}
+
+fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: DeltakerVedVedtak) {
+    a.id shouldBe b.id
+    a.startdato shouldBe b.startdato
+    a.sluttdato shouldBe b.sluttdato
+    a.dagerPerUke shouldBe b.dagerPerUke
+    a.deltakelsesprosent shouldBe b.deltakelsesprosent
+    a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
+    a.innhold shouldBe b.innhold
+    a.status.id shouldBe b.status.id
+    a.status.type shouldBe b.status.type
+    a.status.aarsak shouldBe b.status.aarsak
+    a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
+    a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
+    a.status.opprettet shouldBeCloseTo b.status.opprettet
+    a.sistEndretAv shouldBe b.sistEndretAv
+    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
+    a.sistEndret shouldBeCloseTo b.sistEndret
+}
+
+fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    innhold,
+    status,
+    sistEndretAv,
+    sistEndretAvEnhet,
+    sistEndret,
+)
