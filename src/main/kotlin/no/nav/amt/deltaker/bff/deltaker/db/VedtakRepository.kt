@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import no.nav.amt.deltaker.bff.deltaker.model.VedtakDbo
 import java.util.UUID
 
 class VedtakRepository {
@@ -25,7 +26,7 @@ class VedtakRepository {
         sistEndretAvEnhet = row.stringOrNull("sist_endret_av_enhet"),
     )
 
-    fun upsert(vedtak: Vedtak) = Database.query {
+    fun upsert(vedtak: VedtakDbo) = Database.query {
         val sql = """
             insert into vedtak (id,
                                 deltaker_id,

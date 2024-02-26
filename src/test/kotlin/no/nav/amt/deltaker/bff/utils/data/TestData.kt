@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
@@ -212,7 +213,7 @@ object TestData {
         deltakerId,
         fattet,
         gyldigTil,
-        deltakerVedVedtak,
+        deltakerVedVedtak.toDeltakerVedVedtak(),
         fattetAvNav,
         opprettet,
         opprettetAv,

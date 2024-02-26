@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
-import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -82,7 +81,7 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.vedtak.deltakerId shouldBe b.vedtak.deltakerId
             a.vedtak.fattet shouldBeCloseTo b.vedtak.fattet
             a.vedtak.gyldigTil shouldBeCloseTo b.vedtak.gyldigTil
-            sammenlignDeltakere(a.vedtak.deltakerVedVedtak, b.vedtak.deltakerVedVedtak)
+            sammenlignDeltakereVedVedtak(a.vedtak.deltakerVedVedtak, b.vedtak.deltakerVedVedtak)
             a.vedtak.opprettetAv shouldBe b.vedtak.opprettetAv
             a.vedtak.opprettetAvEnhet shouldBe b.vedtak.opprettetAvEnhet
             a.vedtak.opprettet shouldBeCloseTo b.vedtak.opprettet

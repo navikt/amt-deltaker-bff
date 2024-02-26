@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import no.nav.amt.deltaker.bff.deltaker.model.VedtakDbo
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -133,7 +134,7 @@ class PameldingService(
         utkast: Utkast,
         deltaker: Deltaker,
         fattet: LocalDateTime? = null,
-    ) = Vedtak(
+    ) = VedtakDbo(
         id = original?.id ?: UUID.randomUUID(),
         deltakerId = deltaker.id,
         fattet = fattet,
