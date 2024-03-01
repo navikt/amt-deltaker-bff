@@ -8,6 +8,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -179,6 +180,37 @@ class DeltakerRepository {
         session.transaction { tx ->
             tx.update(slettStatus(deltakerId))
             tx.update(slettDeltaker(deltakerId))
+        }
+    }
+
+    fun create(kladd: KladdResponse) = Database.query {
+        val sql = """
+            insert into deltaker(
+                id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
+                deltakelsesprosent, bakgrunnsinformasjon, innhold
+            )
+            values (
+                :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
+            )
+        """.trimIndent()
+
+        val parameters = mapOf(
+            "id" to kladd.id,
+            "person_id" to kladd.navBruker.personId,
+            "deltakerlisteId" to kladd.deltakerlisteId,
+            "startdato" to kladd.startdato,
+            "sluttdato" to kladd.sluttdato,
+            "dagerPerUke" to kladd.dagerPerUke,
+            "deltakelsesprosent" to kladd.deltakelsesprosent,
+            "bakgrunnsinformasjon" to kladd.bakgrunnsinformasjon,
+            "innhold" to toPGObject(kladd.innhold),
+        )
+
+        it.transaction { tx ->
+            tx.update(queryOf(sql, parameters))
+            tx.update(insertStatusQuery(kladd.status, kladd.id))
+            tx.update(deaktiverTidligereStatuserQuery(kladd.status, kladd.id))
         }
     }
 

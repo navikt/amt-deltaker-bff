@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -102,7 +103,7 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    suspend fun oppdaterDeltaker(
+    fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
         endring: Pamelding,
@@ -120,7 +121,7 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    suspend fun oppdaterDeltaker(
+    fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
     ): Deltaker {
@@ -137,11 +138,16 @@ class DeltakerService(
         deltakerRepository.delete(deltakerId)
     }
 
-    suspend fun upsert(
+    fun upsert(
         deltaker: Deltaker,
     ) {
         deltakerRepository.upsert(deltaker)
         log.info("Upserter deltaker med id ${deltaker.id}")
+    }
+
+    fun opprettDeltaker(kladd: KladdResponse): Result<Deltaker> {
+        deltakerRepository.create(kladd)
+        return deltakerRepository.get(kladd.id)
     }
 
     private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {

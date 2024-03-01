@@ -11,7 +11,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
-import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import java.util.UUID
 
 class AmtDeltakerClient(
@@ -24,7 +24,7 @@ class AmtDeltakerClient(
     suspend fun opprettKladd(
         deltakerlisteId: UUID,
         personident: String,
-    ): Deltaker {
+    ): KladdResponse {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding") {
             header(HttpHeaders.Authorization, token)
@@ -38,6 +38,6 @@ class AmtDeltakerClient(
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
-        return response.body<AmtDeltakerDto>().toModel()
+        return response.body()
     }
 }
