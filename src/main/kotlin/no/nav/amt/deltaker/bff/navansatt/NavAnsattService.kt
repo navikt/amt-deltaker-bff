@@ -37,7 +37,6 @@ class NavAnsattService(
 
     fun hentAnsatteForDeltaker(deltaker: Deltaker): Map<String, NavAnsatt> {
         val veilederIdenter = listOfNotNull(
-            deltaker.sistEndretAv,
             deltaker.vedtaksinformasjon?.opprettetAv,
             deltaker.vedtaksinformasjon?.sistEndretAv,
             deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,

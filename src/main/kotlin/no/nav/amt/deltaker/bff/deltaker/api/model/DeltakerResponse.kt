@@ -28,8 +28,6 @@ data class DeltakerResponse(
     val bakgrunnsinformasjon: String?,
     val deltakelsesinnhold: DeltakelsesinnholdDto?,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
-    val sistEndret: LocalDateTime,
-    val sistEndretAv: String,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -92,8 +90,6 @@ fun Deltaker.toDeltakerResponse(
             )
         },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
-        sistEndret = sistEndret,
-        sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
     )
 }
 

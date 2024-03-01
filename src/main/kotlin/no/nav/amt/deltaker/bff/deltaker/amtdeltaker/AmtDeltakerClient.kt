@@ -24,14 +24,12 @@ class AmtDeltakerClient(
     suspend fun opprettKladd(
         deltakerlisteId: UUID,
         personident: String,
-        opprettetAv: String,
-        opprettetAvEnhet: String,
     ): Deltaker {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
-            setBody(OpprettKladdRequest(deltakerlisteId, personident, opprettetAv, opprettetAvEnhet))
+            setBody(OpprettKladdRequest(deltakerlisteId, personident))
         }
 
         if (!response.status.isSuccess()) {

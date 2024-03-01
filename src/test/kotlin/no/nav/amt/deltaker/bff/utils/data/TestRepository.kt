@@ -155,11 +155,11 @@ object TestRepository {
         val sql = """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold, sist_endret_av, sist_endret_av_enhet, modified_at, created_at
+                deltakelsesprosent, bakgrunnsinformasjon, innhold
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :sistEndretAv, :sistEndretAvEnhet, :modifiedAt, :createdAt
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
             )
         """.trimIndent()
 
@@ -173,10 +173,6 @@ object TestRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
-            "sistEndretAv" to deltaker.sistEndretAv,
-            "sistEndretAvEnhet" to deltaker.sistEndretAvEnhet,
-            "modifiedAt" to deltaker.sistEndret,
-            "createdAt" to deltaker.opprettet,
         )
 
         session.update(queryOf(sql, parameters))

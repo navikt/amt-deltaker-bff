@@ -41,17 +41,12 @@ fun Routing.registerPameldingApi(
 
     authenticate("VEILEDER") {
         post("/pamelding") {
-            val navIdent = getNavIdent()
             val request = call.receive<PameldingRequest>()
-
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), request.personident)
             val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = request.deltakerlisteId,
                 personident = request.personident,
-                opprettetAv = navIdent,
-                opprettetAvEnhet = enhetsnummer,
             )
 
             val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)

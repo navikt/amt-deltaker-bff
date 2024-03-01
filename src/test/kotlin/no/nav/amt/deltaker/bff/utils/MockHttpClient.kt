@@ -152,10 +152,6 @@ object MockResponseHandler {
                     bakgrunnsinformasjon = deltaker.bakgrunnsinformasjon,
                     innhold = deltaker.innhold,
                     status = deltaker.status,
-                    sistEndretAv = TestData.lagNavAnsatt(navIdent = deltaker.sistEndretAv),
-                    sistEndretAvEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.sistEndretAvEnhet!!),
-                    sistEndret = deltaker.sistEndret,
-                    opprettet = deltaker.opprettet,
                 ),
             )
         }

@@ -27,8 +27,6 @@ class PameldingService(
     suspend fun opprettKladd(
         deltakerlisteId: UUID,
         personident: String,
-        opprettetAv: String,
-        opprettetAvEnhet: String,
     ): Deltaker {
         val eksisterendeDeltaker = deltakerService
             .getDeltakelser(personident, deltakerlisteId)
@@ -42,8 +40,6 @@ class PameldingService(
         val deltaker = amtDeltakerClient.opprettKladd(
             deltakerlisteId = deltakerlisteId,
             personident = personident,
-            opprettetAv = opprettetAv,
-            opprettetAvEnhet = opprettetAvEnhet,
         )
 
         navBrukerService.upsert(deltaker.navBruker)
@@ -158,8 +154,15 @@ class PameldingService(
             log.warn("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
             throw IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
         }
+
+        /* TODO:
+        For å bevare sporbarheten på hvem som avbryter et utkast kan
+        vi kanskje gjøre dette om til en `DeltakerEndring`, eller
+        Vi kan legge til informasjon på vedtaket om det ble avbrutt.
+         */
+
         val status = nyDeltakerStatus(DeltakerStatus.Type.AVBRUTT_UTKAST)
-        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, endretAvEnhet, navIdent)
+        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status)
 
         deltakerService.upsert(deltaker)
     }

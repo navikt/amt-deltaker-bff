@@ -52,7 +52,6 @@ class DeltakerRepositoryTest {
             sluttdato = LocalDate.now().plusWeeks(5),
             dagerPerUke = 1F,
             deltakelsesprosent = 20F,
-            sistEndretAv = TestData.randomNavIdent(),
         )
 
         repository.upsert(oppdatertDeltaker)
@@ -89,20 +88,6 @@ class DeltakerRepositoryTest {
         repository.delete(deltaker.id)
 
         repository.get(deltaker.id).isFailure shouldBe true
-    }
-
-    @Test
-    fun `get - deltaker, ansatt og enhet finnes ikke - returnerer navident og enhetsnummer`() {
-        val navAnsatt = TestData.lagNavAnsatt()
-        val navEnhet = TestData.lagNavEnhet()
-        val deltaker =
-            TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
-        TestRepository.insert(deltaker)
-
-        val deltakerFraDb = repository.get(deltaker.id).getOrThrow()
-
-        deltakerFraDb.sistEndretAv shouldBe navAnsatt.navIdent
-        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
     }
 
     @Test
@@ -257,8 +242,4 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
-    a.sistEndretAv shouldBe b.sistEndretAv
-    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
-    a.sistEndret shouldBeCloseTo b.sistEndret
-    a.opprettet shouldBeCloseTo b.opprettet
 }

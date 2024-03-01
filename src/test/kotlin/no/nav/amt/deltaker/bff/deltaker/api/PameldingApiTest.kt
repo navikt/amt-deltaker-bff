@@ -100,7 +100,7 @@ class PameldingApiTest {
         val navEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet!!)
 
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery { pameldingService.opprettKladd(any(), any(), any(), any()) } returns deltaker
+        coEvery { pameldingService.opprettKladd(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         coEvery { navEnhetService.hentEnhet(navEnhet.enhetsnummer) } returns navEnhet
 
@@ -120,8 +120,6 @@ class PameldingApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery {
             pameldingService.opprettKladd(
-                any(),
-                any(),
                 any(),
                 any(),
             )

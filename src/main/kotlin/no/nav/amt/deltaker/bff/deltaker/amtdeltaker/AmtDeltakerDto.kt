@@ -7,10 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 data class AmtDeltakerDto(
@@ -24,10 +21,6 @@ data class AmtDeltakerDto(
     val bakgrunnsinformasjon: String?,
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
-    val sistEndretAv: NavAnsatt,
-    val sistEndretAvEnhet: NavEnhet,
-    val sistEndret: LocalDateTime,
-    val opprettet: LocalDateTime,
 ) {
 
     data class DeltakerlisteDto(
@@ -64,9 +57,5 @@ data class AmtDeltakerDto(
         innhold = innhold,
         status = status,
         vedtaksinformasjon = null,
-        sistEndretAv = sistEndretAv.navIdent,
-        sistEndretAvEnhet = sistEndretAvEnhet.enhetsnummer,
-        sistEndret = sistEndret,
-        opprettet = opprettet,
     )
 }

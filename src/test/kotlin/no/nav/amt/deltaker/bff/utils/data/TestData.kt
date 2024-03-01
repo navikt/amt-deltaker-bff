@@ -66,7 +66,7 @@ object TestData {
         Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
     )
 
-    val tiltakstypeCache = mutableMapOf<Tiltak.Type, Tiltakstype>()
+    private val tiltakstypeCache = mutableMapOf<Tiltak.Type, Tiltakstype>()
 
     fun lagTiltakstype(
         id: UUID = UUID.randomUUID(),
@@ -107,10 +107,6 @@ object TestData {
         id: UUID = UUID.randomUUID(),
         navBruker: NavBruker = lagNavBruker(),
         deltakerliste: Deltakerliste = lagDeltakerliste(),
-        sistEndretAv: String = randomNavIdent(),
-        sistEndretAvEnhet: String = randomEnhetsnummer(),
-        sistEndret: LocalDateTime = LocalDateTime.now(),
-        opprettet: LocalDateTime = LocalDateTime.now(),
     ) = lagDeltaker(
         id = id,
         navBruker = navBruker,
@@ -123,10 +119,6 @@ object TestData {
         innhold = emptyList(),
         status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         vedtaksinformasjon = null,
-        sistEndretAv = sistEndretAv,
-        sistEndretAvEnhet = sistEndretAvEnhet,
-        sistEndret = sistEndret,
-        opprettet = opprettet,
     )
 
     fun lagDeltaker(
@@ -143,10 +135,6 @@ object TestData {
         vedtaksinformasjon: Deltaker.Vedtaksinformasjon? = lagVedtaksinformasjon(
             fattet = LocalDateTime.now().minusMonths(4),
         ),
-        sistEndretAv: String = randomNavIdent(),
-        sistEndretAvEnhet: String = randomEnhetsnummer(),
-        sistEndret: LocalDateTime = LocalDateTime.now(),
-        opprettet: LocalDateTime = LocalDateTime.now(),
     ) = Deltaker(
         id,
         navBruker,
@@ -159,10 +147,6 @@ object TestData {
         innhold,
         status,
         vedtaksinformasjon,
-        sistEndretAv,
-        sistEndretAvEnhet,
-        sistEndret,
-        opprettet,
     )
 
     fun lagDeltakerStatus(
@@ -257,15 +241,11 @@ object TestData {
         bakgrunnsinformasjon: String? = null,
         deltakelsesprosent: Float? = null,
         dagerPerUke: Float? = null,
-        endretAv: String? = null,
-        endretAvEnhet: String? = null,
     ) = lagPamelding(
         innhold = innhold ?: deltaker.innhold,
         bakgrunnsinformasjon = bakgrunnsinformasjon ?: deltaker.bakgrunnsinformasjon,
         deltakelsesprosent = deltakelsesprosent ?: deltaker.deltakelsesprosent,
         dagerPerUke = dagerPerUke ?: deltaker.dagerPerUke,
-        endretAv = endretAv ?: deltaker.sistEndretAv,
-        endretAvEnhet = endretAvEnhet ?: deltaker.sistEndretAvEnhet,
     )
 
     fun lagPamelding(
@@ -379,7 +359,6 @@ object TestData {
     }
 
     fun lagNavAnsatteForDeltaker(deltaker: Deltaker) = listOfNotNull(
-        deltaker.sistEndretAv,
         deltaker.vedtaksinformasjon?.sistEndretAv,
         deltaker.vedtaksinformasjon?.opprettetAv,
         deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
