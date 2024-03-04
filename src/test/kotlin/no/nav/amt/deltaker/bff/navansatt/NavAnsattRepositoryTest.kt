@@ -36,4 +36,9 @@ class NavAnsattRepositoryTest {
         faktiskeAnsatte.find { it == ansatte[1] } shouldNotBe null
         faktiskeAnsatte.find { it == ansatte[2] } shouldNotBe null
     }
+
+    @Test
+    fun `getMany - ingen navidenter - returnerer tom list`() {
+        repository.getMany(emptyList()) shouldBe emptyList()
+    }
 }
