@@ -155,12 +155,6 @@ class PameldingService(
             throw IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
         }
 
-        /* TODO:
-        For å bevare sporbarheten på hvem som avbryter et utkast kan
-        vi kanskje gjøre dette om til en `DeltakerEndring`, eller
-        Vi kan legge til informasjon på vedtaket om det ble avbrutt.
-         */
-
         val status = nyDeltakerStatus(DeltakerStatus.Type.AVBRUTT_UTKAST)
         val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status)
 
