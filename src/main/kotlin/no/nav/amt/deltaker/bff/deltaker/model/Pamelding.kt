@@ -1,12 +1,14 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
+import java.util.UUID
+
 data class Pamelding(
     val innhold: List<Innhold>,
     val bakgrunnsinformasjon: String?,
     val deltakelsesprosent: Float?,
     val dagerPerUke: Float?,
     val endretAv: String,
-    val endretAvEnhet: String?,
+    val endretAvEnhet: String,
 )
 
 data class Kladd(
@@ -15,12 +17,7 @@ data class Kladd(
 )
 
 data class Utkast(
-    val opprinneligDeltaker: Deltaker,
+    val deltakerId: UUID,
     val pamelding: Pamelding,
-    val godkjentAvNav: GodkjentAvNav?,
-)
-
-data class GodkjentAvNav(
-    val godkjentAv: String,
-    val godkjentAvEnhet: String?,
+    val godkjentAvNav: Boolean,
 )

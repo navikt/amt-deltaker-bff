@@ -48,7 +48,6 @@ class PameldingServiceTest {
 
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
-            vedtakRepository = vedtakRepository,
             navBrukerService = NavBrukerService(NavBrukerRepository()),
             amtDeltakerClient = mockAmtDeltakerClient(),
         )
@@ -226,7 +225,7 @@ class PameldingServiceTest {
             vedtak.fattet shouldBe null
             vedtak.gyldigTil shouldBe null
             sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
-            vedtak.fattetAvNav shouldBe null
+            vedtak.fattetAvNav shouldBe false
         }
     }
 
@@ -257,7 +256,7 @@ class PameldingServiceTest {
             vedtak.fattet shouldBe null
             vedtak.gyldigTil shouldBe null
             sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
-            vedtak.fattetAvNav shouldBe null
+            vedtak.fattetAvNav shouldBe false
         }
     }
 
@@ -276,91 +275,15 @@ class PameldingServiceTest {
         TestRepository.insert(deltaker)
         TestRepository.insert(opprinneligSamtykke)
 
-        val navIdent = TestData.randomNavIdent()
-        val navEnhet = TestData.randomEnhetsnummer()
         val utkast = TestData.lagUtkast(
             deltaker,
             TestData.lagPamelding(deltaker),
-            godkjentAvNav = TestData.lagGodkjentAvNav(navIdent, navEnhet),
         )
         runBlocking {
             shouldThrow<IllegalArgumentException> {
                 pameldingService.upsertUtkast(utkast)
             }
             vedtakRepository.getIkkeFattet(deltaker.id) shouldBe null
-        }
-    }
-
-    @Test
-    fun `meldPaUtenGodkjenning - deltaker har status KLADD - oppretter et fattet vedtak og setter ny status for deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
-        TestRepository.insert(deltaker)
-        val godkjentAvNav = TestData.lagGodkjentAvNav()
-        val utkast = TestData.lagUtkast(deltaker, godkjentAvNav = godkjentAvNav)
-
-        runBlocking {
-            pameldingService.meldPaUtenGodkjenning(utkast)
-
-            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
-
-            val vedtak = vedtakRepository.getForDeltaker(deltaker.id).first()
-
-            vedtak.deltakerId shouldBe deltaker.id
-            vedtak.fattet shouldBeCloseTo LocalDateTime.now()
-            vedtak.gyldigTil shouldBe null
-            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
-            vedtak.fattetAvNav?.fattetAv shouldBe godkjentAvNav.godkjentAv
-            vedtak.fattetAvNav?.fattetAvEnhet shouldBe godkjentAvNav.godkjentAvEnhet
-        }
-    }
-
-    @Test
-    fun `meldPaUtenGodkjenning - deltaker har et vedtak som ikke er fattet - oppdater eksisterende vedtak`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-        )
-        TestRepository.insert(deltaker)
-        val eksisterendeSamtykke = TestData.lagVedtak(
-            deltakerId = deltaker.id,
-            deltakerVedVedtak = deltaker,
-        )
-        TestRepository.insert(eksisterendeSamtykke)
-        val godkjentAvNav = TestData.lagGodkjentAvNav()
-        val utkast = TestData.lagUtkast(
-            deltaker,
-            TestData.lagPamelding(
-                bakgrunnsinformasjon = "Nye opplysninger...",
-            ),
-            godkjentAvNav = godkjentAvNav,
-        )
-
-        runBlocking {
-            pameldingService.meldPaUtenGodkjenning(utkast)
-
-            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
-            val vedtak = vedtakRepository.getForDeltaker(deltaker.id).first()
-
-            vedtak.id shouldBe eksisterendeSamtykke.id
-            vedtak.deltakerId shouldBe deltaker.id
-            vedtak.fattet shouldBeCloseTo LocalDateTime.now()
-            vedtak.gyldigTil shouldBe null
-            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
-            vedtak.fattetAvNav?.fattetAv shouldBe godkjentAvNav.godkjentAv
-            vedtak.fattetAvNav?.fattetAvEnhet shouldBe godkjentAvNav.godkjentAvEnhet
-        }
-    }
-
-    @Test
-    fun `meldPaUtenGodkjenning - oppdatert deltaker mangler fattet - kaster feil`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
-        TestRepository.insert(deltaker)
-        val utkast = TestData.lagUtkast(deltaker, godkjentAvNav = null)
-
-        runBlocking {
-            assertFailsWith<RuntimeException> {
-                pameldingService.meldPaUtenGodkjenning(utkast)
-            }
         }
     }
 
