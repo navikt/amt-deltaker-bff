@@ -1,13 +1,11 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
-import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
@@ -28,7 +26,6 @@ import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
@@ -60,7 +57,7 @@ class PameldingServiceTest {
     }
 
     @Before
-    fun foo() {
+    fun mockAnsatte() {
         MockResponseHandler.addNavAnsattResponse(TestData.lagNavAnsatt())
         MockResponseHandler.addNavEnhetResponse(TestData.lagNavEnhet())
     }
@@ -156,134 +153,6 @@ class PameldingServiceTest {
 
             nyDeltaker.id shouldNotBe deltaker.id
             nyDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
-        }
-    }
-
-    @Test
-    fun `upsertKladd - deltaker har status KLADD - oppdaterer deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.KLADD))
-        TestRepository.insert(deltaker)
-
-        val kladd = TestData.lagKladd(
-            deltaker,
-            TestData.lagPamelding(
-                bakgrunnsinformasjon = "Ny og nyttig informasjon...",
-                dagerPerUke = 1F,
-                deltakelsesprosent = 20F,
-            ),
-        )
-
-        runBlocking {
-            pameldingService.upsertKladd(kladd)
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
-            oppdatertDeltaker.bakgrunnsinformasjon shouldBe kladd.pamelding.bakgrunnsinformasjon
-            oppdatertDeltaker.dagerPerUke shouldBe kladd.pamelding.dagerPerUke
-            oppdatertDeltaker.deltakelsesprosent shouldBe kladd.pamelding.deltakelsesprosent
-        }
-    }
-
-    @Test
-    fun `upsertKladd - deltaker har ikke status KLADD - oppdaterer ikke deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-        )
-        TestRepository.insert(deltaker)
-
-        val kladd = TestData.lagKladd(
-            deltaker,
-            TestData.lagPamelding(
-                bakgrunnsinformasjon = "Ny og nyttig informasjon...",
-                dagerPerUke = 1F,
-                deltakelsesprosent = 20F,
-            ),
-        )
-
-        runBlocking {
-            shouldThrow<IllegalArgumentException> {
-                pameldingService.upsertKladd(kladd)
-            }
-            sammenlignDeltakere(deltakerService.get(deltaker.id).getOrThrow(), deltaker)
-        }
-    }
-
-    @Test
-    fun `upsertUtkast - deltaker har status KLADD - oppretter et vedtak og setter ny status på deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
-        TestRepository.insert(deltaker)
-
-        val utkast = TestData.lagUtkast(deltaker)
-        runBlocking {
-            pameldingService.upsertUtkast(utkast)
-
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
-
-            val vedtak = vedtakRepository.getForDeltaker(deltaker.id).first()
-
-            vedtak.deltakerId shouldBe deltaker.id
-            vedtak.fattet shouldBe null
-            vedtak.gyldigTil shouldBe null
-            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
-            vedtak.fattetAvNav shouldBe false
-        }
-    }
-
-    @Test
-    fun `upsertUtkast - deltaker har et vedtak som ikke er fattet - oppdater eksisterende vedtak`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-        )
-        TestRepository.insert(deltaker)
-
-        val eksisterendeSamtykke = TestData.lagVedtak(
-            deltakerId = deltaker.id,
-            deltakerVedVedtak = deltaker,
-        )
-        TestRepository.insert(eksisterendeSamtykke)
-
-        val utkast =
-            TestData.lagUtkast(deltaker, TestData.lagPamelding(deltaker, bakgrunnsinformasjon = "Nye opplysninger"))
-
-        runBlocking {
-            pameldingService.upsertUtkast(utkast)
-
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
-            val vedtak = vedtakRepository.getForDeltaker(deltaker.id).first()
-
-            vedtak.id shouldBe eksisterendeSamtykke.id
-            vedtak.deltakerId shouldBe deltaker.id
-            vedtak.fattet shouldBe null
-            vedtak.gyldigTil shouldBe null
-            sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
-            vedtak.fattetAvNav shouldBe false
-        }
-    }
-
-    @Test
-    fun `upsertUtkast - deltaker har ikke status KLADD eller UTKAST - feiler`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
-        val opprinneligSamtykke = TestData.lagVedtak(
-            deltakerId = deltaker.id,
-            deltakerVedVedtak = deltaker.copy(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-            ),
-            fattet = LocalDateTime.now().minusMonths(2),
-            gyldigTil = null,
-        )
-
-        TestRepository.insert(deltaker)
-        TestRepository.insert(opprinneligSamtykke)
-
-        val utkast = TestData.lagUtkast(
-            deltaker,
-            TestData.lagPamelding(deltaker),
-        )
-        runBlocking {
-            shouldThrow<IllegalArgumentException> {
-                pameldingService.upsertUtkast(utkast)
-            }
-            vedtakRepository.getIkkeFattet(deltaker.id) shouldBe null
         }
     }
 

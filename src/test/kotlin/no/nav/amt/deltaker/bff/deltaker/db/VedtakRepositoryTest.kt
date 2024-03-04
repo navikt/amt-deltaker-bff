@@ -56,7 +56,7 @@ class VedtakRepositoryTest {
         val vedtak: Vedtak = TestData.lagVedtak(
             deltakerVedVedtak = deltaker,
             fattet = LocalDateTime.now(),
-            fattetAvNav = TestData.lagFattetAvNav(),
+            fattetAvNav = true,
         )
 
         TestRepository.insert(deltaker)

@@ -187,7 +187,7 @@ class PameldingApiTest {
             coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
             val deltaker = TestData.lagDeltaker()
             every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { pameldingService.meldPaUtenGodkjenning(any()) } returns Unit
+            coEvery { pameldingService.upsertUtkast(any()) } returns Unit
 
             setUpTestApplication()
             client.post("/pamelding/${deltaker.id}/utenGodkjenning") {

@@ -232,7 +232,7 @@ object TestRepository {
             "fattet" to vedtak.fattet,
             "gyldig_til" to vedtak.gyldigTil,
             "deltaker_ved_vedtak" to toPGObject(vedtak.deltakerVedVedtak),
-            "fattet_av_nav" to vedtak.fattetAvNav?.let(::toPGObject),
+            "fattet_av_nav" to vedtak.fattetAvNav,
             "opprettet" to vedtak.opprettet,
             "opprettet_av" to vedtak.opprettetAv,
             "opprettet_av_enhet" to vedtak.opprettetAvEnhet,

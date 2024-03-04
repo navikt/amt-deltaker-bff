@@ -5,8 +5,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
@@ -185,7 +183,7 @@ object TestData {
         deltakerId: UUID = deltakerVedVedtak.id,
         fattet: LocalDateTime? = null,
         gyldigTil: LocalDateTime? = null,
-        fattetAvNav: FattetAvNav? = null,
+        fattetAvNav: Boolean = false,
         opprettet: LocalDateTime = LocalDateTime.now(),
         opprettetAv: String = randomNavIdent(),
         opprettetAvEnhet: String? = randomEnhetsnummer(),
@@ -209,7 +207,7 @@ object TestData {
 
     fun lagVedtaksinformasjon(
         fattet: LocalDateTime? = LocalDateTime.now(),
-        fattetAvNav: FattetAvNav? = null,
+        fattetAvNav: Boolean = false,
         opprettet: LocalDateTime = LocalDateTime.now(),
         opprettetAv: String = randomNavIdent(),
         sistEndret: LocalDateTime = opprettet,
@@ -224,16 +222,6 @@ object TestData {
         sistEndretAv,
         sistEndretAvEnhet,
     )
-
-    fun lagFattetAvNav(
-        fattetAv: String = randomNavIdent(),
-        fattetAvNav: String = randomEnhetsnummer(),
-    ) = FattetAvNav(fattetAv, fattetAvNav)
-
-    fun lagGodkjentAvNav(
-        godkjentAv: String = randomNavIdent(),
-        godkjentAvEnhet: String = randomEnhetsnummer(),
-    ) = GodkjentAvNav(godkjentAv, godkjentAvEnhet)
 
     fun lagPamelding(
         deltaker: Deltaker,
@@ -254,7 +242,7 @@ object TestData {
         deltakelsesprosent: Float? = 100F,
         dagerPerUke: Float? = 5F,
         endretAv: String = randomNavIdent(),
-        endretAvEnhet: String? = randomEnhetsnummer(),
+        endretAvEnhet: String = randomEnhetsnummer(),
     ) = Pamelding(
         innhold,
         bakgrunnsinformasjon,
@@ -286,8 +274,8 @@ object TestData {
             status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         ),
         pamelding: Pamelding = lagPamelding(opprinneligDeltaker),
-        godkjentAvNav: GodkjentAvNav? = null,
-    ) = Utkast(opprinneligDeltaker, pamelding, godkjentAvNav)
+        godkjentAvNav: Boolean = false,
+    ) = Utkast(opprinneligDeltaker.id, pamelding, godkjentAvNav)
 
     fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
@@ -361,7 +349,6 @@ object TestData {
     fun lagNavAnsatteForDeltaker(deltaker: Deltaker) = listOfNotNull(
         deltaker.vedtaksinformasjon?.sistEndretAv,
         deltaker.vedtaksinformasjon?.opprettetAv,
-        deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
     ).distinct().map { lagNavAnsatt(navIdent = it) }
 
     fun lagNavAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
@@ -374,7 +361,6 @@ object TestData {
                 listOfNotNull(
                     it.vedtak.sistEndretAv,
                     it.vedtak.opprettetAv,
-                    it.vedtak.fattetAvNav?.fattetAv,
                 )
             }
         }
