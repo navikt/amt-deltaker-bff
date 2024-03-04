@@ -80,7 +80,7 @@ class DeltakerRepository {
         vedtaksinformasjon = row.localDateTimeOrNull("v.opprettet")?.let { opprettet ->
             Deltaker.Vedtaksinformasjon(
                 fattet = row.localDateTimeOrNull("v.fattet"),
-                fattetAvNav = row.stringOrNull("v.fattet_av_nav")?.let { g -> objectMapper.readValue(g) },
+                fattetAvNav = row.boolean("v.fattet_av_nav"),
                 opprettet = opprettet,
                 opprettetAv = row.string("v.opprettet_av"),
                 sistEndret = row.localDateTime("v.sist_endret"),

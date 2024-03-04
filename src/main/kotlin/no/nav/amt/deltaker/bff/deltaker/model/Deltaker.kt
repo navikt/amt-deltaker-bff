@@ -29,7 +29,7 @@ data class Deltaker(
 
     data class Vedtaksinformasjon(
         val fattet: LocalDateTime?,
-        val fattetAvNav: FattetAvNav?,
+        val fattetAvNav: Boolean,
         val opprettet: LocalDateTime,
         val opprettetAv: String,
         val sistEndret: LocalDateTime,

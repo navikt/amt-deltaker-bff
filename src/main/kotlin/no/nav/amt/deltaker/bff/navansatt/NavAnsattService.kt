@@ -39,7 +39,6 @@ class NavAnsattService(
         val veilederIdenter = listOfNotNull(
             deltaker.vedtaksinformasjon?.opprettetAv,
             deltaker.vedtaksinformasjon?.sistEndretAv,
-            deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
         ).distinct()
 
         return hentAnsatte(veilederIdenter)
@@ -56,7 +55,6 @@ class NavAnsattService(
                     listOfNotNull(
                         it.vedtak.sistEndretAv,
                         it.vedtak.opprettetAv,
-                        it.vedtak.fattetAvNav?.fattetAv,
                     )
                 }
             }

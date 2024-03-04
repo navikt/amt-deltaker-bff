@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
-import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
@@ -21,7 +20,7 @@ data class DeltakerEndringResponse(
 data class VedtakResponse(
     val fattet: LocalDateTime?,
     val bakgrunnsinformasjon: String?,
-    val fattetAvNav: FattetAvNav?,
+    val fattetAvNav: Boolean,
     val innhold: List<Innhold>,
     val opprettetAv: String,
     val opprettetAvEnhet: String?,
@@ -49,7 +48,7 @@ fun Vedtak.toResponse(ansatte: Map<String, NavAnsatt>) = VedtakResponse(
     fattet = fattet,
     bakgrunnsinformasjon = deltakerVedVedtak.bakgrunnsinformasjon,
     innhold = deltakerVedVedtak.innhold,
-    fattetAvNav = fattetAvNav?.let { FattetAvNav(ansatte[it.fattetAv]?.navn ?: it.fattetAv, it.fattetAvEnhet) },
+    fattetAvNav = fattetAvNav,
     opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv,
     opprettetAvEnhet = opprettetAvEnhet,
     opprettet = opprettet,

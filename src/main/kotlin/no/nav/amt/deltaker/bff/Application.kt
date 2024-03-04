@@ -147,7 +147,6 @@ fun Application.module() {
 
     val pameldingService = PameldingService(
         deltakerService = deltakerService,
-        vedtakRepository = vedtakRepository,
         navBrukerService = navBrukerService,
         amtDeltakerClient = amtDeltakerClient,
     )
