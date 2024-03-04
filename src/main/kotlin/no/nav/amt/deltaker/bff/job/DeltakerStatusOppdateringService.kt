@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.job
 
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.harIkkeStartet
@@ -11,7 +10,6 @@ import java.util.UUID
 
 class DeltakerStatusOppdateringService(
     private val deltakerRepository: DeltakerRepository,
-    private val deltakerProducer: DeltakerProducer,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -125,7 +123,6 @@ class DeltakerStatusOppdateringService(
 
     private fun oppdaterDeltaker(deltaker: Deltaker) {
         deltakerRepository.upsert(deltaker)
-        deltakerProducer.produce(deltaker)
         log.info("Oppdatert status for deltaker med id ${deltaker.id}")
     }
 

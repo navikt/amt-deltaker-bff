@@ -1,8 +1,8 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -19,7 +19,6 @@ class DeltakerService(
     private val deltakerEndringRepository: DeltakerEndringRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
-    private val deltakerProducer: DeltakerProducer,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -38,45 +37,27 @@ class DeltakerService(
         val deltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
                 bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.EndreInnhold -> opprinneligDeltaker.copy(
                 innhold = endring.innhold,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.EndreDeltakelsesmengde -> opprinneligDeltaker.copy(
                 deltakelsesprosent = endring.deltakelsesprosent,
                 dagerPerUke = endring.dagerPerUke,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.EndreStartdato -> opprinneligDeltaker.copy(
                 startdato = endring.startdato,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.EndreSluttdato -> opprinneligDeltaker.copy(
                 sluttdato = endring.sluttdato,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.IkkeAktuell -> opprinneligDeltaker.copy(
                 status = nyDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL, endring.aarsak?.toDeltakerStatusAarsak()),
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.ForlengDeltakelse -> {
@@ -84,16 +65,10 @@ class DeltakerService(
                     opprinneligDeltaker.copy(
                         status = nyDeltakerStatus(DeltakerStatus.Type.DELTAR),
                         sluttdato = endring.sluttdato,
-                        sistEndretAv = endretAv,
-                        sistEndretAvEnhet = endretAvEnhet,
-                        sistEndret = LocalDateTime.now(),
                     )
                 } else {
                     opprinneligDeltaker.copy(
                         sluttdato = endring.sluttdato,
-                        sistEndretAv = endretAv,
-                        sistEndretAvEnhet = endretAvEnhet,
-                        sistEndret = LocalDateTime.now(),
                     )
                 }
             }
@@ -101,21 +76,16 @@ class DeltakerService(
             is DeltakerEndring.Endring.AvsluttDeltakelse -> opprinneligDeltaker.copy(
                 status = nyDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, endring.aarsak.toDeltakerStatusAarsak()),
                 sluttdato = endring.sluttdato,
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
 
             is DeltakerEndring.Endring.EndreSluttarsak -> opprinneligDeltaker.copy(
                 status = nyDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET, endring.aarsak.toDeltakerStatusAarsak()),
-                sistEndretAv = endretAv,
-                sistEndretAvEnhet = endretAvEnhet,
-                sistEndret = LocalDateTime.now(),
             )
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
-            upsert(deltaker)
+            navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
+            endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
             deltakerEndringRepository.upsert(
                 DeltakerEndring(
                     id = UUID.randomUUID(),
@@ -127,12 +97,13 @@ class DeltakerService(
                     endret = LocalDateTime.now(),
                 ),
             )
+            upsert(deltaker)
             log.info("Oppdatert deltaker med id ${deltaker.id}")
         }
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    suspend fun oppdaterDeltaker(
+    fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
         endring: Pamelding,
@@ -143,9 +114,6 @@ class DeltakerService(
             deltakelsesprosent = endring.deltakelsesprosent,
             dagerPerUke = endring.dagerPerUke,
             status = status,
-            sistEndretAv = endring.endretAv,
-            sistEndretAvEnhet = endring.endretAvEnhet,
-            sistEndret = LocalDateTime.now(),
         )
 
         upsert(deltaker)
@@ -153,17 +121,12 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    suspend fun oppdaterDeltaker(
+    fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
         status: DeltakerStatus,
-        endretAvEnhet: String?,
-        navIdent: String,
     ): Deltaker {
         val deltaker = opprinneligDeltaker.copy(
             status = status,
-            sistEndretAv = navIdent,
-            sistEndretAvEnhet = endretAvEnhet ?: opprinneligDeltaker.sistEndretAvEnhet,
-            sistEndret = LocalDateTime.now(),
         )
 
         upsert(deltaker)
@@ -175,15 +138,16 @@ class DeltakerService(
         deltakerRepository.delete(deltakerId)
     }
 
-    suspend fun upsert(
+    fun upsert(
         deltaker: Deltaker,
     ) {
-        navAnsattService.hentEllerOpprettNavAnsatt(deltaker.sistEndretAv)
-        deltaker.sistEndretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
-
         deltakerRepository.upsert(deltaker)
-        deltakerProducer.produce(deltaker)
         log.info("Upserter deltaker med id ${deltaker.id}")
+    }
+
+    fun opprettDeltaker(kladd: KladdResponse): Result<Deltaker> {
+        deltakerRepository.create(kladd)
+        return deltakerRepository.get(kladd.id)
     }
 
     private fun erEndret(opprinneligDeltaker: Deltaker, oppdatertDeltaker: Deltaker): Boolean {

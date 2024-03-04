@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -9,9 +10,11 @@ import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
+import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -52,7 +55,6 @@ class DeltakerRepositoryTest {
             sluttdato = LocalDate.now().plusWeeks(5),
             dagerPerUke = 1F,
             deltakelsesprosent = 20F,
-            sistEndretAv = TestData.randomNavIdent(),
         )
 
         repository.upsert(oppdatertDeltaker)
@@ -89,20 +91,6 @@ class DeltakerRepositoryTest {
         repository.delete(deltaker.id)
 
         repository.get(deltaker.id).isFailure shouldBe true
-    }
-
-    @Test
-    fun `get - deltaker, ansatt og enhet finnes ikke - returnerer navident og enhetsnummer`() {
-        val navAnsatt = TestData.lagNavAnsatt()
-        val navEnhet = TestData.lagNavEnhet()
-        val deltaker =
-            TestData.lagDeltaker(sistEndretAv = navAnsatt.navIdent, sistEndretAvEnhet = navEnhet.enhetsnummer)
-        TestRepository.insert(deltaker)
-
-        val deltakerFraDb = repository.get(deltaker.id).getOrThrow()
-
-        deltakerFraDb.sistEndretAv shouldBe navAnsatt.navIdent
-        deltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
     }
 
     @Test
@@ -240,6 +228,30 @@ class DeltakerRepositoryTest {
 
         deltakerePaAvsluttetDeltakerliste.size shouldBe 0
     }
+
+    @Test
+    fun `create - ny kladd - oppretter ny deltaker`() {
+        val deltaker = TestData.lagDeltakerKladd()
+        TestRepository.insert(deltaker.navBruker)
+        TestRepository.insert(deltaker.deltakerliste)
+
+        val kladd = deltaker.toKladdResponse()
+        repository.create(kladd)
+
+        sammenlignDeltakere(deltaker, repository.get(kladd.id).getOrThrow())
+    }
+
+    @Test
+    fun `create - deltaker eksisterer - feiler`() {
+        val deltaker = TestData.lagDeltakerKladd()
+        TestRepository.insert(deltaker)
+
+        val kladd = deltaker.toKladdResponse()
+
+        assertThrows(PSQLException::class.java) {
+            repository.create(kladd)
+        }
+    }
 }
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
@@ -257,8 +269,18 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
-    a.sistEndretAv shouldBe b.sistEndretAv
-    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
-    a.sistEndret shouldBeCloseTo b.sistEndret
-    a.opprettet shouldBeCloseTo b.opprettet
 }
+
+private fun Deltaker.toKladdResponse(): KladdResponse =
+    KladdResponse(
+        id = id,
+        navBruker = navBruker,
+        deltakerlisteId = deltakerliste.id,
+        startdato = startdato,
+        sluttdato = sluttdato,
+        dagerPerUke = dagerPerUke,
+        deltakelsesprosent = deltakelsesprosent,
+        bakgrunnsinformasjon = bakgrunnsinformasjon,
+        innhold = innhold,
+        status = status,
+    )

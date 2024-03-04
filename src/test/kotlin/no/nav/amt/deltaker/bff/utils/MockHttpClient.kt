@@ -18,7 +18,7 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerDto
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
@@ -131,20 +131,10 @@ object MockResponseHandler {
             addResponse(
                 url = url,
                 method = HttpMethod.Post,
-                responseBody = AmtDeltakerDto(
+                responseBody = KladdResponse(
                     id = deltaker.id,
                     navBruker = deltaker.navBruker,
-                    deltakerliste = AmtDeltakerDto.DeltakerlisteDto(
-                        id = deltaker.deltakerliste.id,
-                        tiltakstype = deltaker.deltakerliste.tiltak,
-                        navn = deltaker.deltakerliste.navn,
-                        status = deltaker.deltakerliste.status,
-                        startDato = deltaker.deltakerliste.startDato,
-                        sluttDato = deltaker.deltakerliste.sluttDato,
-                        oppstart = deltaker.deltakerliste.oppstart,
-                        arrangor = deltaker.deltakerliste.arrangor.arrangor,
-
-                    ),
+                    deltakerlisteId = deltaker.deltakerliste.id,
                     startdato = deltaker.startdato,
                     sluttdato = deltaker.sluttdato,
                     dagerPerUke = deltaker.dagerPerUke,
@@ -152,10 +142,6 @@ object MockResponseHandler {
                     bakgrunnsinformasjon = deltaker.bakgrunnsinformasjon,
                     innhold = deltaker.innhold,
                     status = deltaker.status,
-                    sistEndretAv = TestData.lagNavAnsatt(navIdent = deltaker.sistEndretAv),
-                    sistEndretAvEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.sistEndretAvEnhet!!),
-                    sistEndret = deltaker.sistEndret,
-                    opprettet = deltaker.opprettet,
                 ),
             )
         }

@@ -28,9 +28,6 @@ data class DeltakerVedVedtak(
     val bakgrunnsinformasjon: String?,
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
-    val sistEndretAv: String,
-    val sistEndretAvEnhet: String?,
-    val sistEndret: LocalDateTime,
 )
 
 data class FattetAvNav(

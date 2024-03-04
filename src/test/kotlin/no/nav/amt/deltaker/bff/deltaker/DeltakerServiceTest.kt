@@ -4,12 +4,8 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
-import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
-import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -58,7 +54,6 @@ class DeltakerServiceTest {
                 deltakerEndringRepository,
                 navAnsattService,
                 navEnhetService,
-                DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),
             )
         }
     }
@@ -87,10 +82,6 @@ class DeltakerServiceTest {
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
-            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltakerFraDb.sistEndretAv shouldBe navAnsatt.navIdent
-            oppdatertDeltakerFraDb.sistEndretAvEnhet shouldBe navEnhet.enhetsnummer
-            oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo LocalDateTime.now()
             val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
             endring.size shouldBe 1
             endring.first().endringstype shouldBe DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON
@@ -100,8 +91,6 @@ class DeltakerServiceTest {
             endring.first().endret shouldBeCloseTo LocalDateTime.now()
             endring.first().endretAv shouldBe navAnsatt.navIdent
             endring.first().endretAvEnhet shouldBe navEnhet.enhetsnummer
-
-            assertProduced(oppdatertDeltakerFraDb)
         }
     }
 
@@ -122,9 +111,6 @@ class DeltakerServiceTest {
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            val oppdatertDeltakerFraDb = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltakerFraDb.sistEndretAv shouldBe deltaker.sistEndretAv
-            oppdatertDeltakerFraDb.sistEndret shouldBeCloseTo deltaker.sistEndret
             val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
             endring.size shouldBe 0
         }

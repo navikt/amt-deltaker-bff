@@ -27,8 +27,6 @@ class PameldingService(
     suspend fun opprettKladd(
         deltakerlisteId: UUID,
         personident: String,
-        opprettetAv: String,
-        opprettetAvEnhet: String,
     ): Deltaker {
         val eksisterendeDeltaker = deltakerService
             .getDeltakelser(personident, deltakerlisteId)
@@ -39,22 +37,20 @@ class PameldingService(
             return eksisterendeDeltaker
         }
 
-        val deltaker = amtDeltakerClient.opprettKladd(
+        val kladd = amtDeltakerClient.opprettKladd(
             deltakerlisteId = deltakerlisteId,
             personident = personident,
-            opprettetAv = opprettetAv,
-            opprettetAvEnhet = opprettetAvEnhet,
         )
 
-        navBrukerService.upsert(deltaker.navBruker)
-        deltakerService.upsert(deltaker)
+        navBrukerService.upsert(kladd.navBruker)
+        val deltaker = deltakerService.opprettDeltaker(kladd).getOrThrow()
 
         MetricRegister.OPPRETTET_KLADD.inc()
 
-        return deltakerService.get(deltaker.id).getOrThrow()
+        return deltaker
     }
 
-    suspend fun upsertKladd(kladd: Kladd) {
+    fun upsertKladd(kladd: Kladd) {
         require(kladd.opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
             "Kan ikke upserte kladd for deltaker ${kladd.opprinneligDeltaker.id} " +
                 "med status ${kladd.opprinneligDeltaker.status.type}," +
@@ -68,7 +64,7 @@ class PameldingService(
         )
     }
 
-    suspend fun upsertUtkast(utkast: Utkast) {
+    fun upsertUtkast(utkast: Utkast) {
         val status = when (utkast.opprinneligDeltaker.status.type) {
             DeltakerStatus.Type.KLADD -> nyDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING)
             DeltakerStatus.Type.UTKAST_TIL_PAMELDING -> utkast.opprinneligDeltaker.status
@@ -88,7 +84,7 @@ class PameldingService(
         MetricRegister.DELT_UTKAST.inc()
     }
 
-    suspend fun meldPaUtenGodkjenning(
+    fun meldPaUtenGodkjenning(
         utkast: Utkast,
     ) {
         require(utkast.godkjentAvNav != null) {
@@ -149,7 +145,7 @@ class PameldingService(
         sistEndret = LocalDateTime.now(),
     )
 
-    suspend fun avbrytUtkast(
+    fun avbrytUtkast(
         opprinneligDeltaker: Deltaker,
         endretAvEnhet: String?,
         navIdent: String,
@@ -158,8 +154,9 @@ class PameldingService(
             log.warn("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
             throw IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id ${opprinneligDeltaker.id} som har status ${opprinneligDeltaker.status.type}")
         }
+
         val status = nyDeltakerStatus(DeltakerStatus.Type.AVBRUTT_UTKAST)
-        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status, endretAvEnhet, navIdent)
+        val deltaker = deltakerService.oppdaterDeltaker(opprinneligDeltaker, status)
 
         deltakerService.upsert(deltaker)
     }

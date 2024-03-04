@@ -2,11 +2,8 @@ package no.nav.amt.deltaker.bff.job
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
-import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -25,15 +22,7 @@ class DeltakerStatusOppdateringServiceTest {
         fun setup() {
             SingletonPostgresContainer.start()
             deltakerRepository = DeltakerRepository()
-            deltakerStatusOppdateringService =
-                DeltakerStatusOppdateringService(
-                    deltakerRepository,
-                    DeltakerProducer(
-                        LocalKafkaConfig(
-                            SingletonKafkaProvider.getHost(),
-                        ),
-                    ),
-                )
+            deltakerStatusOppdateringService = DeltakerStatusOppdateringService(deltakerRepository)
         }
     }
 

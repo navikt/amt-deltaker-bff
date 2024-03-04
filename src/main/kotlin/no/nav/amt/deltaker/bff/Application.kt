@@ -29,7 +29,6 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -126,8 +125,6 @@ fun Application.module() {
     val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
     val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
 
-    val deltakerProducer = DeltakerProducer()
-
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
             baseUrl = environment.poaoTilgangUrl,
@@ -138,12 +135,14 @@ fun Application.module() {
     val deltakerRepository = DeltakerRepository()
     val vedtakRepository = VedtakRepository()
     val deltakerEndringRepository = DeltakerEndringRepository()
+
+    val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, vedtakRepository)
+
     val deltakerService = DeltakerService(
         deltakerRepository,
         deltakerEndringRepository,
         navAnsattService,
         navEnhetService,
-        deltakerProducer,
     )
 
     val pameldingService = PameldingService(
@@ -152,14 +151,13 @@ fun Application.module() {
         navBrukerService = navBrukerService,
         amtDeltakerClient = amtDeltakerClient,
     )
-    val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, vedtakRepository)
 
     val endringsmeldingRepository = EndringsmeldingRepository()
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
 
     val tiltakstypeRepository = TiltakstypeRepository()
 
-    val deltakerStatusOppdateringService = DeltakerStatusOppdateringService(deltakerRepository, deltakerProducer)
+    val deltakerStatusOppdateringService = DeltakerStatusOppdateringService(deltakerRepository)
 
     val consumers = listOf(
         EndringsmeldingConsumer(endringsmeldingService),

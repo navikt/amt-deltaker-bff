@@ -8,15 +8,11 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
-import no.nav.amt.deltaker.bff.kafka.utils.SingletonKafkaProvider
-import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
@@ -48,7 +44,6 @@ class PameldingServiceTest {
             deltakerEndringRepository = DeltakerEndringRepository(),
             navAnsattService = NavAnsattService(NavAnsattRepository(), amtPersonClient),
             navEnhetService = NavEnhetService(NavEnhetRepository(), amtPersonClient),
-            deltakerProducer = DeltakerProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost())),
         )
 
         private var pameldingService = PameldingService(
@@ -85,8 +80,6 @@ class PameldingServiceTest {
             val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = deltakerliste.id,
                 personident = kladd.navBruker.personident,
-                opprettetAv = kladd.sistEndretAv,
-                opprettetAvEnhet = kladd.sistEndretAvEnhet!!,
             )
 
             deltaker.id shouldBe deltakerService.getDeltakelser(kladd.navBruker.personident, deltakerliste.id)
@@ -110,12 +103,10 @@ class PameldingServiceTest {
     @Test
     fun `opprettKladd - kall til amt-deltaker feiler - kaster exception`() {
         val personident = TestData.randomIdent()
-        val opprettetAv = TestData.randomNavIdent()
-        val opprettetAvEnhet = TestData.randomEnhetsnummer()
         MockResponseHandler.addOpprettKladdResponse(null)
         runBlocking {
             assertFailsWith<IllegalStateException> {
-                pameldingService.opprettKladd(UUID.randomUUID(), personident, opprettetAv, opprettetAvEnhet)
+                pameldingService.opprettKladd(UUID.randomUUID(), personident)
             }
         }
     }
@@ -133,8 +124,6 @@ class PameldingServiceTest {
                 pameldingService.opprettKladd(
                     deltaker.deltakerliste.id,
                     deltaker.navBruker.personident,
-                    deltaker.sistEndretAv,
-                    deltaker.sistEndretAvEnhet!!,
                 )
 
             eksisterendeDeltaker.id shouldBe deltaker.id
@@ -164,8 +153,6 @@ class PameldingServiceTest {
                 pameldingService.opprettKladd(
                     deltaker.deltakerliste.id,
                     deltaker.navBruker.personident,
-                    deltaker.sistEndretAv,
-                    deltaker.sistEndretAvEnhet!!,
                 )
 
             nyDeltaker.id shouldNotBe deltaker.id
@@ -240,8 +227,6 @@ class PameldingServiceTest {
             vedtak.gyldigTil shouldBe null
             sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
             vedtak.fattetAvNav shouldBe null
-
-            assertProduced(oppdatertDeltaker)
         }
     }
 
@@ -273,8 +258,6 @@ class PameldingServiceTest {
             vedtak.gyldigTil shouldBe null
             sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltaker)
             vedtak.fattetAvNav shouldBe null
-
-            assertProduced(oppdatertDeltaker)
         }
     }
 
@@ -329,8 +312,6 @@ class PameldingServiceTest {
             sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
             vedtak.fattetAvNav?.fattetAv shouldBe godkjentAvNav.godkjentAv
             vedtak.fattetAvNav?.fattetAvEnhet shouldBe godkjentAvNav.godkjentAvEnhet
-
-            assertProduced(oppdatertDeltakerFraDb)
         }
     }
 
@@ -354,9 +335,6 @@ class PameldingServiceTest {
             godkjentAvNav = godkjentAvNav,
         )
 
-        MockResponseHandler.addNavAnsattResponse(TestData.lagNavAnsatt(navIdent = deltaker.sistEndretAv))
-        MockResponseHandler.addNavEnhetResponse(TestData.lagNavEnhet(enhetsnummer = deltaker.sistEndretAvEnhet!!))
-
         runBlocking {
             pameldingService.meldPaUtenGodkjenning(utkast)
 
@@ -370,8 +348,6 @@ class PameldingServiceTest {
             sammenlignDeltakereVedVedtak(vedtak.deltakerVedVedtak, oppdatertDeltakerFraDb)
             vedtak.fattetAvNav?.fattetAv shouldBe godkjentAvNav.godkjentAv
             vedtak.fattetAvNav?.fattetAvEnhet shouldBe godkjentAvNav.godkjentAvEnhet
-
-            assertProduced(oppdatertDeltakerFraDb)
         }
     }
 
@@ -416,8 +392,6 @@ class PameldingServiceTest {
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT_UTKAST
             oppdatertDeltaker.status.aarsak shouldBe null
-
-            assertProduced(oppdatertDeltaker)
         }
     }
 }
@@ -440,9 +414,6 @@ fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: DeltakerVedVedtak) {
     a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
-    a.sistEndretAv shouldBe b.sistEndretAv
-    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
-    a.sistEndret shouldBeCloseTo b.sistEndret
 }
 
 fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
@@ -454,7 +425,4 @@ fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
     bakgrunnsinformasjon,
     innhold,
     status,
-    sistEndretAv,
-    sistEndretAvEnhet,
-    sistEndret,
 )
