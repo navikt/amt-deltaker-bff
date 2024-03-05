@@ -10,7 +10,6 @@ import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
@@ -33,7 +32,6 @@ import java.util.UUID
 fun Routing.registerDeltakerApi(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
-    deltakerHistorikkService: DeltakerHistorikkService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
 ) {
@@ -226,7 +224,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
-            val historikk = deltakerHistorikkService.getForDeltaker(deltaker.id)
+            val historikk = deltaker.getDeltakerHistorikSortert()
 
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
 

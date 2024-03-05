@@ -18,7 +18,6 @@ import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
@@ -47,7 +46,6 @@ class PameldingApiTest {
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
-    private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
 
@@ -294,7 +292,6 @@ class PameldingApiTest {
                 tilgangskontrollService,
                 deltakerService,
                 pameldingService,
-                deltakerHistorikkService,
                 navAnsattService,
                 navEnhetService,
             )

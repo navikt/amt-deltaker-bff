@@ -20,7 +20,6 @@ import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
@@ -38,7 +37,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -58,7 +56,6 @@ class DeltakerApiTest {
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
-    private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
 
@@ -365,17 +362,14 @@ class DeltakerApiTest {
     @Test
     fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        val vedtak = DeltakerHistorikk.Vedtak(TestData.lagVedtak())
-        val endring = DeltakerHistorikk.Endring(TestData.lagDeltakerEndring())
-        val historikk = listOf(vedtak, endring)
+
+        val historikk = deltaker.getDeltakerHistorikSortert()
 
         val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
 
         every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
-
-        every { deltakerHistorikkService.getForDeltaker(deltaker.id) } returns historikk
 
         setUpTestApplication()
         client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
@@ -502,7 +496,6 @@ class DeltakerApiTest {
                 tilgangskontrollService,
                 deltakerService,
                 pameldingService,
-                deltakerHistorikkService,
                 navAnsattService,
                 navEnhetService,
             )

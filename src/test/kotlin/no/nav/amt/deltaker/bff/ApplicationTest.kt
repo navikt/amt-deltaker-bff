@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -22,7 +21,6 @@ class ApplicationTest {
     private val tilgangskontrollService = mockk<TilgangskontrollService>()
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
-    private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
 
@@ -36,7 +34,6 @@ class ApplicationTest {
                 tilgangskontrollService,
                 deltakerService,
                 pameldingService,
-                deltakerHistorikkService,
                 navAnsattService,
                 navEnhetService,
             )

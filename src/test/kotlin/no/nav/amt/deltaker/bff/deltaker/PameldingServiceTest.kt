@@ -3,9 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
@@ -33,12 +31,10 @@ class PameldingServiceTest {
 
     companion object {
 
-        private val vedtakRepository = VedtakRepository()
         private val amtPersonClient = mockAmtPersonClient()
 
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
-            deltakerEndringRepository = DeltakerEndringRepository(),
             navAnsattService = NavAnsattService(NavAnsattRepository(), amtPersonClient),
             navEnhetService = NavEnhetService(NavEnhetRepository(), amtPersonClient),
         )
@@ -186,10 +182,6 @@ class PameldingServiceTest {
             oppdatertDeltaker.status.aarsak shouldBe null
         }
     }
-}
-
-fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: Deltaker) {
-    sammenlignDeltakereVedVedtak(a, b.toDeltakerVedVedtak())
 }
 
 fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: DeltakerVedVedtak) {

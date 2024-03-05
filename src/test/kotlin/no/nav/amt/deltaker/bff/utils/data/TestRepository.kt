@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import kotliquery.queryOf
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
@@ -155,11 +156,11 @@ object TestRepository {
         val sql = """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
             )
         """.trimIndent()
 
@@ -173,6 +174,7 @@ object TestRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
+            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
         )
 
         session.update(queryOf(sql, parameters))

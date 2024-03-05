@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
@@ -55,9 +56,7 @@ data class DeltakerlisteDto(
     val sluttdato: LocalDate?,
 )
 
-fun Deltaker.toDeltakerResponse(): DeltakerResponse {
-    return this.toDeltakerResponse(emptyMap(), null)
-}
+fun Deltaker.toDeltakerResponse() = toDeltakerResponse(emptyMap(), null)
 
 fun Deltaker.toDeltakerResponse(
     ansatte: Map<UUID, NavAnsatt>,
@@ -119,7 +118,7 @@ private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
     it.tekst
 }
 
-fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =
+fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =
     DeltakerResponse.VedtaksinformasjonDto(
         fattet = fattet,
         fattetAvNav = fattetAvNav,

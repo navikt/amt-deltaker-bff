@@ -2,9 +2,10 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
@@ -31,7 +32,6 @@ class DeltakerServiceTest {
         lateinit var navEnhet: NavEnhet
         lateinit var deltakerRepository: DeltakerRepository
         lateinit var deltakerService: DeltakerService
-        lateinit var deltakerEndringRepository: DeltakerEndringRepository
         lateinit var navAnsattService: NavAnsattService
         lateinit var navEnhetService: NavEnhetService
         lateinit var amtPersonClient: AmtPersonServiceClient
@@ -43,7 +43,6 @@ class DeltakerServiceTest {
             navAnsatt = TestData.lagNavAnsatt()
             navEnhet = TestData.lagNavEnhet()
             deltakerRepository = DeltakerRepository()
-            deltakerEndringRepository = DeltakerEndringRepository()
             amtPersonClient = mockAmtPersonClient()
             navAnsattService =
                 NavAnsattService(NavAnsattRepository(), amtPersonClient)
@@ -51,7 +50,6 @@ class DeltakerServiceTest {
                 NavEnhetService(NavEnhetRepository(), amtPersonClient)
             deltakerService = DeltakerService(
                 deltakerRepository,
-                deltakerEndringRepository,
                 navAnsattService,
                 navEnhetService,
             )
@@ -82,7 +80,7 @@ class DeltakerServiceTest {
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
-            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
             endring.first().endringstype shouldBe DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON
             endring.first().endring shouldBe DeltakerEndring.Endring.EndreBakgrunnsinformasjon(
@@ -111,7 +109,7 @@ class DeltakerServiceTest {
             )
 
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 0
         }
     }
@@ -135,7 +133,7 @@ class DeltakerServiceTest {
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
             oppdatertDeltaker.status.aarsak shouldBe aarsak.toDeltakerStatusAarsak()
 
-            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
             endring[0].endringstype shouldBe DeltakerEndring.Endringstype.IKKE_AKTUELL
 
@@ -166,7 +164,7 @@ class DeltakerServiceTest {
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
             oppdatertDeltaker.sluttdato shouldBe nySluttdato
 
-            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
             endring[0].endringstype shouldBe DeltakerEndring.Endringstype.FORLENGELSE
 
@@ -197,7 +195,7 @@ class DeltakerServiceTest {
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
             oppdatertDeltaker.sluttdato shouldBe nySluttdato
 
-            val endring = deltakerEndringRepository.getForDeltaker(deltaker.id)
+            val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
             endring[0].endringstype shouldBe DeltakerEndring.Endringstype.FORLENGELSE
 
@@ -206,3 +204,5 @@ class DeltakerServiceTest {
         }
     }
 }
+
+private fun Deltaker.getAlleEndringer() = historikk.filterIsInstance<DeltakerHistorikk.Endring>().map { it.endring }

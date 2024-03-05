@@ -77,16 +77,8 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
-        vedtaksinformasjon = row.localDateTimeOrNull("v.opprettet")?.let { opprettet ->
-            Deltaker.Vedtaksinformasjon(
-                fattet = row.localDateTimeOrNull("v.fattet"),
-                fattetAvNav = row.boolean("v.fattet_av_nav"),
-                opprettet = opprettet,
-                opprettetAv = row.uuid("v.opprettet_av"),
-                sistEndret = row.localDateTime("v.sist_endret"),
-                sistEndretAv = row.uuid("v.sist_endret_av"),
-                sistEndretAvEnhet = row.uuid("v.sist_endret_av_enhet"),
-            )
+        historikk = row.string("d.historikk").let { list ->
+            objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
         },
     )
 
@@ -94,11 +86,11 @@ class DeltakerRepository {
         val sql = """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -108,6 +100,7 @@ class DeltakerRepository {
                 deltakelsesprosent   = :deltakelsesprosent,
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 innhold              = :innhold,
+                historikk            = :historikk,
                 modified_at          = current_timestamp
         """.trimIndent()
 
@@ -121,6 +114,7 @@ class DeltakerRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
+            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
         )
 
         session.transaction { tx ->
@@ -341,6 +335,7 @@ class DeltakerRepository {
                    d.deltakelsesprosent as "d.deltakelsesprosent",
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.innhold as "d.innhold",
+                   d.historikk as "d.historikk",
                    d.modified_at as "d.modified_at",
                    nb.personident as "nb.personident",
                    nb.fornavn as "nb.fornavn",
@@ -367,13 +362,6 @@ class DeltakerRepository {
                    a.organisasjonsnummer as "a.organisasjonsnummer",
                    a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
                    oa.navn  AS overordnet_arrangor_navn,
-                   v.fattet as "v.fattet",
-                   v.fattet_av_nav as "v.fattet_av_nav",
-                   v.created_at as "v.opprettet",
-                   v.opprettet_av as "v.opprettet_av",
-                   v.modified_at as "v.sist_endret",
-                   v.sist_endret_av as "v.sist_endret_av",
-                   v.sist_endret_av_enhet as "v.sist_endret_av_enhet",
                    t.id as "t.id",
                    t.navn as "t.navn",
                    t.type as "t.type",
@@ -385,7 +373,6 @@ class DeltakerRepository {
                 join arrangor a on a.id = dl.arrangor_id
                 join tiltakstype t on t.type = dl.tiltakstype
                 left join arrangor oa on oa.id = a.overordnet_arrangor_id
-                left join vedtak v on d.id = v.deltaker_id and v.gyldig_til is null
                 $where
       """
 }

@@ -116,7 +116,7 @@ object TestData {
         bakgrunnsinformasjon = null,
         innhold = emptyList(),
         status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
-        vedtaksinformasjon = null,
+        historikk = false,
     )
 
     fun lagDeltaker(
@@ -130,22 +130,33 @@ object TestData {
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
         innhold: List<Innhold> = deltakerliste.tiltak.innhold?.innholdselementer?.map { it.toInnhold() } ?: emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-        vedtaksinformasjon: Deltaker.Vedtaksinformasjon? = lagVedtaksinformasjon(
-            fattet = LocalDateTime.now().minusMonths(4),
-        ),
-    ) = Deltaker(
-        id,
-        navBruker,
-        deltakerliste,
-        startdato,
-        sluttdato,
-        dagerPerUke,
-        deltakelsesprosent,
-        bakgrunnsinformasjon,
-        innhold,
-        status,
-        vedtaksinformasjon,
-    )
+        historikk: Boolean = true,
+    ): Deltaker {
+        val deltaker = Deltaker(
+            id,
+            navBruker,
+            deltakerliste,
+            startdato,
+            sluttdato,
+            dagerPerUke,
+            deltakelsesprosent,
+            bakgrunnsinformasjon,
+            innhold,
+            status,
+            emptyList(),
+        )
+
+        return if (historikk) {
+            deltaker.copy(historikk = lagDeltakerHistorikk(deltaker))
+        } else {
+            deltaker
+        }
+    }
+
+    private fun lagDeltakerHistorikk(deltaker: Deltaker): List<DeltakerHistorikk> {
+        val vedtak = lagVedtak(deltakerVedVedtak = deltaker, fattet = LocalDateTime.now())
+        return listOf(DeltakerHistorikk.Vedtak(vedtak))
+    }
 
     fun lagDeltakerStatus(
         type: DeltakerStatus.Type,
@@ -200,24 +211,6 @@ object TestData {
         opprettet,
         opprettetAv,
         opprettetAvEnhet,
-        sistEndret,
-        sistEndretAv,
-        sistEndretAvEnhet,
-    )
-
-    fun lagVedtaksinformasjon(
-        fattet: LocalDateTime? = LocalDateTime.now(),
-        fattetAvNav: Boolean = false,
-        opprettet: LocalDateTime = LocalDateTime.now(),
-        opprettetAv: UUID = UUID.randomUUID(),
-        sistEndret: LocalDateTime = opprettet,
-        sistEndretAv: UUID = opprettetAv,
-        sistEndretAvEnhet: UUID = UUID.randomUUID(),
-    ) = Deltaker.Vedtaksinformasjon(
-        fattet,
-        fattetAvNav,
-        opprettet,
-        opprettetAv,
         sistEndret,
         sistEndretAv,
         sistEndretAvEnhet,
@@ -365,4 +358,34 @@ object TestData {
             }
         }
     }.distinct().map { lagNavAnsatt(id = it) }
+
+    fun leggTilHistorikk(
+        deltaker: Deltaker,
+        antallVedtak: Int = 1,
+        antallEndringer: Int = 1,
+    ): Deltaker {
+        val vedtak = (1..antallVedtak).map {
+            val fattet = it == antallVedtak
+            lagVedtak(
+                deltakerVedVedtak = deltaker,
+                fattet = if (fattet) LocalDateTime.now() else null,
+                gyldigTil = if (fattet) null else LocalDateTime.now(),
+                fattetAvNav = fattet,
+            )
+        }
+
+        val endringer = (1..antallEndringer).map { lagDeltakerEndring(deltakerId = deltaker.id) }
+
+        return deltaker.copy(
+            historikk = vedtak.map { DeltakerHistorikk.Vedtak(it) } + endringer.map { DeltakerHistorikk.Endring(it) },
+        )
+    }
+
+    fun leggTilHistorikk(
+        deltaker: Deltaker,
+        vedtak: List<Vedtak> = emptyList(),
+        endringer: List<DeltakerEndring> = emptyList(),
+    ) = deltaker.copy(
+        historikk = vedtak.map { DeltakerHistorikk.Vedtak(it) } + endringer.map { DeltakerHistorikk.Endring(it) },
+    )
 }
