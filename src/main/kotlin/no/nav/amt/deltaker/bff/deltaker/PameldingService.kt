@@ -110,11 +110,12 @@ class PameldingService(
         MetricRegister.PAMELDT_UTEN_UTKAST.inc()
     }
 
-    fun slettKladd(deltaker: Deltaker): Boolean {
+    suspend fun slettKladd(deltaker: Deltaker): Boolean {
         if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
             log.warn("Kan ikke slette deltaker med id ${deltaker.id} som har status ${deltaker.status.type}")
             return false
         }
+        amtDeltakerClient.slettKladd(deltaker.id)
         deltakerService.delete(deltaker.id)
         return true
     }

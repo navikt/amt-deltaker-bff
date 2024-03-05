@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.amtdeltaker
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -39,5 +40,20 @@ class AmtDeltakerClient(
             )
         }
         return response.body()
+    }
+
+    suspend fun slettKladd(deltakerId: UUID) {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.delete("$baseUrl/pamelding/$deltakerId") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke slette kladd i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
     }
 }

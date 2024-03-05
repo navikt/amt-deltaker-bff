@@ -218,7 +218,7 @@ class PameldingApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        every { pameldingService.slettKladd(deltaker) } returns true
+        coEvery { pameldingService.slettKladd(deltaker) } returns true
 
         setUpTestApplication()
         client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
@@ -232,7 +232,7 @@ class PameldingApiTest {
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        every { pameldingService.slettKladd(deltaker) } returns false
+        coEvery { pameldingService.slettKladd(deltaker) } returns false
 
         setUpTestApplication()
         client.delete("/pamelding/${deltaker.id}") { noBodyRequest() }.apply {
