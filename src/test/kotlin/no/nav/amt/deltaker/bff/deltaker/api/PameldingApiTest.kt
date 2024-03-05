@@ -96,13 +96,13 @@ class PameldingApiTest {
     @Test
     fun `post pamelding - har tilgang - returnerer deltaker`() = testApplication {
         val deltaker = TestData.lagDeltaker()
-        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.navIdent }
-        val navEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet!!)
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
+        val navEnhet = TestData.lagNavEnhet(id = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet)
 
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery { pameldingService.opprettKladd(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
-        coEvery { navEnhetService.hentEnhet(navEnhet.enhetsnummer) } returns navEnhet
+        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         setUpTestApplication()
 

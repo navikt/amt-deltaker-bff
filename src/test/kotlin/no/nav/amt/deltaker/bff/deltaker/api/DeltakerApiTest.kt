@@ -349,11 +349,11 @@ class DeltakerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.navIdent }
-        val navEnhet = TestData.lagNavEnhet(enhetsnummer = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet!!)
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
+        val navEnhet = TestData.lagNavEnhet(id = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
-        every { navEnhetService.hentEnhet(navEnhet.enhetsnummer) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         setUpTestApplication()
         client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
@@ -371,7 +371,7 @@ class DeltakerApiTest {
         val endring = DeltakerHistorikk.Endring(TestData.lagDeltakerEndring())
         val historikk = listOf(vedtak, endring)
 
-        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.navIdent }
+        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
 
         every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
 

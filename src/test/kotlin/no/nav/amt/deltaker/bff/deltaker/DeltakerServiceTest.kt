@@ -89,8 +89,8 @@ class DeltakerServiceTest {
                 oppdatertBakgrunnsinformasjon,
             )
             endring.first().endret shouldBeCloseTo LocalDateTime.now()
-            endring.first().endretAv shouldBe navAnsatt.navIdent
-            endring.first().endretAvEnhet shouldBe navEnhet.enhetsnummer
+            endring.first().endretAv shouldBe navAnsatt.id
+            endring.first().endretAvEnhet shouldBe navEnhet.id
         }
     }
 

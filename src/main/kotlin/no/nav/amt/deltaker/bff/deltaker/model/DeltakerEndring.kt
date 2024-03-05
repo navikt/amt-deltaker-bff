@@ -9,8 +9,8 @@ data class DeltakerEndring(
     val deltakerId: UUID,
     val endringstype: Endringstype,
     val endring: Endring,
-    val endretAv: String,
-    val endretAvEnhet: String?,
+    val endretAv: UUID,
+    val endretAvEnhet: UUID,
     val endret: LocalDateTime,
 ) {
     enum class Endringstype {

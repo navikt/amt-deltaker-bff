@@ -56,12 +56,12 @@ data class DeltakerlisteDto(
 )
 
 fun Deltaker.toDeltakerResponse(): DeltakerResponse {
-    return this.toDeltakerResponse(emptyMap())
+    return this.toDeltakerResponse(emptyMap(), null)
 }
 
 fun Deltaker.toDeltakerResponse(
-    ansatte: Map<String, NavAnsatt>,
-    vedtakSistEndretAvEnhet: NavEnhet? = null,
+    ansatte: Map<UUID, NavAnsatt>,
+    vedtakSistEndretAvEnhet: NavEnhet?,
 ): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
@@ -119,14 +119,13 @@ private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
     it.tekst
 }
 
-fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<String, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =
+fun Deltaker.Vedtaksinformasjon.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =
     DeltakerResponse.VedtaksinformasjonDto(
         fattet = fattet,
-        fattetAvNav = fattetAvNav?.let { true } ?: false,
+        fattetAvNav = fattetAvNav,
         opprettet = opprettet,
-        opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv,
+        opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv.toString(),
         sistEndret = sistEndret,
-        sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv,
-        sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet,
-
+        sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv.toString(),
+        sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet.toString(),
     )

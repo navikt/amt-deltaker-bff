@@ -7,7 +7,6 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
-import no.nav.amt.deltaker.bff.deltaker.model.VedtakDbo
 import java.util.UUID
 
 class VedtakRepository {
@@ -19,14 +18,14 @@ class VedtakRepository {
         deltakerVedVedtak = objectMapper.readValue(row.string("deltaker_ved_vedtak")),
         fattetAvNav = row.boolean("fattet_av_nav"),
         opprettet = row.localDateTime("created_at"),
-        opprettetAv = row.string("opprettet_av"),
-        opprettetAvEnhet = row.stringOrNull("opprettet_av_enhet"),
+        opprettetAv = row.uuid("opprettet_av"),
+        opprettetAvEnhet = row.uuid("opprettet_av_enhet"),
         sistEndret = row.localDateTime("modified_at"),
-        sistEndretAv = row.string("sist_endret_av"),
-        sistEndretAvEnhet = row.stringOrNull("sist_endret_av_enhet"),
+        sistEndretAv = row.uuid("sist_endret_av"),
+        sistEndretAvEnhet = row.uuid("sist_endret_av_enhet"),
     )
 
-    fun upsert(vedtak: VedtakDbo) = Database.query {
+    fun upsert(vedtak: Vedtak) = Database.query {
         val sql = """
             insert into vedtak (id,
                                 deltaker_id,

@@ -31,10 +31,10 @@ data class Deltaker(
         val fattet: LocalDateTime?,
         val fattetAvNav: Boolean,
         val opprettet: LocalDateTime,
-        val opprettetAv: String,
+        val opprettetAv: UUID,
         val sistEndret: LocalDateTime,
-        val sistEndretAv: String,
-        val sistEndretAvEnhet: String?,
+        val sistEndretAv: UUID,
+        val sistEndretAvEnhet: UUID,
     )
 }
 

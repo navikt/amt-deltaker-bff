@@ -17,8 +17,8 @@ class DeltakerEndringRepository {
             deltakerId = row.uuid("deltaker_id"),
             endringstype = endringstype,
             endring = parseDeltakerEndringJson(row.string("endring"), endringstype),
-            endretAv = row.string("endret_av"),
-            endretAvEnhet = row.stringOrNull("endret_av_enhet"),
+            endretAv = row.uuid("endret_av"),
+            endretAvEnhet = row.uuid("endret_av_enhet"),
             endret = row.localDateTime("dh.modified_at"),
         )
     }

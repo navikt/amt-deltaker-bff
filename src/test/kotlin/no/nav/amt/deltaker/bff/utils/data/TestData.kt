@@ -185,11 +185,11 @@ object TestData {
         gyldigTil: LocalDateTime? = null,
         fattetAvNav: Boolean = false,
         opprettet: LocalDateTime = LocalDateTime.now(),
-        opprettetAv: String = randomNavIdent(),
-        opprettetAvEnhet: String? = randomEnhetsnummer(),
+        opprettetAv: UUID = UUID.randomUUID(),
+        opprettetAvEnhet: UUID = UUID.randomUUID(),
         sistEndret: LocalDateTime = opprettet,
-        sistEndretAv: String = opprettetAv,
-        sistEndretAvEnhet: String? = opprettetAvEnhet,
+        sistEndretAv: UUID = opprettetAv,
+        sistEndretAvEnhet: UUID = opprettetAvEnhet,
     ) = Vedtak(
         id,
         deltakerId,
@@ -209,10 +209,10 @@ object TestData {
         fattet: LocalDateTime? = LocalDateTime.now(),
         fattetAvNav: Boolean = false,
         opprettet: LocalDateTime = LocalDateTime.now(),
-        opprettetAv: String = randomNavIdent(),
+        opprettetAv: UUID = UUID.randomUUID(),
         sistEndret: LocalDateTime = opprettet,
-        sistEndretAv: String = opprettetAv,
-        sistEndretAvEnhet: String = randomEnhetsnummer(),
+        sistEndretAv: UUID = opprettetAv,
+        sistEndretAvEnhet: UUID = UUID.randomUUID(),
     ) = Deltaker.Vedtaksinformasjon(
         fattet,
         fattetAvNav,
@@ -282,8 +282,8 @@ object TestData {
         deltakerId: UUID = UUID.randomUUID(),
         endringstype: DeltakerEndring.Endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
         endring: DeltakerEndring.Endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
-        endretAv: String = randomNavIdent(),
-        endretAvEnhet: String = randomEnhetsnummer(),
+        endretAv: UUID = UUID.randomUUID(),
+        endretAvEnhet: UUID = UUID.randomUUID(),
         endret: LocalDateTime = LocalDateTime.now(),
     ) = DeltakerEndring(id, deltakerId, endringstype, endring, endretAv, endretAvEnhet, endret)
 
@@ -349,7 +349,7 @@ object TestData {
     fun lagNavAnsatteForDeltaker(deltaker: Deltaker) = listOfNotNull(
         deltaker.vedtaksinformasjon?.sistEndretAv,
         deltaker.vedtaksinformasjon?.opprettetAv,
-    ).distinct().map { lagNavAnsatt(navIdent = it) }
+    ).distinct().map { lagNavAnsatt(id = it) }
 
     fun lagNavAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
         when (it) {
@@ -364,5 +364,5 @@ object TestData {
                 )
             }
         }
-    }.distinct().map { lagNavAnsatt(navIdent = it) }
+    }.distinct().map { lagNavAnsatt(id = it) }
 }

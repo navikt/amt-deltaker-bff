@@ -32,7 +32,7 @@ class DeltakerService(
         endringstype: DeltakerEndring.Endringstype,
         endring: DeltakerEndring.Endring,
         endretAv: String,
-        endretAvEnhet: String?,
+        endretAvEnhet: String,
     ): Deltaker {
         val deltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
@@ -84,16 +84,16 @@ class DeltakerService(
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
-            navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
-            endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
+            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
+            val navEnhet = endretAvEnhet.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
             deltakerEndringRepository.upsert(
                 DeltakerEndring(
                     id = UUID.randomUUID(),
                     deltakerId = deltaker.id,
                     endringstype = endringstype,
                     endring = endring,
-                    endretAv = endretAv,
-                    endretAvEnhet = endretAvEnhet,
+                    endretAv = navAnsatt.id,
+                    endretAvEnhet = navEnhet.id,
                     endret = LocalDateTime.now(),
                 ),
             )

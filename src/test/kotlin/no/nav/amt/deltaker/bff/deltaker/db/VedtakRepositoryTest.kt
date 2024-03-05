@@ -1,9 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
-import no.nav.amt.deltaker.bff.deltaker.model.VedtakDbo
 import no.nav.amt.deltaker.bff.deltaker.sammenlignDeltakereVedVedtak
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -31,7 +29,7 @@ class VedtakRepositoryTest {
         val vedtak: Vedtak = TestData.lagVedtak(deltakerVedVedtak = deltaker)
 
         TestRepository.insert(deltaker)
-        repository.upsert(vedtak.toDbo(deltaker))
+        repository.upsert(vedtak)
 
         sammenlignVedtak(repository.get(vedtak.id)!!, vedtak)
     }
@@ -42,10 +40,10 @@ class VedtakRepositoryTest {
         val vedtak: Vedtak = TestData.lagVedtak(deltakerVedVedtak = deltaker)
 
         TestRepository.insert(deltaker)
-        repository.upsert(vedtak.toDbo(deltaker))
+        repository.upsert(vedtak)
 
         val oppdatertVedtak = vedtak.copy(fattet = LocalDateTime.now())
-        repository.upsert(oppdatertVedtak.toDbo(deltaker))
+        repository.upsert(oppdatertVedtak)
 
         sammenlignVedtak(repository.get(vedtak.id)!!, oppdatertVedtak)
     }
@@ -60,7 +58,7 @@ class VedtakRepositoryTest {
         )
 
         TestRepository.insert(deltaker)
-        repository.upsert(vedtak.toDbo(deltaker))
+        repository.upsert(vedtak)
 
         sammenlignVedtak(repository.get(vedtak.id)!!, vedtak)
     }
@@ -113,18 +111,3 @@ fun sammenlignVedtak(a: Vedtak, b: Vedtak) {
     a.sistEndretAv shouldBe b.sistEndretAv
     a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
 }
-
-fun Vedtak.toDbo(deltaker: Deltaker) = VedtakDbo(
-    id,
-    deltakerId,
-    fattet,
-    gyldigTil,
-    deltaker,
-    fattetAvNav,
-    opprettet,
-    opprettetAv,
-    opprettetAvEnhet,
-    sistEndret,
-    sistEndretAv,
-    sistEndretAvEnhet,
-)

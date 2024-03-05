@@ -68,15 +68,15 @@ class DeltakerEndringRepositoryTest {
         val deltaker = TestData.lagDeltaker()
         val deltakerEndring = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
-            endretAv = navAnsatt1.navIdent,
-            endretAvEnhet = navEnhet1.enhetsnummer,
+            endretAv = navAnsatt1.id,
+            endretAvEnhet = navEnhet1.id,
         )
         val deltakerEndring2 = TestData.lagDeltakerEndring(
             deltakerId = deltaker.id,
             endringstype = DeltakerEndring.Endringstype.INNHOLD,
             endring = DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst", "type", true, null))),
-            endretAv = navAnsatt2.navIdent,
-            endretAvEnhet = navEnhet2.enhetsnummer,
+            endretAv = navAnsatt2.id,
+            endretAvEnhet = navEnhet2.id,
         )
         TestRepository.insert(deltaker)
         repository.upsert(deltakerEndring)
@@ -87,11 +87,11 @@ class DeltakerEndringRepositoryTest {
         endringFraDb.size shouldBe 2
         sammenlignDeltakerEndring(
             endringFraDb.find { it.id == deltakerEndring.id }!!,
-            deltakerEndring.copy(endretAv = navAnsatt1.navIdent, endretAvEnhet = navEnhet1.enhetsnummer),
+            deltakerEndring.copy(endretAv = navAnsatt1.id, endretAvEnhet = navEnhet1.id),
         )
         sammenlignDeltakerEndring(
             endringFraDb.find { it.id == deltakerEndring2.id }!!,
-            deltakerEndring2.copy(endretAv = navAnsatt2.navIdent, endretAvEnhet = navEnhet2.enhetsnummer),
+            deltakerEndring2.copy(endretAv = navAnsatt2.id, endretAvEnhet = navEnhet2.id),
         )
     }
 

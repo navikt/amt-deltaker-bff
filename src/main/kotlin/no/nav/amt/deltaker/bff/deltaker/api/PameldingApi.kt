@@ -179,7 +179,7 @@ fun Routing.registerPameldingApi(
     }
 }
 
-private fun ApplicationRequest.headerNotNull(navn: String): String {
+fun ApplicationRequest.headerNotNull(navn: String): String {
     val header = call.request.header(navn)
     require(header != null) { "Påkrevd header: $navn er null" }
     return header

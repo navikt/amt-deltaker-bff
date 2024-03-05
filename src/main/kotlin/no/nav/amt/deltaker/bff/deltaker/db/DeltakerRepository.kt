@@ -82,10 +82,10 @@ class DeltakerRepository {
                 fattet = row.localDateTimeOrNull("v.fattet"),
                 fattetAvNav = row.boolean("v.fattet_av_nav"),
                 opprettet = opprettet,
-                opprettetAv = row.string("v.opprettet_av"),
+                opprettetAv = row.uuid("v.opprettet_av"),
                 sistEndret = row.localDateTime("v.sist_endret"),
-                sistEndretAv = row.string("v.sist_endret_av"),
-                sistEndretAvEnhet = row.stringOrNull("v.sist_endret_av_enhet"),
+                sistEndretAv = row.uuid("v.sist_endret_av"),
+                sistEndretAvEnhet = row.uuid("v.sist_endret_av_enhet"),
             )
         },
     )
