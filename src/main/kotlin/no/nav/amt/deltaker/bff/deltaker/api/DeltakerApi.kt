@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.deltaker.api
 
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
-import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
@@ -46,7 +45,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -66,7 +65,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreInnholdRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -87,7 +86,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -110,7 +109,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -130,7 +129,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<EndreSluttdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -151,7 +150,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<EndreSluttarsakRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -172,7 +171,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<IkkeAktuellRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -193,7 +192,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<AvsluttDeltakelseRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -238,7 +237,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val request = call.receive<ForlengDeltakelseRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
