@@ -131,6 +131,10 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
+    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+        deltakerRepository.update(deltakeroppdatering)
+    }
+
     fun delete(deltakerId: UUID) {
         deltakerRepository.delete(deltakerId)
     }

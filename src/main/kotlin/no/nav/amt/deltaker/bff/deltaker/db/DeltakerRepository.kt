@@ -8,6 +8,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
+import no.nav.amt.deltaker.bff.deltaker.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -132,7 +133,7 @@ class DeltakerRepository {
             ?: Result.failure(NoSuchElementException("Ingen deltaker med id $id"))
     }
 
-    fun getMany(personIdent: String, deltakerlisteId: UUID) = Database.query {
+    fun getMany(personident: String, deltakerlisteId: UUID) = Database.query {
         val sql = getDeltakerSql(
             """ where nb.personident = :personident 
                     and d.deltakerliste_id = :deltakerliste_id 
@@ -143,7 +144,7 @@ class DeltakerRepository {
         val query = queryOf(
             sql,
             mapOf(
-                "personident" to personIdent,
+                "personident" to personident,
                 "deltakerliste_id" to deltakerlisteId,
             ),
         ).map(::rowMapper).asList
@@ -269,6 +270,38 @@ class DeltakerRepository {
         session.run(query)
     }
 
+    fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+        val sql = """
+            update deltaker set 
+                startdato            = :startdato,
+                sluttdato            = :sluttdato,
+                dager_per_uke        = :dagerPerUke,
+                deltakelsesprosent   = :deltakelsesprosent,
+                bakgrunnsinformasjon = :bakgrunnsinformasjon,
+                innhold              = :innhold,
+                historikk            = :historikk,
+                modified_at          = current_timestamp
+            where id = :id
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to deltaker.id,
+            "startdato" to deltaker.startdato,
+            "sluttdato" to deltaker.sluttdato,
+            "dagerPerUke" to deltaker.dagerPerUke,
+            "deltakelsesprosent" to deltaker.deltakelsesprosent,
+            "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
+            "innhold" to toPGObject(deltaker.innhold),
+            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+        )
+
+        session.transaction { tx ->
+            tx.update(insertStatusQuery(deltaker.status, deltaker.id))
+            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            tx.update(queryOf(sql, params))
+        }
+    }
+
     private fun slettStatus(deltakerId: UUID): Query {
         val sql = """
             delete from deltaker_status
@@ -297,8 +330,8 @@ class DeltakerRepository {
 
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query {
         val sql = """
-            insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra) 
-            values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra) 
+            insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, created_at) 
+            values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :opprettet) 
             on conflict (id) do nothing;
         """.trimIndent()
 
@@ -308,6 +341,7 @@ class DeltakerRepository {
             "type" to status.type.name,
             "aarsak" to toPGObject(status.aarsak),
             "gyldig_fra" to status.gyldigFra,
+            "opprettet" to status.opprettet,
         )
 
         return queryOf(sql, params)

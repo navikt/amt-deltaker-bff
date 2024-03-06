@@ -2,8 +2,10 @@ package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.deltaker.bff.deltaker.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -243,7 +245,44 @@ class DeltakerRepositoryTest {
             repository.create(kladd)
         }
     }
+
+    @Test
+    fun `update - deltaker er endret - oppdaterer`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        val endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("ny bakgrunn for innsøk")
+        val oppdatertDeltaker = TestData.leggTilHistorikk(
+            deltaker = deltaker.copy(bakgrunnsinformasjon = endring.bakgrunnsinformasjon),
+            endringer = listOf(TestData.lagDeltakerEndring(endring = endring)),
+        )
+
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `update - deltakerstatus er endret - oppdaterer`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+        )
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `update - deltakerstatus er ikke endret - oppdaterer ikke status`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        repository.update(deltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
+    }
 }
+
+private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
+    id, startdato, sluttdato, dagerPerUke, deltakelsesprosent, bakgrunnsinformasjon, innhold, status, historikk,
+)
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.id shouldBe b.id
@@ -254,6 +293,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.deltakelsesprosent shouldBe b.deltakelsesprosent
     a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
     a.innhold shouldBe b.innhold
+    a.historikk shouldBe b.historikk
     a.status.id shouldBe b.status.id
     a.status.type shouldBe b.status.type
     a.status.aarsak shouldBe b.status.aarsak

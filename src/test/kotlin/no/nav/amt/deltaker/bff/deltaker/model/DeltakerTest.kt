@@ -11,7 +11,7 @@ class DeltakerTest {
 
     @Test
     fun `getDeltakerHistorikkSortert - ett vedtak flere endringer - returner liste riktig sortert`() {
-        val baseDeltaker = TestData.lagDeltaker()
+        val baseDeltaker = TestData.lagDeltaker(historikk = false)
         val vedtak = TestData.lagVedtak(
             deltakerId = baseDeltaker.id,
             fattet = LocalDateTime.now().minusMonths(1),

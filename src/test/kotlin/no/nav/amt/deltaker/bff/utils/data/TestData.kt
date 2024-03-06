@@ -6,7 +6,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
@@ -244,19 +243,6 @@ object TestData {
         endretAv,
         endretAvEnhet,
     )
-
-    fun lagKladd(
-        opprinneligDeltaker: Deltaker = lagDeltaker(
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            innhold = emptyList(),
-            status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
-        ),
-        pamelding: Pamelding = lagPamelding(),
-    ) = Kladd(opprinneligDeltaker, pamelding)
-
     fun lagUtkast(
         opprinneligDeltaker: Deltaker = lagDeltaker(
             startdato = null,
@@ -385,6 +371,8 @@ object TestData {
         vedtak: List<Vedtak> = emptyList(),
         endringer: List<DeltakerEndring> = emptyList(),
     ) = deltaker.copy(
-        historikk = vedtak.map { DeltakerHistorikk.Vedtak(it) } + endringer.map { DeltakerHistorikk.Endring(it) },
+        historikk = deltaker.historikk
+            .plus(vedtak.map { DeltakerHistorikk.Vedtak(it) })
+            .plus(endringer.map { DeltakerHistorikk.Endring(it) }),
     )
 }

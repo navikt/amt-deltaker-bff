@@ -31,7 +31,6 @@ data class Environment(
 
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
         const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
-        const val DELTAKER_ENDRING_TOPIC = "amt.deltaker-endring-v1"
         const val AMT_ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
         const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v1"
 
@@ -39,6 +38,7 @@ data class Environment(
         const val AMT_ARRANGOR_URL_KEY = "AMT_ARRANGOR_URL"
         const val AMT_ARRANGOR_SCOPE_KEY = "AMT_ARRANGOR_SCOPE"
 
+        const val AMT_DELTAKERV2_TOPIC = "amt.deltaker-v2"
         const val AMT_NAV_BRUKER_TOPIC = "amt.nav-bruker-personalia-v1"
         const val AMT_NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
         const val AMT_PERSONSERVICE_URL_KEY = "AMT_PERSONSERVICE_URL"
