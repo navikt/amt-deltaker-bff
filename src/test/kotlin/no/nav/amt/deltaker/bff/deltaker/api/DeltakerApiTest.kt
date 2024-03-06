@@ -113,7 +113,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 any(),
                 any(),
                 any(),
@@ -139,7 +138,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 any(),
                 any(),
                 any(),
@@ -166,7 +164,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.INNHOLD,
                 any(),
                 any(),
                 any(),
@@ -198,7 +195,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.DELTAKELSESMENGDE,
                 any(),
                 any(),
                 any(),
@@ -225,7 +221,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.STARTDATO,
                 any(),
                 any(),
                 any(),
@@ -254,7 +249,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.SLUTTDATO,
                 any(),
                 any(),
                 any(),
@@ -298,7 +292,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.IKKE_AKTUELL,
                 any(),
                 any(),
                 any(),
@@ -327,7 +320,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.SLUTTARSAK,
                 any(),
                 any(),
                 any(),
@@ -393,7 +385,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.FORLENGELSE,
                 any(),
                 any(),
                 any(),
@@ -449,7 +440,6 @@ class DeltakerApiTest {
         coEvery {
             deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.AVSLUTT_DELTAKELSE,
                 any(),
                 any(),
                 any(),

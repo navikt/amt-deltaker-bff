@@ -73,7 +73,6 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 DeltakerEndring.Endring.EndreBakgrunnsinformasjon(oppdatertBakgrunnsinformasjon),
                 endretAvIdent,
                 endretAvEnhetsnummer,
@@ -82,7 +81,6 @@ class DeltakerServiceTest {
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe oppdatertBakgrunnsinformasjon
             val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
-            endring.first().endringstype shouldBe DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON
             endring.first().endring shouldBe DeltakerEndring.Endring.EndreBakgrunnsinformasjon(
                 oppdatertBakgrunnsinformasjon,
             )
@@ -102,7 +100,6 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 DeltakerEndring.Endring.EndreBakgrunnsinformasjon(deltaker.bakgrunnsinformasjon),
                 endretAvIdent,
                 endretAvEnhetsnummer,
@@ -124,7 +121,6 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.IKKE_AKTUELL,
                 DeltakerEndring.Endring.IkkeAktuell(aarsak),
                 navAnsatt.navIdent,
                 navEnhet.enhetsnummer,
@@ -135,7 +131,6 @@ class DeltakerServiceTest {
 
             val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
-            endring[0].endringstype shouldBe DeltakerEndring.Endringstype.IKKE_AKTUELL
 
             val ikkeAktuellEndring = endring[0].endring as DeltakerEndring.Endring.IkkeAktuell
             ikkeAktuellEndring.aarsak shouldBe aarsak
@@ -155,7 +150,6 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.FORLENGELSE,
                 DeltakerEndring.Endring.ForlengDeltakelse(nySluttdato),
                 navAnsatt.navIdent,
                 navEnhet.enhetsnummer,
@@ -166,7 +160,6 @@ class DeltakerServiceTest {
 
             val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
-            endring[0].endringstype shouldBe DeltakerEndring.Endringstype.FORLENGELSE
 
             val forlengDeltakelseEndring = endring[0].endring as DeltakerEndring.Endring.ForlengDeltakelse
             forlengDeltakelseEndring.sluttdato shouldBe nySluttdato
@@ -186,7 +179,6 @@ class DeltakerServiceTest {
         runBlocking {
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
-                DeltakerEndring.Endringstype.FORLENGELSE,
                 DeltakerEndring.Endring.ForlengDeltakelse(nySluttdato),
                 navAnsatt.navIdent,
                 navEnhet.enhetsnummer,
@@ -197,7 +189,6 @@ class DeltakerServiceTest {
 
             val endring = oppdatertDeltaker.getAlleEndringer()
             endring.size shouldBe 1
-            endring[0].endringstype shouldBe DeltakerEndring.Endringstype.FORLENGELSE
 
             val forlengDeltakelseEndring = endring[0].endring as DeltakerEndring.Endring.ForlengDeltakelse
             forlengDeltakelseEndring.sluttdato shouldBe nySluttdato

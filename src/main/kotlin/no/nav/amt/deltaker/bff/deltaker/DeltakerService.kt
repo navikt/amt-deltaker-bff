@@ -28,7 +28,6 @@ class DeltakerService(
 
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
-        endringstype: DeltakerEndring.Endringstype,
         endring: DeltakerEndring.Endring,
         endretAv: String,
         endretAvEnhet: String,
@@ -90,7 +89,6 @@ class DeltakerService(
             val deltakerEndring = DeltakerEndring(
                 id = UUID.randomUUID(),
                 deltakerId = deltaker.id,
-                endringstype = endringstype,
                 endring = endring,
                 endretAv = navAnsatt.id,
                 endretAvEnhet = navEnhet.id,

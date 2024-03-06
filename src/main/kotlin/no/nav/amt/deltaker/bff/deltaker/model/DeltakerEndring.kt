@@ -9,16 +9,11 @@ import java.util.UUID
 data class DeltakerEndring(
     val id: UUID,
     val deltakerId: UUID,
-    val endringstype: Endringstype,
     val endring: Endring,
     val endretAv: UUID,
     val endretAvEnhet: UUID,
     val endret: LocalDateTime,
 ) {
-    enum class Endringstype {
-        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, INNHOLD, IKKE_AKTUELL, FORLENGELSE, AVSLUTT_DELTAKELSE, SLUTTARSAK
-    }
-
     data class Aarsak(
         val type: Type,
         val beskrivelse: String? = null,

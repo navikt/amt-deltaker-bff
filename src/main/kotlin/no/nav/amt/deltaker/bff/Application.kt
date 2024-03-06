@@ -26,7 +26,6 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -131,7 +130,6 @@ fun Application.module() {
     )
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
-    val vedtakRepository = VedtakRepository()
 
     val deltakerService = DeltakerService(
         deltakerRepository,

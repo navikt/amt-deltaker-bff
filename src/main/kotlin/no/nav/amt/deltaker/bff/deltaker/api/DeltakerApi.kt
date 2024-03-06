@@ -51,7 +51,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -71,7 +70,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.INNHOLD,
                 endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -92,7 +90,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.DELTAKELSESMENGDE,
                 endring = DeltakerEndring.Endring.EndreDeltakelsesmengde(
                     deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                     dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -115,7 +112,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.STARTDATO,
                 endring = DeltakerEndring.Endring.EndreStartdato(request.startdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -135,7 +131,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.SLUTTDATO,
                 endring = DeltakerEndring.Endring.EndreSluttdato(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -156,7 +151,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.SLUTTARSAK,
                 endring = DeltakerEndring.Endring.EndreSluttarsak(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -177,7 +171,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.IKKE_AKTUELL,
                 endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -198,7 +191,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.AVSLUTT_DELTAKELSE,
                 endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -243,7 +235,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.FORLENGELSE,
                 endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,

@@ -11,7 +11,6 @@ import java.util.UUID
 sealed interface DeltakerHistorikkResponse
 
 data class DeltakerEndringResponse(
-    val endringstype: DeltakerEndring.Endringstype,
     val endring: DeltakerEndring.Endring,
     val endretAv: String,
     val endretAvEnhet: UUID,
@@ -38,7 +37,6 @@ fun List<DeltakerHistorikk>.toResponse(ansatte: Map<UUID, NavAnsatt>): List<Delt
 }
 
 fun DeltakerEndring.toResponse(ansatte: Map<UUID, NavAnsatt>) = DeltakerEndringResponse(
-    endringstype = endringstype,
     endring = endring,
     endretAv = ansatte[endretAv]!!.navn,
     endretAvEnhet = endretAvEnhet,
