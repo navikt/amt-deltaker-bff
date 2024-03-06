@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
@@ -7,6 +9,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.util.pipeline.PipelineContext
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -39,6 +42,9 @@ fun Routing.registerDeltakerApi(
 
     authenticate("VEILEDER") {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
 
@@ -59,6 +65,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/innhold") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreInnholdRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -78,6 +87,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
 
@@ -101,6 +113,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/startdato") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -120,6 +135,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/sluttdato") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreSluttdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -139,6 +157,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/sluttarsak") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreSluttarsakRequest>()
 
@@ -159,6 +180,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/ikke-aktuell") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<IkkeAktuellRequest>()
 
@@ -179,6 +203,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/avslutt") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<AvsluttDeltakelseRequest>()
 
@@ -224,6 +251,9 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/forleng") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<ForlengDeltakelseRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -242,4 +272,8 @@ fun Routing.registerDeltakerApi(
             call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
     }
+}
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.endringenErUtilgjengelig() {
+    call.respond(HttpStatusCode.ServiceUnavailable, "Endringen er midlertidig utilgjengelig, prøv igjen senere.")
 }

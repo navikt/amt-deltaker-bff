@@ -47,10 +47,12 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.time.LocalDate
 import java.util.UUID
 
+@Ignore("Ignorer testene til endringer er flyttet over til amt-deltaker")
 class DeltakerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
