@@ -17,7 +17,6 @@ data class Environment(
     val poaoTilgangScope: String = getEnvVar(POAO_TILGANG_SCOPE_KEY),
     val amtPersonServiceUrl: String = getEnvVar(AMT_PERSONSERVICE_URL_KEY),
     val amtPersonServiceScope: String = getEnvVar(AMT_PERSONSERVICE_SCOPE_KEY),
-    val electorPath: String = getEnvVar(ELECTOR_PATH),
     val amtDeltakerUrl: String = getEnvVar(AMT_DELTAKER_URL_KEY),
     val amtDeltakerScope: String = getEnvVar(AMT_DELTAKER_SCOPE_KEY),
 ) {
@@ -31,7 +30,6 @@ data class Environment(
 
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
         const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
-        const val DELTAKER_ENDRING_TOPIC = "amt.deltaker-endring-v1"
         const val AMT_ENDRINGSMELDING_TOPIC = "amt.endringsmelding-v1"
         const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v1"
 
@@ -55,8 +53,6 @@ data class Environment(
 
         const val POAO_TILGANG_URL_KEY = "POAO_TILGANG_URL"
         const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"
-
-        const val ELECTOR_PATH = "ELECTOR_PATH"
 
         const val HTTP_CLIENT_TIMEOUT_MS = 10_000
 

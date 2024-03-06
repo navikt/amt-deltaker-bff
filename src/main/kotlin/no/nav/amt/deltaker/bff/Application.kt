@@ -39,9 +39,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka.TiltakstypeConsum
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
-import no.nav.amt.deltaker.bff.job.DeltakerStatusOppdateringService
-import no.nav.amt.deltaker.bff.job.StatusUpdateJob
-import no.nav.amt.deltaker.bff.job.leaderelection.LeaderElection
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -80,8 +77,6 @@ fun Application.module() {
             jackson { applicationConfig() }
         }
     }
-
-    val leaderElection = LeaderElection(httpClient, environment.electorPath)
 
     val azureAdTokenClient = AzureAdTokenClient(
         azureAdTokenUrl = environment.azureAdTokenUrl,
@@ -157,8 +152,6 @@ fun Application.module() {
 
     val tiltakstypeRepository = TiltakstypeRepository()
 
-    val deltakerStatusOppdateringService = DeltakerStatusOppdateringService(deltakerRepository)
-
     val consumers = listOf(
         EndringsmeldingConsumer(endringsmeldingService),
         ArrangorConsumer(arrangorRepository),
@@ -179,9 +172,6 @@ fun Application.module() {
         navEnhetService,
     )
     configureMonitoring()
-
-    val statusUpdateJob = StatusUpdateJob(leaderElection, attributes, deltakerStatusOppdateringService)
-    statusUpdateJob.startJob()
 
     attributes.put(isReadyKey, true)
 }
