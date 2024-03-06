@@ -115,6 +115,9 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/avbryt") {
+            call.respond(HttpStatusCode.ServiceUnavailable, "Avbryting er midlertidig utilgjengelig, prøv igjen senere.")
+            return@post
+
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")

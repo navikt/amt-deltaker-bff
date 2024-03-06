@@ -38,6 +38,7 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.util.UUID
 
@@ -77,7 +78,7 @@ class PameldingApiTest {
             )
         }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        // client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -88,7 +89,7 @@ class PameldingApiTest {
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
-        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        // client.post("/pamelding/${UUID.randomUUID()}/avbryt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -238,6 +239,7 @@ class PameldingApiTest {
         }
     }
 
+    @Ignore
     @Test
     fun `avbryt utkast - har tilgang, deltakerstatus er UTKAST_TIL_PAMELDING - avbryter utkast og returnerer 200`() =
         testApplication {
@@ -253,6 +255,7 @@ class PameldingApiTest {
             }
         }
 
+    @Ignore
     @Test
     fun `avbryt utkast - har tilgang, deltakerstatus er ikke UTKAST_TIL_PAMELDING - returnerer 400`() =
         testApplication {
@@ -274,6 +277,7 @@ class PameldingApiTest {
             }
         }
 
+    @Ignore
     @Test
     fun `avbryt utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
         every { deltakerService.get(any()) } throws NoSuchElementException()
