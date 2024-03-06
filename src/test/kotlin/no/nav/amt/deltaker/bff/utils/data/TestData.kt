@@ -5,10 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltaker.model.FattetAvNav
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
@@ -118,7 +115,7 @@ object TestData {
         bakgrunnsinformasjon = null,
         innhold = emptyList(),
         status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
-        vedtaksinformasjon = null,
+        historikk = false,
     )
 
     fun lagDeltaker(
@@ -132,22 +129,33 @@ object TestData {
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
         innhold: List<Innhold> = deltakerliste.tiltak.innhold?.innholdselementer?.map { it.toInnhold() } ?: emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-        vedtaksinformasjon: Deltaker.Vedtaksinformasjon? = lagVedtaksinformasjon(
-            fattet = LocalDateTime.now().minusMonths(4),
-        ),
-    ) = Deltaker(
-        id,
-        navBruker,
-        deltakerliste,
-        startdato,
-        sluttdato,
-        dagerPerUke,
-        deltakelsesprosent,
-        bakgrunnsinformasjon,
-        innhold,
-        status,
-        vedtaksinformasjon,
-    )
+        historikk: Boolean = true,
+    ): Deltaker {
+        val deltaker = Deltaker(
+            id,
+            navBruker,
+            deltakerliste,
+            startdato,
+            sluttdato,
+            dagerPerUke,
+            deltakelsesprosent,
+            bakgrunnsinformasjon,
+            innhold,
+            status,
+            emptyList(),
+        )
+
+        return if (historikk) {
+            deltaker.copy(historikk = lagDeltakerHistorikk(deltaker))
+        } else {
+            deltaker
+        }
+    }
+
+    private fun lagDeltakerHistorikk(deltaker: Deltaker): List<DeltakerHistorikk> {
+        val vedtak = lagVedtak(deltakerVedVedtak = deltaker, fattet = LocalDateTime.now())
+        return listOf(DeltakerHistorikk.Vedtak(vedtak))
+    }
 
     fun lagDeltakerStatus(
         type: DeltakerStatus.Type,
@@ -185,13 +193,13 @@ object TestData {
         deltakerId: UUID = deltakerVedVedtak.id,
         fattet: LocalDateTime? = null,
         gyldigTil: LocalDateTime? = null,
-        fattetAvNav: FattetAvNav? = null,
+        fattetAvNav: Boolean = false,
         opprettet: LocalDateTime = LocalDateTime.now(),
-        opprettetAv: String = randomNavIdent(),
-        opprettetAvEnhet: String? = randomEnhetsnummer(),
+        opprettetAv: UUID = UUID.randomUUID(),
+        opprettetAvEnhet: UUID = UUID.randomUUID(),
         sistEndret: LocalDateTime = opprettet,
-        sistEndretAv: String = opprettetAv,
-        sistEndretAvEnhet: String? = opprettetAvEnhet,
+        sistEndretAv: UUID = opprettetAv,
+        sistEndretAvEnhet: UUID = opprettetAvEnhet,
     ) = Vedtak(
         id,
         deltakerId,
@@ -206,34 +214,6 @@ object TestData {
         sistEndretAv,
         sistEndretAvEnhet,
     )
-
-    fun lagVedtaksinformasjon(
-        fattet: LocalDateTime? = LocalDateTime.now(),
-        fattetAvNav: FattetAvNav? = null,
-        opprettet: LocalDateTime = LocalDateTime.now(),
-        opprettetAv: String = randomNavIdent(),
-        sistEndret: LocalDateTime = opprettet,
-        sistEndretAv: String = opprettetAv,
-        sistEndretAvEnhet: String = randomEnhetsnummer(),
-    ) = Deltaker.Vedtaksinformasjon(
-        fattet,
-        fattetAvNav,
-        opprettet,
-        opprettetAv,
-        sistEndret,
-        sistEndretAv,
-        sistEndretAvEnhet,
-    )
-
-    fun lagFattetAvNav(
-        fattetAv: String = randomNavIdent(),
-        fattetAvNav: String = randomEnhetsnummer(),
-    ) = FattetAvNav(fattetAv, fattetAvNav)
-
-    fun lagGodkjentAvNav(
-        godkjentAv: String = randomNavIdent(),
-        godkjentAvEnhet: String = randomEnhetsnummer(),
-    ) = GodkjentAvNav(godkjentAv, godkjentAvEnhet)
 
     fun lagPamelding(
         deltaker: Deltaker,
@@ -254,7 +234,7 @@ object TestData {
         deltakelsesprosent: Float? = 100F,
         dagerPerUke: Float? = 5F,
         endretAv: String = randomNavIdent(),
-        endretAvEnhet: String? = randomEnhetsnummer(),
+        endretAvEnhet: String = randomEnhetsnummer(),
     ) = Pamelding(
         innhold,
         bakgrunnsinformasjon,
@@ -263,19 +243,6 @@ object TestData {
         endretAv,
         endretAvEnhet,
     )
-
-    fun lagKladd(
-        opprinneligDeltaker: Deltaker = lagDeltaker(
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            innhold = emptyList(),
-            status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
-        ),
-        pamelding: Pamelding = lagPamelding(),
-    ) = Kladd(opprinneligDeltaker, pamelding)
-
     fun lagUtkast(
         opprinneligDeltaker: Deltaker = lagDeltaker(
             startdato = null,
@@ -286,18 +253,17 @@ object TestData {
             status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         ),
         pamelding: Pamelding = lagPamelding(opprinneligDeltaker),
-        godkjentAvNav: GodkjentAvNav? = null,
-    ) = Utkast(opprinneligDeltaker, pamelding, godkjentAvNav)
+        godkjentAvNav: Boolean = false,
+    ) = Utkast(opprinneligDeltaker.id, pamelding, godkjentAvNav)
 
     fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
         deltakerId: UUID = UUID.randomUUID(),
-        endringstype: DeltakerEndring.Endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
         endring: DeltakerEndring.Endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("Oppdatert bakgrunnsinformasjon"),
-        endretAv: String = randomNavIdent(),
-        endretAvEnhet: String = randomEnhetsnummer(),
+        endretAv: UUID = UUID.randomUUID(),
+        endretAvEnhet: UUID = UUID.randomUUID(),
         endret: LocalDateTime = LocalDateTime.now(),
-    ) = DeltakerEndring(id, deltakerId, endringstype, endring, endretAv, endretAvEnhet, endret)
+    ) = DeltakerEndring(id, deltakerId, endring, endretAv, endretAvEnhet, endret)
 
     fun lagNavAnsatt(
         id: UUID = UUID.randomUUID(),
@@ -361,8 +327,7 @@ object TestData {
     fun lagNavAnsatteForDeltaker(deltaker: Deltaker) = listOfNotNull(
         deltaker.vedtaksinformasjon?.sistEndretAv,
         deltaker.vedtaksinformasjon?.opprettetAv,
-        deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
-    ).distinct().map { lagNavAnsatt(navIdent = it) }
+    ).distinct().map { lagNavAnsatt(id = it) }
 
     fun lagNavAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
         when (it) {
@@ -374,9 +339,40 @@ object TestData {
                 listOfNotNull(
                     it.vedtak.sistEndretAv,
                     it.vedtak.opprettetAv,
-                    it.vedtak.fattetAvNav?.fattetAv,
                 )
             }
         }
-    }.distinct().map { lagNavAnsatt(navIdent = it) }
+    }.distinct().map { lagNavAnsatt(id = it) }
+
+    fun leggTilHistorikk(
+        deltaker: Deltaker,
+        antallVedtak: Int = 1,
+        antallEndringer: Int = 1,
+    ): Deltaker {
+        val vedtak = (1..antallVedtak).map {
+            val fattet = it == antallVedtak
+            lagVedtak(
+                deltakerVedVedtak = deltaker,
+                fattet = if (fattet) LocalDateTime.now() else null,
+                gyldigTil = if (fattet) null else LocalDateTime.now(),
+                fattetAvNav = fattet,
+            )
+        }
+
+        val endringer = (1..antallEndringer).map { lagDeltakerEndring(deltakerId = deltaker.id) }
+
+        return deltaker.copy(
+            historikk = vedtak.map { DeltakerHistorikk.Vedtak(it) } + endringer.map { DeltakerHistorikk.Endring(it) },
+        )
+    }
+
+    fun leggTilHistorikk(
+        deltaker: Deltaker,
+        vedtak: List<Vedtak> = emptyList(),
+        endringer: List<DeltakerEndring> = emptyList(),
+    ) = deltaker.copy(
+        historikk = deltaker.historikk
+            .plus(vedtak.map { DeltakerHistorikk.Vedtak(it) })
+            .plus(endringer.map { DeltakerHistorikk.Endring(it) }),
+    )
 }

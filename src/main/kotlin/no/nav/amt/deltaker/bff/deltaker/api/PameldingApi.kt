@@ -10,6 +10,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.post
+import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -21,7 +22,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningReques
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.model.GodkjentAvNav
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -62,7 +62,7 @@ fun Routing.registerPameldingApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -90,13 +90,13 @@ fun Routing.registerPameldingApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.upsertUtkast(
                 Utkast(
-                    opprinneligDeltaker = deltaker,
+                    deltakerId = deltaker.id,
                     pamelding = Pamelding(
                         innhold = finnValgtInnhold(request.innhold, deltaker),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
@@ -105,14 +105,19 @@ fun Routing.registerPameldingApi(
                         endretAv = navIdent,
                         endretAvEnhet = enhetsnummer,
                     ),
-                    godkjentAvNav = null,
+                    godkjentAvNav = false,
                 ),
             )
+
+            MetricRegister.DELT_UTKAST.inc()
 
             call.respond(HttpStatusCode.OK)
         }
 
         post("/pamelding/{deltakerId}/avbryt") {
+            call.respond(HttpStatusCode.ServiceUnavailable, "Avbryting er midlertidig utilgjengelig, prøv igjen senere.")
+            return@post
+
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.header("aktiv-enhet")
@@ -135,13 +140,13 @@ fun Routing.registerPameldingApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            pameldingService.meldPaUtenGodkjenning(
+            pameldingService.upsertUtkast(
                 Utkast(
-                    opprinneligDeltaker = deltaker,
+                    deltakerId = deltaker.id,
                     pamelding = Pamelding(
                         innhold = finnValgtInnhold(request.innhold, deltaker),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
@@ -150,12 +155,11 @@ fun Routing.registerPameldingApi(
                         endretAv = navIdent,
                         endretAvEnhet = enhetsnummer,
                     ),
-                    godkjentAvNav = GodkjentAvNav(
-                        godkjentAv = navIdent,
-                        godkjentAvEnhet = enhetsnummer,
-                    ),
+                    godkjentAvNav = true,
                 ),
             )
+
+            MetricRegister.PAMELDT_UTEN_UTKAST.inc()
 
             call.respond(HttpStatusCode.OK)
         }
@@ -178,7 +182,7 @@ fun Routing.registerPameldingApi(
     }
 }
 
-private fun ApplicationRequest.headerNotNull(navn: String): String {
+fun ApplicationRequest.headerNotNull(navn: String): String {
     val header = call.request.header(navn)
     require(header != null) { "Påkrevd header: $navn er null" }
     return header

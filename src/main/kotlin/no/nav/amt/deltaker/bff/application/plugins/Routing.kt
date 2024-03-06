@@ -16,7 +16,6 @@ import no.nav.amt.deltaker.bff.application.registerHealthApi
 import no.nav.amt.deltaker.bff.auth.AuthenticationException
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
@@ -29,7 +28,6 @@ fun Application.configureRouting(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
     pameldingService: PameldingService,
-    deltakerHistorikkService: DeltakerHistorikkService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
 ) {
@@ -61,7 +59,6 @@ fun Application.configureRouting(
         registerDeltakerApi(
             tilgangskontrollService,
             deltakerService,
-            deltakerHistorikkService,
             navAnsattService,
             navEnhetService,
         )

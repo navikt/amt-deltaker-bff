@@ -18,7 +18,6 @@ import io.mockk.mockk
 import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -37,7 +36,6 @@ class AuthenticationTest {
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
-    private val deltakerHistorikkService = mockk<DeltakerHistorikkService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
 
@@ -107,7 +105,6 @@ class AuthenticationTest {
                 tilgangskontrollService,
                 deltakerService,
                 pameldingService,
-                deltakerHistorikkService,
                 navAnsattService,
                 navEnhetService,
             )

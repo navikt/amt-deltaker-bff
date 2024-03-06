@@ -69,10 +69,10 @@ class NavAnsattRepository {
         it.update(query)
     }
 
-    fun getMany(veilederIdenter: List<String>) = Database.query {
+    fun getMany(veilederIdenter: List<UUID>) = Database.query {
         if (veilederIdenter.isEmpty()) return@query emptyList()
 
-        val statement = "select * from nav_ansatt where nav_ident in (${veilederIdenter.joinToString { "?" }})"
+        val statement = "select * from nav_ansatt where id in (${veilederIdenter.joinToString { "?" }})"
 
         val query = queryOf(
             statement,

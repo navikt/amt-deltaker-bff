@@ -29,7 +29,7 @@ class NavAnsattRepositoryTest {
         )
         ansatte.forEach { TestRepository.insert(it) }
 
-        val faktiskeAnsatte = repository.getMany(ansatte.map { it.navIdent })
+        val faktiskeAnsatte = repository.getMany(ansatte.map { it.id })
 
         faktiskeAnsatte.size shouldBe ansatte.size
         faktiskeAnsatte.find { it == ansatte[0] } shouldNotBe null

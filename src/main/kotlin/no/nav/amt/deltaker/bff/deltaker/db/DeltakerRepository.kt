@@ -8,6 +8,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
+import no.nav.amt.deltaker.bff.deltaker.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -77,16 +78,8 @@ class DeltakerRepository {
             gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
             opprettet = row.localDateTime("ds.created_at"),
         ),
-        vedtaksinformasjon = row.localDateTimeOrNull("v.opprettet")?.let { opprettet ->
-            Deltaker.Vedtaksinformasjon(
-                fattet = row.localDateTimeOrNull("v.fattet"),
-                fattetAvNav = row.stringOrNull("v.fattet_av_nav")?.let { g -> objectMapper.readValue(g) },
-                opprettet = opprettet,
-                opprettetAv = row.string("v.opprettet_av"),
-                sistEndret = row.localDateTime("v.sist_endret"),
-                sistEndretAv = row.string("v.sist_endret_av"),
-                sistEndretAvEnhet = row.stringOrNull("v.sist_endret_av_enhet"),
-            )
+        historikk = row.string("d.historikk").let { list ->
+            objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
         },
     )
 
@@ -94,11 +87,11 @@ class DeltakerRepository {
         val sql = """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -108,6 +101,7 @@ class DeltakerRepository {
                 deltakelsesprosent   = :deltakelsesprosent,
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 innhold              = :innhold,
+                historikk            = :historikk,
                 modified_at          = current_timestamp
         """.trimIndent()
 
@@ -121,6 +115,7 @@ class DeltakerRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
+            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
         )
 
         session.transaction { tx ->
@@ -138,7 +133,7 @@ class DeltakerRepository {
             ?: Result.failure(NoSuchElementException("Ingen deltaker med id $id"))
     }
 
-    fun getMany(personIdent: String, deltakerlisteId: UUID) = Database.query {
+    fun getMany(personident: String, deltakerlisteId: UUID) = Database.query {
         val sql = getDeltakerSql(
             """ where nb.personident = :personident 
                     and d.deltakerliste_id = :deltakerliste_id 
@@ -149,7 +144,7 @@ class DeltakerRepository {
         val query = queryOf(
             sql,
             mapOf(
-                "personident" to personIdent,
+                "personident" to personident,
                 "deltakerliste_id" to deltakerlisteId,
             ),
         ).map(::rowMapper).asList
@@ -275,6 +270,38 @@ class DeltakerRepository {
         session.run(query)
     }
 
+    fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+        val sql = """
+            update deltaker set 
+                startdato            = :startdato,
+                sluttdato            = :sluttdato,
+                dager_per_uke        = :dagerPerUke,
+                deltakelsesprosent   = :deltakelsesprosent,
+                bakgrunnsinformasjon = :bakgrunnsinformasjon,
+                innhold              = :innhold,
+                historikk            = :historikk,
+                modified_at          = current_timestamp
+            where id = :id
+        """.trimIndent()
+
+        val params = mapOf(
+            "id" to deltaker.id,
+            "startdato" to deltaker.startdato,
+            "sluttdato" to deltaker.sluttdato,
+            "dagerPerUke" to deltaker.dagerPerUke,
+            "deltakelsesprosent" to deltaker.deltakelsesprosent,
+            "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
+            "innhold" to toPGObject(deltaker.innhold),
+            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+        )
+
+        session.transaction { tx ->
+            tx.update(insertStatusQuery(deltaker.status, deltaker.id))
+            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            tx.update(queryOf(sql, params))
+        }
+    }
+
     private fun slettStatus(deltakerId: UUID): Query {
         val sql = """
             delete from deltaker_status
@@ -303,8 +330,8 @@ class DeltakerRepository {
 
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query {
         val sql = """
-            insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra) 
-            values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra) 
+            insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, created_at) 
+            values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :opprettet) 
             on conflict (id) do nothing;
         """.trimIndent()
 
@@ -314,6 +341,7 @@ class DeltakerRepository {
             "type" to status.type.name,
             "aarsak" to toPGObject(status.aarsak),
             "gyldig_fra" to status.gyldigFra,
+            "opprettet" to status.opprettet,
         )
 
         return queryOf(sql, params)
@@ -341,6 +369,7 @@ class DeltakerRepository {
                    d.deltakelsesprosent as "d.deltakelsesprosent",
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.innhold as "d.innhold",
+                   d.historikk as "d.historikk",
                    d.modified_at as "d.modified_at",
                    nb.personident as "nb.personident",
                    nb.fornavn as "nb.fornavn",
@@ -367,13 +396,6 @@ class DeltakerRepository {
                    a.organisasjonsnummer as "a.organisasjonsnummer",
                    a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
                    oa.navn  AS overordnet_arrangor_navn,
-                   v.fattet as "v.fattet",
-                   v.fattet_av_nav as "v.fattet_av_nav",
-                   v.created_at as "v.opprettet",
-                   v.opprettet_av as "v.opprettet_av",
-                   v.modified_at as "v.sist_endret",
-                   v.sist_endret_av as "v.sist_endret_av",
-                   v.sist_endret_av_enhet as "v.sist_endret_av_enhet",
                    t.id as "t.id",
                    t.navn as "t.navn",
                    t.type as "t.type",
@@ -385,7 +407,6 @@ class DeltakerRepository {
                 join arrangor a on a.id = dl.arrangor_id
                 join tiltakstype t on t.type = dl.tiltakstype
                 left join arrangor oa on oa.id = a.overordnet_arrangor_id
-                left join vedtak v on d.id = v.deltaker_id and v.gyldig_til is null
                 $where
       """
 }

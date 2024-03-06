@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.navansatt.navenhet
 
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class NavEnhetService(
     private val repository: NavEnhetRepository,
@@ -18,4 +19,5 @@ class NavEnhetService(
     }
 
     fun hentEnhet(enhetsnummer: String) = repository.get(enhetsnummer)
+    fun hentEnhet(id: UUID) = repository.get(id)
 }

@@ -2,8 +2,11 @@ package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.deltaker.bff.deltaker.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
@@ -16,7 +19,6 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 class DeltakerRepositoryTest {
     companion object {
@@ -95,28 +97,19 @@ class DeltakerRepositoryTest {
 
     @Test
     fun `get - deltaker har flere vedtak, et aktivt - returnerer deltaker med aktivt vedtak`() {
-        val deltaker = TestData.lagDeltaker()
-        val vedtak1 = TestData.lagVedtak(
-            deltakerVedVedtak = deltaker,
-            fattet = LocalDateTime.now().minusMonths(2),
-            gyldigTil = LocalDateTime.now().minusDays(1),
-        )
-        val vedtak2 = TestData.lagVedtak(
-            deltakerVedVedtak = deltaker,
-            fattet = LocalDateTime.now().minusDays(1),
-        )
+        val baseDeltaker = TestData.lagDeltaker()
+        val deltaker = TestData.leggTilHistorikk(baseDeltaker, 2)
 
         TestRepository.insert(deltaker)
-        TestRepository.insert(vedtak1)
-        TestRepository.insert(vedtak2)
 
-        val vedtaksinformasjon = repository.get(deltaker.id).getOrThrow().vedtaksinformasjon!!
-        vedtaksinformasjon.fattet shouldBeCloseTo vedtak2.fattet
-        vedtaksinformasjon.fattetAvNav shouldBe vedtak2.fattetAvNav
-        vedtaksinformasjon.opprettet shouldBeCloseTo vedtak2.opprettet
-        vedtaksinformasjon.opprettetAv shouldBe vedtak2.opprettetAv
-        vedtaksinformasjon.sistEndret shouldBeCloseTo vedtak2.sistEndret
-        vedtaksinformasjon.sistEndretAv shouldBe vedtak2.sistEndretAv
+        val vedtak = repository.get(baseDeltaker.id).getOrThrow().fattetVedtak!!
+        vedtak.fattet shouldNotBe null
+        vedtak.fattetAvNav shouldBe true
+
+        val alleVedtak = deltaker.getAlleVedtak()
+        alleVedtak.size shouldBe 2
+        alleVedtak.find { it.gyldigTil == null }!!.id shouldBe vedtak.id
+        alleVedtak.any { it.gyldigTil != null } shouldBe true
     }
 
     @Test
@@ -252,7 +245,44 @@ class DeltakerRepositoryTest {
             repository.create(kladd)
         }
     }
+
+    @Test
+    fun `update - deltaker er endret - oppdaterer`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        val endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("ny bakgrunn for innsøk")
+        val oppdatertDeltaker = TestData.leggTilHistorikk(
+            deltaker = deltaker.copy(bakgrunnsinformasjon = endring.bakgrunnsinformasjon),
+            endringer = listOf(TestData.lagDeltakerEndring(endring = endring)),
+        )
+
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `update - deltakerstatus er endret - oppdaterer`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+        )
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `update - deltakerstatus er ikke endret - oppdaterer ikke status`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        repository.update(deltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
+    }
 }
+
+private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
+    id, startdato, sluttdato, dagerPerUke, deltakelsesprosent, bakgrunnsinformasjon, innhold, status, historikk,
+)
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.id shouldBe b.id
@@ -263,6 +293,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.deltakelsesprosent shouldBe b.deltakelsesprosent
     a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
     a.innhold shouldBe b.innhold
+    a.historikk shouldBe b.historikk
     a.status.id shouldBe b.status.id
     a.status.type shouldBe b.status.type
     a.status.aarsak shouldBe b.status.aarsak
@@ -271,16 +302,17 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.opprettet shouldBeCloseTo b.status.opprettet
 }
 
-private fun Deltaker.toKladdResponse(): KladdResponse =
-    KladdResponse(
-        id = id,
-        navBruker = navBruker,
-        deltakerlisteId = deltakerliste.id,
-        startdato = startdato,
-        sluttdato = sluttdato,
-        dagerPerUke = dagerPerUke,
-        deltakelsesprosent = deltakelsesprosent,
-        bakgrunnsinformasjon = bakgrunnsinformasjon,
-        innhold = innhold,
-        status = status,
-    )
+private fun Deltaker.toKladdResponse() = KladdResponse(
+    id = id,
+    navBruker = navBruker,
+    deltakerlisteId = deltakerliste.id,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = deltakelsesprosent,
+    bakgrunnsinformasjon = bakgrunnsinformasjon,
+    innhold = innhold,
+    status = status,
+)
+
+private fun Deltaker.getAlleVedtak() = historikk.filterIsInstance<DeltakerHistorikk.Vedtak>().map { it.vedtak }

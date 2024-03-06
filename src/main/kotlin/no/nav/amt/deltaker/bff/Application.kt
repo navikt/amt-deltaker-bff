@@ -22,13 +22,11 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.db.Database
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.VedtakRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -133,21 +131,15 @@ fun Application.module() {
     )
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
-    val vedtakRepository = VedtakRepository()
-    val deltakerEndringRepository = DeltakerEndringRepository()
-
-    val deltakerHistorikkService = DeltakerHistorikkService(deltakerEndringRepository, vedtakRepository)
 
     val deltakerService = DeltakerService(
         deltakerRepository,
-        deltakerEndringRepository,
         navAnsattService,
         navEnhetService,
     )
 
     val pameldingService = PameldingService(
         deltakerService = deltakerService,
-        vedtakRepository = vedtakRepository,
         navBrukerService = navBrukerService,
         amtDeltakerClient = amtDeltakerClient,
     )
@@ -166,6 +158,7 @@ fun Application.module() {
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository),
         TiltakstypeConsumer(tiltakstypeRepository),
+        DeltakerV2Consumer(deltakerService),
     )
     consumers.forEach { it.run() }
 
@@ -174,7 +167,6 @@ fun Application.module() {
         tilgangskontrollService,
         deltakerService,
         pameldingService,
-        deltakerHistorikkService,
         navAnsattService,
         navEnhetService,
     )
