@@ -115,19 +115,16 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/avbryt") {
-            call.respond(HttpStatusCode.ServiceUnavailable, "Avbryting er midlertidig utilgjengelig, prøv igjen senere.")
-            return@post
-
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.avbrytUtkast(
-                opprinneligDeltaker = deltaker,
-                navIdent = navIdent,
-                endretAvEnhet = enhetsnummer,
+                deltakerId = deltaker.id,
+                avbruttAv = navIdent,
+                avbruttAvEnhet = enhetsnummer,
             )
 
             call.respond(HttpStatusCode.OK)

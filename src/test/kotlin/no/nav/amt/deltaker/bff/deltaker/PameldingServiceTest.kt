@@ -151,37 +151,6 @@ class PameldingServiceTest {
             nyDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
         }
     }
-
-    @Test
-    fun `avbrytUtkast - har ikke status utkast til paamelding - kaster feil`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VURDERES))
-        val opprettetAv = TestData.randomNavIdent()
-        val opprettetAvEnhet = TestData.randomEnhetsnummer()
-        TestRepository.insert(deltaker)
-
-        runBlocking {
-            assertFailsWith<IllegalArgumentException> {
-                pameldingService.avbrytUtkast(deltaker, opprettetAvEnhet, opprettetAv)
-            }
-        }
-    }
-
-    @Test
-    fun `avbrytUtkast - deltaker har status UTKAST_TIL_PAMELDING - avbryter utkast`() {
-        val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
-        val opprettetAv = TestData.randomNavIdent()
-        val opprettetAvEnhet = TestData.randomEnhetsnummer()
-        TestRepository.insert(deltaker)
-        TestData.lagUtkast(deltaker)
-
-        runBlocking {
-            pameldingService.avbrytUtkast(deltaker, opprettetAvEnhet, opprettetAv)
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
-            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT_UTKAST
-            oppdatertDeltaker.status.aarsak shouldBe null
-        }
-    }
 }
 
 fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: DeltakerVedVedtak) {
