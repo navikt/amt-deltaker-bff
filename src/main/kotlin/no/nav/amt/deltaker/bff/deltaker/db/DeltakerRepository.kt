@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
-import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
@@ -207,67 +206,6 @@ class DeltakerRepository {
             tx.update(insertStatusQuery(kladd.status, kladd.id))
             tx.update(deaktiverTidligereStatuserQuery(kladd.status, kladd.id))
         }
-    }
-
-    fun skalHaStatusDeltar(): List<Deltaker> = Database.query { session ->
-        val sql = getDeltakerSql(
-            """ where ds.gyldig_til is null
-                and ds.type = :status
-                and d.startdato <= CURRENT_DATE
-                and (d.sluttdato is null or d.sluttdato >= CURRENT_DATE)
-            """.trimMargin(),
-        )
-
-        val query = queryOf(sql, mapOf("status" to DeltakerStatus.Type.VENTER_PA_OPPSTART.name))
-            .map(::rowMapper).asList
-
-        session.run(query)
-    }
-
-    fun skalHaAvsluttendeStatus(): List<Deltaker> = Database.query { session ->
-        val deltakerstatuser = listOf(
-            DeltakerStatus.Type.VENTER_PA_OPPSTART.name,
-            DeltakerStatus.Type.DELTAR.name,
-        )
-
-        val sql = getDeltakerSql(
-            """ where ds.gyldig_til is null
-                and ds.type in (${deltakerstatuser.joinToString { "?" }})
-                and d.sluttdato < CURRENT_DATE
-            """.trimMargin(),
-        )
-
-        val query = queryOf(
-            sql,
-            *deltakerstatuser.toTypedArray(),
-        )
-            .map(::rowMapper).asList
-
-        session.run(query)
-    }
-
-    fun deltarPaAvsluttetDeltakerliste(): List<Deltaker> = Database.query { session ->
-        val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
-        val avsluttendeDeltakerlisteStatuser = listOf(
-            Deltakerliste.Status.AVSLUTTET.name,
-            Deltakerliste.Status.AVBRUTT.name,
-            Deltakerliste.Status.AVLYST.name,
-        )
-        val sql = getDeltakerSql(
-            """ where ds.gyldig_til is null
-                and ds.type not in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
-                and dl.status in (${avsluttendeDeltakerlisteStatuser.joinToString { "?" }})
-            """.trimMargin(),
-        )
-
-        val query = queryOf(
-            sql,
-            *avsluttendeDeltakerStatuser.toTypedArray(),
-            *avsluttendeDeltakerlisteStatuser.toTypedArray(),
-        )
-            .map(::rowMapper).asList
-
-        session.run(query)
     }
 
     fun update(deltaker: Deltakeroppdatering) = Database.query { session ->

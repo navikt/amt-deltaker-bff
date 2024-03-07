@@ -17,7 +17,6 @@ data class Environment(
     val poaoTilgangScope: String = getEnvVar(POAO_TILGANG_SCOPE_KEY),
     val amtPersonServiceUrl: String = getEnvVar(AMT_PERSONSERVICE_URL_KEY),
     val amtPersonServiceScope: String = getEnvVar(AMT_PERSONSERVICE_SCOPE_KEY),
-    val electorPath: String = getEnvVar(ELECTOR_PATH),
     val amtDeltakerUrl: String = getEnvVar(AMT_DELTAKER_URL_KEY),
     val amtDeltakerScope: String = getEnvVar(AMT_DELTAKER_SCOPE_KEY),
 ) {
@@ -55,8 +54,6 @@ data class Environment(
 
         const val POAO_TILGANG_URL_KEY = "POAO_TILGANG_URL"
         const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"
-
-        const val ELECTOR_PATH = "ELECTOR_PATH"
 
         const val HTTP_CLIENT_TIMEOUT_MS = 10_000
 

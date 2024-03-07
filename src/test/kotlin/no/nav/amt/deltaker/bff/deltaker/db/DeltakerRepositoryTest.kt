@@ -8,7 +8,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -110,116 +109,6 @@ class DeltakerRepositoryTest {
         alleVedtak.size shouldBe 2
         alleVedtak.find { it.gyldigTil == null }!!.id shouldBe vedtak.id
         alleVedtak.any { it.gyldigTil != null } shouldBe true
-    }
-
-    @Test
-    fun `skalHaStatusDeltar - venter pa oppstart, startdato passer - returnerer deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-            startdato = null,
-            sluttdato = null,
-        )
-        TestRepository.insert(deltaker)
-
-        val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            startdato = LocalDate.now().minusDays(1),
-            sluttdato = LocalDate.now().plusWeeks(2),
-        )
-        repository.upsert(oppdatertDeltaker)
-
-        val deltakereSomSkalHaStatusDeltar = repository.skalHaStatusDeltar()
-
-        deltakereSomSkalHaStatusDeltar.size shouldBe 1
-        deltakereSomSkalHaStatusDeltar.first().id shouldBe deltaker.id
-    }
-
-    @Test
-    fun `skalHaStatusDeltar - venter pa oppstart, mangler startdato - returnerer ikke deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-            startdato = null,
-            sluttdato = null,
-        )
-        TestRepository.insert(deltaker)
-
-        val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            startdato = null,
-            sluttdato = null,
-        )
-        repository.upsert(oppdatertDeltaker)
-
-        val deltakereSomSkalHaStatusDeltar = repository.skalHaStatusDeltar()
-
-        deltakereSomSkalHaStatusDeltar.size shouldBe 0
-    }
-
-    @Test
-    fun `skalHaAvsluttendeStatus - deltar, sluttdato passert - returnerer deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            startdato = LocalDate.now().minusDays(10),
-            sluttdato = LocalDate.now().plusWeeks(2),
-        )
-        TestRepository.insert(deltaker)
-
-        val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
-            startdato = LocalDate.now().minusDays(10),
-            sluttdato = LocalDate.now().minusDays(1),
-        )
-        repository.upsert(oppdatertDeltaker)
-
-        val deltakereSomSkalHaAvsluttendeStatus = repository.skalHaAvsluttendeStatus()
-
-        deltakereSomSkalHaAvsluttendeStatus.size shouldBe 1
-        deltakereSomSkalHaAvsluttendeStatus.first().id shouldBe deltaker.id
-    }
-
-    @Test
-    fun `skalHaAvsluttendeStatus - venter pa oppstart, sluttdato mangler - returnerer ikke deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            startdato = LocalDate.now().minusDays(10),
-            sluttdato = null,
-        )
-        TestRepository.insert(deltaker)
-
-        val deltakereSomSkalHaAvsluttendeStatus = repository.skalHaAvsluttendeStatus()
-
-        deltakereSomSkalHaAvsluttendeStatus.size shouldBe 0
-    }
-
-    @Test
-    fun `deltarPaAvsluttetDeltakerliste - deltar, dl-sluttdato passert - returnerer deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
-            startdato = LocalDate.now().minusDays(10),
-            sluttdato = LocalDate.now().plusDays(2),
-            deltakerliste = TestData.lagDeltakerliste(status = Deltakerliste.Status.AVSLUTTET),
-        )
-        TestRepository.insert(deltaker)
-
-        val deltakerePaAvsluttetDeltakerliste = repository.deltarPaAvsluttetDeltakerliste()
-
-        deltakerePaAvsluttetDeltakerliste.size shouldBe 1
-        deltakerePaAvsluttetDeltakerliste.first().id shouldBe deltaker.id
-    }
-
-    @Test
-    fun `deltarPaAvsluttetDeltakerliste - har sluttet, dl-sluttdato passert - returnerer ikke deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-            startdato = LocalDate.now().minusDays(10),
-            sluttdato = LocalDate.now(),
-            deltakerliste = TestData.lagDeltakerliste(status = Deltakerliste.Status.AVSLUTTET),
-        )
-        TestRepository.insert(deltaker)
-
-        val deltakerePaAvsluttetDeltakerliste = repository.deltarPaAvsluttetDeltakerliste()
-
-        deltakerePaAvsluttetDeltakerliste.size shouldBe 0
     }
 
     @Test
