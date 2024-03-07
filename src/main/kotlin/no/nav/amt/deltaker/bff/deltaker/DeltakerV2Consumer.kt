@@ -76,7 +76,8 @@ data class DeltakerV2Dto(
     val historikk: List<DeltakerHistorikk>?,
 ) {
     fun toDeltakerOppdatering(): Deltakeroppdatering {
-        require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker: $id, kilde: $kilde" }
+        require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
+        require(historikk != null) { "Kan ikke håndtere deltaker $id uten historikk" }
 
         return Deltakeroppdatering(
             id = id,
@@ -94,7 +95,7 @@ data class DeltakerV2Dto(
                 gyldigTil = null,
                 opprettet = status.opprettetDato,
             ),
-            historikk = historikk ?: emptyList(),
+            historikk = historikk,
         )
     }
 

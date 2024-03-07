@@ -11,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
@@ -70,6 +71,22 @@ class AmtDeltakerClient(
         if (!response.status.isSuccess()) {
             error(
                 "Kunne ikke slette kladd i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+    }
+
+    suspend fun avbrytUtkast(deltakerId: UUID, avbruttAv: String, avbruttAvEnhet: String) {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/pamelding/$deltakerId/avbryt") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(AvbrytUtkastRequest(avbruttAv, avbruttAvEnhet))
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke avbryte utkast i amt-deltaker. " +
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }

@@ -139,9 +139,7 @@ class DeltakerService(
         deltakerRepository.delete(deltakerId)
     }
 
-    fun upsert(
-        deltaker: Deltaker,
-    ) {
+    fun upsert(deltaker: Deltaker) {
         deltakerRepository.upsert(deltaker)
         log.info("Upserter deltaker med id ${deltaker.id}")
     }

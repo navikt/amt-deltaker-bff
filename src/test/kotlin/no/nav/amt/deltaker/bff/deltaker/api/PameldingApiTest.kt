@@ -38,7 +38,6 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import java.util.UUID
 
@@ -78,7 +77,7 @@ class PameldingApiTest {
             )
         }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
-        // client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -89,7 +88,7 @@ class PameldingApiTest {
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.delete("/pamelding/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
-        // client.post("/pamelding/${UUID.randomUUID()}/avbryt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -239,54 +238,21 @@ class PameldingApiTest {
         }
     }
 
-    @Ignore
     @Test
-    fun `avbryt utkast - har tilgang, deltakerstatus er UTKAST_TIL_PAMELDING - avbryter utkast og returnerer 200`() =
+    fun `avbryt utkast - har tilgang  - avbryter utkast og returnerer 200`() =
         testApplication {
             coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-            val deltaker =
-                TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+            val deltaker = TestData.lagDeltaker(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+            )
             every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { pameldingService.avbrytUtkast(deltaker, any(), any()) } returns Unit
+            coEvery { pameldingService.avbrytUtkast(deltaker.id, any(), any()) } returns Unit
 
             setUpTestApplication()
             client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
             }
         }
-
-    @Ignore
-    @Test
-    fun `avbryt utkast - har tilgang, deltakerstatus er ikke UTKAST_TIL_PAMELDING - returnerer 400`() =
-        testApplication {
-            coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-            val deltaker =
-                TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VURDERES))
-            every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery {
-                pameldingService.avbrytUtkast(
-                    deltaker,
-                    any(),
-                    any(),
-                )
-            } throws IllegalArgumentException("Kan ikke avbryte utkast for deltaker med id 123")
-
-            setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
-        }
-
-    @Ignore
-    @Test
-    fun `avbryt utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
-        every { deltakerService.get(any()) } throws NoSuchElementException()
-
-        setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.apply {
-            status shouldBe HttpStatusCode.NotFound
-        }
-    }
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
         application {
