@@ -1,17 +1,18 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
-import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.util.pipeline.PipelineContext
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerHistorikkService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
@@ -34,7 +35,6 @@ import java.util.UUID
 fun Routing.registerDeltakerApi(
     tilgangskontrollService: TilgangskontrollService,
     deltakerService: DeltakerService,
-    deltakerHistorikkService: DeltakerHistorikkService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
 ) {
@@ -42,11 +42,14 @@ fun Routing.registerDeltakerApi(
 
     authenticate("VEILEDER") {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -54,7 +57,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.BAKGRUNNSINFORMASJON,
                 endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -63,10 +65,13 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/innhold") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreInnholdRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -74,7 +79,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.INNHOLD,
                 endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -83,11 +87,14 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -95,7 +102,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.DELTAKELSESMENGDE,
                 endring = DeltakerEndring.Endring.EndreDeltakelsesmengde(
                     deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                     dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -107,10 +113,13 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/startdato") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -118,7 +127,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.STARTDATO,
                 endring = DeltakerEndring.Endring.EndreStartdato(request.startdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -127,10 +135,13 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/sluttdato") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreSluttdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -138,7 +149,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.SLUTTDATO,
                 endring = DeltakerEndring.Endring.EndreSluttdato(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -147,11 +157,14 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/sluttarsak") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<EndreSluttarsakRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -159,7 +172,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.SLUTTARSAK,
                 endring = DeltakerEndring.Endring.EndreSluttarsak(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -168,11 +180,14 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/ikke-aktuell") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<IkkeAktuellRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -180,7 +195,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.IKKE_AKTUELL,
                 endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -189,11 +203,14 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/avslutt") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<AvsluttDeltakelseRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -201,7 +218,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.AVSLUTT_DELTAKELSE,
                 endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -227,7 +243,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
-            val historikk = deltakerHistorikkService.getForDeltaker(deltaker.id)
+            val historikk = deltaker.getDeltakerHistorikSortert()
 
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
 
@@ -235,10 +251,13 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/forleng") {
+            endringenErUtilgjengelig()
+            return@post
+
             val navIdent = getNavIdent()
             val request = call.receive<ForlengDeltakelseRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.header("aktiv-enhet")
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
@@ -246,7 +265,6 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 opprinneligDeltaker = deltaker,
-                endringstype = DeltakerEndring.Endringstype.FORLENGELSE,
                 endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -254,4 +272,8 @@ fun Routing.registerDeltakerApi(
             call.respond(oppdatertDeltaker.toDeltakerResponse())
         }
     }
+}
+
+private suspend fun PipelineContext<Unit, ApplicationCall>.endringenErUtilgjengelig() {
+    call.respond(HttpStatusCode.ServiceUnavailable, "Endringen er midlertidig utilgjengelig, prøv igjen senere.")
 }

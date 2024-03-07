@@ -35,18 +35,17 @@ class NavAnsattService(
         repository.delete(navAnsattId)
     }
 
-    fun hentAnsatteForDeltaker(deltaker: Deltaker): Map<String, NavAnsatt> {
-        val veilederIdenter = listOfNotNull(
+    fun hentAnsatteForDeltaker(deltaker: Deltaker): Map<UUID, NavAnsatt> {
+        val veilederIder = listOfNotNull(
             deltaker.vedtaksinformasjon?.opprettetAv,
             deltaker.vedtaksinformasjon?.sistEndretAv,
-            deltaker.vedtaksinformasjon?.fattetAvNav?.fattetAv,
         ).distinct()
 
-        return hentAnsatte(veilederIdenter)
+        return hentAnsatte(veilederIder)
     }
 
-    fun hentAnsatteForHistorikk(historikk: List<DeltakerHistorikk>): Map<String, NavAnsatt> {
-        val veilederIdenter = historikk.flatMap {
+    fun hentAnsatteForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavAnsatt> {
+        val ider = historikk.flatMap {
             when (it) {
                 is DeltakerHistorikk.Endring -> {
                     listOf(it.endring.endretAv)
@@ -56,14 +55,13 @@ class NavAnsattService(
                     listOfNotNull(
                         it.vedtak.sistEndretAv,
                         it.vedtak.opprettetAv,
-                        it.vedtak.fattetAvNav?.fattetAv,
                     )
                 }
             }
         }.distinct()
 
-        return hentAnsatte(veilederIdenter)
+        return hentAnsatte(ider)
     }
 
-    fun hentAnsatte(veilederIdenter: List<String>) = repository.getMany(veilederIdenter).associateBy { it.navIdent }
+    fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
 }

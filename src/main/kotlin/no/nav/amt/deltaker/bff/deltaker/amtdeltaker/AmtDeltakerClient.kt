@@ -12,7 +12,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import java.util.UUID
 
 class AmtDeltakerClient(
@@ -42,6 +44,22 @@ class AmtDeltakerClient(
         return response.body()
     }
 
+    suspend fun utkast(utkast: Utkast) {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/pamelding/${utkast.deltakerId}") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(utkast.toRequest())
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke oppdatere utkast i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+    }
+
     suspend fun slettKladd(deltakerId: UUID) {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.delete("$baseUrl/pamelding/$deltakerId") {
@@ -57,3 +75,13 @@ class AmtDeltakerClient(
         }
     }
 }
+
+private fun Utkast.toRequest() = UtkastRequest(
+    innhold = this.pamelding.innhold,
+    bakgrunnsinformasjon = this.pamelding.bakgrunnsinformasjon,
+    deltakelsesprosent = this.pamelding.deltakelsesprosent,
+    dagerPerUke = this.pamelding.dagerPerUke,
+    endretAv = this.pamelding.endretAv,
+    endretAvEnhet = this.pamelding.endretAvEnhet,
+    godkjentAvNav = this.godkjentAvNav,
+)

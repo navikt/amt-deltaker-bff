@@ -1,10 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerEndringRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -16,7 +16,6 @@ import java.util.UUID
 
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
-    private val deltakerEndringRepository: DeltakerEndringRepository,
     private val navAnsattService: NavAnsattService,
     private val navEnhetService: NavEnhetService,
 ) {
@@ -29,10 +28,9 @@ class DeltakerService(
 
     suspend fun oppdaterDeltaker(
         opprinneligDeltaker: Deltaker,
-        endringstype: DeltakerEndring.Endringstype,
         endring: DeltakerEndring.Endring,
         endretAv: String,
-        endretAvEnhet: String?,
+        endretAvEnhet: String,
     ): Deltaker {
         val deltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> opprinneligDeltaker.copy(
@@ -61,7 +59,9 @@ class DeltakerService(
             )
 
             is DeltakerEndring.Endring.ForlengDeltakelse -> {
-                if (opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET && endring.sluttdato.isAfter(LocalDate.now())) {
+                if (opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET &&
+                    endring.sluttdato.isAfter(LocalDate.now())
+                ) {
                     opprinneligDeltaker.copy(
                         status = nyDeltakerStatus(DeltakerStatus.Type.DELTAR),
                         sluttdato = endring.sluttdato,
@@ -84,20 +84,17 @@ class DeltakerService(
         }
 
         if (erEndret(opprinneligDeltaker, deltaker)) {
-            navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
-            endretAvEnhet?.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
-            deltakerEndringRepository.upsert(
-                DeltakerEndring(
-                    id = UUID.randomUUID(),
-                    deltakerId = deltaker.id,
-                    endringstype = endringstype,
-                    endring = endring,
-                    endretAv = endretAv,
-                    endretAvEnhet = endretAvEnhet,
-                    endret = LocalDateTime.now(),
-                ),
+            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(endretAv)
+            val navEnhet = endretAvEnhet.let { navEnhetService.hentEllerOpprettNavEnhet(it) }
+            val deltakerEndring = DeltakerEndring(
+                id = UUID.randomUUID(),
+                deltakerId = deltaker.id,
+                endring = endring,
+                endretAv = navAnsatt.id,
+                endretAvEnhet = navEnhet.id,
+                endret = LocalDateTime.now(),
             )
-            upsert(deltaker)
+            upsert(deltaker.copy(historikk = deltaker.historikk.plus(DeltakerHistorikk.Endring(deltakerEndring))))
             log.info("Oppdatert deltaker med id ${deltaker.id}")
         }
         return deltakerRepository.get(deltaker.id).getOrThrow()
@@ -132,6 +129,10 @@ class DeltakerService(
         upsert(deltaker)
 
         return deltakerRepository.get(deltaker.id).getOrThrow()
+    }
+
+    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+        deltakerRepository.update(deltakeroppdatering)
     }
 
     fun delete(deltakerId: UUID) {

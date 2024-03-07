@@ -10,13 +10,13 @@ data class Vedtak(
     val fattet: LocalDateTime?,
     val gyldigTil: LocalDateTime?,
     val deltakerVedVedtak: DeltakerVedVedtak,
-    val fattetAvNav: FattetAvNav?,
+    val fattetAvNav: Boolean,
     val opprettet: LocalDateTime,
-    val opprettetAv: String,
-    val opprettetAvEnhet: String?,
+    val opprettetAv: UUID,
+    val opprettetAvEnhet: UUID,
     val sistEndret: LocalDateTime,
-    val sistEndretAv: String,
-    val sistEndretAvEnhet: String?,
+    val sistEndretAv: UUID,
+    val sistEndretAvEnhet: UUID,
 )
 
 data class DeltakerVedVedtak(
@@ -28,24 +28,4 @@ data class DeltakerVedVedtak(
     val bakgrunnsinformasjon: String?,
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
-)
-
-data class FattetAvNav(
-    val fattetAv: String,
-    val fattetAvEnhet: String?,
-)
-
-data class VedtakDbo(
-    val id: UUID,
-    val deltakerId: UUID,
-    val fattet: LocalDateTime?,
-    val gyldigTil: LocalDateTime?,
-    val deltakerVedVedtak: Deltaker,
-    val fattetAvNav: FattetAvNav?,
-    val opprettet: LocalDateTime,
-    val opprettetAv: String,
-    val opprettetAvEnhet: String?,
-    val sistEndret: LocalDateTime,
-    val sistEndretAv: String,
-    val sistEndretAvEnhet: String?,
 )

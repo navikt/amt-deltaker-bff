@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -7,16 +9,11 @@ import java.util.UUID
 data class DeltakerEndring(
     val id: UUID,
     val deltakerId: UUID,
-    val endringstype: Endringstype,
     val endring: Endring,
-    val endretAv: String,
-    val endretAvEnhet: String?,
+    val endretAv: UUID,
+    val endretAvEnhet: UUID,
     val endret: LocalDateTime,
 ) {
-    enum class Endringstype {
-        STARTDATO, SLUTTDATO, DELTAKELSESMENGDE, BAKGRUNNSINFORMASJON, INNHOLD, IKKE_AKTUELL, FORLENGELSE, AVSLUTT_DELTAKELSE, SLUTTARSAK
-    }
-
     data class Aarsak(
         val type: Type,
         val beskrivelse: String? = null,
@@ -37,6 +34,18 @@ data class DeltakerEndring(
         )
     }
 
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+    @JsonSubTypes(
+        JsonSubTypes.Type(value = Endring.EndreStartdato::class, name = "EndreStartdato"),
+        JsonSubTypes.Type(value = Endring.EndreSluttdato::class, name = "EndreSluttdato"),
+        JsonSubTypes.Type(value = Endring.EndreDeltakelsesmengde::class, name = "EndreDeltakelsesmengde"),
+        JsonSubTypes.Type(value = Endring.EndreBakgrunnsinformasjon::class, name = "EndreBakgrunnsinformasjon"),
+        JsonSubTypes.Type(value = Endring.EndreInnhold::class, name = "EndreInnhold"),
+        JsonSubTypes.Type(value = Endring.IkkeAktuell::class, name = "IkkeAktuell"),
+        JsonSubTypes.Type(value = Endring.ForlengDeltakelse::class, name = "ForlengDeltakelse"),
+        JsonSubTypes.Type(value = Endring.AvsluttDeltakelse::class, name = "AvsluttDeltakelse"),
+        JsonSubTypes.Type(value = Endring.EndreSluttarsak::class, name = "EndreSluttarsak"),
+    )
     sealed class Endring {
         data class EndreBakgrunnsinformasjon(
             val bakgrunnsinformasjon: String?,

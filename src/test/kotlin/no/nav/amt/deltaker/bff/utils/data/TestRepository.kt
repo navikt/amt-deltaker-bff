@@ -1,11 +1,11 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import kotliquery.queryOf
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
@@ -23,8 +23,6 @@ object TestRepository {
 
     fun cleanDatabase() = Database.query { session ->
         val tables = listOf(
-            "vedtak",
-            "deltaker_endring",
             "deltaker_status",
             "endringsmelding",
             "nav_ansatt",
@@ -155,11 +153,11 @@ object TestRepository {
         val sql = """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
             )
         """.trimIndent()
 
@@ -173,6 +171,7 @@ object TestRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
+            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
         )
 
         session.update(queryOf(sql, parameters))
@@ -232,7 +231,7 @@ object TestRepository {
             "fattet" to vedtak.fattet,
             "gyldig_til" to vedtak.gyldigTil,
             "deltaker_ved_vedtak" to toPGObject(vedtak.deltakerVedVedtak),
-            "fattet_av_nav" to vedtak.fattetAvNav?.let(::toPGObject),
+            "fattet_av_nav" to vedtak.fattetAvNav,
             "opprettet" to vedtak.opprettet,
             "opprettet_av" to vedtak.opprettetAv,
             "opprettet_av_enhet" to vedtak.opprettetAvEnhet,
@@ -273,32 +272,6 @@ object TestRepository {
             "nav_enhet_nummer" to navEnhet.enhetsnummer,
             "navn" to navEnhet.navn,
             "modified_at" to LocalDateTime.now(),
-        )
-
-        it.update(queryOf(sql, params))
-    }
-
-    fun insert(endring: DeltakerEndring) = Database.query {
-        val sql = """
-            insert into deltaker_endring (id, deltaker_id, endringstype, endring, endret_av, endret_av_enhet, modified_at)
-            values (:id, :deltaker_id, :endringstype, :endring, :endret_av, :endret_av_enhet, :endret)
-            on conflict (id) do update set 
-                deltaker_id = :deltaker_id,
-                endringstype = :endringstype,
-                endring = :endring,
-                endret_av = :endret_av,
-                endret_av_enhet = :endret_av_enhet,
-                modified_at = :endret
-        """.trimIndent()
-
-        val params = mapOf(
-            "id" to endring.id,
-            "deltaker_id" to endring.deltakerId,
-            "endringstype" to endring.endringstype.name,
-            "endring" to toPGObject(endring.endring),
-            "endret_av" to endring.endretAv,
-            "endret_av_enhet" to endring.endretAvEnhet,
-            "endret" to endring.endret,
         )
 
         it.update(queryOf(sql, params))

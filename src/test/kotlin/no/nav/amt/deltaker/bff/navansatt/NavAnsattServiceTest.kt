@@ -100,7 +100,7 @@ class NavAnsattServiceTest {
         val vedtak = TestData.lagVedtak(
             deltakerVedVedtak = deltaker,
             fattet = LocalDateTime.now(),
-            fattetAvNav = TestData.lagFattetAvNav(),
+            fattetAvNav = true,
         )
         val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
 
