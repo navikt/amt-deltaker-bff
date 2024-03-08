@@ -20,11 +20,13 @@ import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import java.util.UUID
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
 const val AMT_PERSON_URL = "http://amt-person-service"
@@ -103,10 +105,11 @@ object MockResponseHandler {
     fun addResponse(
         url: String,
         method: HttpMethod,
-        responseBody: Any,
+        responseBody: Any? = "",
         responseCode: HttpStatusCode = HttpStatusCode.OK,
     ) {
         val api = Pair(url, method)
+
         responses[api] = Response(
             if (responseBody is String) responseBody else objectMapper.writeValueAsString(responseBody),
             responseCode,
@@ -145,5 +148,24 @@ object MockResponseHandler {
                 ),
             )
         }
+    }
+
+    fun addEndringsresponse(
+        deltakerId: UUID,
+        endring: DeltakerEndring.Endring,
+        status: HttpStatusCode = HttpStatusCode.OK,
+    ) {
+        val url = "$AMT_DELTAKER_URL/deltaker/$deltakerId/" + when (endring) {
+            is DeltakerEndring.Endring.AvsluttDeltakelse -> TODO()
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.Endepunkt.BAKGRUNNSINFORMASJON
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> TODO()
+            is DeltakerEndring.Endring.EndreInnhold -> TODO()
+            is DeltakerEndring.Endring.EndreSluttarsak -> TODO()
+            is DeltakerEndring.Endring.EndreSluttdato -> TODO()
+            is DeltakerEndring.Endring.EndreStartdato -> TODO()
+            is DeltakerEndring.Endring.ForlengDeltakelse -> TODO()
+            is DeltakerEndring.Endring.IkkeAktuell -> TODO()
+        }
+        addResponse(url = url, method = HttpMethod.Post, responseCode = status)
     }
 }

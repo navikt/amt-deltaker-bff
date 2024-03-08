@@ -42,9 +42,6 @@ fun Routing.registerDeltakerApi(
 
     authenticate("VEILEDER") {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
-            endringenErUtilgjengelig()
-            return@post
-
             val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
 
