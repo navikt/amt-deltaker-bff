@@ -13,9 +13,11 @@ import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import java.util.UUID
 
@@ -106,6 +108,10 @@ class AmtDeltakerClient(
         )
     }
 
+    suspend fun endreInnhold(deltakerId: UUID, endretAv: String, endretAvEnhet: String, innhold: List<Innhold>) {
+        postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
+    }
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -127,6 +133,7 @@ class AmtDeltakerClient(
 
     companion object Endepunkt {
         const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
+        const val INNHOLD = "innhold"
     }
 }
 

@@ -32,9 +32,11 @@ class DeltakerService(
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon ->
                 endreBakgrunnsinformasjon(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
 
+            is DeltakerEndring.Endring.EndreInnhold ->
+                endreInnhold(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+
             is DeltakerEndring.Endring.AvsluttDeltakelse -> TODO()
             is DeltakerEndring.Endring.EndreDeltakelsesmengde -> TODO()
-            is DeltakerEndring.Endring.EndreInnhold -> TODO()
             is DeltakerEndring.Endring.EndreSluttarsak -> TODO()
             is DeltakerEndring.Endring.EndreSluttdato -> TODO()
             is DeltakerEndring.Endring.EndreStartdato -> TODO()
@@ -59,6 +61,22 @@ class DeltakerService(
         )
 
         return deltaker.copy(bakgrunnsinformasjon = endring.bakgrunnsinformasjon)
+    }
+
+    private suspend fun endreInnhold(
+        deltaker: Deltaker,
+        endretAv: String,
+        endretAvEnhet: String,
+        endring: DeltakerEndring.Endring.EndreInnhold,
+    ): Deltaker {
+        amtDeltakerClient.endreInnhold(
+            deltakerId = deltaker.id,
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            innhold = endring.innhold,
+        )
+
+        return deltaker.copy(innhold = endring.innhold)
     }
 
     fun oppdaterKladd(
