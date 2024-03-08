@@ -12,6 +12,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
@@ -90,6 +91,42 @@ class AmtDeltakerClient(
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
+    }
+
+    suspend fun endreBakgrunnsinformasjon(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        bakgrunnsinformasjon: String?,
+    ) {
+        postEndring(
+            deltakerId = deltakerId,
+            request = BakgrunnsinformasjonRequest(endretAv, endretAvEnhet, bakgrunnsinformasjon),
+            endepunkt = BAKGRUNNSINFORMASJON,
+        )
+    }
+
+    private suspend fun postEndring(
+        deltakerId: UUID,
+        request: Any,
+        endepunkt: String,
+    ) {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/deltaker/$deltakerId/$endepunkt") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(request)
+        }
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke endre $endepunkt i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+    }
+
+    companion object Endepunkt {
+        const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
     }
 }
 

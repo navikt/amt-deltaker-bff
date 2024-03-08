@@ -51,7 +51,7 @@ class PameldingService(
                 "status må være ${DeltakerStatus.Type.KLADD}."
         }
 
-        deltakerService.oppdaterDeltaker(
+        deltakerService.oppdaterKladd(
             kladd.opprinneligDeltaker,
             kladd.opprinneligDeltaker.status,
             kladd.pamelding,

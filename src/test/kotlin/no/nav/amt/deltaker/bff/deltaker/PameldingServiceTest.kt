@@ -9,18 +9,12 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
-import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
-import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
-import no.nav.amt.deltaker.bff.utils.mockAmtPersonClient
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
-import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDate
@@ -31,12 +25,9 @@ class PameldingServiceTest {
 
     companion object {
 
-        private val amtPersonClient = mockAmtPersonClient()
-
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
-            navAnsattService = NavAnsattService(NavAnsattRepository(), amtPersonClient),
-            navEnhetService = NavEnhetService(NavEnhetRepository(), amtPersonClient),
+            mockAmtDeltakerClient(),
         )
 
         private var pameldingService = PameldingService(
@@ -50,12 +41,6 @@ class PameldingServiceTest {
         fun setup() {
             SingletonPostgresContainer.start()
         }
-    }
-
-    @Before
-    fun mockAnsatte() {
-        MockResponseHandler.addNavAnsattResponse(TestData.lagNavAnsatt())
-        MockResponseHandler.addNavEnhetResponse(TestData.lagNavEnhet())
     }
 
     @Test
