@@ -105,7 +105,7 @@ object MockResponseHandler {
     fun addResponse(
         url: String,
         method: HttpMethod,
-        responseBody: Any? = "",
+        responseBody: Any = "",
         responseCode: HttpStatusCode = HttpStatusCode.OK,
     ) {
         val api = Pair(url, method)
