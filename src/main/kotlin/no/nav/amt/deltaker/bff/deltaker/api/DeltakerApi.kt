@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
@@ -26,6 +27,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -39,6 +41,12 @@ fun Routing.registerDeltakerApi(
     navEnhetService: NavEnhetService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
+
+    fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
+        val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
+        val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
+        return deltaker.toDeltakerResponse(ansatte, enhet)
+    }
 
     authenticate("VEILEDER") {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
@@ -58,7 +66,8 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/innhold") {
@@ -80,7 +89,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
@@ -106,7 +115,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/startdato") {
@@ -128,7 +137,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/sluttdato") {
@@ -150,7 +159,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/sluttarsak") {
@@ -173,7 +182,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/ikke-aktuell") {
@@ -196,7 +205,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/avslutt") {
@@ -219,7 +228,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         get("/deltaker/{deltakerId}") {
@@ -266,7 +275,7 @@ fun Routing.registerDeltakerApi(
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
-            call.respond(oppdatertDeltaker.toDeltakerResponse())
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
     }
 }
