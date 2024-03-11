@@ -163,7 +163,7 @@ object MockResponseHandler {
             is DeltakerEndring.Endring.EndreSluttarsak -> AmtDeltakerClient.Endepunkt.SLUTTARSAK
             is DeltakerEndring.Endring.EndreSluttdato -> AmtDeltakerClient.Endepunkt.SLUTTDATO
             is DeltakerEndring.Endring.EndreStartdato -> AmtDeltakerClient.Endepunkt.STARTDATO
-            is DeltakerEndring.Endring.ForlengDeltakelse -> TODO()
+            is DeltakerEndring.Endring.ForlengDeltakelse -> AmtDeltakerClient.Endepunkt.FORLENG_DELTAKELSE
             is DeltakerEndring.Endring.IkkeAktuell -> TODO()
         }
 
