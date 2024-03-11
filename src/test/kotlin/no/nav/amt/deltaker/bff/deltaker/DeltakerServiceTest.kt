@@ -28,6 +28,7 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now()),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now()),
+            DeltakerEndring.Endring.EndreSluttarsak(aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.ANNET, "beskrivelse")),
         )
 
         endringer.forEach { endring ->
@@ -57,6 +58,11 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.EndreSluttdato ->
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+
+                is DeltakerEndring.Endring.EndreSluttarsak -> {
+                    oppdatertDeltaker.status.aarsak?.type?.name shouldBe endring.aarsak.type.name
+                    oppdatertDeltaker.status.aarsak?.beskrivelse shouldBe endring.aarsak.beskrivelse
+                }
 
                 else -> TODO()
             }

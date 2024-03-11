@@ -151,9 +151,6 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/sluttarsak") {
-            endringenErUtilgjengelig()
-            return@post
-
             val navIdent = getNavIdent()
             val request = call.receive<EndreSluttarsakRequest>()
 
