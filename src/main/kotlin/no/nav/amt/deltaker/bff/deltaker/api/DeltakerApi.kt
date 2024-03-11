@@ -113,9 +113,6 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/startdato") {
-            endringenErUtilgjengelig()
-            return@post
-
             val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()

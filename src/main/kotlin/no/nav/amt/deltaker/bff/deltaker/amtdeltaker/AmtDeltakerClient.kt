@@ -16,10 +16,12 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.Bakgrunnsinformasjon
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import java.time.LocalDate
 import java.util.UUID
 
 class AmtDeltakerClient(
@@ -132,6 +134,10 @@ class AmtDeltakerClient(
         )
     }
 
+    suspend fun endreStartdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, startdato: LocalDate?) {
+        postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
+    }
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -155,6 +161,7 @@ class AmtDeltakerClient(
         const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
         const val INNHOLD = "innhold"
         const val DELTAKELSESMENGDE = "deltakelsesmengde"
+        const val STARTDATO = "startdato"
     }
 }
 

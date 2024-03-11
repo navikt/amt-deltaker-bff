@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import org.junit.Test
+import java.time.LocalDate
 
 class DeltakerServiceTest {
     init {
@@ -25,6 +26,7 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
+            DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now()),
         )
 
         endringer.forEach { endring ->
@@ -48,6 +50,9 @@ class DeltakerServiceTest {
                     oppdatertDeltaker.deltakelsesprosent shouldBe endring.deltakelsesprosent
                     oppdatertDeltaker.dagerPerUke shouldBe endring.dagerPerUke
                 }
+
+                is DeltakerEndring.Endring.EndreStartdato ->
+                    oppdatertDeltaker.startdato shouldBe endring.startdato
 
                 else -> TODO()
             }
