@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttarsakRequest
@@ -150,6 +151,9 @@ class AmtDeltakerClient(
     suspend fun forlengDeltakelse(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) =
         postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato), FORLENG_DELTAKELSE)
 
+    suspend fun ikkeAktuell(deltakerId: UUID, endretAv: String, endretAvEnhet: String, aarsak: DeltakerEndring.Aarsak) =
+        postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak), IKKE_AKTUELL)
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -179,6 +183,7 @@ class AmtDeltakerClient(
         const val SLUTTDATO = "sluttdato"
         const val SLUTTARSAK = "sluttarsak"
         const val FORLENG_DELTAKELSE = "forleng"
+        const val IKKE_AKTUELL = "ikke-aktuell"
     }
 }
 
