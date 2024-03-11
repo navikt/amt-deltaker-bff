@@ -18,9 +18,13 @@ import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class DeltakerRepository {
+
+    private val log = LoggerFactory.getLogger(javaClass)
+
     fun rowMapper(row: Row) = Deltaker(
         id = row.uuid("d.id"),
         navBruker = NavBruker(
@@ -209,6 +213,10 @@ class DeltakerRepository {
     }
 
     fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+        if (!skalOppdateres(deltaker)) {
+            return@query
+        }
+
         val sql = """
             update deltaker set 
                 startdato            = :startdato,
@@ -347,4 +355,24 @@ class DeltakerRepository {
                 left join arrangor oa on oa.id = a.overordnet_arrangor_id
                 $where
       """
+
+    fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
+        val eksisterendeDeltaker = get(oppdatering.id).getOrThrow()
+
+        val kanOppdateres = oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
+            oppdatering.status.opprettet > eksisterendeDeltaker.status.opprettet
+
+        if (!kanOppdateres) {
+            log.info(
+                """Deltaker ${oppdatering.id} skal ikke oppdateres
+                   oppdatering.historikk:        ${oppdatering.historikk.size}
+                   deltaker.historikk:           ${eksisterendeDeltaker.historikk.size}
+                   oppdatering.status.opprettet: ${oppdatering.status.opprettet} 
+                   deltaker.status.opprettet:    ${eksisterendeDeltaker.status.opprettet}
+                """.trimIndent(),
+            )
+        }
+
+        return kanOppdateres
+    }
 }
