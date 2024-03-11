@@ -27,6 +27,7 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now()),
+            DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now()),
         )
 
         endringer.forEach { endring ->
@@ -53,6 +54,9 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.EndreStartdato ->
                     oppdatertDeltaker.startdato shouldBe endring.startdato
+
+                is DeltakerEndring.Endring.EndreSluttdato ->
+                    oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
 
                 else -> TODO()
             }

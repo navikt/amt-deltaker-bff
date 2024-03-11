@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.Bakgrunnsinformasjon
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
@@ -138,6 +139,10 @@ class AmtDeltakerClient(
         postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
     }
 
+    suspend fun endreSluttdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) {
+        postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, sluttdato), SLUTTDATO)
+    }
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -162,6 +167,7 @@ class AmtDeltakerClient(
         const val INNHOLD = "innhold"
         const val DELTAKELSESMENGDE = "deltakelsesmengde"
         const val STARTDATO = "startdato"
+        const val SLUTTDATO = "sluttdato"
     }
 }
 
