@@ -24,6 +24,7 @@ class DeltakerServiceTest {
         val endringer = listOf(
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
+            DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
         )
 
         endringer.forEach { endring ->
@@ -42,6 +43,11 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.EndreInnhold ->
                     oppdatertDeltaker.innhold shouldBe endring.innhold
+
+                is DeltakerEndring.Endring.EndreDeltakelsesmengde -> {
+                    oppdatertDeltaker.deltakelsesprosent shouldBe endring.deltakelsesprosent
+                    oppdatertDeltaker.dagerPerUke shouldBe endring.dagerPerUke
+                }
 
                 else -> TODO()
             }

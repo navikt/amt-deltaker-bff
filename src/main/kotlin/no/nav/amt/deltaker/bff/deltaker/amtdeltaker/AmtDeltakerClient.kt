@@ -13,6 +13,7 @@ import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
@@ -112,6 +113,25 @@ class AmtDeltakerClient(
         postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
     }
 
+    suspend fun endreDeltakelsesmengde(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        deltakelsesprosent: Float?,
+        dagerPerUke: Float?,
+    ) {
+        postEndring(
+            deltakerId,
+            DeltakelsesmengdeRequest(
+                endretAv = endretAv,
+                endretAvEnhet = endretAvEnhet,
+                deltakelsesprosent = deltakelsesprosent?.toInt(),
+                dagerPerUke = dagerPerUke?.toInt(),
+            ),
+            DELTAKELSESMENGDE,
+        )
+    }
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -134,6 +154,7 @@ class AmtDeltakerClient(
     companion object Endepunkt {
         const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
         const val INNHOLD = "innhold"
+        const val DELTAKELSESMENGDE = "deltakelsesmengde"
     }
 }
 

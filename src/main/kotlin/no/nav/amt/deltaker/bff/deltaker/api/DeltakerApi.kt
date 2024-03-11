@@ -90,9 +90,6 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
-            endringenErUtilgjengelig()
-            return@post
-
             val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
 
