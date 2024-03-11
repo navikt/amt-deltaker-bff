@@ -156,7 +156,7 @@ object MockResponseHandler {
         status: HttpStatusCode = HttpStatusCode.OK,
     ) {
         val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/" + when (endring) {
-            is DeltakerEndring.Endring.AvsluttDeltakelse -> TODO()
+            is DeltakerEndring.Endring.AvsluttDeltakelse -> AmtDeltakerClient.Endepunkt.AVSLUTT_DELTAKELSE
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.Endepunkt.BAKGRUNNSINFORMASJON
             is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.Endepunkt.DELTAKELSESMENGDE
             is DeltakerEndring.Endring.EndreInnhold -> AmtDeltakerClient.Endepunkt.INNHOLD

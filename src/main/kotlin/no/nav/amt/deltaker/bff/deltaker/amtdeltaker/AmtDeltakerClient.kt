@@ -12,6 +12,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
@@ -154,6 +155,18 @@ class AmtDeltakerClient(
     suspend fun ikkeAktuell(deltakerId: UUID, endretAv: String, endretAvEnhet: String, aarsak: DeltakerEndring.Aarsak) =
         postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak), IKKE_AKTUELL)
 
+    suspend fun avsluttDeltakelse(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        sluttdato: LocalDate,
+        aarsak: DeltakerEndring.Aarsak,
+    ) = postEndring(
+        deltakerId,
+        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, aarsak),
+        AVSLUTT_DELTAKELSE,
+    )
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -184,6 +197,7 @@ class AmtDeltakerClient(
         const val SLUTTARSAK = "sluttarsak"
         const val FORLENG_DELTAKELSE = "forleng"
         const val IKKE_AKTUELL = "ikke-aktuell"
+        const val AVSLUTT_DELTAKELSE = "avslutt"
     }
 }
 

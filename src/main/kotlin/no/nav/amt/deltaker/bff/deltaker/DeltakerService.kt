@@ -35,7 +35,9 @@ class DeltakerService(
             is DeltakerEndring.Endring.EndreInnhold ->
                 endreInnhold(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
 
-            is DeltakerEndring.Endring.AvsluttDeltakelse -> TODO()
+            is DeltakerEndring.Endring.AvsluttDeltakelse ->
+                avsluttDeltakelse(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+
             is DeltakerEndring.Endring.EndreDeltakelsesmengde ->
                 endreDeltakelsesmengde(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
 
@@ -176,6 +178,21 @@ class DeltakerService(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
+            aarsak = endring.aarsak,
+        )
+    }
+
+    private suspend fun avsluttDeltakelse(
+        deltaker: Deltaker,
+        endretAv: String,
+        endretAvEnhet: String,
+        endring: DeltakerEndring.Endring.AvsluttDeltakelse,
+    ) = endreDeltaker(deltaker) {
+        amtDeltakerClient.avsluttDeltakelse(
+            deltakerId = deltaker.id,
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            sluttdato = endring.sluttdato,
             aarsak = endring.aarsak,
         )
     }
