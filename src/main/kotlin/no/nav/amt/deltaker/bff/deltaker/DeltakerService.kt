@@ -23,41 +23,96 @@ class DeltakerService(
         deltakerRepository.getMany(personident, deltakerlisteId)
 
     suspend fun oppdaterDeltaker(
-        opprinneligDeltaker: Deltaker,
+        deltaker: Deltaker,
         endring: DeltakerEndring.Endring,
         endretAv: String,
         endretAvEnhet: String,
     ): Deltaker {
-        val deltaker = when (endring) {
-            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon ->
-                endreBakgrunnsinformasjon(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+        val oppdatertDeltaker = when (endring) {
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> endreDeltaker(deltaker) {
+                amtDeltakerClient.endreBakgrunnsinformasjon(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
+                )
+            }
 
-            is DeltakerEndring.Endring.EndreInnhold ->
-                endreInnhold(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.EndreInnhold -> endreDeltaker(deltaker) {
+                amtDeltakerClient.endreInnhold(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    innhold = endring.innhold,
+                )
+            }
 
-            is DeltakerEndring.Endring.AvsluttDeltakelse ->
-                avsluttDeltakelse(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.AvsluttDeltakelse -> endreDeltaker(deltaker) {
+                amtDeltakerClient.avsluttDeltakelse(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    sluttdato = endring.sluttdato,
+                    aarsak = endring.aarsak,
+                )
+            }
 
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde ->
-                endreDeltakelsesmengde(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> endreDeltaker(deltaker) {
+                amtDeltakerClient.endreDeltakelsesmengde(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    deltakelsesprosent = endring.deltakelsesprosent,
+                    dagerPerUke = endring.dagerPerUke,
+                )
+            }
 
-            is DeltakerEndring.Endring.EndreSluttarsak ->
-                endreSluttaarsak(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.EndreSluttarsak -> endreDeltaker(deltaker) {
+                amtDeltakerClient.endreSluttaarsak(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    aarsak = endring.aarsak,
+                )
+            }
 
-            is DeltakerEndring.Endring.EndreSluttdato ->
-                endreSluttdato(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.EndreSluttdato -> endreDeltaker(deltaker) {
+                amtDeltakerClient.endreSluttdato(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    sluttdato = endring.sluttdato,
+                )
+            }
 
-            is DeltakerEndring.Endring.EndreStartdato ->
-                endreStartdato(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.EndreStartdato -> endreDeltaker(deltaker) {
+                amtDeltakerClient.endreStartdato(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    startdato = endring.startdato,
+                )
+            }
 
-            is DeltakerEndring.Endring.ForlengDeltakelse ->
-                forlengDeltakelse(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.ForlengDeltakelse -> endreDeltaker(deltaker) {
+                amtDeltakerClient.forlengDeltakelse(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    sluttdato = endring.sluttdato,
+                )
+            }
 
-            is DeltakerEndring.Endring.IkkeAktuell ->
-                ikkeAktuell(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
+            is DeltakerEndring.Endring.IkkeAktuell -> endreDeltaker(deltaker) {
+                amtDeltakerClient.ikkeAktuell(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    aarsak = endring.aarsak,
+                )
+            }
         }
-
-        return deltaker
+        return oppdatertDeltaker
     }
 
     private suspend fun endreDeltaker(
@@ -67,134 +122,6 @@ class DeltakerService(
         val deltakeroppdatering = amtDeltakerKall()
         oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)
-    }
-
-    private suspend fun endreBakgrunnsinformasjon(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreBakgrunnsinformasjon,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.endreBakgrunnsinformasjon(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
-        )
-    }
-
-    private suspend fun endreInnhold(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreInnhold,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.endreInnhold(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            innhold = endring.innhold,
-        )
-    }
-
-    private suspend fun endreDeltakelsesmengde(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreDeltakelsesmengde,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.endreDeltakelsesmengde(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            deltakelsesprosent = endring.deltakelsesprosent,
-            dagerPerUke = endring.dagerPerUke,
-        )
-    }
-
-    private suspend fun endreStartdato(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreStartdato,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.endreStartdato(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            startdato = endring.startdato,
-        )
-    }
-
-    private suspend fun endreSluttdato(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreSluttdato,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.endreSluttdato(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            sluttdato = endring.sluttdato,
-        )
-    }
-
-    private suspend fun endreSluttaarsak(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreSluttarsak,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.endreSluttaarsak(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            aarsak = endring.aarsak,
-        )
-    }
-
-    private suspend fun forlengDeltakelse(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.ForlengDeltakelse,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.forlengDeltakelse(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            sluttdato = endring.sluttdato,
-        )
-    }
-
-    private suspend fun ikkeAktuell(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.IkkeAktuell,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.ikkeAktuell(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            aarsak = endring.aarsak,
-        )
-    }
-
-    private suspend fun avsluttDeltakelse(
-        deltaker: Deltaker,
-        endretAv: String,
-        endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.AvsluttDeltakelse,
-    ) = endreDeltaker(deltaker) {
-        amtDeltakerClient.avsluttDeltakelse(
-            deltakerId = deltaker.id,
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            sluttdato = endring.sluttdato,
-            aarsak = endring.aarsak,
-        )
     }
 
     fun oppdaterKladd(
