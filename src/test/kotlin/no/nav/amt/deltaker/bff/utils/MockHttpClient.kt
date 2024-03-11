@@ -21,12 +21,12 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import java.util.UUID
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
 const val AMT_PERSON_URL = "http://amt-person-service"
@@ -151,11 +151,11 @@ object MockResponseHandler {
     }
 
     fun addEndringsresponse(
-        deltakerId: UUID,
+        deltaker: Deltaker,
         endring: DeltakerEndring.Endring,
         status: HttpStatusCode = HttpStatusCode.OK,
     ) {
-        val url = "$AMT_DELTAKER_URL/deltaker/$deltakerId/" + when (endring) {
+        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/" + when (endring) {
             is DeltakerEndring.Endring.AvsluttDeltakelse -> TODO()
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.Endepunkt.BAKGRUNNSINFORMASJON
             is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.Endepunkt.DELTAKELSESMENGDE
@@ -166,6 +166,16 @@ object MockResponseHandler {
             is DeltakerEndring.Endring.ForlengDeltakelse -> TODO()
             is DeltakerEndring.Endring.IkkeAktuell -> TODO()
         }
-        addResponse(url = url, method = HttpMethod.Post, responseCode = status)
+
+        addResponse(
+            url = url,
+            method = HttpMethod.Post,
+            responseBody = deltaker.toDeltakeroppdatering(),
+            responseCode = status,
+        )
     }
 }
+
+fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
+    id, startdato, sluttdato, dagerPerUke, deltakelsesprosent, bakgrunnsinformasjon, innhold, status, historikk,
+)

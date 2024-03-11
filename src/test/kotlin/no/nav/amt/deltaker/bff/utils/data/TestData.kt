@@ -243,6 +243,7 @@ object TestData {
         endretAv,
         endretAvEnhet,
     )
+
     fun lagUtkast(
         opprinneligDeltaker: Deltaker = lagDeltaker(
             startdato = null,
@@ -376,3 +377,47 @@ object TestData {
             .plus(endringer.map { DeltakerHistorikk.Endring(it) }),
     )
 }
+
+fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
+    val endring = deltakerEndring.endring
+
+    val deltaker = when (endring) {
+        is DeltakerEndring.Endring.AvsluttDeltakelse -> this.copy(
+            sluttdato = endring.sluttdato,
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsak = endring.aarsak.toStatusAarsak().type,
+                beskrivelse = endring.aarsak.beskrivelse,
+            ),
+        )
+
+        is DeltakerEndring.Endring.EndreBakgrunnsinformasjon ->
+            this.copy(bakgrunnsinformasjon = endring.bakgrunnsinformasjon)
+
+        is DeltakerEndring.Endring.EndreDeltakelsesmengde -> this.copy(
+            dagerPerUke = endring.dagerPerUke,
+            deltakelsesprosent = endring.deltakelsesprosent,
+        )
+
+        is DeltakerEndring.Endring.EndreInnhold -> this.copy(innhold = endring.innhold)
+        is DeltakerEndring.Endring.EndreSluttarsak ->
+            this.copy(status = this.status.copy(aarsak = endring.aarsak.toStatusAarsak()))
+
+        is DeltakerEndring.Endring.EndreSluttdato -> this.copy(sluttdato = endring.sluttdato)
+        is DeltakerEndring.Endring.EndreStartdato -> this.copy(startdato = endring.startdato)
+        is DeltakerEndring.Endring.ForlengDeltakelse -> this.copy(sluttdato = endring.sluttdato)
+        is DeltakerEndring.Endring.IkkeAktuell -> this.copy(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.IKKE_AKTUELL,
+                aarsak = endring.aarsak?.toStatusAarsak()?.type,
+                beskrivelse = endring.aarsak?.beskrivelse,
+            ),
+        )
+    }
+    return deltaker.copy(historikk = this.historikk.plus(DeltakerHistorikk.Endring(deltakerEndring)))
+}
+
+fun DeltakerEndring.Aarsak.toStatusAarsak() = DeltakerStatus.Aarsak(
+    type = DeltakerStatus.Aarsak.Type.valueOf(this.type.name),
+    beskrivelse = this.beskrivelse,
+)

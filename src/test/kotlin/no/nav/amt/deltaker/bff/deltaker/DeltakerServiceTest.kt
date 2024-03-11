@@ -8,6 +8,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import org.junit.Test
 import java.time.LocalDate
@@ -28,11 +29,19 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now()),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now()),
-            DeltakerEndring.Endring.EndreSluttarsak(aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.ANNET, "beskrivelse")),
+            DeltakerEndring.Endring.EndreSluttarsak(
+                aarsak = DeltakerEndring.Aarsak(
+                    DeltakerEndring.Aarsak.Type.ANNET,
+                    "beskrivelse",
+                ),
+            ),
         )
 
         endringer.forEach { endring ->
-            MockResponseHandler.addEndringsresponse(deltaker.id, endring)
+            MockResponseHandler.addEndringsresponse(
+                deltaker.endre(TestData.lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
+                endring,
+            )
 
             val oppdatertDeltaker = service.oppdaterDeltaker(
                 deltaker,
