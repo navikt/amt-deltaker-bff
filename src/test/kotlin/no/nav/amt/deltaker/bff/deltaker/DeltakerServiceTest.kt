@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
@@ -39,6 +40,12 @@ class DeltakerServiceTest {
                 ),
             ),
             DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now()),
+            DeltakerEndring.Endring.IkkeAktuell(
+                aarsak = DeltakerEndring.Aarsak(
+                    DeltakerEndring.Aarsak.Type.ANNET,
+                    "beskrivelse",
+                ),
+            ),
         )
 
         endringer.forEach { endring ->
@@ -73,12 +80,16 @@ class DeltakerServiceTest {
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
 
                 is DeltakerEndring.Endring.EndreSluttarsak -> {
-                    oppdatertDeltaker.status.aarsak?.type?.name shouldBe endring.aarsak.type.name
-                    oppdatertDeltaker.status.aarsak?.beskrivelse shouldBe endring.aarsak.beskrivelse
+                    oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
                 }
 
                 is DeltakerEndring.Endring.ForlengDeltakelse -> {
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+                }
+
+                is DeltakerEndring.Endring.IkkeAktuell -> {
+                    oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
+                    oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
                 }
 
                 else -> TODO()

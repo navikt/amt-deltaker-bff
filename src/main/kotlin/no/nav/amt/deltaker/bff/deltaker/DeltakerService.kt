@@ -50,7 +50,9 @@ class DeltakerService(
 
             is DeltakerEndring.Endring.ForlengDeltakelse ->
                 forlengDeltakelse(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
-            is DeltakerEndring.Endring.IkkeAktuell -> TODO()
+
+            is DeltakerEndring.Endring.IkkeAktuell ->
+                ikkeAktuell(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
         }
 
         return deltaker
@@ -161,6 +163,20 @@ class DeltakerService(
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             sluttdato = endring.sluttdato,
+        )
+    }
+
+    private suspend fun ikkeAktuell(
+        deltaker: Deltaker,
+        endretAv: String,
+        endretAvEnhet: String,
+        endring: DeltakerEndring.Endring.IkkeAktuell,
+    ) = endreDeltaker(deltaker) {
+        amtDeltakerClient.ikkeAktuell(
+            deltakerId = deltaker.id,
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            aarsak = endring.aarsak,
         )
     }
 
