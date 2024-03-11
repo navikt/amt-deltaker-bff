@@ -48,7 +48,8 @@ class DeltakerService(
             is DeltakerEndring.Endring.EndreStartdato ->
                 endreStartdato(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
 
-            is DeltakerEndring.Endring.ForlengDeltakelse -> TODO()
+            is DeltakerEndring.Endring.ForlengDeltakelse ->
+                forlengDeltakelse(opprinneligDeltaker, endretAv, endretAvEnhet, endring)
             is DeltakerEndring.Endring.IkkeAktuell -> TODO()
         }
 
@@ -146,6 +147,20 @@ class DeltakerService(
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             aarsak = endring.aarsak,
+        )
+    }
+
+    private suspend fun forlengDeltakelse(
+        deltaker: Deltaker,
+        endretAv: String,
+        endretAvEnhet: String,
+        endring: DeltakerEndring.Endring.ForlengDeltakelse,
+    ) = endreDeltaker(deltaker) {
+        amtDeltakerClient.forlengDeltakelse(
+            deltakerId = deltaker.id,
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            sluttdato = endring.sluttdato,
         )
     }
 

@@ -38,6 +38,7 @@ class DeltakerServiceTest {
                     "beskrivelse",
                 ),
             ),
+            DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now()),
         )
 
         endringer.forEach { endring ->
@@ -74,6 +75,10 @@ class DeltakerServiceTest {
                 is DeltakerEndring.Endring.EndreSluttarsak -> {
                     oppdatertDeltaker.status.aarsak?.type?.name shouldBe endring.aarsak.type.name
                     oppdatertDeltaker.status.aarsak?.beskrivelse shouldBe endring.aarsak.beskrivelse
+                }
+
+                is DeltakerEndring.Endring.ForlengDeltakelse -> {
+                    oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
                 }
 
                 else -> TODO()

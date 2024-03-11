@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttarsakRequest
@@ -146,6 +147,9 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
     ) = postEndring(deltakerId, SluttarsakRequest(endretAv, endretAvEnhet, aarsak), SLUTTARSAK)
 
+    suspend fun forlengDeltakelse(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) =
+        postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato), FORLENG_DELTAKELSE)
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -174,6 +178,7 @@ class AmtDeltakerClient(
         const val STARTDATO = "startdato"
         const val SLUTTDATO = "sluttdato"
         const val SLUTTARSAK = "sluttarsak"
+        const val FORLENG_DELTAKELSE = "forleng"
     }
 }
 

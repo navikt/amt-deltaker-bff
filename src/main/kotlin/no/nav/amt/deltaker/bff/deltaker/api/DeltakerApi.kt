@@ -242,9 +242,6 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/forleng") {
-            endringenErUtilgjengelig()
-            return@post
-
             val navIdent = getNavIdent()
             val request = call.receive<ForlengDeltakelseRequest>()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
