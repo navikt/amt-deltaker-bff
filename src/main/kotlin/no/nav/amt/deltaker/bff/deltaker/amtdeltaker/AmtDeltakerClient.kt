@@ -13,12 +13,15 @@ import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import java.time.LocalDate
 import java.util.UUID
 
 class AmtDeltakerClient(
@@ -112,6 +115,29 @@ class AmtDeltakerClient(
         postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
     }
 
+    suspend fun endreDeltakelsesmengde(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        deltakelsesprosent: Float?,
+        dagerPerUke: Float?,
+    ) {
+        postEndring(
+            deltakerId,
+            DeltakelsesmengdeRequest(
+                endretAv = endretAv,
+                endretAvEnhet = endretAvEnhet,
+                deltakelsesprosent = deltakelsesprosent?.toInt(),
+                dagerPerUke = dagerPerUke?.toInt(),
+            ),
+            DELTAKELSESMENGDE,
+        )
+    }
+
+    suspend fun endreStartdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, startdato: LocalDate?) {
+        postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
+    }
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -134,6 +160,8 @@ class AmtDeltakerClient(
     companion object Endepunkt {
         const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
         const val INNHOLD = "innhold"
+        const val DELTAKELSESMENGDE = "deltakelsesmengde"
+        const val STARTDATO = "startdato"
     }
 }
 

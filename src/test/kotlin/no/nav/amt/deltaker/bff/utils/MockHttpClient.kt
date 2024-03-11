@@ -158,11 +158,11 @@ object MockResponseHandler {
         val url = "$AMT_DELTAKER_URL/deltaker/$deltakerId/" + when (endring) {
             is DeltakerEndring.Endring.AvsluttDeltakelse -> TODO()
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.Endepunkt.BAKGRUNNSINFORMASJON
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> TODO()
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.Endepunkt.DELTAKELSESMENGDE
             is DeltakerEndring.Endring.EndreInnhold -> AmtDeltakerClient.Endepunkt.INNHOLD
             is DeltakerEndring.Endring.EndreSluttarsak -> TODO()
             is DeltakerEndring.Endring.EndreSluttdato -> TODO()
-            is DeltakerEndring.Endring.EndreStartdato -> TODO()
+            is DeltakerEndring.Endring.EndreStartdato -> AmtDeltakerClient.Endepunkt.STARTDATO
             is DeltakerEndring.Endring.ForlengDeltakelse -> TODO()
             is DeltakerEndring.Endring.IkkeAktuell -> TODO()
         }
