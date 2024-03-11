@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.kafka.Consumer
 import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
@@ -50,18 +51,6 @@ class DeltakerV2Consumer(
 
     override fun run() = consumer.run()
 }
-
-data class Deltakeroppdatering(
-    val id: UUID,
-    val startdato: LocalDate?,
-    val sluttdato: LocalDate?,
-    val dagerPerUke: Float?,
-    val deltakelsesprosent: Float?,
-    val bakgrunnsinformasjon: String?,
-    val innhold: List<Innhold>,
-    val status: DeltakerStatus,
-    val historikk: List<DeltakerHistorikk>,
-)
 
 data class DeltakerV2Dto(
     val id: UUID,

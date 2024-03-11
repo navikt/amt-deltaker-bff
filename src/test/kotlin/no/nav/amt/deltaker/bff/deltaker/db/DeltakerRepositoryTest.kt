@@ -2,15 +2,16 @@ package no.nav.amt.deltaker.bff.deltaker.db
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.deltaker.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -140,13 +141,20 @@ class DeltakerRepositoryTest {
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
         val endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("ny bakgrunn for innsøk")
-        val oppdatertDeltaker = TestData.leggTilHistorikk(
-            deltaker = deltaker.copy(bakgrunnsinformasjon = endring.bakgrunnsinformasjon),
-            endringer = listOf(TestData.lagDeltakerEndring(endring = endring)),
-        )
+        val oppdatertDeltaker = deltaker.endre(TestData.lagDeltakerEndring(endring = endring))
 
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `update - deltaker endringshistorikk mangler - oppdaterer ikke`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        val oppdatertDeltaker = deltaker.copy(bakgrunnsinformasjon = "Endringshistorikk mangler")
+
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
     }
 
     @Test

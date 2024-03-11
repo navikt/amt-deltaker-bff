@@ -6,9 +6,9 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerService(
@@ -55,20 +55,27 @@ class DeltakerService(
         return deltaker
     }
 
+    private suspend fun endreDeltaker(
+        deltaker: Deltaker,
+        amtDeltakerKall: suspend () -> Deltakeroppdatering,
+    ): Deltaker {
+        val deltakeroppdatering = amtDeltakerKall()
+        oppdaterDeltaker(deltakeroppdatering)
+        return deltaker.oppdater(deltakeroppdatering)
+    }
+
     private suspend fun endreBakgrunnsinformasjon(
         deltaker: Deltaker,
         endretAv: String,
         endretAvEnhet: String,
         endring: DeltakerEndring.Endring.EndreBakgrunnsinformasjon,
-    ): Deltaker {
+    ) = endreDeltaker(deltaker) {
         amtDeltakerClient.endreBakgrunnsinformasjon(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
         )
-
-        return deltaker.copy(bakgrunnsinformasjon = endring.bakgrunnsinformasjon)
     }
 
     private suspend fun endreInnhold(
@@ -76,15 +83,13 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
         endring: DeltakerEndring.Endring.EndreInnhold,
-    ): Deltaker {
+    ) = endreDeltaker(deltaker) {
         amtDeltakerClient.endreInnhold(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             innhold = endring.innhold,
         )
-
-        return deltaker.copy(innhold = endring.innhold)
     }
 
     private suspend fun endreDeltakelsesmengde(
@@ -92,16 +97,11 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
         endring: DeltakerEndring.Endring.EndreDeltakelsesmengde,
-    ): Deltaker {
+    ) = endreDeltaker(deltaker) {
         amtDeltakerClient.endreDeltakelsesmengde(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
-            deltakelsesprosent = endring.deltakelsesprosent,
-            dagerPerUke = endring.dagerPerUke,
-        )
-
-        return deltaker.copy(
             deltakelsesprosent = endring.deltakelsesprosent,
             dagerPerUke = endring.dagerPerUke,
         )
@@ -112,15 +112,13 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
         endring: DeltakerEndring.Endring.EndreStartdato,
-    ): Deltaker {
+    ) = endreDeltaker(deltaker) {
         amtDeltakerClient.endreStartdato(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             startdato = endring.startdato,
         )
-
-        return deltaker.copy(startdato = endring.startdato)
     }
 
     private suspend fun endreSluttdato(
@@ -128,15 +126,13 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
         endring: DeltakerEndring.Endring.EndreSluttdato,
-    ): Deltaker {
+    ) = endreDeltaker(deltaker) {
         amtDeltakerClient.endreSluttdato(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             sluttdato = endring.sluttdato,
         )
-
-        return deltaker.copy(sluttdato = endring.sluttdato)
     }
 
     private suspend fun endreSluttaarsak(
@@ -144,20 +140,13 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
         endring: DeltakerEndring.Endring.EndreSluttarsak,
-    ): Deltaker {
+    ) = endreDeltaker(deltaker) {
         amtDeltakerClient.endreSluttaarsak(
             deltakerId = deltaker.id,
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             aarsak = endring.aarsak,
         )
-
-        val aarsak = DeltakerStatus.Aarsak(
-            type = DeltakerStatus.Aarsak.Type.valueOf(endring.aarsak.type.name),
-            beskrivelse = endring.aarsak.beskrivelse,
-        )
-
-        return deltaker.copy(status = deltaker.status.copy(aarsak = aarsak))
     }
 
     fun oppdaterKladd(
@@ -197,11 +186,13 @@ class DeltakerService(
     }
 }
 
-fun nyDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak? = null) = DeltakerStatus(
-    id = UUID.randomUUID(),
-    type = type,
-    aarsak = aarsak,
-    gyldigFra = LocalDateTime.now(),
-    gyldigTil = null,
-    opprettet = LocalDateTime.now(),
+private fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
+    startdato = oppdatering.startdato,
+    sluttdato = oppdatering.sluttdato,
+    dagerPerUke = oppdatering.dagerPerUke,
+    deltakelsesprosent = oppdatering.deltakelsesprosent,
+    bakgrunnsinformasjon = oppdatering.bakgrunnsinformasjon,
+    innhold = oppdatering.innhold,
+    status = oppdatering.status,
+    historikk = oppdatering.historikk,
 )

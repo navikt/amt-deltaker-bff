@@ -18,19 +18,22 @@ data class Deltaker(
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
 ) {
-    val fattetVedtak = historikk.firstOrNull {
-        it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
-    }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
+    val fattetVedtak
+        get() = historikk.firstOrNull {
+            it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
+        }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
 
-    val ikkeFattetVedtak = historikk.firstOrNull {
-        it is DeltakerHistorikk.Vedtak && it.vedtak.fattet == null
-    }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
+    val ikkeFattetVedtak
+        get() = historikk.firstOrNull {
+            it is DeltakerHistorikk.Vedtak && it.vedtak.fattet == null
+        }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
 
-    val vedtaksinformasjon = if (this.fattetVedtak != null) {
-        fattetVedtak
-    } else {
-        ikkeFattetVedtak
-    }
+    val vedtaksinformasjon
+        get() = if (this.fattetVedtak != null) {
+            fattetVedtak
+        } else {
+            ikkeFattetVedtak
+        }
 
     fun getDeltakerHistorikSortert() = historikk.sortedByDescending { it.sistEndret }
 

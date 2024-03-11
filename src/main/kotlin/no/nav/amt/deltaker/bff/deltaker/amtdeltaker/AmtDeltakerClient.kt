@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import java.time.LocalDate
@@ -106,17 +107,14 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         bakgrunnsinformasjon: String?,
-    ) {
-        postEndring(
-            deltakerId = deltakerId,
-            request = BakgrunnsinformasjonRequest(endretAv, endretAvEnhet, bakgrunnsinformasjon),
-            endepunkt = BAKGRUNNSINFORMASJON,
-        )
-    }
+    ) = postEndring(
+        deltakerId = deltakerId,
+        request = BakgrunnsinformasjonRequest(endretAv, endretAvEnhet, bakgrunnsinformasjon),
+        endepunkt = BAKGRUNNSINFORMASJON,
+    )
 
-    suspend fun endreInnhold(deltakerId: UUID, endretAv: String, endretAvEnhet: String, innhold: List<Innhold>) {
+    suspend fun endreInnhold(deltakerId: UUID, endretAv: String, endretAvEnhet: String, innhold: List<Innhold>) =
         postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
-    }
 
     suspend fun endreDeltakelsesmengde(
         deltakerId: UUID,
@@ -124,41 +122,35 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         deltakelsesprosent: Float?,
         dagerPerUke: Float?,
-    ) {
-        postEndring(
-            deltakerId,
-            DeltakelsesmengdeRequest(
-                endretAv = endretAv,
-                endretAvEnhet = endretAvEnhet,
-                deltakelsesprosent = deltakelsesprosent?.toInt(),
-                dagerPerUke = dagerPerUke?.toInt(),
-            ),
-            DELTAKELSESMENGDE,
-        )
-    }
+    ) = postEndring(
+        deltakerId,
+        DeltakelsesmengdeRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            deltakelsesprosent = deltakelsesprosent?.toInt(),
+            dagerPerUke = dagerPerUke?.toInt(),
+        ),
+        DELTAKELSESMENGDE,
+    )
 
-    suspend fun endreStartdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, startdato: LocalDate?) {
+    suspend fun endreStartdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, startdato: LocalDate?) =
         postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
-    }
 
-    suspend fun endreSluttdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) {
+    suspend fun endreSluttdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) =
         postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, sluttdato), SLUTTDATO)
-    }
 
     suspend fun endreSluttaarsak(
         deltakerId: UUID,
         endretAv: String,
         endretAvEnhet: String,
         aarsak: DeltakerEndring.Aarsak,
-    ) {
-        postEndring(deltakerId, SluttarsakRequest(endretAv, endretAvEnhet, aarsak), SLUTTARSAK)
-    }
+    ) = postEndring(deltakerId, SluttarsakRequest(endretAv, endretAvEnhet, aarsak), SLUTTARSAK)
 
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
         endepunkt: String,
-    ) {
+    ): Deltakeroppdatering {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/deltaker/$deltakerId/$endepunkt") {
             header(HttpHeaders.Authorization, token)
@@ -171,6 +163,8 @@ class AmtDeltakerClient(
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
+
+        return response.body()
     }
 
     companion object Endepunkt {
