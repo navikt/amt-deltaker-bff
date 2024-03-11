@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
 import io.kotest.matchers.shouldBe
+import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -36,9 +37,12 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -47,12 +51,10 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import java.time.LocalDate
 import java.util.UUID
 
-@Ignore("Ignorer testene til endringer er flyttet over til amt-deltaker")
 class DeltakerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
@@ -103,335 +105,257 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             bakgrunnsinformasjon = bakgrunnsinformasjonRequest.bakgrunnsinformasjon,
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
-            .apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
-            }
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
+                .apply {
+                    status shouldBe HttpStatusCode.OK
+                    bodyAsText() shouldBe objectMapper.writeValueAsString(
+                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                    )
+                }
+        }
     }
 
     @Test
-    fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() {
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
             sluttdato = LocalDate.now().minusMonths(1),
         )
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } throws IllegalArgumentException("Deltaker har sluttet")
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
-            .apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        mockTestApi(deltaker, null) { client, _, _ ->
+            client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
+                .apply {
+                    status shouldBe HttpStatusCode.BadRequest
+                }
+        }
     }
 
     @Test
-    fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        val oppdatertDeltakerResponse = deltaker.copy(
+        val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             innhold = finnValgtInnhold(innholdRequest.innhold, deltaker),
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltakerResponse
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/innhold") {
-            postRequest(
-                EndreInnholdRequest(listOf(InnholdDto(deltaker.innhold[0].innholdskode, null))),
-            )
-        }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/innhold") {
+                postRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.innhold[0].innholdskode, null))))
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
     fun `oppdater deltakelsesmengde - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        val oppdatertDeltakerResponse = deltaker.copy(
+        val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             dagerPerUke = deltakelsesmengdeRequest.dagerPerUke?.toFloat(),
             deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent?.toFloat(),
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltakerResponse
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltakerResponse.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
-    fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = startdatoRequest.startdato,
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
-    fun `endre sluttdato - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker =
-            TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-                sluttdato = LocalDate.now().minusDays(3),
-            )
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+    fun `endre sluttdato - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            sluttdato = LocalDate.now().minusDays(3),
+        )
         val oppdatertDeltaker = deltaker.copy(
             sluttdato = sluttdatoRequest.sluttdato,
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
-    fun `endre sluttdato - har tilgang, deltaker har status IKKE AKTUELL - feiler`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker =
-            TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
-                sluttdato = LocalDate.now().minusDays(3),
-            )
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+    fun `endre sluttdato - har tilgang, deltaker har status IKKE AKTUELL - feiler`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+            sluttdato = LocalDate.now().minusDays(3),
+        )
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
-            status shouldBe HttpStatusCode.BadRequest
+        mockTestApi(deltaker, null) { client, _, _ ->
+            client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
         }
     }
 
     @Test
-    fun `ikke aktuell - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `ikke aktuell - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.IKKE_AKTUELL,
                 ikkeAktuellRequest.aarsak.toDeltakerStatusAarsak(),
             ),
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
-    fun `endre sluttarsak - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, aarsak = null))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+    fun `endre sluttarsak - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, aarsak = null),
+        )
+
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
                 aarsak = sluttarsakRequest.aarsak.toDeltakerStatusAarsak(),
             ),
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/sluttarsak") { postRequest(sluttarsakRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/sluttarsak") { postRequest(sluttarsakRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(
+                        ansatte,
+                        enhet,
+                    ),
+                )
+            }
         }
     }
 
     @Test
-    fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
-        val navEnhet = TestData.lagNavEnhet(id = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet)
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
-        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+    fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
 
-        setUpTestApplication()
-        client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet))
+        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+            client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet))
+            }
         }
     }
 
     @Test
-    fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() {
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        val historikk = deltaker.getDeltakerHistorikSortert()
+        mockTestApi(deltaker, null) { client, _, enhet ->
+            val historikk = deltaker.getDeltakerHistorikSortert()
+            val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
 
-        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
-
-        every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
-
-        setUpTestApplication()
-        client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse(ansatte))
+            every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+            client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse(ansatte))
+            }
         }
     }
 
     @Test
-    fun `forleng - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `forleng - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             sluttdato = forlengDeltakelseRequest.sluttdato.minusDays(3),
         )
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             sluttdato = forlengDeltakelseRequest.sluttdato,
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
-    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - feiler`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - feiler`() {
         val deltaker = TestData.lagDeltaker(sluttdato = forlengDeltakelseRequest.sluttdato.plusDays(5))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
-            status shouldBe HttpStatusCode.BadRequest
+        mockTestApi(deltaker, null) { client, _, _ ->
+            client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
         }
     }
 
     @Test
-    fun `forleng - har tilgang, har sluttet for mer enn to måneder siden - feiler`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `forleng - har tilgang, har sluttet for mer enn to måneder siden - feiler`() {
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             sluttdato = forlengDeltakelseRequest.sluttdato.minusMonths(3),
         )
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
-            status shouldBe HttpStatusCode.BadRequest
+        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
         }
     }
 
     @Test
-    fun `avslutt - har tilgang - returnerer oppdatert deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `avslutt - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.HAR_SLUTTET,
@@ -439,31 +363,25 @@ class DeltakerApiTest {
             ),
             sluttdato = avsluttDeltakelseRequest.sluttdato,
         )
-        coEvery {
-            deltakerService.oppdaterDeltaker(
-                deltaker,
-                any(),
-                any(),
-                any(),
-            )
-        } returns oppdatertDeltaker
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(oppdatertDeltaker.toDeltakerResponse())
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
         }
     }
 
     @Test
-    fun `avslutt - har tilgang, status VENTER PA OPPSTART - feiler`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+    fun `avslutt - har tilgang, status VENTER PA OPPSTART - feiler`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        setUpTestApplication()
-        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
-            status shouldBe HttpStatusCode.BadRequest
+        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
         }
     }
 
@@ -500,7 +418,42 @@ class DeltakerApiTest {
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
     private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3))
-    private val avsluttDeltakelseRequest = AvsluttDeltakelseRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), LocalDate.now())
+    private val avsluttDeltakelseRequest =
+        AvsluttDeltakelseRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), LocalDate.now())
     private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
-    private val sluttarsakRequest = EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
+    private val sluttarsakRequest =
+        EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
+
+    private fun mockTestApi(
+        deltaker: Deltaker,
+        oppdatertDeltaker: Deltaker?,
+        block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
+    ) = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+
+        val (ansatte, enhet) = if (oppdatertDeltaker != null) {
+            coEvery {
+                deltakerService.oppdaterDeltaker(deltaker, any(), any(), any())
+            } returns oppdatertDeltaker
+
+            mockAnsatteOgEnhetForDeltaker(oppdatertDeltaker)
+        } else {
+            mockAnsatteOgEnhetForDeltaker(deltaker)
+        }
+        setUpTestApplication()
+        block(client, ansatte, enhet)
+    }
+
+    private fun mockAnsatteOgEnhetForDeltaker(
+        deltaker: Deltaker,
+    ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
+        val enhet = deltaker.vedtaksinformasjon?.let { TestData.lagNavEnhet(id = it.sistEndretAvEnhet) }
+
+        every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
+        enhet?.let { every { navEnhetService.hentEnhet(it.id) } returns it }
+
+        return Pair(ansatte, enhet)
+    }
 }
