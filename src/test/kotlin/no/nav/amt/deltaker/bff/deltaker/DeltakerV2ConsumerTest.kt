@@ -51,7 +51,8 @@ private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     status = DeltakerV2Dto.DeltakerStatusDto(
         id = status.id,
         type = status.type,
-        aarsak = status.aarsak,
+        aarsak = status.aarsak?.type,
+        aarsaksbeskrivelse = status.aarsak?.beskrivelse,
         gyldigFra = status.gyldigFra,
         opprettetDato = status.opprettet,
     ),

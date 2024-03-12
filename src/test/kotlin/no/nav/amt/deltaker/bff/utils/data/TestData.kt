@@ -409,8 +409,8 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
         is DeltakerEndring.Endring.IkkeAktuell -> this.copy(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.IKKE_AKTUELL,
-                aarsak = endring.aarsak?.toStatusAarsak()?.type,
-                beskrivelse = endring.aarsak?.beskrivelse,
+                aarsak = endring.aarsak.toStatusAarsak().type,
+                beskrivelse = endring.aarsak.beskrivelse,
             ),
         )
     }
