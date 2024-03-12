@@ -6,8 +6,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
-import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
@@ -211,48 +209,6 @@ object TestData {
         sistEndretAvEnhet,
     )
 
-    fun lagPamelding(
-        deltaker: Deltaker,
-        innhold: List<Innhold>? = null,
-        bakgrunnsinformasjon: String? = null,
-        deltakelsesprosent: Float? = null,
-        dagerPerUke: Float? = null,
-    ) = lagPamelding(
-        innhold = innhold ?: deltaker.innhold,
-        bakgrunnsinformasjon = bakgrunnsinformasjon ?: deltaker.bakgrunnsinformasjon,
-        deltakelsesprosent = deltakelsesprosent ?: deltaker.deltakelsesprosent,
-        dagerPerUke = dagerPerUke ?: deltaker.dagerPerUke,
-    )
-
-    fun lagPamelding(
-        innhold: List<Innhold> = emptyList(),
-        bakgrunnsinformasjon: String? = "Har vært ...",
-        deltakelsesprosent: Float? = 100F,
-        dagerPerUke: Float? = 5F,
-        endretAv: String = randomNavIdent(),
-        endretAvEnhet: String = randomEnhetsnummer(),
-    ) = Pamelding(
-        innhold,
-        bakgrunnsinformasjon,
-        deltakelsesprosent,
-        dagerPerUke,
-        endretAv,
-        endretAvEnhet,
-    )
-
-    fun lagUtkast(
-        opprinneligDeltaker: Deltaker = lagDeltaker(
-            startdato = null,
-            sluttdato = null,
-            dagerPerUke = null,
-            deltakelsesprosent = null,
-            innhold = emptyList(),
-            status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
-        ),
-        pamelding: Pamelding = lagPamelding(opprinneligDeltaker),
-        godkjentAvNav: Boolean = false,
-    ) = Utkast(opprinneligDeltaker.id, pamelding, godkjentAvNav)
-
     fun lagDeltakerEndring(
         id: UUID = UUID.randomUUID(),
         deltakerId: UUID = UUID.randomUUID(),
@@ -375,9 +331,7 @@ object TestData {
 }
 
 fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
-    val endring = deltakerEndring.endring
-
-    val deltaker = when (endring) {
+    val deltaker = when (val endring = deltakerEndring.endring) {
         is DeltakerEndring.Endring.AvsluttDeltakelse -> this.copy(
             sluttdato = endring.sluttdato,
             status = TestData.lagDeltakerStatus(

@@ -40,10 +40,6 @@ data class Deltaker(
     fun harSluttet(): Boolean {
         return status.type in AVSLUTTENDE_STATUSER
     }
-
-    fun deltarPaKurs(): Boolean {
-        return deltakerliste.erKurs()
-    }
 }
 
 data class Innhold(

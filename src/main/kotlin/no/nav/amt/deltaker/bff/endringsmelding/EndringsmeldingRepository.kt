@@ -9,7 +9,7 @@ import no.nav.amt.deltaker.bff.db.toPGObject
 import java.util.UUID
 
 class EndringsmeldingRepository {
-    fun rowMapper(row: Row) = Endringsmelding(
+    private fun rowMapper(row: Row) = Endringsmelding(
         id = row.uuid("id"),
         deltakerId = row.uuid("deltaker_id"),
         utfortAvNavAnsattId = row.uuidOrNull("utfort_av_nav_ansatt_id"),

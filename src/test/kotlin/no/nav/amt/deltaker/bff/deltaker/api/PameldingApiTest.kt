@@ -266,12 +266,12 @@ class PameldingApiTest {
         }
     }
 
-    fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
+    private fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
 
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
 
-    fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
+    private fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
         innhold,
         "Bakgrunnen for...",
         null,

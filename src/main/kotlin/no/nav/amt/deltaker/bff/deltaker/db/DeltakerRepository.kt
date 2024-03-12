@@ -25,7 +25,7 @@ import java.util.UUID
 class DeltakerRepository {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun rowMapper(row: Row) = Deltaker(
+    private fun rowMapper(row: Row) = Deltaker(
         id = row.uuid("d.id"),
         navBruker = NavBruker(
             personId = row.uuid("d.person_id"),
@@ -364,7 +364,7 @@ class DeltakerRepository {
                 $where
       """
 
-    fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
+    private fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
         val eksisterendeDeltaker = get(oppdatering.id).getOrThrow()
 
         val erUtkast = oppdatering.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING &&

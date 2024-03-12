@@ -56,8 +56,6 @@ data class DeltakerlisteDto(
     val sluttdato: LocalDate?,
 )
 
-fun Deltaker.toDeltakerResponse() = toDeltakerResponse(emptyMap(), null)
-
 fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretAvEnhet: NavEnhet?): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,

@@ -11,7 +11,7 @@ import org.postgresql.util.PGobject
 import javax.sql.DataSource
 
 object Database {
-    lateinit var dataSource: DataSource
+    private lateinit var dataSource: DataSource
 
     fun init(environment: Environment) {
         dataSource = HikariDataSource().apply {
