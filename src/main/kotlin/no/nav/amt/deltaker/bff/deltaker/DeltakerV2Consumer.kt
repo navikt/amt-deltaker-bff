@@ -79,7 +79,7 @@ data class DeltakerV2Dto(
             status = DeltakerStatus(
                 id = status.id,
                 type = status.type,
-                aarsak = status.aarsak,
+                aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
                 gyldigFra = status.gyldigFra,
                 gyldigTil = null,
                 opprettet = status.opprettetDato,
@@ -96,7 +96,8 @@ data class DeltakerV2Dto(
     data class DeltakerStatusDto(
         val id: UUID?,
         val type: DeltakerStatus.Type,
-        val aarsak: DeltakerStatus.Aarsak?,
+        val aarsak: DeltakerStatus.Aarsak.Type?,
+        val aarsaksbeskrivelse: String?,
         val gyldigFra: LocalDateTime,
         val opprettetDato: LocalDateTime,
     )
