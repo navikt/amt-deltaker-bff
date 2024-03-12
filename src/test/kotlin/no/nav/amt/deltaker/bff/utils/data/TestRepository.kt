@@ -43,10 +43,11 @@ object TestRepository {
     }
 
     fun insert(arrangor: Arrangor) {
-        val sql = """
+        val sql =
+            """
             INSERT INTO arrangor(id, navn, organisasjonsnummer, overordnet_arrangor_id)
             VALUES (:id, :navn, :organisasjonsnummer, :overordnet_arrangor_id) 
-        """.trimIndent()
+            """.trimIndent()
 
         Database.query {
             val query = queryOf(
@@ -64,7 +65,8 @@ object TestRepository {
 
     fun insert(tiltakstype: Tiltakstype) = Database.query {
         try {
-            val sql = """
+            val sql =
+                """
                 INSERT INTO tiltakstype(
                     id, 
                     navn, 
@@ -74,7 +76,7 @@ object TestRepository {
                         :navn,
                         :type,
                         :innhold)
-            """.trimIndent()
+                """.trimIndent()
 
             it.update(
                 queryOf(
@@ -112,10 +114,11 @@ object TestRepository {
         }
 
         Database.query {
-            val sql = """
+            val sql =
+                """
                 INSERT INTO deltakerliste( id, navn, status, arrangor_id, tiltaksnavn, tiltakstype, start_dato, slutt_dato, oppstart)
                 VALUES (:id, :navn, :status, :arrangor_id, :tiltaksnavn, :tiltakstype, :start_dato, :slutt_dato, :oppstart) 
-            """.trimIndent()
+                """.trimIndent()
 
             it.update(
                 queryOf(
@@ -136,9 +139,7 @@ object TestRepository {
         }
     }
 
-    fun insert(
-        deltaker: Deltaker,
-    ) = Database.query { session ->
+    fun insert(deltaker: Deltaker) = Database.query { session ->
         try {
             insert(deltaker.navBruker)
         } catch (e: Exception) {
@@ -150,7 +151,8 @@ object TestRepository {
             log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet")
         }
 
-        val sql = """
+        val sql =
+            """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
                 deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
@@ -159,7 +161,7 @@ object TestRepository {
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
                 :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
             )
-        """.trimIndent()
+            """.trimIndent()
 
         val parameters = mapOf(
             "id" to deltaker.id,
@@ -179,11 +181,12 @@ object TestRepository {
     }
 
     fun insert(status: DeltakerStatus, deltakerId: UUID) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, gyldig_til, created_at) 
             values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :gyldig_til, :created_at) 
             on conflict (id) do nothing;
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to status.id,
@@ -199,7 +202,8 @@ object TestRepository {
     }
 
     fun insert(vedtak: Vedtak) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into vedtak (id,
                                 deltaker_id,
                                 fattet,
@@ -223,7 +227,7 @@ object TestRepository {
                     :sist_endret,
                     :sist_endret_av,
                     :sist_endret_av_enhet)
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to vedtak.id,
@@ -244,11 +248,12 @@ object TestRepository {
     }
 
     fun insert(navAnsatt: NavAnsatt) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into nav_ansatt(id, nav_ident, navn, modified_at)
             values (:id, :nav_ident, :navn, :modified_at) 
             on conflict (id) do nothing;
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to navAnsatt.id,
@@ -261,11 +266,12 @@ object TestRepository {
     }
 
     fun insert(navEnhet: NavEnhet) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into nav_enhet(id, nav_enhet_nummer, navn, modified_at)
             values (:id, :nav_enhet_nummer, :navn, :modified_at) 
             on conflict (id) do nothing;
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to navEnhet.id,
@@ -284,7 +290,8 @@ object TestRepository {
             log.warn("Deltaker med id ${endringsmelding.deltakerId} finnes fra før")
         }
 
-        val sql = """
+        val sql =
+            """
             insert into endringsmelding(
                 id,
                 deltaker_id, 
@@ -307,7 +314,7 @@ object TestRepository {
                 :innhold, 
                 :created_at
             )
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to endringsmelding.id,
@@ -325,10 +332,11 @@ object TestRepository {
     }
 
     fun insert(bruker: NavBruker) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn) 
             values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn)
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "person_id" to bruker.personId,

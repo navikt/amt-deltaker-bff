@@ -22,9 +22,7 @@ import java.util.UUID
 import kotlin.test.assertFailsWith
 
 class PameldingServiceTest {
-
     companion object {
-
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             mockAmtDeltakerClient(),

@@ -37,11 +37,7 @@ class AmtDeltakerClient(
     private val httpClient: HttpClient,
     private val azureAdTokenClient: AzureAdTokenClient,
 ) {
-
-    suspend fun opprettKladd(
-        deltakerlisteId: UUID,
-        personident: String,
-    ): KladdResponse {
+    suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): KladdResponse {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding") {
             header(HttpHeaders.Authorization, token)
@@ -89,7 +85,11 @@ class AmtDeltakerClient(
         }
     }
 
-    suspend fun avbrytUtkast(deltakerId: UUID, avbruttAv: String, avbruttAvEnhet: String) {
+    suspend fun avbrytUtkast(
+        deltakerId: UUID,
+        avbruttAv: String,
+        avbruttAvEnhet: String,
+    ) {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding/$deltakerId/avbryt") {
             header(HttpHeaders.Authorization, token)
@@ -116,8 +116,12 @@ class AmtDeltakerClient(
         endepunkt = BAKGRUNNSINFORMASJON,
     )
 
-    suspend fun endreInnhold(deltakerId: UUID, endretAv: String, endretAvEnhet: String, innhold: List<Innhold>) =
-        postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
+    suspend fun endreInnhold(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        innhold: List<Innhold>,
+    ) = postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
 
     suspend fun endreDeltakelsesmengde(
         deltakerId: UUID,
@@ -136,11 +140,19 @@ class AmtDeltakerClient(
         DELTAKELSESMENGDE,
     )
 
-    suspend fun endreStartdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, startdato: LocalDate?) =
-        postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
+    suspend fun endreStartdato(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        startdato: LocalDate?,
+    ) = postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
 
-    suspend fun endreSluttdato(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) =
-        postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, sluttdato), SLUTTDATO)
+    suspend fun endreSluttdato(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        sluttdato: LocalDate,
+    ) = postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, sluttdato), SLUTTDATO)
 
     suspend fun endreSluttaarsak(
         deltakerId: UUID,
@@ -149,11 +161,19 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
     ) = postEndring(deltakerId, SluttarsakRequest(endretAv, endretAvEnhet, aarsak), SLUTTARSAK)
 
-    suspend fun forlengDeltakelse(deltakerId: UUID, endretAv: String, endretAvEnhet: String, sluttdato: LocalDate) =
-        postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato), FORLENG_DELTAKELSE)
+    suspend fun forlengDeltakelse(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        sluttdato: LocalDate,
+    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato), FORLENG_DELTAKELSE)
 
-    suspend fun ikkeAktuell(deltakerId: UUID, endretAv: String, endretAvEnhet: String, aarsak: DeltakerEndring.Aarsak) =
-        postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak), IKKE_AKTUELL)
+    suspend fun ikkeAktuell(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        aarsak: DeltakerEndring.Aarsak,
+    ) = postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak), IKKE_AKTUELL)
 
     suspend fun avsluttDeltakelse(
         deltakerId: UUID,

@@ -10,7 +10,6 @@ import org.junit.Test
 import java.util.UUID
 
 class DeltakerResponseTest {
-
     val innholdselementer = listOf(
         annetInnholdselement,
         Innholdselement("Innhold 4", "innhold-4"),

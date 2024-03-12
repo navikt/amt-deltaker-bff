@@ -10,7 +10,6 @@ class EndringsmeldingService(
     private val navAnsattService: NavAnsattService,
     private val endringsmeldingRepository: EndringsmeldingRepository,
 ) {
-
     private val log = LoggerFactory.getLogger(javaClass)
 
     suspend fun upsert(endringsmelding: Endringsmelding) {

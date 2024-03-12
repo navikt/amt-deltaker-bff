@@ -15,13 +15,9 @@ class PameldingService(
     private val navBrukerService: NavBrukerService,
     private val amtDeltakerClient: AmtDeltakerClient,
 ) {
-
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun opprettKladd(
-        deltakerlisteId: UUID,
-        personident: String,
-    ): Deltaker {
+    suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): Deltaker {
         val eksisterendeDeltaker = deltakerService
             .getDeltakelser(personident, deltakerlisteId)
             .firstOrNull { !it.harSluttet() }
@@ -72,7 +68,11 @@ class PameldingService(
         return true
     }
 
-    suspend fun avbrytUtkast(deltakerId: UUID, avbruttAvEnhet: String, avbruttAv: String) {
+    suspend fun avbrytUtkast(
+        deltakerId: UUID,
+        avbruttAvEnhet: String,
+        avbruttAv: String,
+    ) {
         amtDeltakerClient.avbrytUtkast(deltakerId, avbruttAv, avbruttAvEnhet)
     }
 }

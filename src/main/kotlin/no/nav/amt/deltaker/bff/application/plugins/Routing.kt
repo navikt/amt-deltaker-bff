@@ -86,10 +86,13 @@ fun Application.configureRouting(
 }
 
 object StatusPageLogger {
-
     val log = LoggerFactory.getLogger(javaClass)
 
-    fun log(statusCode: HttpStatusCode, call: ApplicationCall, cause: Throwable) {
+    fun log(
+        statusCode: HttpStatusCode,
+        call: ApplicationCall,
+        cause: Throwable,
+    ) {
         val msg = "${statusCode.value} ${statusCode.description}: " +
             "${call.request.httpMethod.value} ${call.request.path()}\n" +
             "Error: ${cause.message}"

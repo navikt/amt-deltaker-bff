@@ -77,14 +77,24 @@ class DeltakerApiTest {
         coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
-        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") {
+            postRequest(bakgrunnsinformasjonRequest)
+        }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/innhold") { postRequest(innholdRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") {
+            postRequest(deltakelsesmengdeRequest)
+        }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/sluttdato") { postRequest(sluttdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/forleng") { postRequest(forlengDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/avslutt") { postRequest(avsluttDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post(
+            "/deltaker/${UUID.randomUUID()}/ikke-aktuell",
+        ) { postRequest(ikkeAktuellRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post(
+            "/deltaker/${UUID.randomUUID()}/forleng",
+        ) { postRequest(forlengDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post(
+            "/deltaker/${UUID.randomUUID()}/avslutt",
+        ) { postRequest(avsluttDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
@@ -445,9 +455,7 @@ class DeltakerApiTest {
         block(client, ansatte, enhet)
     }
 
-    private fun mockAnsatteOgEnhetForDeltaker(
-        deltaker: Deltaker,
-    ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
+    private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
         val enhet = deltaker.vedtaksinformasjon?.let { TestData.lagNavEnhet(id = it.sistEndretAvEnhet) }
 

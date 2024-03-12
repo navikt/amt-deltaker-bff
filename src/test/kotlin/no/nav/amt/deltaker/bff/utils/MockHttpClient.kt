@@ -85,11 +85,11 @@ fun mockAzureAdClient() = AzureAdTokenClient(
     clientSecret = "secret",
     httpClient = mockHttpClient(
         """
-            {
-                "token_type":"Bearer",
-                "access_token":"XYZ",
-                "expires_in": 3599
-            }
+        {
+            "token_type":"Bearer",
+            "access_token":"XYZ",
+            "expires_in": 3599
+        }
         """.trimIndent(),
     ),
 )
@@ -177,5 +177,13 @@ object MockResponseHandler {
 }
 
 fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
-    id, startdato, sluttdato, dagerPerUke, deltakelsesprosent, bakgrunnsinformasjon, innhold, status, historikk,
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    innhold,
+    status,
+    historikk,
 )

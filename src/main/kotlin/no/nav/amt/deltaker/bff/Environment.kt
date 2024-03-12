@@ -20,7 +20,6 @@ data class Environment(
     val amtDeltakerUrl: String = getEnvVar(AMT_DELTAKER_URL_KEY),
     val amtDeltakerScope: String = getEnvVar(AMT_DELTAKER_SCOPE_KEY),
 ) {
-
     companion object {
         const val DB_USERNAME_KEY = "DB_USERNAME"
         const val DB_PASSWORD_KEY = "DB_PASSWORD"

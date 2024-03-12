@@ -9,7 +9,6 @@ import org.junit.Test
 import java.time.LocalDateTime
 
 class EndringsmeldingRepositoryTest {
-
     companion object {
         private val repository = EndringsmeldingRepository()
 

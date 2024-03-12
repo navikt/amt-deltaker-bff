@@ -25,6 +25,7 @@ internal fun HttpRequestBuilder.postRequest(body: Any) {
     contentType(ContentType.Application.Json)
     setBody(objectMapper.writeValueAsString(body))
 }
+
 internal fun HttpRequestBuilder.noBodyRequest() {
     header(
         HttpHeaders.Authorization,

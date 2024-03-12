@@ -40,37 +40,38 @@ class DeltakerlisteRepository {
     )
 
     fun upsert(deltakerliste: Deltakerliste) = Database.query {
-        val sql = """
-        INSERT INTO deltakerliste(
-            id, 
-            navn, 
-            status, 
-            arrangor_id, 
-            tiltaksnavn, 
-            tiltakstype, 
-            start_dato, 
-            slutt_dato, 
-            oppstart)
-        VALUES (:id,
-        		:navn,
-        		:status,
-        		:arrangor_id,
-        		:tiltaksnavn,
-        		:tiltakstype,
-        		:start_dato,
-        		:slutt_dato,
-                :oppstart)
-        ON CONFLICT (id) DO UPDATE SET
-        		navn     				= :navn,
-        		status					= :status,
-        		arrangor_id 			= :arrangor_id,
-        		tiltaksnavn				= :tiltaksnavn,
-        		tiltakstype				= :tiltakstype,
-        		start_dato				= :start_dato,
-        		slutt_dato				= :slutt_dato,
-                oppstart                = :oppstart,
-                modified_at             = current_timestamp
-        """.trimIndent()
+        val sql =
+            """
+            INSERT INTO deltakerliste(
+                id, 
+                navn, 
+                status, 
+                arrangor_id, 
+                tiltaksnavn, 
+                tiltakstype, 
+                start_dato, 
+                slutt_dato, 
+                oppstart)
+            VALUES (:id,
+            		:navn,
+            		:status,
+            		:arrangor_id,
+            		:tiltaksnavn,
+            		:tiltakstype,
+            		:start_dato,
+            		:slutt_dato,
+                    :oppstart)
+            ON CONFLICT (id) DO UPDATE SET
+            		navn     				= :navn,
+            		status					= :status,
+            		arrangor_id 			= :arrangor_id,
+            		tiltaksnavn				= :tiltaksnavn,
+            		tiltakstype				= :tiltakstype,
+            		start_dato				= :start_dato,
+            		slutt_dato				= :slutt_dato,
+                    oppstart                = :oppstart,
+                    modified_at             = current_timestamp
+            """.trimIndent()
 
         it.update(
             queryOf(
@@ -105,28 +106,28 @@ class DeltakerlisteRepository {
     fun get(id: UUID) = Database.query {
         val query = queryOf(
             """
-                SELECT d.id   AS deltakerliste_id,
-                       arrangor_id,
-                       tiltaksnavn,
-                       tiltakstype,
-                       d.navn AS deltakerliste_navn,
-                       status,
-                       start_dato,
-                       slutt_dato,
-                       oppstart,
-                       a.navn             AS arrangor_navn,
-                       a.organisasjonsnummer as "a.organisasjonsnummer",
-                       a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
-                       oa.navn as overordnet_arrangor_navn,
-                       t.id as "t.id",
-                       t.navn as "t.navn",
-                       t.type as "t.type",
-                       t.innhold as "t.innhold"
-                FROM deltakerliste d
-                         JOIN arrangor a ON a.id = d.arrangor_id
-                         LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
-                         LEFT JOIN tiltakstype t ON d.tiltakstype = t.type
-                WHERE d.id = :id
+            SELECT d.id   AS deltakerliste_id,
+                   arrangor_id,
+                   tiltaksnavn,
+                   tiltakstype,
+                   d.navn AS deltakerliste_navn,
+                   status,
+                   start_dato,
+                   slutt_dato,
+                   oppstart,
+                   a.navn             AS arrangor_navn,
+                   a.organisasjonsnummer as "a.organisasjonsnummer",
+                   a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
+                   oa.navn as overordnet_arrangor_navn,
+                   t.id as "t.id",
+                   t.navn as "t.navn",
+                   t.type as "t.type",
+                   t.innhold as "t.innhold"
+            FROM deltakerliste d
+                     JOIN arrangor a ON a.id = d.arrangor_id
+                     LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
+                     LEFT JOIN tiltakstype t ON d.tiltakstype = t.type
+            WHERE d.id = :id
             """.trimIndent(),
             mapOf("id" to id),
         ).map(::rowMapper).asSingle

@@ -16,7 +16,6 @@ class EndringsmeldingConsumer(
     private val endringsmeldingService: EndringsmeldingService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
-
     private val consumer = ManagedKafkaConsumer(
         topic = Environment.AMT_ENDRINGSMELDING_TOPIC,
         config = kafkaConfig.consumerConfig(

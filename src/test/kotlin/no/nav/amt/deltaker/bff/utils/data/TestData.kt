@@ -83,22 +83,20 @@ object TestData {
         ledetekst: String = "Beskrivelse av tilaket",
     ) = DeltakerRegistreringInnhold(innholdselementer, ledetekst)
 
-    fun lagDeltakerlisteDto(
-        arrangor: Arrangor = lagArrangor(),
-        deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),
-    ) = DeltakerlisteDto(
-        id = deltakerliste.id,
-        tiltakstype = DeltakerlisteDto.TiltakstypeDto(
-            deltakerliste.tiltak.navn,
-            deltakerliste.tiltak.type.name,
-        ),
-        navn = deltakerliste.navn,
-        startDato = deltakerliste.startDato,
-        sluttDato = deltakerliste.sluttDato,
-        status = deltakerliste.status.name,
-        virksomhetsnummer = arrangor.organisasjonsnummer,
-        oppstart = deltakerliste.oppstart,
-    )
+    fun lagDeltakerlisteDto(arrangor: Arrangor = lagArrangor(), deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor)) =
+        DeltakerlisteDto(
+            id = deltakerliste.id,
+            tiltakstype = DeltakerlisteDto.TiltakstypeDto(
+                deltakerliste.tiltak.navn,
+                deltakerliste.tiltak.type.name,
+            ),
+            navn = deltakerliste.navn,
+            startDato = deltakerliste.startDato,
+            sluttDato = deltakerliste.sluttDato,
+            status = deltakerliste.status.name,
+            virksomhetsnummer = arrangor.organisasjonsnummer,
+            oppstart = deltakerliste.oppstart,
+        )
 
     fun lagDeltakerKladd(
         id: UUID = UUID.randomUUID(),
@@ -157,10 +155,8 @@ object TestData {
         return listOf(DeltakerHistorikk.Vedtak(vedtak))
     }
 
-    fun lagDeltakerStatus(
-        type: DeltakerStatus.Type,
-        aarsak: DeltakerStatus.Aarsak,
-    ) = lagDeltakerStatus(type, aarsak.type, aarsak.beskrivelse)
+    fun lagDeltakerStatus(type: DeltakerStatus.Type, aarsak: DeltakerStatus.Aarsak) =
+        lagDeltakerStatus(type, aarsak.type, aarsak.beskrivelse)
 
     fun lagDeltakerStatus(
         statusType: DeltakerStatus.Type,

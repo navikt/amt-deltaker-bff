@@ -23,7 +23,6 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerRepository {
-
     private val log = LoggerFactory.getLogger(javaClass)
 
     fun rowMapper(row: Row) = Deltaker(
@@ -88,7 +87,8 @@ class DeltakerRepository {
     )
 
     fun upsert(deltaker: Deltaker) = Database.query { session ->
-        val sql = """
+        val sql =
+            """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
                 deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
@@ -107,7 +107,7 @@ class DeltakerRepository {
                 innhold              = :innhold,
                 historikk            = :historikk,
                 modified_at          = current_timestamp
-        """.trimIndent()
+            """.trimIndent()
 
         val parameters = mapOf(
             "id" to deltaker.id,
@@ -156,9 +156,10 @@ class DeltakerRepository {
     }
 
     fun getDeltakerStatuser(deltakerId: UUID) = Database.query { session ->
-        val sql = """
+        val sql =
+            """
             select * from deltaker_status where deltaker_id = :deltaker_id
-        """.trimIndent()
+            """.trimIndent()
 
         val query = queryOf(sql, mapOf("deltaker_id" to deltakerId)).map {
             DeltakerStatus(
@@ -183,7 +184,8 @@ class DeltakerRepository {
     }
 
     fun create(kladd: KladdResponse) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
                 deltakelsesprosent, bakgrunnsinformasjon, innhold
@@ -192,7 +194,7 @@ class DeltakerRepository {
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
                 :deltakelsesprosent, :bakgrunnsinformasjon, :innhold
             )
-        """.trimIndent()
+            """.trimIndent()
 
         val parameters = mapOf(
             "id" to kladd.id,
@@ -218,7 +220,8 @@ class DeltakerRepository {
             return@query
         }
 
-        val sql = """
+        val sql =
+            """
             update deltaker set 
                 startdato            = :startdato,
                 sluttdato            = :sluttdato,
@@ -229,7 +232,7 @@ class DeltakerRepository {
                 historikk            = :historikk,
                 modified_at          = current_timestamp
             where id = :id
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to deltaker.id,
@@ -250,10 +253,11 @@ class DeltakerRepository {
     }
 
     private fun slettStatus(deltakerId: UUID): Query {
-        val sql = """
+        val sql =
+            """
             delete from deltaker_status
             where deltaker_id = :deltaker_id;
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "deltaker_id" to deltakerId,
@@ -263,10 +267,11 @@ class DeltakerRepository {
     }
 
     private fun slettDeltaker(deltakerId: UUID): Query {
-        val sql = """
+        val sql =
+            """
             delete from deltaker
             where id = :deltaker_id;
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "deltaker_id" to deltakerId,
@@ -276,11 +281,12 @@ class DeltakerRepository {
     }
 
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query {
-        val sql = """
+        val sql =
+            """
             insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, created_at) 
             values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :opprettet) 
             on conflict (id) do nothing;
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to status.id,
@@ -295,13 +301,14 @@ class DeltakerRepository {
     }
 
     private fun deaktiverTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID): Query {
-        val sql = """
+        val sql =
+            """
             update deltaker_status
             set gyldig_til = current_timestamp
             where deltaker_id = :deltaker_id 
               and id != :id 
               and gyldig_til is null;
-        """.trimIndent()
+            """.trimIndent()
 
         return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId))
     }
@@ -372,11 +379,12 @@ class DeltakerRepository {
 
         if (!kanOppdateres) {
             log.info(
-                """Deltaker ${oppdatering.id} skal ikke oppdateres
-                   oppdatering.historikk:        ${oppdatering.historikk.size}
-                   deltaker.historikk:           ${eksisterendeDeltaker.historikk.size}
-                   oppdatering.status.opprettet: ${oppdatering.status.opprettet} 
-                   deltaker.status.opprettet:    ${eksisterendeDeltaker.status.opprettet}
+                """
+                Deltaker ${oppdatering.id} skal ikke oppdateres
+                oppdatering.historikk:        ${oppdatering.historikk.size}
+                deltaker.historikk:           ${eksisterendeDeltaker.historikk.size}
+                oppdatering.status.opprettet: ${oppdatering.status.opprettet} 
+                deltaker.status.opprettet:    ${eksisterendeDeltaker.status.opprettet}
                 """.trimIndent(),
             )
         }

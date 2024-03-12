@@ -19,5 +19,6 @@ class NavEnhetService(
     }
 
     fun hentEnhet(enhetsnummer: String) = repository.get(enhetsnummer)
+
     fun hentEnhet(id: UUID) = repository.get(id)
 }

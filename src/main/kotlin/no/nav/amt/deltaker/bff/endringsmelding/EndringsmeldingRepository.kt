@@ -22,7 +22,8 @@ class EndringsmeldingRepository {
     )
 
     fun upsert(endringsmelding: Endringsmelding) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into endringsmelding(
                 id,
                 deltaker_id, 
@@ -55,7 +56,7 @@ class EndringsmeldingRepository {
                type                            = :type,
                innhold                         = :innhold,
                modified_at                     = current_timestamp
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to endringsmelding.id,
