@@ -154,26 +154,31 @@ class DeltakerRepositoryTest {
         val oppdatertDeltaker = deltaker.copy(bakgrunnsinformasjon = "Endringshistorikk mangler")
 
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
     }
 
     @Test
-    fun `update - deltakerstatus er endret - oppdaterer`() {
-        val deltaker = TestData.lagDeltaker()
-        TestRepository.insert(deltaker)
-        val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+    fun `update - deltaker endringshistorikk mangler men er utkast - oppdaterer`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
         )
+        TestRepository.insert(deltaker)
+        val oppdatertDeltaker = deltaker.copy(bakgrunnsinformasjon = "Endringshistorikk mangler")
+
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }
 
     @Test
-    fun `update - deltakerstatus er ikke endret - oppdaterer ikke status`() {
-        val deltaker = TestData.lagDeltaker()
+    fun `update - deltakerstatus er endret - oppdaterer`() {
+        val deltaker = TestData.lagDeltakerKladd()
         TestRepository.insert(deltaker)
-        repository.update(deltaker.toDeltakeroppdatering())
-        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        )
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }
 }
 

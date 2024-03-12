@@ -1,7 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
@@ -9,7 +7,6 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import io.ktor.util.pipeline.PipelineContext
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -61,7 +58,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -81,7 +78,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -101,7 +98,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.EndreDeltakelsesmengde(
                     deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                     dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -123,7 +120,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.EndreStartdato(request.startdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -142,7 +139,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.EndreSluttdato(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -162,7 +159,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.EndreSluttarsak(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -182,7 +179,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -191,9 +188,6 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/deltaker/{deltakerId}/avslutt") {
-            endringenErUtilgjengelig()
-            return@post
-
             val navIdent = getNavIdent()
             val request = call.receive<AvsluttDeltakelseRequest>()
 
@@ -205,7 +199,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -249,7 +243,7 @@ fun Routing.registerDeltakerApi(
             request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                opprinneligDeltaker = deltaker,
+                deltaker = deltaker,
                 endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
@@ -257,8 +251,4 @@ fun Routing.registerDeltakerApi(
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
     }
-}
-
-private suspend fun PipelineContext<Unit, ApplicationCall>.endringenErUtilgjengelig() {
-    call.respond(HttpStatusCode.ServiceUnavailable, "Endringen er midlertidig utilgjengelig, prøv igjen senere.")
 }

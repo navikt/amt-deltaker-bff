@@ -46,6 +46,13 @@ class DeltakerServiceTest {
                     "beskrivelse",
                 ),
             ),
+            DeltakerEndring.Endring.AvsluttDeltakelse(
+                sluttdato = LocalDate.now(),
+                aarsak = DeltakerEndring.Aarsak(
+                    DeltakerEndring.Aarsak.Type.ANNET,
+                    "beskrivelse",
+                ),
+            ),
         )
 
         endringer.forEach { endring ->
@@ -62,22 +69,26 @@ class DeltakerServiceTest {
             )
 
             when (endring) {
-                is DeltakerEndring.Endring.EndreBakgrunnsinformasjon ->
+                is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> {
                     oppdatertDeltaker.bakgrunnsinformasjon shouldBe endring.bakgrunnsinformasjon
+                }
 
-                is DeltakerEndring.Endring.EndreInnhold ->
+                is DeltakerEndring.Endring.EndreInnhold -> {
                     oppdatertDeltaker.innhold shouldBe endring.innhold
+                }
 
                 is DeltakerEndring.Endring.EndreDeltakelsesmengde -> {
                     oppdatertDeltaker.deltakelsesprosent shouldBe endring.deltakelsesprosent
                     oppdatertDeltaker.dagerPerUke shouldBe endring.dagerPerUke
                 }
 
-                is DeltakerEndring.Endring.EndreStartdato ->
+                is DeltakerEndring.Endring.EndreStartdato -> {
                     oppdatertDeltaker.startdato shouldBe endring.startdato
+                }
 
-                is DeltakerEndring.Endring.EndreSluttdato ->
+                is DeltakerEndring.Endring.EndreSluttdato -> {
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+                }
 
                 is DeltakerEndring.Endring.EndreSluttarsak -> {
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
@@ -92,7 +103,11 @@ class DeltakerServiceTest {
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
                 }
 
-                else -> TODO()
+                is DeltakerEndring.Endring.AvsluttDeltakelse -> {
+                    oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
+                    oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
+                    oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+                }
             }
         }
     }
