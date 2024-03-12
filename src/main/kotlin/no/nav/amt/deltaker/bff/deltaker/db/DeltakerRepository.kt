@@ -359,8 +359,12 @@ class DeltakerRepository {
     fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
         val eksisterendeDeltaker = get(oppdatering.id).getOrThrow()
 
+        val erUtkast = oppdatering.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING &&
+            eksisterendeDeltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING
+
         val kanOppdateres = oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
-            oppdatering.status.opprettet > eksisterendeDeltaker.status.opprettet
+            oppdatering.status.opprettet > eksisterendeDeltaker.status.opprettet ||
+            erUtkast
 
         if (!kanOppdateres) {
             log.info(
