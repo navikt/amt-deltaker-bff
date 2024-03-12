@@ -305,7 +305,7 @@ class DeltakerApiTest {
     fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() {
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
 
-        mockTestApi(deltaker, null) { client, _, enhet ->
+        mockTestApi(deltaker, null) { client, _, _ ->
             val historikk = deltaker.getDeltakerHistorikSortert()
             val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
 
@@ -356,7 +356,7 @@ class DeltakerApiTest {
             sluttdato = forlengDeltakelseRequest.sluttdato.minusMonths(3),
         )
 
-        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+        mockTestApi(deltaker, null) { client, _, _ ->
             client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
                 status shouldBe HttpStatusCode.BadRequest
             }
@@ -388,7 +388,7 @@ class DeltakerApiTest {
     fun `avslutt - har tilgang, status VENTER PA OPPSTART - feiler`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
 
-        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+        mockTestApi(deltaker, null) { client, _, _ ->
             client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
                 status shouldBe HttpStatusCode.BadRequest
             }
