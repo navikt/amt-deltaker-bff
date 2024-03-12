@@ -154,6 +154,7 @@ class DeltakerRepositoryTest {
         val oppdatertDeltaker = deltaker.copy(bakgrunnsinformasjon = "Endringshistorikk mangler")
 
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
     }
 

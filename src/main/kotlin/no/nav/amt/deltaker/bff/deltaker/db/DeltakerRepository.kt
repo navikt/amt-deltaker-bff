@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInn
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import org.slf4j.LoggerFactory
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerRepository {
@@ -362,8 +363,11 @@ class DeltakerRepository {
         val erUtkast = oppdatering.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING &&
             eksisterendeDeltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING
 
+        val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >
+            eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
+
         val kanOppdateres = oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
-            oppdatering.status.opprettet > eksisterendeDeltaker.status.opprettet ||
+            oppdateringHarNyereStatus ||
             erUtkast
 
         if (!kanOppdateres) {
