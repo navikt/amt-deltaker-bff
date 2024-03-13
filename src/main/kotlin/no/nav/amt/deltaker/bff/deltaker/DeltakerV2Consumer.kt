@@ -23,7 +23,6 @@ class DeltakerV2Consumer(
     private val deltakerService: DeltakerService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
-
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val consumer = ManagedKafkaConsumer(

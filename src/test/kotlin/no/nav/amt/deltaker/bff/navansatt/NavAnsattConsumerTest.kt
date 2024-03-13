@@ -11,6 +11,7 @@ import org.junit.Test
 
 class NavAnsattConsumerTest {
     private val amtPersonServiceClient = mockk<AmtPersonServiceClient>()
+
     companion object {
         lateinit var repository: NavAnsattRepository
 

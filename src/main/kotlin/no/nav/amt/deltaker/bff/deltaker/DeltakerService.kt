@@ -19,8 +19,7 @@ class DeltakerService(
 
     fun get(id: UUID) = deltakerRepository.get(id)
 
-    fun getDeltakelser(personident: String, deltakerlisteId: UUID) =
-        deltakerRepository.getMany(personident, deltakerlisteId)
+    fun getDeltakelser(personident: String, deltakerlisteId: UUID) = deltakerRepository.getMany(personident, deltakerlisteId)
 
     suspend fun oppdaterDeltaker(
         deltaker: Deltaker,
@@ -115,10 +114,7 @@ class DeltakerService(
         return oppdatertDeltaker
     }
 
-    private suspend fun endreDeltaker(
-        deltaker: Deltaker,
-        amtDeltakerKall: suspend () -> Deltakeroppdatering,
-    ): Deltaker {
+    private suspend fun endreDeltaker(deltaker: Deltaker, amtDeltakerKall: suspend () -> Deltakeroppdatering): Deltaker {
         val deltakeroppdatering = amtDeltakerKall()
         oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)

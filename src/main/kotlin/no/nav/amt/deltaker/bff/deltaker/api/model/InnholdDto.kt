@@ -8,10 +8,7 @@ data class InnholdDto(
     val beskrivelse: String?,
 )
 
-fun finnValgtInnhold(
-    innhold: List<InnholdDto>,
-    deltaker: Deltaker,
-) = innhold.mapNotNull { innholdDto ->
+fun finnValgtInnhold(innhold: List<InnholdDto>, deltaker: Deltaker) = innhold.mapNotNull { innholdDto ->
     val tiltaksinnhold = deltaker.deltakerliste.tiltak.innhold?.innholdselementer
         ?.find { it.innholdskode == innholdDto.innholdskode }
     if (innholdDto.innholdskode == annetInnholdselement.innholdskode) {

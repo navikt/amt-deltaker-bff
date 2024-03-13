@@ -63,5 +63,5 @@ class NavAnsattService(
         return hentAnsatte(ider)
     }
 
-    fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
+    private fun hentAnsatte(veilederIder: List<UUID>) = repository.getMany(veilederIder).associateBy { it.id }
 }

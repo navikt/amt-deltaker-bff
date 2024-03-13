@@ -10,7 +10,6 @@ import org.junit.Test
 import java.util.UUID
 
 class DeltakerV2ConsumerTest {
-
     private val deltakerService = mockk<DeltakerService>(relaxUnitFun = true)
 
     @Test

@@ -14,9 +14,9 @@ import org.junit.Test
 import java.util.UUID
 
 class ManagedKafkaConsumerTest {
-    val topic = "test.topic"
+    private val topic = "test.topic"
 
-    val stringConsumerConfig = LocalKafkaConfig(SingletonKafkaProvider.getHost()).consumerConfig(
+    private val stringConsumerConfig = LocalKafkaConfig(SingletonKafkaProvider.getHost()).consumerConfig(
         keyDeserializer = StringDeserializer(),
         valueDeserializer = StringDeserializer(),
         groupId = "test-consumer",

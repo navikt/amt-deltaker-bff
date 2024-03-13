@@ -14,7 +14,8 @@ class NavAnsattRepository {
     )
 
     fun upsert(navAnsatt: NavAnsatt): NavAnsatt {
-        val sql = """
+        val sql =
+            """
             INSERT INTO nav_ansatt(id, nav_ident, navn, modified_at)
             VALUES (:id, :nav_ident, :navn, :modified_at) 
             ON CONFLICT (id) DO UPDATE SET
@@ -22,7 +23,7 @@ class NavAnsattRepository {
                 navn = :navn,
                 modified_at = :modified_at
             returning *
-        """.trimIndent()
+            """.trimIndent()
 
         return Database.query {
             val query = queryOf(

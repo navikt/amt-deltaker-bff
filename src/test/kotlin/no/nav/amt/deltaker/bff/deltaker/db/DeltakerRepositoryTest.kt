@@ -183,7 +183,15 @@ class DeltakerRepositoryTest {
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
-    id, startdato, sluttdato, dagerPerUke, deltakelsesprosent, bakgrunnsinformasjon, innhold, status, historikk,
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    innhold,
+    status,
+    historikk,
 )
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {

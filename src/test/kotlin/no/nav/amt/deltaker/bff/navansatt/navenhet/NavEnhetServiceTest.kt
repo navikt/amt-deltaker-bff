@@ -40,7 +40,10 @@ class NavEnhetServiceTest {
     @Test
     fun `hentEllerOpprettNavEnhet - navenhet finnes ikke i db - henter fra personservice og lagrer`() {
         val navEnhetResponse = TestData.lagNavEnhet()
-        val httpClient = mockHttpClient(objectMapper.writeValueAsString(NavEnhetDto(navEnhetResponse.id, navEnhetResponse.enhetsnummer, navEnhetResponse.navn)))
+        val httpClient =
+            mockHttpClient(
+                objectMapper.writeValueAsString(NavEnhetDto(navEnhetResponse.id, navEnhetResponse.enhetsnummer, navEnhetResponse.navn)),
+            )
         val amtPersonServiceClient = AmtPersonServiceClient(
             baseUrl = "http://amt-person-service",
             scope = "scope",

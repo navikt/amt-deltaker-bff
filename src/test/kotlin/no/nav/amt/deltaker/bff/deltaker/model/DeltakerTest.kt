@@ -8,7 +8,6 @@ import org.junit.Test
 import java.time.LocalDateTime
 
 class DeltakerTest {
-
     @Test
     fun `getDeltakerHistorikkSortert - ett vedtak flere endringer - returner liste riktig sortert`() {
         val baseDeltaker = TestData.lagDeltaker(historikk = false)

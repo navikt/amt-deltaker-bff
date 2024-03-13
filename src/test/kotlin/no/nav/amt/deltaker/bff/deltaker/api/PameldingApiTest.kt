@@ -180,25 +180,24 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter ferdig godkjent deltaker og returnerer 200`() =
-        testApplication {
-            coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-            val deltaker = TestData.lagDeltaker()
-            every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { pameldingService.upsertUtkast(any()) } returns Unit
+    fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter ferdig godkjent deltaker og returnerer 200`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker()
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        coEvery { pameldingService.upsertUtkast(any()) } returns Unit
 
-            setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/utenGodkjenning") {
-                postRequest(
-                    pameldingUtenGodkjenningRequest(
-                        deltaker.innhold.toInnholdDto(),
-                    ),
-                )
-            }
-                .apply {
-                    status shouldBe HttpStatusCode.OK
-                }
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/utenGodkjenning") {
+            postRequest(
+                pameldingUtenGodkjenningRequest(
+                    deltaker.innhold.toInnholdDto(),
+                ),
+            )
         }
+            .apply {
+                status shouldBe HttpStatusCode.OK
+            }
+    }
 
     @Test
     fun `pamelding deltakerId uten godkjenning - deltaker finnes ikke - returnerer 404`() = testApplication {
@@ -239,20 +238,19 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `avbryt utkast - har tilgang  - avbryter utkast og returnerer 200`() =
-        testApplication {
-            coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-            val deltaker = TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-            )
-            every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-            coEvery { pameldingService.avbrytUtkast(deltaker.id, any(), any()) } returns Unit
+    fun `avbryt utkast - har tilgang  - avbryter utkast og returnerer 200`() = testApplication {
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        )
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        coEvery { pameldingService.avbrytUtkast(deltaker.id, any(), any()) } returns Unit
 
-            setUpTestApplication()
-            client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
-                status shouldBe HttpStatusCode.OK
-            }
+        setUpTestApplication()
+        client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
+            status shouldBe HttpStatusCode.OK
         }
+    }
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
         application {
@@ -268,10 +266,12 @@ class PameldingApiTest {
         }
     }
 
-    fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
+    private fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
+
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
-    fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
+
+    private fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
         innhold,
         "Bakgrunnen for...",
         null,

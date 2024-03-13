@@ -56,12 +56,7 @@ data class DeltakerlisteDto(
     val sluttdato: LocalDate?,
 )
 
-fun Deltaker.toDeltakerResponse() = toDeltakerResponse(emptyMap(), null)
-
-fun Deltaker.toDeltakerResponse(
-    ansatte: Map<UUID, NavAnsatt>,
-    vedtakSistEndretAvEnhet: NavEnhet?,
-): DeltakerResponse {
+fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretAvEnhet: NavEnhet?): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
         fornavn = navBruker.fornavn,
@@ -118,13 +113,12 @@ private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
     it.tekst
 }
 
-fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) =
-    DeltakerResponse.VedtaksinformasjonDto(
-        fattet = fattet,
-        fattetAvNav = fattetAvNav,
-        opprettet = opprettet,
-        opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv.toString(),
-        sistEndret = sistEndret,
-        sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv.toString(),
-        sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet.toString(),
-    )
+fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = DeltakerResponse.VedtaksinformasjonDto(
+    fattet = fattet,
+    fattetAvNav = fattetAvNav,
+    opprettet = opprettet,
+    opprettetAv = ansatte[opprettetAv]?.navn ?: opprettetAv.toString(),
+    sistEndret = sistEndret,
+    sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv.toString(),
+    sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet.toString(),
+)

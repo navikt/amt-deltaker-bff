@@ -11,7 +11,7 @@ import org.postgresql.util.PGobject
 import javax.sql.DataSource
 
 object Database {
-    lateinit var dataSource: DataSource
+    private lateinit var dataSource: DataSource
 
     fun init(environment: Environment) {
         dataSource = HikariDataSource().apply {
@@ -41,16 +41,15 @@ object Database {
         (dataSource as HikariDataSource).close()
     }
 
-    private fun runMigration(initSql: String? = null): Int =
-        Flyway.configure()
-            .connectRetries(5)
-            .dataSource(dataSource)
-            .initSql(initSql)
-            .validateMigrationNaming(true)
-            .load()
-            .migrate()
-            .migrations
-            .size
+    private fun runMigration(initSql: String? = null): Int = Flyway.configure()
+        .connectRetries(5)
+        .dataSource(dataSource)
+        .initSql(initSql)
+        .validateMigrationNaming(true)
+        .load()
+        .migrate()
+        .migrations
+        .size
 }
 
 fun toPGObject(value: Any?) = PGobject().also {

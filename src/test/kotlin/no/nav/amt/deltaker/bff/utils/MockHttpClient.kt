@@ -22,10 +22,6 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
@@ -65,13 +61,6 @@ fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArran
     )
 }
 
-fun mockAmtPersonClient() = AmtPersonServiceClient(
-    baseUrl = AMT_PERSON_URL,
-    scope = "amt.person-service.scope",
-    httpClient = mockHttpClient(),
-    azureAdTokenClient = mockAzureAdClient(),
-)
-
 fun mockAmtDeltakerClient() = AmtDeltakerClient(
     baseUrl = AMT_DELTAKER_URL,
     scope = "amt.deltaker.scope",
@@ -85,11 +74,11 @@ fun mockAzureAdClient() = AzureAdTokenClient(
     clientSecret = "secret",
     httpClient = mockHttpClient(
         """
-            {
-                "token_type":"Bearer",
-                "access_token":"XYZ",
-                "expires_in": 3599
-            }
+        {
+            "token_type":"Bearer",
+            "access_token":"XYZ",
+            "expires_in": 3599
+        }
         """.trimIndent(),
     ),
 )
@@ -114,16 +103,6 @@ object MockResponseHandler {
             if (responseBody is String) responseBody else objectMapper.writeValueAsString(responseBody),
             responseCode,
         )
-    }
-
-    fun addNavAnsattResponse(navAnsatt: NavAnsatt) {
-        val url = "$AMT_PERSON_URL/api/nav-ansatt"
-        addResponse(url, HttpMethod.Post, navAnsatt)
-    }
-
-    fun addNavEnhetResponse(navEnhet: NavEnhet) {
-        val url = "$AMT_PERSON_URL/api/nav-enhet"
-        addResponse(url, HttpMethod.Post, NavEnhetDto(navEnhet.id, navEnhet.enhetsnummer, navEnhet.navn))
     }
 
     fun addOpprettKladdResponse(deltaker: Deltaker?) {
@@ -177,5 +156,13 @@ object MockResponseHandler {
 }
 
 fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
-    id, startdato, sluttdato, dagerPerUke, deltakelsesprosent, bakgrunnsinformasjon, innhold, status, historikk,
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    innhold,
+    status,
+    historikk,
 )

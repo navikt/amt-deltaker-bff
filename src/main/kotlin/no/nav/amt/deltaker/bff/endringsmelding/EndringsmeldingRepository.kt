@@ -9,7 +9,7 @@ import no.nav.amt.deltaker.bff.db.toPGObject
 import java.util.UUID
 
 class EndringsmeldingRepository {
-    fun rowMapper(row: Row) = Endringsmelding(
+    private fun rowMapper(row: Row) = Endringsmelding(
         id = row.uuid("id"),
         deltakerId = row.uuid("deltaker_id"),
         utfortAvNavAnsattId = row.uuidOrNull("utfort_av_nav_ansatt_id"),
@@ -22,7 +22,8 @@ class EndringsmeldingRepository {
     )
 
     fun upsert(endringsmelding: Endringsmelding) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into endringsmelding(
                 id,
                 deltaker_id, 
@@ -55,7 +56,7 @@ class EndringsmeldingRepository {
                type                            = :type,
                innhold                         = :innhold,
                modified_at                     = current_timestamp
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "id" to endringsmelding.id,

@@ -17,7 +17,6 @@ import org.junit.Test
 import java.time.LocalDate
 
 class DeltakerlisteConsumerTest {
-
     companion object {
         lateinit var repository: DeltakerlisteRepository
         lateinit var tiltakstypeRepository: TiltakstypeRepository

@@ -29,7 +29,10 @@ data class Endringsmelding(
     val type: Type,
 ) {
     enum class Status {
-        AKTIV, TILBAKEKALT, UTDATERT, UTFORT
+        AKTIV,
+        TILBAKEKALT,
+        UTDATERT,
+        UTFORT,
     }
 
     enum class Type {
@@ -103,6 +106,11 @@ data class EndringsmeldingStatusAarsak(
     }
 
     enum class Type {
-        SYK, FATT_JOBB, TRENGER_ANNEN_STOTTE, UTDANNING, IKKE_MOTT, ANNET
+        SYK,
+        FATT_JOBB,
+        TRENGER_ANNEN_STOTTE,
+        UTDANNING,
+        IKKE_MOTT,
+        ANNET,
     }
 }

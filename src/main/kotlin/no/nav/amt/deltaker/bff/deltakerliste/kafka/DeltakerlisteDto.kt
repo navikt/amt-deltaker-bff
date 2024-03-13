@@ -2,8 +2,6 @@ package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
-import no.nav.amt.deltaker.bff.deltakerliste.arenaKodeTilTiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
@@ -22,11 +20,6 @@ data class DeltakerlisteDto(
         val navn: String,
         val arenaKode: String,
     ) {
-        fun toModel() = Tiltak(
-            this.navn,
-            arenaKodeTilTiltakstype(this.arenaKode),
-        )
-
         fun erStottet() = this.arenaKode in setOf(
             "INDOPPFAG",
             "ARBFORB",

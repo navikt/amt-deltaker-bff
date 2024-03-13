@@ -6,7 +6,6 @@ import no.nav.amt.deltaker.bff.db.Database
 import java.util.UUID
 
 class NavBrukerRepository {
-
     private fun rowMapper(row: Row) = NavBruker(
         personId = row.uuid("person_id"),
         personident = row.string("personident"),
@@ -16,7 +15,8 @@ class NavBrukerRepository {
     )
 
     fun upsert(bruker: NavBruker) = Database.query {
-        val sql = """
+        val sql =
+            """
             insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn) 
             values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn)
             on conflict (person_id) do update set
@@ -26,7 +26,7 @@ class NavBrukerRepository {
                 etternavn = :etternavn,
                 modified_at = current_timestamp
             returning *
-        """.trimIndent()
+            """.trimIndent()
 
         val params = mapOf(
             "person_id" to bruker.personId,
