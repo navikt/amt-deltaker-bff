@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.model.Dataelement
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -46,6 +47,7 @@ class DeltakerV2Consumer(
         if (deltakerV2.kilde != DeltakerV2Dto.Kilde.KOMET) return
 
         deltakerService.oppdaterDeltaker(deltakerV2.toDeltakerOppdatering())
+        deltakerService.oppdaterTilgjengeligeData(deltakerV2.id, deltakerV2.dataelementer)
     }
 
     override fun run() = consumer.run()
@@ -62,7 +64,28 @@ data class DeltakerV2Dto(
     val kilde: Kilde?,
     val innhold: Deltakelsesinnhold?,
     val historikk: List<DeltakerHistorikk>?,
+    val personalia: PersonaliaDto,
+    val navVeileder: Any?,
+    val navKontor: String?,
 ) {
+    val dataelementer: List<Dataelement>
+        get() {
+            fun elementOrNull(it: Any?, element: Dataelement) = if (it == null) null else element
+            val innholdselement = if (innhold?.innhold.isNullOrEmpty()) null else Dataelement.INNHOLD
+
+            return listOfNotNull(
+                Dataelement.NAVN,
+                Dataelement.PERSONIDENT,
+                elementOrNull(navVeileder, Dataelement.NAV_VEILEDER),
+                elementOrNull(navKontor, Dataelement.NAV_KONTOR),
+                elementOrNull(personalia.adresse, Dataelement.ADRESSE),
+                elementOrNull(personalia.kontaktinformasjon.telefonnummer, Dataelement.TELEFON),
+                elementOrNull(personalia.kontaktinformasjon.epost, Dataelement.EPOST),
+                elementOrNull(bestillingTekst, Dataelement.BAKGRUNNSINFO),
+                innholdselement,
+            )
+        }
+
     fun toDeltakerOppdatering(): Deltakeroppdatering {
         require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
         require(historikk != null) { "Kan ikke håndtere deltaker $id uten historikk" }
@@ -104,5 +127,15 @@ data class DeltakerV2Dto(
     data class Deltakelsesinnhold(
         val ledetekst: String,
         val innhold: List<Innhold>,
+    )
+
+    data class PersonaliaDto(
+        val kontaktinformasjon: DeltakerKontaktinformasjonDto,
+        val adresse: Any?,
+    )
+
+    data class DeltakerKontaktinformasjonDto(
+        val telefonnummer: String?,
+        val epost: String?,
     )
 }

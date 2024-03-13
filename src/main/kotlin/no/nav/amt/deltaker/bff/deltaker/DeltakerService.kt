@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.Dataelement
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -140,6 +141,10 @@ class DeltakerService(
 
     fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
         deltakerRepository.update(deltakeroppdatering)
+    }
+
+    fun oppdaterTilgjengeligeData(deltakerId: UUID, dataelementer: List<Dataelement>) {
+        deltakerRepository.updateTilgjengeligeData(deltakerId, dataelementer)
     }
 
     fun delete(deltakerId: UUID) {

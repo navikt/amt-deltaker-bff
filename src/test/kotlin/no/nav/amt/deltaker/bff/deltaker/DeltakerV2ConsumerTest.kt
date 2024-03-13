@@ -66,4 +66,10 @@ private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
         innhold,
     ),
     historikk = historikk,
+    personalia = DeltakerV2Dto.PersonaliaDto(
+        kontaktinformasjon = DeltakerV2Dto.DeltakerKontaktinformasjonDto("123", "epost"),
+        null,
+    ),
+    navKontor = "1234",
+    navVeileder = null,
 )

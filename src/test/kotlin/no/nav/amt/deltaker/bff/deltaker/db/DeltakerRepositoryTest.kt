@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.db
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Dataelement
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
@@ -179,6 +180,17 @@ class DeltakerRepositoryTest {
         )
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `updateTilgjengeligeData - oppdaterer`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+
+        val dataelementer = listOf(Dataelement.NAVN, Dataelement.EPOST, Dataelement.ADRESSE)
+        repository.updateTilgjengeligeData(deltaker.id, dataelementer)
+
+        repository.get(deltaker.id).getOrThrow().tilgjengeligeData shouldBe dataelementer
     }
 }
 

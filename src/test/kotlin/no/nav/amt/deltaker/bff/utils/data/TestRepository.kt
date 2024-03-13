@@ -155,11 +155,11 @@ object TestRepository {
             """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, tilgjengelige_data
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :tilgjengelige_data
             )
             """.trimIndent()
 
@@ -174,6 +174,7 @@ object TestRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
             "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+            "tilgjengelige_data" to toPGObject(deltaker.tilgjengeligeData),
         )
 
         session.update(queryOf(sql, parameters))

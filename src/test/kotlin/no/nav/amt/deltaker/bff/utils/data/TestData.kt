@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.deltaker.model.Dataelement
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
@@ -126,6 +127,7 @@ object TestData {
         innhold: List<Innhold> = deltakerliste.tiltak.innhold?.innholdselementer?.map { it.toInnhold() } ?: emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         historikk: Boolean = true,
+        tilgjengeligeData: List<Dataelement> = Dataelement.entries,
     ): Deltaker {
         val deltaker = Deltaker(
             id,
@@ -139,6 +141,7 @@ object TestData {
             innhold,
             status,
             emptyList(),
+            tilgjengeligeData,
         )
 
         return if (historikk) {

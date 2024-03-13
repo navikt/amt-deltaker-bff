@@ -17,6 +17,7 @@ data class Deltaker(
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
+    val tilgjengeligeData: List<Dataelement>,
 ) {
     val fattetVedtak
         get() = historikk.firstOrNull {
@@ -48,3 +49,15 @@ data class Innhold(
     val valgt: Boolean,
     val beskrivelse: String?,
 )
+
+enum class Dataelement {
+    NAVN,
+    PERSONIDENT,
+    TELEFON,
+    EPOST,
+    ADRESSE,
+    NAV_VEILEDER,
+    NAV_KONTOR,
+    INNHOLD,
+    BAKGRUNNSINFO,
+}

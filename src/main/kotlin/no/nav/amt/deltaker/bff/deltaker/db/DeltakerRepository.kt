@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Dataelement
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -84,6 +85,7 @@ class DeltakerRepository {
         historikk = row.string("d.historikk").let { list ->
             objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
         },
+        tilgjengeligeData = row.string("d.tilgjengelige_data").let { objectMapper.readValue(it) },
     )
 
     fun upsert(deltaker: Deltaker) = Database.query { session ->
@@ -323,6 +325,7 @@ class DeltakerRepository {
                    d.deltakelsesprosent as "d.deltakelsesprosent",
                    d.bakgrunnsinformasjon as "d.bakgrunnsinformasjon",
                    d.innhold as "d.innhold",
+                   d.tilgjengelige_data as "d.tilgjengelige_data",
                    d.historikk as "d.historikk",
                    d.modified_at as "d.modified_at",
                    nb.personident as "nb.personident",
@@ -390,5 +393,21 @@ class DeltakerRepository {
         }
 
         return kanOppdateres
+    }
+
+    fun updateTilgjengeligeData(id: UUID, dataelementer: List<Dataelement>) = Database.query {
+        val sql =
+            """
+            update deltaker
+            set tilgjengelige_data = :dataelementer
+            where id = :id
+            """.trimIndent()
+
+        val params = mapOf(
+            "id" to id,
+            "dataelementer" to toPGObject(dataelementer),
+        )
+
+        it.update(queryOf(sql, params))
     }
 }
