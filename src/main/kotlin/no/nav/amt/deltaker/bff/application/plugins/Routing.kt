@@ -20,6 +20,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
+import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
@@ -67,6 +68,13 @@ fun Application.configureRouting(
             tilgangskontrollService,
             deltakerService,
             pameldingService,
+            navAnsattService,
+            navEnhetService,
+        )
+
+        registerInnbyggerApi(
+            deltakerService,
+            tilgangskontrollService,
             navAnsattService,
             navEnhetService,
         )

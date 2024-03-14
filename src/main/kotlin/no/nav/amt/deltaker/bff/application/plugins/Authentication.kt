@@ -18,13 +18,30 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 fun Application.configureAuthentication(environment: Environment) {
-    val jwkProvider = JwkProviderBuilder(URI(environment.jwkKeysUrl).toURL())
+    val azureJwkProvider = JwkProviderBuilder(URI(environment.azureJwkKeysUrl).toURL())
+        .cached(5, 12, TimeUnit.HOURS)
+        .build()
+
+    val tokenXJwkProvider = JwkProviderBuilder(URI(environment.tokenXJwksUrl).toURL())
         .cached(5, 12, TimeUnit.HOURS)
         .build()
 
     install(Authentication) {
+        jwt("INNBYGGER") {
+            verifier(tokenXJwkProvider, environment.tokenXJwtIssuer) {
+                withAudience(environment.tokenXClientId)
+            }
+            validate {
+                if (it["pid"] == null) {
+                    application.log.warn("Ikke tilgang. Token mangler claim 'pid'.")
+                    return@validate null
+                }
+                JWTPrincipal(it.payload)
+            }
+        }
+
         jwt("VEILEDER") {
-            verifier(jwkProvider, environment.jwtIssuer) {
+            verifier(azureJwkProvider, environment.azureJwtIssuer) {
                 withAudience(environment.azureClientId)
             }
 
@@ -50,4 +67,10 @@ fun <T : Any> PipelineContext<T, ApplicationCall>.getNavIdent(): String {
     return call.principal<JWTPrincipal>()
         ?.get("NAVident")
         ?: throw AuthenticationException("NAVident mangler i JWTPrincipal")
+}
+
+fun <T : Any> PipelineContext<T, ApplicationCall>.getPersonident(): String {
+    return call.principal<JWTPrincipal>()
+        ?.get("pid")
+        ?: throw AuthenticationException("Pid mangler i JWTPrincipal")
 }
