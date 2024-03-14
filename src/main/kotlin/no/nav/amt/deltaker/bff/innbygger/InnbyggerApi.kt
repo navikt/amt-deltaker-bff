@@ -28,7 +28,7 @@ fun Routing.registerInnbyggerApi(
     }
 
     authenticate("INNBYGGER") {
-        get("innbygger/{id}") {
+        get("/innbygger/{id}") {
             val innbygger = getPersonident()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
