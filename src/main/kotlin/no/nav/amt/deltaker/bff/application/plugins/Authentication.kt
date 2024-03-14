@@ -17,6 +17,9 @@ import java.net.URI
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+const val ID_PORTEN_LEVEL4 = "Level4"
+const val ID_PORTEN_LOA_HIGH = "idporten-loa-high"
+
 fun Application.configureAuthentication(environment: Environment) {
     val azureJwkProvider = JwkProviderBuilder(URI(environment.azureJwkKeysUrl).toURL())
         .cached(5, 12, TimeUnit.HOURS)
@@ -34,6 +37,10 @@ fun Application.configureAuthentication(environment: Environment) {
             validate {
                 if (it["pid"] == null) {
                     application.log.warn("Ikke tilgang. Token mangler claim 'pid'.")
+                    return@validate null
+                }
+                if (it["acr"] != ID_PORTEN_LEVEL4 && it["acr"] != ID_PORTEN_LOA_HIGH) {
+                    application.log.warn("Ikke tilgang. Token mangler gyldig 'acr' claim.")
                     return@validate null
                 }
                 JWTPrincipal(it.payload)

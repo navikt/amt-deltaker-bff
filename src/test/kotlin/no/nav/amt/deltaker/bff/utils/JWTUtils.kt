@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.RSAKey
 import no.nav.amt.deltaker.bff.Environment
+import no.nav.amt.deltaker.bff.application.plugins.ID_PORTEN_LOA_HIGH
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -56,6 +57,7 @@ fun tokenXToken(pid: String, env: Environment): String? {
         .withAudience(env.tokenXClientId)
         .withIssuer(env.tokenXJwtIssuer)
         .withClaim("pid", pid)
+        .withClaim("acr", ID_PORTEN_LOA_HIGH)
         .withExpiresAt(Date(System.currentTimeMillis() + 60000))
         .sign(Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey()))
 }
