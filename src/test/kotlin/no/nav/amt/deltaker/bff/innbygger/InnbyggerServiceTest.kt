@@ -45,7 +45,7 @@ class InnbyggerServiceTest {
 
         val deltakerMedFattetVedtak = deltaker.fattVedtak()
 
-        MockResponseHandler.addFattVedtakResponse(deltakerMedFattetVedtak)
+        MockResponseHandler.addFattVedtakResponse(deltakerMedFattetVedtak, deltaker.ikkeFattetVedtak!!)
 
         runBlocking {
             val oppdatertDeltaker = innbyggerService.fattVedtak(deltaker)

@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.utils.data.TestData
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
@@ -153,8 +154,12 @@ object MockResponseHandler {
         )
     }
 
-    fun addFattVedtakResponse(deltaker: Deltaker, status: HttpStatusCode = HttpStatusCode.OK) {
-        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/fatt-vedtak"
+    fun addFattVedtakResponse(
+        deltaker: Deltaker,
+        vedtak: Vedtak,
+        status: HttpStatusCode = HttpStatusCode.OK,
+    ) {
+        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/vedtak/${vedtak.id}/fatt"
         addResponse(url, HttpMethod.Post, deltaker.toDeltakeroppdatering(), status)
     }
 }

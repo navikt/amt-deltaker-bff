@@ -15,7 +15,6 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.FattVedtakRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
@@ -190,16 +189,21 @@ class AmtDeltakerClient(
         AVSLUTT_DELTAKELSE,
     )
 
-    suspend fun fattVedtak(vedtak: Vedtak) = postEndring(
-        vedtak.deltakerId,
-        FattVedtakRequest(
-            vedtak.id,
-            vedtak.fattetAvNav,
-            vedtak.sistEndretAv,
-            vedtak.sistEndretAvEnhet,
-        ),
-        FATT_VEDTAK,
-    )
+    suspend fun fattVedtak(vedtak: Vedtak): Deltakeroppdatering {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/deltaker/${vedtak.deltakerId}/vedtak/${vedtak.id}/fatt") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+        }
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke fatte vedtak i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+
+        return response.body()
+    }
 
     private suspend fun postEndring(
         deltakerId: UUID,
@@ -232,7 +236,6 @@ class AmtDeltakerClient(
         const val FORLENG_DELTAKELSE = "forleng"
         const val IKKE_AKTUELL = "ikke-aktuell"
         const val AVSLUTT_DELTAKELSE = "avslutt"
-        const val FATT_VEDTAK = "fatt-vedtak"
     }
 }
 
