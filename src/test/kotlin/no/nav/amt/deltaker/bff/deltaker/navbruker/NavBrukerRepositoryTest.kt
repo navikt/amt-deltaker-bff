@@ -35,6 +35,7 @@ class NavBrukerRepositoryTest {
             fornavn = "Nytt Fornavn",
             mellomnavn = null,
             etternavn = "Nytt Etternavn",
+            adressebeskyttelse = Adressebeskyttelse.STRENGT_FORTROLIG,
         )
         repository.upsert(oppdatertBruker).getOrNull() shouldBe oppdatertBruker
         repository.get(bruker.personId).getOrNull() shouldBe oppdatertBruker

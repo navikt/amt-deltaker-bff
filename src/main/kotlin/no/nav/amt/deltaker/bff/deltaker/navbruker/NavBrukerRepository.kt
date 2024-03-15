@@ -12,18 +12,20 @@ class NavBrukerRepository {
         fornavn = row.string("fornavn"),
         mellomnavn = row.stringOrNull("mellomnavn"),
         etternavn = row.string("etternavn"),
+        adressebeskyttelse = row.stringOrNull("adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
     )
 
     fun upsert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse)
             on conflict (person_id) do update set
                 personident = :personident,
                 fornavn = :fornavn,
                 mellomnavn = :mellomnavn,
                 etternavn = :etternavn,
+                adressebeskyttelse = :adressebeskyttelse,
                 modified_at = current_timestamp
             returning *
             """.trimIndent()
@@ -34,6 +36,7 @@ class NavBrukerRepository {
             "fornavn" to bruker.fornavn,
             "mellomnavn" to bruker.mellomnavn,
             "etternavn" to bruker.etternavn,
+            "adressebeskyttelse" to bruker.adressebeskyttelse?.name,
         )
 
         it.run(queryOf(sql, params).map(::rowMapper).asSingle)
