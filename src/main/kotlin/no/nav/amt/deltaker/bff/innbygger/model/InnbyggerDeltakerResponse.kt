@@ -1,25 +1,20 @@
-package no.nav.amt.deltaker.bff.deltaker.api.model
+package no.nav.amt.deltaker.bff.innbygger.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
-import no.nav.amt.deltaker.bff.utils.toTitleCase
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-data class DeltakerResponse(
+data class InnbyggerDeltakerResponse(
     val deltakerId: UUID,
-    val fornavn: String,
-    val mellomnavn: String?,
-    val etternavn: String,
     val deltakerliste: DeltakerlisteDto,
     val status: DeltakerStatus,
     val startdato: LocalDate?,
@@ -56,13 +51,10 @@ data class DeltakerResponse(
     )
 }
 
-fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretAvEnhet: NavEnhet?): DeltakerResponse {
-    return DeltakerResponse(
+fun Deltaker.toInnbyggerDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretAvEnhet: NavEnhet?): InnbyggerDeltakerResponse {
+    return InnbyggerDeltakerResponse(
         deltakerId = id,
-        fornavn = navBruker.fornavn,
-        mellomnavn = navBruker.mellomnavn,
-        etternavn = navBruker.etternavn,
-        deltakerliste = DeltakerResponse.DeltakerlisteDto(
+        deltakerliste = InnbyggerDeltakerResponse.DeltakerlisteDto(
             deltakerlisteId = deltakerliste.id,
             deltakerlisteNavn = deltakerliste.navn,
             tiltakstype = deltakerliste.tiltak.type,
@@ -78,42 +70,16 @@ fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretA
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
         deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
-            DeltakerResponse.DeltakelsesinnholdDto(
+            InnbyggerDeltakerResponse.DeltakelsesinnholdDto(
                 ledetekst = it.ledetekst,
-                innhold = fulltInnhold(innhold, it.innholdselementer),
+                innhold = innhold,
             )
         },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
     )
 }
 
-fun Deltakerliste.Arrangor.getArrangorNavn(): String {
-    val arrangorNavnForDeltakerliste =
-        if (overordnetArrangorNavn.isNullOrEmpty() || overordnetArrangorNavn == "Ukjent Virksomhet") {
-            arrangor.navn
-        } else {
-            overordnetArrangorNavn
-        }
-    return toTitleCase(arrangorNavnForDeltakerliste)
-}
-
-fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {
-    return innholdselementer
-        .asSequence()
-        .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
-        .map { it.toInnhold() }
-        .plus(valgtInnhold)
-        .sortedWith(sortertAlfabetiskMedAnnetSist())
-        .toList()
-}
-
-private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
-    it.tekst == annetInnholdselement.tekst
-}.thenBy {
-    it.tekst
-}
-
-private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = DeltakerResponse.VedtaksinformasjonDto(
+private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = InnbyggerDeltakerResponse.VedtaksinformasjonDto(
     fattet = fattet,
     fattetAvNav = fattetAvNav,
     opprettet = opprettet,

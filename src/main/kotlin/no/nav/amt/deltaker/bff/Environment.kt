@@ -9,8 +9,8 @@ data class Environment(
     val azureAdTokenUrl: String = getEnvVar(AZURE_AD_TOKEN_URL_KEY),
     val azureClientId: String = getEnvVar(AZURE_APP_CLIENT_ID_KEY),
     val azureClientSecret: String = getEnvVar(AZURE_APP_CLIENT_SECRET_KEY),
-    val jwkKeysUrl: String = getEnvVar(AZURE_OPENID_CONFIG_JWKS_URI_KEY),
-    val jwtIssuer: String = getEnvVar(AZURE_OPENID_CONFIG_ISSUER_KEY),
+    val azureJwkKeysUrl: String = getEnvVar(AZURE_OPENID_CONFIG_JWKS_URI_KEY),
+    val azureJwtIssuer: String = getEnvVar(AZURE_OPENID_CONFIG_ISSUER_KEY),
     val amtArrangorUrl: String = getEnvVar(AMT_ARRANGOR_URL_KEY),
     val amtArrangorScope: String = getEnvVar(AMT_ARRANGOR_SCOPE_KEY),
     val poaoTilgangUrl: String = getEnvVar(POAO_TILGANG_URL_KEY),
@@ -19,6 +19,9 @@ data class Environment(
     val amtPersonServiceScope: String = getEnvVar(AMT_PERSONSERVICE_SCOPE_KEY),
     val amtDeltakerUrl: String = getEnvVar(AMT_DELTAKER_URL_KEY),
     val amtDeltakerScope: String = getEnvVar(AMT_DELTAKER_SCOPE_KEY),
+    val tokenXJwksUrl: String = getEnvVar(TOKEN_X_JWKS_URI_KEY),
+    val tokenXJwtIssuer: String = getEnvVar(TOKEN_X_ISSUER_KEY),
+    val tokenXClientId: String = getEnvVar(TOKEN_X_CLIENT_ID_KEY),
 ) {
     companion object {
         const val DB_USERNAME_KEY = "DB_USERNAME"
@@ -50,6 +53,10 @@ data class Environment(
         const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
         const val AZURE_OPENID_CONFIG_JWKS_URI_KEY = "AZURE_OPENID_CONFIG_JWKS_URI"
         const val AZURE_OPENID_CONFIG_ISSUER_KEY = "AZURE_OPENID_CONFIG_ISSUER"
+
+        const val TOKEN_X_CLIENT_ID_KEY = "TOKEN_X_CLIENT_ID"
+        const val TOKEN_X_ISSUER_KEY = "TOKEN_X_ISSUER"
+        const val TOKEN_X_JWKS_URI_KEY = "TOKEN_X_JWKS_URI"
 
         const val POAO_TILGANG_URL_KEY = "POAO_TILGANG_URL"
         const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"

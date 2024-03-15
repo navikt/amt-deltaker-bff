@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.auth
 
 import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.TilgangType
@@ -34,6 +35,16 @@ class TilgangskontrollService(
 
         if (tilgang.isDeny) {
             throw AuthorizationException("Ansatt har ikke lesetilgang til bruker")
+        }
+    }
+
+    fun verifiserInnbyggersTilgangTilDeltaker(rekvirentPersonident: String, ressursPersonident: String) {
+        val tilgang = poaoTilgangCachedClient.evaluatePolicy(
+            EksternBrukerTilgangTilEksternBrukerPolicyInput(rekvirentPersonident, ressursPersonident),
+        ).getOrDefault(Decision.Deny("Innbygger har ikke tilgang til deltaker", ""))
+
+        if (tilgang.isDeny) {
+            throw AuthorizationException("Innbygger har ikke tilgang til deltaker")
         }
     }
 }
