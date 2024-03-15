@@ -12,6 +12,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -33,6 +34,7 @@ class DeltakerRepository {
             fornavn = row.string("nb.fornavn"),
             mellomnavn = row.stringOrNull("nb.mellomnavn"),
             etternavn = row.string("nb.etternavn"),
+            adressebeskyttelse = row.stringOrNull("nb.adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
         ),
         deltakerliste = Deltakerliste(
             id = row.uuid("deltakerliste_id"),
@@ -329,6 +331,7 @@ class DeltakerRepository {
                    nb.fornavn as "nb.fornavn",
                    nb.mellomnavn as "nb.mellomnavn",
                    nb.etternavn as "nb.etternavn",
+                   nb.adressebeskyttelse as "nb.adressebeskyttelse",
                    ds.id as "ds.id",
                    ds.deltaker_id as "ds.deltaker_id",
                    ds.type as "ds.type",

@@ -40,6 +40,9 @@ data class Deltaker(
     fun harSluttet(): Boolean {
         return status.type in AVSLUTTENDE_STATUSER
     }
+
+    fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
+        this.deltakerliste.deltakerAdresseDeles()
 }
 
 data class Innhold(

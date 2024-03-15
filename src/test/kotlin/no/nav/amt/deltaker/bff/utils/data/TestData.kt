@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -266,7 +267,8 @@ object TestData {
         fornavn: String = "Fornavn",
         mellomnavn: String? = "Mellomnavn",
         etternavn: String = "Etternavn",
-    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn)
+        adressebeskyttelse: Adressebeskyttelse? = null,
+    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse)
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,

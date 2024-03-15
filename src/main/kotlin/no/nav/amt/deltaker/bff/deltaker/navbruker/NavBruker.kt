@@ -8,4 +8,11 @@ data class NavBruker(
     val fornavn: String,
     val mellomnavn: String?,
     val etternavn: String,
+    val adressebeskyttelse: Adressebeskyttelse?,
 )
+
+enum class Adressebeskyttelse {
+    STRENGT_FORTROLIG,
+    FORTROLIG,
+    STRENGT_FORTROLIG_UTLAND,
+}
