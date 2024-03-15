@@ -61,9 +61,18 @@ data class Deltakerliste(
         }
     }
 
-    private val kursTiltak = setOf(
-        Tiltak.Type.JOBBK,
-        Tiltak.Type.GRUPPEAMO,
-        Tiltak.Type.GRUFAGYRKE,
-    )
+    fun deltakerAdresseDeles() = tiltakUtenDeltakerAdresset.contains(this.tiltak.type)
 }
+
+private val kursTiltak = setOf(
+    Tiltak.Type.JOBBK,
+    Tiltak.Type.GRUPPEAMO,
+    Tiltak.Type.GRUFAGYRKE,
+)
+
+private val tiltakUtenDeltakerAdresset = setOf(
+    Tiltak.Type.DIGIOPPARB,
+    Tiltak.Type.JOBBK,
+    Tiltak.Type.GRUPPEAMO,
+    Tiltak.Type.GRUFAGYRKE,
+)

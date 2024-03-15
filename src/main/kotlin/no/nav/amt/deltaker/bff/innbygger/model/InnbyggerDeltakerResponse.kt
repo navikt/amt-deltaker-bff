@@ -24,6 +24,7 @@ data class InnbyggerDeltakerResponse(
     val bakgrunnsinformasjon: String?,
     val deltakelsesinnhold: DeltakelsesinnholdDto?,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
+    val adresseDelesMedArrangor: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -76,6 +77,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSi
             )
         },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
+        adresseDelesMedArrangor = adresseDelesMedArrangor(),
     )
 }
 
