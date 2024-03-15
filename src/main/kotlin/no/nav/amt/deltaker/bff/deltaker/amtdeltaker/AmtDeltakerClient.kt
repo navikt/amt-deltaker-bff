@@ -28,6 +28,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import java.time.LocalDate
 import java.util.UUID
 
@@ -188,6 +189,8 @@ class AmtDeltakerClient(
         AVSLUTT_DELTAKELSE,
     )
 
+    suspend fun fattVedtak(fattetVedtak: Vedtak) = postEndring(fattetVedtak.deltakerId, fattetVedtak, FATT_VEDTAK)
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -219,6 +222,7 @@ class AmtDeltakerClient(
         const val FORLENG_DELTAKELSE = "forleng"
         const val IKKE_AKTUELL = "ikke-aktuell"
         const val AVSLUTT_DELTAKELSE = "avslutt"
+        const val FATT_VEDTAK = "fatt-vedtak"
     }
 }
 

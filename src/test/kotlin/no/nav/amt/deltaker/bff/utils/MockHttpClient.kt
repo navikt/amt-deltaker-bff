@@ -25,7 +25,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
-const val AMT_PERSON_URL = "http://amt-person-service"
 
 fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
     val mockEngine = MockEngine {
@@ -152,6 +151,11 @@ object MockResponseHandler {
             responseBody = deltaker.toDeltakeroppdatering(),
             responseCode = status,
         )
+    }
+
+    fun addFattVedtakResponse(deltaker: Deltaker, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/fatt-vedtak"
+        addResponse(url, HttpMethod.Post, deltaker.toDeltakeroppdatering(), status)
     }
 }
 

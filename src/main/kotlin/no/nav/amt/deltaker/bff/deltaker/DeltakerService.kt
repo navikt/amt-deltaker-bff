@@ -158,7 +158,7 @@ class DeltakerService(
     }
 }
 
-private fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
+fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
     startdato = oppdatering.startdato,
     sluttdato = oppdatering.sluttdato,
     dagerPerUke = oppdatering.dagerPerUke,
