@@ -61,7 +61,7 @@ data class Deltakerliste(
         }
     }
 
-    fun deltakerAdresseDeles() = tiltakUtenDeltakerAdresset.contains(this.tiltak.type)
+    fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.type)
 }
 
 private val kursTiltak = setOf(
