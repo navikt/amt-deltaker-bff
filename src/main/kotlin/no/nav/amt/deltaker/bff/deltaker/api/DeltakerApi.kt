@@ -121,7 +121,10 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreStartdato(request.startdato),
+                endring = DeltakerEndring.Endring.EndreStartdato(
+                    startdato = request.startdato,
+                    sluttdato = request.sluttdato,
+                ),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )

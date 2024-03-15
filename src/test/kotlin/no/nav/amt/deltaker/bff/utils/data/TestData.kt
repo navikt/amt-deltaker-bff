@@ -356,7 +356,7 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
             this.copy(status = this.status.copy(aarsak = endring.aarsak.toStatusAarsak()))
 
         is DeltakerEndring.Endring.EndreSluttdato -> this.copy(sluttdato = endring.sluttdato)
-        is DeltakerEndring.Endring.EndreStartdato -> this.copy(startdato = endring.startdato)
+        is DeltakerEndring.Endring.EndreStartdato -> this.copy(startdato = endring.startdato, sluttdato = endring.sluttdato)
         is DeltakerEndring.Endring.ForlengDeltakelse -> this.copy(sluttdato = endring.sluttdato)
         is DeltakerEndring.Endring.IkkeAktuell -> this.copy(
             status = TestData.lagDeltakerStatus(
