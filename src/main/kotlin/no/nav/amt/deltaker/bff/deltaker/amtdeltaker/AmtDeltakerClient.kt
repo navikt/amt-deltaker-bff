@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.FattVedtakRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
@@ -189,7 +190,16 @@ class AmtDeltakerClient(
         AVSLUTT_DELTAKELSE,
     )
 
-    suspend fun fattVedtak(fattetVedtak: Vedtak) = postEndring(fattetVedtak.deltakerId, fattetVedtak, FATT_VEDTAK)
+    suspend fun fattVedtak(vedtak: Vedtak) = postEndring(
+        vedtak.deltakerId,
+        FattVedtakRequest(
+            vedtak.id,
+            vedtak.fattetAvNav,
+            vedtak.sistEndretAv,
+            vedtak.sistEndretAvEnhet,
+        ),
+        FATT_VEDTAK,
+    )
 
     private suspend fun postEndring(
         deltakerId: UUID,

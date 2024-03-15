@@ -4,7 +4,6 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.oppdater
-import java.time.LocalDateTime
 
 class InnbyggerService(
     private val amtDeltakerClient: AmtDeltakerClient,
@@ -16,13 +15,7 @@ class InnbyggerService(
             "Deltaker ${deltaker.id} har ikke et vedtak som kan fattes"
         }
 
-        val fattetVedtak = ikkeFattetVedtak.copy(
-            fattet = LocalDateTime.now(),
-            fattetAvNav = false,
-            sistEndret = LocalDateTime.now(),
-        )
-
-        val oppdatering = amtDeltakerClient.fattVedtak(fattetVedtak)
+        val oppdatering = amtDeltakerClient.fattVedtak(ikkeFattetVedtak)
 
         deltakerService.oppdaterDeltaker(oppdatering)
 
