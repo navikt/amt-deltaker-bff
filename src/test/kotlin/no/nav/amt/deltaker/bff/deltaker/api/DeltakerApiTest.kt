@@ -420,6 +420,7 @@ class DeltakerApiTest {
                 pameldingService,
                 navAnsattService,
                 navEnhetService,
+                mockk(),
             )
         }
     }

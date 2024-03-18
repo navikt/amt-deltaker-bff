@@ -28,6 +28,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import java.time.LocalDate
 import java.util.UUID
 
@@ -187,6 +188,22 @@ class AmtDeltakerClient(
         AvsluttDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, aarsak),
         AVSLUTT_DELTAKELSE,
     )
+
+    suspend fun fattVedtak(vedtak: Vedtak): Deltakeroppdatering {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/deltaker/${vedtak.deltakerId}/vedtak/${vedtak.id}/fatt") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+        }
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke fatte vedtak i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+
+        return response.body()
+    }
 
     private suspend fun postEndring(
         deltakerId: UUID,

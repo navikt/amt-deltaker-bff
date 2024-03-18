@@ -37,6 +37,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka.TiltakstypeConsum
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
 import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
+import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -138,6 +139,8 @@ fun Application.module() {
     val endringsmeldingRepository = EndringsmeldingRepository()
     val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
 
+    val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
+
     val tiltakstypeRepository = TiltakstypeRepository()
 
     val consumers = listOf(
@@ -158,6 +161,7 @@ fun Application.module() {
         pameldingService,
         navAnsattService,
         navEnhetService,
+        innbyggerService,
     )
     configureMonitoring()
 

@@ -262,6 +262,7 @@ class PameldingApiTest {
                 pameldingService,
                 navAnsattService,
                 navEnhetService,
+                mockk(),
             )
         }
     }
