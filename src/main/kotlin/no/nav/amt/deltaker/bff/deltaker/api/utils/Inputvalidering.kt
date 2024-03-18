@@ -47,6 +47,12 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
+fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
+    require(!opprinneligDeltaker.harSluttet() || opprinneligDeltaker.harSluttetForMindreEnnToMndSiden()) {
+        "Kan ikke endre deltaker som fikk avsluttende status for mer enn to måneder siden"
+    }
+}
+
 fun validerSluttdatoForDeltaker(
     sluttdato: LocalDate,
     startdato: LocalDate?,
@@ -55,7 +61,7 @@ fun validerSluttdatoForDeltaker(
     require(opprinneligDeltaker.deltakerliste.sluttDato == null || !sluttdato.isAfter(opprinneligDeltaker.deltakerliste.sluttDato)) {
         "Sluttdato kan ikke være senere enn deltakerlistens sluttdato"
     }
-    require(startdato != null && sluttdato.isAfter(startdato)) {
+    require(startdato == null || sluttdato.isAfter(startdato)) {
         "Sluttdato må være etter startdato"
     }
 }

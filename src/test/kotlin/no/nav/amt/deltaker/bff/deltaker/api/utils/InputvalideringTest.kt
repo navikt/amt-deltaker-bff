@@ -3,11 +3,14 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestData.input
 import org.junit.Test
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 class InputvalideringTest {
     @Test
@@ -177,6 +180,82 @@ class InputvalideringTest {
             validerKladdInnhold(
                 listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")),
                 tiltaksinnhold,
+            )
+        }
+    }
+
+    @Test
+    fun testValiderDeltakerKanEndres() {
+        val deltakerDeltar = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.DELTAR,
+                gyldigFra = LocalDateTime.now(),
+            ),
+        )
+        val deltakerSluttetFireUkerSiden = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusWeeks(4),
+            ),
+        )
+        val deltakerSluttetFireMndSiden = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusMonths(4),
+            ),
+        )
+        val deltakerIkkeAktuellFireMndSiden = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.IKKE_AKTUELL,
+                gyldigFra = LocalDateTime.now().minusMonths(4),
+            ),
+        )
+
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakerKanEndres(deltakerDeltar)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakerKanEndres(deltakerSluttetFireUkerSiden)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakerKanEndres(deltakerSluttetFireMndSiden)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakerKanEndres(deltakerIkkeAktuellFireMndSiden)
+        }
+    }
+
+    @Test
+    fun testValiderSluttdatoForDeltaker() {
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = TestData.lagDeltakerliste(
+                startDato = LocalDate.now().minusYears(2),
+                sluttDato = LocalDate.now().plusYears(1),
+            ),
+        )
+
+        shouldNotThrow<IllegalArgumentException> {
+            validerSluttdatoForDeltaker(
+                startdato = LocalDate.now().minusDays(10),
+                sluttdato = LocalDate.now(),
+                opprinneligDeltaker = deltaker,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerSluttdatoForDeltaker(startdato = null, sluttdato = LocalDate.now(), opprinneligDeltaker = deltaker)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerSluttdatoForDeltaker(
+                startdato = LocalDate.now().minusDays(10),
+                sluttdato = LocalDate.now().minusDays(12),
+                opprinneligDeltaker = deltaker,
+            )
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerSluttdatoForDeltaker(
+                startdato = LocalDate.now().minusDays(10),
+                sluttdato = LocalDate.now().plusYears(2),
+                opprinneligDeltaker = deltaker,
             )
         }
     }

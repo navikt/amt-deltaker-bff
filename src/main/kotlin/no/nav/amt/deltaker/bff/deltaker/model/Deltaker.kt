@@ -41,6 +41,10 @@ data class Deltaker(
         return status.type in AVSLUTTENDE_STATUSER
     }
 
+    fun harSluttetForMindreEnnToMndSiden(): Boolean {
+        return harSluttet() && status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
+    }
+
     fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
         this.deltakerliste.deltakerAdresseDeles()
 }
