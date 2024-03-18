@@ -47,11 +47,15 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
-fun validerSluttdatoForDeltaker(sluttdato: LocalDate, opprinneligDeltaker: Deltaker) {
+fun validerSluttdatoForDeltaker(
+    sluttdato: LocalDate,
+    startdato: LocalDate?,
+    opprinneligDeltaker: Deltaker,
+) {
     require(opprinneligDeltaker.deltakerliste.sluttDato == null || !sluttdato.isAfter(opprinneligDeltaker.deltakerliste.sluttDato)) {
         "Sluttdato kan ikke være senere enn deltakerlistens sluttdato"
     }
-    require(sluttdato.isAfter(opprinneligDeltaker.startdato)) {
+    require(startdato != null && sluttdato.isAfter(startdato)) {
         "Sluttdato må være etter startdato"
     }
 }

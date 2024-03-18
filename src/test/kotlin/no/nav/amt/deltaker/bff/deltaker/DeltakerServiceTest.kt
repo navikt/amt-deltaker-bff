@@ -31,7 +31,7 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
-            DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now()),
+            DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2)),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now()),
             DeltakerEndring.Endring.EndreSluttarsak(
                 aarsak = DeltakerEndring.Aarsak(
@@ -84,6 +84,7 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.EndreStartdato -> {
                     oppdatertDeltaker.startdato shouldBe endring.startdato
+                    oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
                 }
 
                 is DeltakerEndring.Endring.EndreSluttdato -> {

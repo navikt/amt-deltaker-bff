@@ -12,7 +12,7 @@ data class ForlengDeltakelseRequest(
         require(!nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker)) {
             "Ny sluttdato må være etter opprinnelig sluttdato ved forlengelse"
         }
-        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker)
+        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
         require(deltakerDeltarEllerHarSluttet(opprinneligDeltaker)) {
             "Kan ikke forlenge deltakelse for deltaker med status ${opprinneligDeltaker.status.type}"
         }

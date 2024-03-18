@@ -90,6 +90,7 @@ class DeltakerService(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
                     startdato = endring.startdato,
+                    sluttdato = endring.sluttdato,
                 )
             }
 

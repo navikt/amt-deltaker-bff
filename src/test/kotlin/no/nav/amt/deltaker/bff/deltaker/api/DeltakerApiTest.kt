@@ -197,6 +197,7 @@ class DeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = startdatoRequest.startdato,
+            sluttdato = sluttdatoRequest.sluttdato,
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
@@ -425,7 +426,7 @@ class DeltakerApiTest {
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
-    private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1))
+    private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
     private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3))
     private val avsluttDeltakelseRequest =

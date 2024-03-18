@@ -16,6 +16,6 @@ data class AvsluttDeltakelseRequest(
         require(opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR) {
             "Kan ikke avslutte deltakelse for deltaker som har status DELTAR"
         }
-        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker)
+        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
     }
 }

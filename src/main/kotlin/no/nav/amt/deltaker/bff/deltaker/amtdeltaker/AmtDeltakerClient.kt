@@ -145,7 +145,8 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         startdato: LocalDate?,
-    ) = postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato), STARTDATO)
+        sluttdato: LocalDate?,
+    ) = postEndring(deltakerId, StartdatoRequest(endretAv, endretAvEnhet, startdato, sluttdato), STARTDATO)
 
     suspend fun endreSluttdato(
         deltakerId: UUID,
