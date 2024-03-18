@@ -165,7 +165,7 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            request.valider()
+            request.valider(deltaker)
             validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
