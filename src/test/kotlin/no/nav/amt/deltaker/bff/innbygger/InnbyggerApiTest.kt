@@ -5,6 +5,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
@@ -22,6 +23,8 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.innbygger.model.toInnbyggerDeltakerResponse
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -35,6 +38,7 @@ import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDateTime
 import java.util.UUID
 
 class InnbyggerApiTest {
@@ -44,6 +48,7 @@ class InnbyggerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val innbyggerService = mockk<InnbyggerService>()
 
     @Before
     fun setup() {
@@ -52,11 +57,15 @@ class InnbyggerApiTest {
 
     @Test
     fun `skal teste tilgangskontroll - har ikke tilgang - returnerer 403`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Deny("Ikke tilgang", ""))
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
+            null,
+            Decision.Deny("Ikke tilgang", ""),
+        )
         coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -65,6 +74,7 @@ class InnbyggerApiTest {
 
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/innbygger/${UUID.randomUUID()}/godkjenn-utkast").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -72,9 +82,14 @@ class InnbyggerApiTest {
         val deltaker = TestData.lagDeltaker()
 
         mockTestApi(deltaker) { client, ansatte, enhet ->
-            val res = client.get("innbygger/${deltaker.id}") { noBodyRequest() }
+            val res = client.get("/innbygger/${deltaker.id}") { noBodyRequest() }
             res.status shouldBe HttpStatusCode.OK
-            res.bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toInnbyggerDeltakerResponse(ansatte, enhet))
+            res.bodyAsText() shouldBe objectMapper.writeValueAsString(
+                deltaker.toInnbyggerDeltakerResponse(
+                    ansatte,
+                    enhet,
+                ),
+            )
         }
     }
 
@@ -84,8 +99,48 @@ class InnbyggerApiTest {
 
         testApplication {
             setUpTestApplication()
-            val res = client.get("innbygger/${UUID.randomUUID()}") { noBodyRequest() }
+            val res = client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }
             res.status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
+    @Test
+    fun `godkjenn-utkast - deltaker har feil status - feiler`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
+
+        mockTestApi(deltaker) { client, _, _ ->
+            val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
+            res.status shouldBe HttpStatusCode.BadRequest
+        }
+    }
+
+    @Test
+    fun `godkjenn-utkast - deltaker finnes ikke - returnerer 404`() {
+        coEvery { deltakerService.get(any()) } returns Result.failure(NoSuchElementException())
+
+        testApplication {
+            setUpTestApplication()
+            val res = client.get("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }
+            res.status shouldBe HttpStatusCode.NotFound
+        }
+    }
+
+    @Test
+    fun `godkjenn-utkast - deltaker har tilgang - fatter vedtak`() {
+        val deltaker = deltakerMedIkkeFattetVedtak()
+        val deltakerMedFattetVedak = deltaker.fattVedtak()
+
+        coEvery { innbyggerService.fattVedtak(deltaker) } returns deltakerMedFattetVedak
+
+        mockTestApi(deltaker, deltakerMedFattetVedak) { client, ansatte, enhet ->
+            val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
+            res.status shouldBe HttpStatusCode.OK
+            res.bodyAsText() shouldBe objectMapper.writeValueAsString(
+                deltakerMedFattetVedak.toInnbyggerDeltakerResponse(
+                    ansatte,
+                    enhet,
+                ),
+            )
         }
     }
 
@@ -106,18 +161,24 @@ class InnbyggerApiTest {
                 pameldingService,
                 navAnsattService,
                 navEnhetService,
+                innbyggerService,
             )
         }
     }
 
     private fun mockTestApi(
         deltaker: Deltaker,
+        oppdatertDeltaker: Deltaker? = null,
         block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
     ) = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
+        val (ansatte, enhet) = if (oppdatertDeltaker == null) {
+            mockAnsatteOgEnhetForDeltaker(deltaker)
+        } else {
+            mockAnsatteOgEnhetForDeltaker(oppdatertDeltaker)
+        }
 
         setUpTestApplication()
         block(client, ansatte, enhet)
@@ -133,3 +194,36 @@ class InnbyggerApiTest {
         return Pair(ansatte, enhet)
     }
 }
+
+fun deltakerMedIkkeFattetVedtak(): Deltaker {
+    val deltaker = TestData.lagDeltaker(
+        status = TestData.lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        historikk = false,
+    )
+    val vedtak = TestData.lagVedtak(deltakerVedVedtak = deltaker, fattet = null)
+
+    return deltaker.copy(historikk = listOf(DeltakerHistorikk.Vedtak(vedtak)))
+}
+
+fun Deltaker.fattVedtak(): Deltaker {
+    val vedtak = this.ikkeFattetVedtak!!
+
+    return this.copy(
+        historikk = this.historikk
+            .filter { it.id != vedtak.id }
+            .plus(
+                DeltakerHistorikk.Vedtak(
+                    vedtak.copy(
+                        fattet = LocalDateTime.now(),
+                        sistEndret = LocalDateTime.now(),
+                    ),
+                ),
+            ),
+    )
+}
+
+private val DeltakerHistorikk.id
+    get() = when (this) {
+        is DeltakerHistorikk.Endring -> endring.id
+        is DeltakerHistorikk.Vedtak -> vedtak.id
+    }

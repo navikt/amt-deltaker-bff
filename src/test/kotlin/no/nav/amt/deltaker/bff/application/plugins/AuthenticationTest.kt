@@ -18,10 +18,6 @@ import io.mockk.mockk
 import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.generateJWT
 import no.nav.poao_tilgang.client.Decision
@@ -34,10 +30,6 @@ import java.util.UUID
 class AuthenticationTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
-    private val deltakerService = mockk<DeltakerService>()
-    private val pameldingService = mockk<PameldingService>()
-    private val navAnsattService = mockk<NavAnsattService>()
-    private val navEnhetService = mockk<NavEnhetService>()
 
     @Before
     fun setup() {
@@ -103,10 +95,11 @@ class AuthenticationTest {
             configureAuthentication(Environment())
             configureRouting(
                 tilgangskontrollService,
-                deltakerService,
-                pameldingService,
-                navAnsattService,
-                navEnhetService,
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
             )
             setUpTestRoute()
         }
