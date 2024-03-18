@@ -443,6 +443,7 @@ class DeltakerApiTest {
     ) = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
 
         val (ansatte, enhet) = if (oppdatertDeltaker != null) {
             coEvery {

@@ -2,6 +2,9 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
+import io.mockk.coEvery
+import io.mockk.mockk
+import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
@@ -186,6 +189,7 @@ class InputvalideringTest {
 
     @Test
     fun testValiderDeltakerKanEndres() {
+        val deltakerService = mockk<DeltakerService>()
         val deltakerDeltar = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.DELTAR,
@@ -211,17 +215,29 @@ class InputvalideringTest {
             ),
         )
 
+        coEvery { deltakerService.getDeltakelser(any(), any()) } returns listOf(deltakerDeltar)
         shouldNotThrow<IllegalArgumentException> {
-            validerDeltakerKanEndres(deltakerDeltar)
+            validerDeltakerKanEndres(deltakerDeltar, deltakerService)
         }
+
+        coEvery { deltakerService.getDeltakelser(any(), any()) } returns listOf(deltakerSluttetFireUkerSiden)
         shouldNotThrow<IllegalArgumentException> {
-            validerDeltakerKanEndres(deltakerSluttetFireUkerSiden)
+            validerDeltakerKanEndres(deltakerSluttetFireUkerSiden, deltakerService)
         }
+
+        coEvery { deltakerService.getDeltakelser(any(), any()) } returns listOf(deltakerSluttetFireMndSiden)
         shouldThrow<IllegalArgumentException> {
-            validerDeltakerKanEndres(deltakerSluttetFireMndSiden)
+            validerDeltakerKanEndres(deltakerSluttetFireMndSiden, deltakerService)
         }
+
+        coEvery { deltakerService.getDeltakelser(any(), any()) } returns listOf(deltakerIkkeAktuellFireMndSiden)
         shouldThrow<IllegalArgumentException> {
-            validerDeltakerKanEndres(deltakerIkkeAktuellFireMndSiden)
+            validerDeltakerKanEndres(deltakerIkkeAktuellFireMndSiden, deltakerService)
+        }
+
+        coEvery { deltakerService.getDeltakelser(any(), any()) } returns listOf(deltakerSluttetFireUkerSiden, deltakerDeltar)
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakerKanEndres(deltakerSluttetFireUkerSiden, deltakerService)
         }
     }
 

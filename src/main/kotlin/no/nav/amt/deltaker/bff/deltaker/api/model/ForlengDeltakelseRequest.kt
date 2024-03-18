@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
-import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -14,7 +13,6 @@ data class ForlengDeltakelseRequest(
             "Ny sluttdato må være etter opprinnelig sluttdato ved forlengelse"
         }
         validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
-        validerDeltakerKanEndres(opprinneligDeltaker)
         require(deltakerDeltarEllerHarSluttet(opprinneligDeltaker)) {
             "Kan ikke forlenge deltakelse for deltaker med status ${opprinneligDeltaker.status.type}"
         }

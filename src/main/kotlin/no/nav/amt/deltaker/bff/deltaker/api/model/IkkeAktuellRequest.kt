@@ -8,7 +8,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 data class IkkeAktuellRequest(
     val aarsak: DeltakerEndring.Aarsak,
 ) {
-    // her kommer det antageligvis en oppdateringnår vi lander hvor lenge man skal kunne sette deltaker til ikke aktuell
+    // her kommer det antageligvis en oppdatering når vi lander hvor lenge man skal kunne sette deltaker til ikke aktuell
     // etter at statusen blir "deltar"
     private val kanBliIkkeAktuell = listOf(DeltakerStatus.Type.VENTER_PA_OPPSTART, DeltakerStatus.Type.DELTAR)
 

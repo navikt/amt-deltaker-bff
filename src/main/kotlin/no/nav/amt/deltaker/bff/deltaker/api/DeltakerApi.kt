@@ -24,6 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -55,7 +56,8 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            request.valider(deltaker)
+            request.valider()
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
@@ -76,6 +78,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
@@ -95,7 +98,8 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            request.valider(deltaker)
+            request.valider()
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
@@ -118,6 +122,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
@@ -140,6 +145,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
@@ -159,7 +165,8 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            request.valider(deltaker)
+            request.valider()
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
@@ -244,6 +251,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            validerDeltakerKanEndres(deltaker, deltakerService)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
