@@ -58,3 +58,9 @@ val AVSLUTTENDE_STATUSER = listOf(
     DeltakerStatus.Type.FULLFORT,
     DeltakerStatus.Type.AVBRUTT_UTKAST,
 )
+
+val AKTIVE_STATUSER = listOf(
+    DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+    DeltakerStatus.Type.VENTER_PA_OPPSTART,
+    DeltakerStatus.Type.DELTAR,
+)

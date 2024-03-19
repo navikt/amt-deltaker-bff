@@ -17,6 +17,7 @@ data class Deltaker(
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
+    val kanEndres: Boolean,
 ) {
     val fattetVedtak
         get() = historikk.firstOrNull {

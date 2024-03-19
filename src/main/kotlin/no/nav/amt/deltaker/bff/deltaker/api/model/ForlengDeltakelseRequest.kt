@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -16,6 +17,7 @@ data class ForlengDeltakelseRequest(
         require(deltakerDeltarEllerHarSluttet(opprinneligDeltaker)) {
             "Kan ikke forlenge deltakelse for deltaker med status ${opprinneligDeltaker.status.type}"
         }
+        validerDeltakerKanEndres(opprinneligDeltaker)
     }
 
     private fun nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker: Deltaker) =

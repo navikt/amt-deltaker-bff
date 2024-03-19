@@ -45,7 +45,11 @@ class DeltakerV2Consumer(
 
         if (deltakerV2.kilde != DeltakerV2Dto.Kilde.KOMET) return
 
-        deltakerService.oppdaterDeltaker(deltakerV2.toDeltakerOppdatering())
+        deltakerService.oppdaterDeltaker(
+            deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
+            personIdent = deltakerV2.personalia.personident,
+            deltakerlisteId = deltakerV2.deltakerlisteId,
+        )
     }
 
     override fun run() = consumer.run()
@@ -53,6 +57,8 @@ class DeltakerV2Consumer(
 
 data class DeltakerV2Dto(
     val id: UUID,
+    val deltakerlisteId: UUID,
+    val personalia: DeltakerPersonaliaDto,
     val status: DeltakerStatusDto,
     val dagerPerUke: Float?,
     val prosentStilling: Double?,
@@ -91,6 +97,10 @@ data class DeltakerV2Dto(
         KOMET,
         ARENA,
     }
+
+    data class DeltakerPersonaliaDto(
+        val personident: String,
+    )
 
     data class DeltakerStatusDto(
         val id: UUID?,

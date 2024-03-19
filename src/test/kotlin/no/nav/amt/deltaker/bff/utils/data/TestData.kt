@@ -127,6 +127,7 @@ object TestData {
         innhold: List<Innhold> = deltakerliste.tiltak.innhold?.innholdselementer?.map { it.toInnhold() } ?: emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         historikk: Boolean = true,
+        kanEndres: Boolean = true,
     ): Deltaker {
         val deltaker = Deltaker(
             id,
@@ -140,6 +141,7 @@ object TestData {
             innhold,
             status,
             emptyList(),
+            kanEndres,
         )
 
         return if (historikk) {

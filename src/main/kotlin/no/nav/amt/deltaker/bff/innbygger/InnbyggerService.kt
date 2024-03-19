@@ -17,7 +17,7 @@ class InnbyggerService(
 
         val oppdatering = amtDeltakerClient.fattVedtak(ikkeFattetVedtak)
 
-        deltakerService.oppdaterDeltaker(oppdatering)
+        deltakerService.oppdaterDeltaker(oppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
 
         return deltaker.oppdater(oppdatering)
     }

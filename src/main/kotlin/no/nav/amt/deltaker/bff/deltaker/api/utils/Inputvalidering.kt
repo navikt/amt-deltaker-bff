@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.api.utils
 
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
@@ -48,14 +47,9 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
-fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker, deltakerService: DeltakerService) {
+fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
     if (opprinneligDeltaker.harSluttet()) {
-        val aktiveDeltakelser = deltakerService.getDeltakelser(
-            opprinneligDeltaker.navBruker.personident,
-            opprinneligDeltaker.deltakerliste.id,
-        )
-            .filter { !it.harSluttet() }
-        require(aktiveDeltakelser.isEmpty()) {
+        require(opprinneligDeltaker.kanEndres) {
             "Kan ikke endre avsluttet deltakelse når det finnes aktiv deltakelse på samme tiltak"
         }
         require(opprinneligDeltaker.harSluttetForMindreEnnToMndSiden()) {

@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -117,7 +118,7 @@ class DeltakerService(
 
     private suspend fun endreDeltaker(deltaker: Deltaker, amtDeltakerKall: suspend () -> Deltakeroppdatering): Deltaker {
         val deltakeroppdatering = amtDeltakerKall()
-        oppdaterDeltaker(deltakeroppdatering)
+        oppdaterDeltaker(deltakeroppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
         return deltaker.oppdater(deltakeroppdatering)
     }
 
@@ -134,12 +135,25 @@ class DeltakerService(
             status = status,
         )
 
-        upsert(deltaker)
+        upsertKladd(deltaker)
 
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+    fun oppdaterDeltaker(
+        deltakeroppdatering: Deltakeroppdatering,
+        personIdent: String,
+        deltakerlisteId: UUID,
+    ) {
+        if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
+            val tidligereDeltakelser = getDeltakelser(personIdent, deltakerlisteId).filter {
+                it.id != deltakeroppdatering.id && it.harSluttet()
+            }
+            tidligereDeltakelser.forEach {
+                deltakerRepository.settKanIkkeEndres(it.id)
+                log.info("Har låst deltaker med id ${it.id} for endringer pga nyere aktiv deltaker")
+            }
+        }
         deltakerRepository.update(deltakeroppdatering)
     }
 
@@ -147,14 +161,19 @@ class DeltakerService(
         deltakerRepository.delete(deltakerId)
     }
 
-    fun upsert(deltaker: Deltaker) {
+    private fun upsertKladd(deltaker: Deltaker) {
         deltakerRepository.upsert(deltaker)
-        log.info("Upserter deltaker med id ${deltaker.id}")
+        log.info("Upserter kladd for deltaker med id ${deltaker.id}")
     }
 
     fun opprettDeltaker(kladd: KladdResponse): Result<Deltaker> {
         deltakerRepository.create(kladd)
         return deltakerRepository.get(kladd.id)
+    }
+
+    private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
+        val currentStatus = deltakerRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
+        return currentStatus.type != deltakeroppdatering.status.type
     }
 }
 

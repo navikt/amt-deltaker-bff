@@ -86,6 +86,7 @@ class DeltakerRepository {
         historikk = row.string("d.historikk").let { list ->
             objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
         },
+        kanEndres = row.boolean("d.kan_endres"),
     )
 
     fun upsert(deltaker: Deltaker) = Database.query { session ->
@@ -93,11 +94,11 @@ class DeltakerRepository {
             """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, kan_endres
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :kan_endres
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -108,6 +109,7 @@ class DeltakerRepository {
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 innhold              = :innhold,
                 historikk            = :historikk,
+                kan_endres           = :kan_endres,
                 modified_at          = current_timestamp
             """.trimIndent()
 
@@ -122,6 +124,7 @@ class DeltakerRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
             "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+            "kan_endres" to deltaker.kanEndres,
         )
 
         session.transaction { tx ->
@@ -183,6 +186,19 @@ class DeltakerRepository {
             tx.update(slettStatus(deltakerId))
             tx.update(slettDeltaker(deltakerId))
         }
+    }
+
+    fun settKanIkkeEndres(id: UUID) = Database.query {
+        val sql =
+            """
+            update deltaker
+            set kan_endres = false
+            where id = :id;
+            """.trimIndent()
+
+        it.update(
+            queryOf(sql, mapOf("id" to id)),
+        )
     }
 
     fun create(kladd: KladdResponse) = Database.query {
@@ -327,6 +343,7 @@ class DeltakerRepository {
                    d.innhold as "d.innhold",
                    d.historikk as "d.historikk",
                    d.modified_at as "d.modified_at",
+                   d.kan_endres as "d.kan_endres",
                    nb.personident as "nb.personident",
                    nb.fornavn as "nb.fornavn",
                    nb.mellomnavn as "nb.mellomnavn",
@@ -376,9 +393,11 @@ class DeltakerRepository {
         val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >
             eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
 
-        val kanOppdateres = oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
-            oppdateringHarNyereStatus ||
-            erUtkast
+        val kanOppdateres = eksisterendeDeltaker.kanEndres && (
+            oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
+                oppdateringHarNyereStatus ||
+                erUtkast
+        )
 
         if (!kanOppdateres) {
             log.info(
@@ -388,6 +407,7 @@ class DeltakerRepository {
                 deltaker.historikk:           ${eksisterendeDeltaker.historikk.size}
                 oppdatering.status.opprettet: ${oppdatering.status.opprettet} 
                 deltaker.status.opprettet:    ${eksisterendeDeltaker.status.opprettet}
+                deltaker.kan_endres:          ${eksisterendeDeltaker.kanEndres}
                 """.trimIndent(),
             )
         }
