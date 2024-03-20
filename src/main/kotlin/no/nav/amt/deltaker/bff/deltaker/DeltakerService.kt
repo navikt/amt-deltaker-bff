@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -134,12 +135,19 @@ class DeltakerService(
             status = status,
         )
 
-        upsert(deltaker)
+        upsertKladd(deltaker)
 
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
     fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+        if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
+            val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
+            deltakerRepository.settKanIkkeEndres(tidligereDeltakelser)
+            log.info(
+                "Har låst ${tidligereDeltakelser.size} deltakere for endringer pga nyere aktiv deltaker med id ${deltakeroppdatering.id}",
+            )
+        }
         deltakerRepository.update(deltakeroppdatering)
     }
 
@@ -147,14 +155,19 @@ class DeltakerService(
         deltakerRepository.delete(deltakerId)
     }
 
-    fun upsert(deltaker: Deltaker) {
+    private fun upsertKladd(deltaker: Deltaker) {
         deltakerRepository.upsert(deltaker)
-        log.info("Upserter deltaker med id ${deltaker.id}")
+        log.info("Upserter kladd for deltaker med id ${deltaker.id}")
     }
 
     fun opprettDeltaker(kladd: KladdResponse): Result<Deltaker> {
         deltakerRepository.create(kladd)
         return deltakerRepository.get(kladd.id)
+    }
+
+    private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
+        val currentStatus = deltakerRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
+        return currentStatus.type != deltakeroppdatering.status.type
     }
 }
 

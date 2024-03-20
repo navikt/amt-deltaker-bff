@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -16,9 +17,7 @@ data class ForlengDeltakelseRequest(
         require(deltakerDeltarEllerHarSluttet(opprinneligDeltaker)) {
             "Kan ikke forlenge deltakelse for deltaker med status ${opprinneligDeltaker.status.type}"
         }
-        require(!deltakerHarSluttetForMerEnnToMndSiden(opprinneligDeltaker)) {
-            "Kan ikke forlenge deltakelse for deltaker som sluttet for mer enn to måneder siden"
-        }
+        validerDeltakerKanEndres(opprinneligDeltaker)
     }
 
     private fun nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker: Deltaker) =
@@ -26,11 +25,4 @@ data class ForlengDeltakelseRequest(
 
     private fun deltakerDeltarEllerHarSluttet(opprinneligDeltaker: Deltaker) =
         opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR || opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET
-
-    private fun deltakerHarSluttetForMerEnnToMndSiden(opprinneligDeltaker: Deltaker): Boolean {
-        if (opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET) {
-            return opprinneligDeltaker.sluttdato?.isBefore(LocalDate.now().minusMonths(2)) == true
-        }
-        return false
-    }
 }

@@ -14,7 +14,7 @@ data class AvsluttDeltakelseRequest(
     fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         require(opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR) {
-            "Kan ikke avslutte deltakelse for deltaker som har status DELTAR"
+            "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR"
         }
         validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
     }

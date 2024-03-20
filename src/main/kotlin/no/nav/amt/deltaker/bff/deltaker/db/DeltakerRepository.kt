@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -86,6 +87,7 @@ class DeltakerRepository {
         historikk = row.string("d.historikk").let { list ->
             objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
         },
+        kanEndres = row.boolean("d.kan_endres"),
     )
 
     fun upsert(deltaker: Deltaker) = Database.query { session ->
@@ -93,11 +95,11 @@ class DeltakerRepository {
             """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, kan_endres
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :kan_endres
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -108,6 +110,7 @@ class DeltakerRepository {
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 innhold              = :innhold,
                 historikk            = :historikk,
+                kan_endres           = :kan_endres,
                 modified_at          = current_timestamp
             """.trimIndent()
 
@@ -122,6 +125,7 @@ class DeltakerRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
             "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+            "kan_endres" to deltaker.kanEndres,
         )
 
         session.transaction { tx ->
@@ -157,6 +161,31 @@ class DeltakerRepository {
         it.run(query)
     }
 
+    fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID) = Database.query { session ->
+        val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
+        val sql =
+            """
+            select d2.id
+            from deltaker d
+                     join deltaker d2 on d.person_id = d2.person_id
+                and d.deltakerliste_id = d2.deltakerliste_id
+                     inner join deltaker_status ds on d2.id = ds.deltaker_id
+            where d.id = ?
+              and ds.gyldig_til is null
+            and ds.type in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
+            and d2.id != d.id;
+            """.trimMargin()
+
+        val query = queryOf(
+            sql,
+            deltakerId,
+            *avsluttendeDeltakerStatuser.toTypedArray(),
+        ).map {
+            it.uuid("id")
+        }.asList
+        session.run(query)
+    }
+
     fun getDeltakerStatuser(deltakerId: UUID) = Database.query { session ->
         val sql =
             """
@@ -183,6 +212,22 @@ class DeltakerRepository {
             tx.update(slettStatus(deltakerId))
             tx.update(slettDeltaker(deltakerId))
         }
+    }
+
+    fun settKanIkkeEndres(ider: List<UUID>) = Database.query {
+        if (ider.isEmpty()) {
+            return@query
+        }
+        val sql =
+            """
+            update deltaker
+            set kan_endres = false
+            where id in (${ider.joinToString { "?" }});
+            """.trimIndent()
+
+        it.update(
+            queryOf(sql, *ider.toTypedArray()),
+        )
     }
 
     fun create(kladd: KladdResponse) = Database.query {
@@ -327,6 +372,7 @@ class DeltakerRepository {
                    d.innhold as "d.innhold",
                    d.historikk as "d.historikk",
                    d.modified_at as "d.modified_at",
+                   d.kan_endres as "d.kan_endres",
                    nb.personident as "nb.personident",
                    nb.fornavn as "nb.fornavn",
                    nb.mellomnavn as "nb.mellomnavn",
@@ -376,9 +422,11 @@ class DeltakerRepository {
         val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >
             eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
 
-        val kanOppdateres = oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
-            oppdateringHarNyereStatus ||
-            erUtkast
+        val kanOppdateres = eksisterendeDeltaker.kanEndres && (
+            oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
+                oppdateringHarNyereStatus ||
+                erUtkast
+        )
 
         if (!kanOppdateres) {
             log.info(
@@ -388,6 +436,7 @@ class DeltakerRepository {
                 deltaker.historikk:           ${eksisterendeDeltaker.historikk.size}
                 oppdatering.status.opprettet: ${oppdatering.status.opprettet} 
                 deltaker.status.opprettet:    ${eksisterendeDeltaker.status.opprettet}
+                deltaker.kan_endres:          ${eksisterendeDeltaker.kanEndres}
                 """.trimIndent(),
             )
         }

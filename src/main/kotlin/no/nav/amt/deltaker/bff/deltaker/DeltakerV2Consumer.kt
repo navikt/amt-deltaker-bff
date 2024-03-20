@@ -45,7 +45,9 @@ class DeltakerV2Consumer(
 
         if (deltakerV2.kilde != DeltakerV2Dto.Kilde.KOMET) return
 
-        deltakerService.oppdaterDeltaker(deltakerV2.toDeltakerOppdatering())
+        deltakerService.oppdaterDeltaker(
+            deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
+        )
     }
 
     override fun run() = consumer.run()

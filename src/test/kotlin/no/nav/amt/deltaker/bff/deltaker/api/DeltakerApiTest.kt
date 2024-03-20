@@ -53,6 +53,7 @@ import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerApiTest {
@@ -137,7 +138,7 @@ class DeltakerApiTest {
     @Test
     fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() {
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
             sluttdato = LocalDate.now().minusMonths(1),
         )
 
@@ -351,9 +352,9 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `forleng - har tilgang, har sluttet for mer enn to måneder siden - feiler`() {
+    fun `forleng - har tilgang, har sluttet for mer enn to mnd siden - feiler`() {
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
             sluttdato = forlengDeltakelseRequest.sluttdato.minusMonths(3),
         )
 
@@ -443,6 +444,7 @@ class DeltakerApiTest {
     ) = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
 
         val (ansatte, enhet) = if (oppdatertDeltaker != null) {
             coEvery {

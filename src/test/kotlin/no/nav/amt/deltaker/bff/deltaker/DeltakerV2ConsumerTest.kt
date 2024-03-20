@@ -46,7 +46,7 @@ class DeltakerV2ConsumerTest {
 }
 
 private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
-    id,
+    id = id,
     status = DeltakerV2Dto.DeltakerStatusDto(
         id = status.id,
         type = status.type,

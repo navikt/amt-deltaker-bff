@@ -17,6 +17,7 @@ data class Deltaker(
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
+    val kanEndres: Boolean,
 ) {
     val fattetVedtak
         get() = historikk.firstOrNull {
@@ -39,6 +40,10 @@ data class Deltaker(
 
     fun harSluttet(): Boolean {
         return status.type in AVSLUTTENDE_STATUSER
+    }
+
+    fun harSluttetForMindreEnnToMndSiden(): Boolean {
+        return harSluttet() && status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
     }
 
     fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
