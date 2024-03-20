@@ -118,7 +118,7 @@ class DeltakerService(
 
     private suspend fun endreDeltaker(deltaker: Deltaker, amtDeltakerKall: suspend () -> Deltakeroppdatering): Deltaker {
         val deltakeroppdatering = amtDeltakerKall()
-        oppdaterDeltaker(deltakeroppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)
     }
 
@@ -140,19 +140,13 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    fun oppdaterDeltaker(
-        deltakeroppdatering: Deltakeroppdatering,
-        personIdent: String,
-        deltakerlisteId: UUID,
-    ) {
+    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
-            val tidligereDeltakelser = getDeltakelser(personIdent, deltakerlisteId).filter {
-                it.id != deltakeroppdatering.id && it.harSluttet()
-            }
-            tidligereDeltakelser.forEach {
-                deltakerRepository.settKanIkkeEndres(it.id)
-                log.info("Har låst deltaker med id ${it.id} for endringer pga nyere aktiv deltaker")
-            }
+            val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
+            deltakerRepository.settKanIkkeEndres(tidligereDeltakelser)
+            log.info(
+                "Har låst ${tidligereDeltakelser.size} deltakere for endringer pga nyere aktiv deltaker med id ${deltakeroppdatering.id}",
+            )
         }
         deltakerRepository.update(deltakeroppdatering)
     }

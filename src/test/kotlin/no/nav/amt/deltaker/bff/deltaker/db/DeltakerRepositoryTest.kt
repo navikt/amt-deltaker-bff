@@ -180,6 +180,64 @@ class DeltakerRepositoryTest {
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }
+
+    @Test
+    fun `getTidligereAvsluttedeDeltakelser - har ingen tidligere deltakelse - returnerer tom liste`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        )
+        TestRepository.insert(deltaker)
+
+        repository.getTidligereAvsluttedeDeltakelser(deltaker.id) shouldBe emptyList()
+    }
+
+    @Test
+    fun `getTidligereAvsluttedeDeltakelser - har aktiv tidligere deltakelse - returnerer tom liste`() {
+        val avsluttetDeltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+        )
+        TestRepository.insert(avsluttetDeltaker)
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = avsluttetDeltaker.deltakerliste,
+            navBruker = avsluttetDeltaker.navBruker,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        )
+        TestRepository.insert(deltaker)
+
+        repository.getTidligereAvsluttedeDeltakelser(deltaker.id) shouldBe emptyList()
+    }
+
+    @Test
+    fun `getTidligereAvsluttedeDeltakelser - har tidligere avsluttet deltakelse - returnerer id`() {
+        val avsluttetDeltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+        )
+        TestRepository.insert(avsluttetDeltaker)
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = avsluttetDeltaker.deltakerliste,
+            navBruker = avsluttetDeltaker.navBruker,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+        )
+        TestRepository.insert(deltaker)
+
+        repository.getTidligereAvsluttedeDeltakelser(deltaker.id) shouldBe listOf(avsluttetDeltaker.id)
+    }
+
+    @Test
+    fun `getTidligereAvsluttedeDeltakelser - har tidligere avsluttet deltakelse, er avsluttet deltakelse - returnerer id`() {
+        val avsluttetDeltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+        )
+        TestRepository.insert(avsluttetDeltaker)
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = avsluttetDeltaker.deltakerliste,
+            navBruker = avsluttetDeltaker.navBruker,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+        )
+        TestRepository.insert(deltaker)
+
+        repository.getTidligereAvsluttedeDeltakelser(deltaker.id) shouldBe listOf(avsluttetDeltaker.id)
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(

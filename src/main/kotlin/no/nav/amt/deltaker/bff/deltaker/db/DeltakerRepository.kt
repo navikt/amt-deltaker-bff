@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -160,6 +161,31 @@ class DeltakerRepository {
         it.run(query)
     }
 
+    fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID) = Database.query { session ->
+        val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
+        val sql =
+            """
+            select d2.id
+            from deltaker d
+                     join deltaker d2 on d.person_id = d2.person_id
+                and d.deltakerliste_id = d2.deltakerliste_id
+                     inner join deltaker_status ds on d2.id = ds.deltaker_id
+            where d.id = ?
+              and ds.gyldig_til is null
+            and ds.type in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
+            and d2.id != d.id;
+            """.trimMargin()
+
+        val query = queryOf(
+            sql,
+            deltakerId,
+            *avsluttendeDeltakerStatuser.toTypedArray(),
+        ).map {
+            it.uuid("id")
+        }.asList
+        session.run(query)
+    }
+
     fun getDeltakerStatuser(deltakerId: UUID) = Database.query { session ->
         val sql =
             """
@@ -188,16 +214,19 @@ class DeltakerRepository {
         }
     }
 
-    fun settKanIkkeEndres(id: UUID) = Database.query {
+    fun settKanIkkeEndres(ider: List<UUID>) = Database.query {
+        if (ider.isEmpty()) {
+            return@query
+        }
         val sql =
             """
             update deltaker
             set kan_endres = false
-            where id = :id;
+            where id in (${ider.joinToString { "?" }});
             """.trimIndent()
 
         it.update(
-            queryOf(sql, mapOf("id" to id)),
+            queryOf(sql, *ider.toTypedArray()),
         )
     }
 

@@ -130,7 +130,7 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        service.oppdaterDeltaker(deltakeroppdatering)
 
         val deltakerFraDb = service.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
@@ -158,7 +158,7 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        service.oppdaterDeltaker(deltakeroppdatering)
 
         val deltakerFraDb = service.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
@@ -190,7 +190,7 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        service.oppdaterDeltaker(deltakeroppdatering)
 
         val deltakerFraDb = service.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
@@ -226,7 +226,7 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        service.oppdaterDeltaker(deltakeroppdatering)
 
         val deltakerFraDb = service.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.DELTAR

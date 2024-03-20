@@ -22,7 +22,7 @@ class DeltakerV2ConsumerTest {
             objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
         )
 
-        verify(exactly = 0) { deltakerService.oppdaterDeltaker(any(), any(), any()) }
+        verify(exactly = 0) { deltakerService.oppdaterDeltaker(any()) }
     }
 
     @Test
@@ -34,23 +34,19 @@ class DeltakerV2ConsumerTest {
             deltaker.id,
             objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.KOMET)),
         )
-        verify(exactly = 1) { deltakerService.oppdaterDeltaker(any(), any(), any()) }
+        verify(exactly = 1) { deltakerService.oppdaterDeltaker(any()) }
     }
 
     @Test
     fun `consume - tombstone - konsumerer ikke melding`() = runBlocking {
         val consumer = DeltakerV2Consumer(deltakerService)
         consumer.consume(UUID.randomUUID(), null)
-        verify(exactly = 0) { deltakerService.oppdaterDeltaker(any(), any(), any()) }
+        verify(exactly = 0) { deltakerService.oppdaterDeltaker(any()) }
     }
 }
 
 private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     id = id,
-    deltakerlisteId = deltakerliste.id,
-    personalia = DeltakerV2Dto.DeltakerPersonaliaDto(
-        personident = navBruker.personident,
-    ),
     status = DeltakerV2Dto.DeltakerStatusDto(
         id = status.id,
         type = status.type,

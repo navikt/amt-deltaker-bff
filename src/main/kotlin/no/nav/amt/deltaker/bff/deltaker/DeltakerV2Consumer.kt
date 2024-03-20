@@ -47,8 +47,6 @@ class DeltakerV2Consumer(
 
         deltakerService.oppdaterDeltaker(
             deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
-            personIdent = deltakerV2.personalia.personident,
-            deltakerlisteId = deltakerV2.deltakerlisteId,
         )
     }
 
@@ -57,8 +55,6 @@ class DeltakerV2Consumer(
 
 data class DeltakerV2Dto(
     val id: UUID,
-    val deltakerlisteId: UUID,
-    val personalia: DeltakerPersonaliaDto,
     val status: DeltakerStatusDto,
     val dagerPerUke: Float?,
     val prosentStilling: Double?,
@@ -97,10 +93,6 @@ data class DeltakerV2Dto(
         KOMET,
         ARENA,
     }
-
-    data class DeltakerPersonaliaDto(
-        val personident: String,
-    )
 
     data class DeltakerStatusDto(
         val id: UUID?,
