@@ -201,12 +201,21 @@ fun Routing.registerDeltakerApi(
 
             request.valider(deltaker)
 
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
+            val oppdatertDeltaker = if (request.harDeltatt() && request.sluttdato != null) {
+                deltakerService.oppdaterDeltaker(
+                    deltaker = deltaker,
+                    endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato),
+                    endretAv = navIdent,
+                    endretAvEnhet = enhetsnummer,
+                )
+            } else {
+                deltakerService.oppdaterDeltaker(
+                    deltaker = deltaker,
+                    endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
+                    endretAv = navIdent,
+                    endretAvEnhet = enhetsnummer,
+                )
+            }
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 

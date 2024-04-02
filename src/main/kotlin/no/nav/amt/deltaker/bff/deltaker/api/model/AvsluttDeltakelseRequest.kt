@@ -9,13 +9,29 @@ import java.time.LocalDate
 
 data class AvsluttDeltakelseRequest(
     val aarsak: DeltakerEndring.Aarsak,
-    val sluttdato: LocalDate,
+    val sluttdato: LocalDate?,
+    val harDeltatt: Boolean? = true,
 ) {
     fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         require(opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR) {
             "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR"
         }
-        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
+        if (harDeltatt()) {
+            require(sluttdato != null) {
+                "Må angi sluttdato for deltaker som har deltatt"
+            }
+        } else {
+            require(statusForMindreEnn15DagerSiden(opprinneligDeltaker)) {
+                "Deltaker med deltar-status mer enn 15 dager tilbake i tid må ha deltatt"
+            }
+        }
+        sluttdato?.let { validerSluttdatoForDeltaker(it, opprinneligDeltaker.startdato, opprinneligDeltaker) }
     }
+
+    fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
+}
+
+fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean {
+    return opprinneligDeltaker.status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusDays(15))
 }
