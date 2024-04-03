@@ -247,7 +247,7 @@ class DeltakerApiTest {
 
     @Test
     fun `ikke aktuell - har tilgang - returnerer oppdatert deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.IKKE_AKTUELL,
@@ -366,7 +366,7 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `avslutt - har tilgang - returnerer oppdatert deltaker`() {
+    fun `avslutt - har tilgang, har deltatt - returnerer oppdatert deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
@@ -382,6 +382,82 @@ class DeltakerApiTest {
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
                     oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `avslutt - har tilgang, har deltatt, mangler sluttdato - feiler`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                DeltakerStatus.Type.HAR_SLUTTET,
+                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+            ),
+            sluttdato = avsluttDeltakelseRequest.sluttdato,
+        )
+        val avsluttDeltakelseRequestUtenSluttdato = AvsluttDeltakelseRequest(
+            aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
+            sluttdato = null,
+            harDeltatt = true,
+        )
+
+        mockTestApi(deltaker, oppdatertDeltaker) { client, _, _ ->
+            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestUtenSluttdato) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
+        }
+    }
+
+    @Test
+    fun `avslutt - har tilgang, har ikke deltatt - returnerer oppdatert deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                DeltakerStatus.Type.IKKE_AKTUELL,
+                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+            ),
+            startdato = null,
+            sluttdato = null,
+        )
+        val avsluttDeltakelseRequestIkkeDeltatt = AvsluttDeltakelseRequest(
+            aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT),
+            sluttdato = null,
+            harDeltatt = false,
+        )
+
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `avslutt - har tilgang, har ikke deltatt, mer enn 15 dager siden - feiler`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, gyldigFra = LocalDateTime.now().minusDays(20)),
+        )
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                DeltakerStatus.Type.IKKE_AKTUELL,
+                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+            ),
+            startdato = null,
+            sluttdato = null,
+        )
+        val avsluttDeltakelseRequestIkkeDeltatt = AvsluttDeltakelseRequest(
+            aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT),
+            sluttdato = null,
+            harDeltatt = false,
+        )
+
+        mockTestApi(deltaker, oppdatertDeltaker) { client, _, _ ->
+            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
             }
         }
     }
