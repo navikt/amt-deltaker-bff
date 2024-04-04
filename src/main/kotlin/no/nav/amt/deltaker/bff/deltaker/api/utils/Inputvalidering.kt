@@ -66,7 +66,7 @@ fun validerSluttdatoForDeltaker(
     require(opprinneligDeltaker.deltakerliste.sluttDato == null || !sluttdato.isAfter(opprinneligDeltaker.deltakerliste.sluttDato)) {
         "Sluttdato kan ikke være senere enn deltakerlistens sluttdato"
     }
-    require(startdato == null || sluttdato.isAfter(startdato)) {
+    require(startdato == null || !sluttdato.isBefore(startdato)) {
         "Sluttdato må være etter startdato"
     }
 }
