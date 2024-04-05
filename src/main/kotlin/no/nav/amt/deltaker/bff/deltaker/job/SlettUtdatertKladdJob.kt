@@ -27,8 +27,6 @@ class SlettUtdatertKladdJob(
     private val job = Job()
     private val scope = CoroutineScope(Dispatchers.IO + job)
 
-    private val sistEndretGrense = LocalDateTime.now().minusWeeks(2)
-
     fun startJob(): Timer {
         return fixedRateTimer(
             name = this.javaClass.simpleName,
@@ -37,6 +35,7 @@ class SlettUtdatertKladdJob(
         ) {
             scope.launch {
                 if (leaderElection.isLeader() && attributes.getOrNull(isReadyKey) == true) {
+                    val sistEndretGrense = LocalDateTime.now().minusWeeks(2)
                     try {
                         log.info("Kjører jobb for å slette utdaterte kladder")
                         val kladderSomSkalSlettes = deltakerRepository.getUtdaterteKladder(sistEndretGrense)
