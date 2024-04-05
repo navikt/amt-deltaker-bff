@@ -22,6 +22,7 @@ data class Environment(
     val tokenXJwksUrl: String = getEnvVar(TOKEN_X_JWKS_URI_KEY),
     val tokenXJwtIssuer: String = getEnvVar(TOKEN_X_ISSUER_KEY),
     val tokenXClientId: String = getEnvVar(TOKEN_X_CLIENT_ID_KEY),
+    val electorPath: String = getEnvVar(ELECTOR_PATH),
 ) {
     companion object {
         const val DB_USERNAME_KEY = "DB_USERNAME"
@@ -60,6 +61,8 @@ data class Environment(
 
         const val POAO_TILGANG_URL_KEY = "POAO_TILGANG_URL"
         const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"
+
+        const val ELECTOR_PATH = "ELECTOR_PATH"
 
         const val HTTP_CLIENT_TIMEOUT_MS = 10_000
 

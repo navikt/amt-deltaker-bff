@@ -19,6 +19,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DeltakerRepositoryTest {
     companion object {
@@ -237,6 +238,19 @@ class DeltakerRepositoryTest {
         TestRepository.insert(deltaker)
 
         repository.getTidligereAvsluttedeDeltakelser(deltaker.id) shouldBe listOf(avsluttetDeltaker.id)
+    }
+
+    @Test
+    fun `getUtdaterteKladder - finnes en utdatert kladd - returnerer utdatert kladd`() {
+        val kladd = TestData.lagDeltakerKladd(sistEndret = LocalDateTime.now().minusDays(2))
+        TestRepository.insert(kladd)
+        val utdatertKladd = TestData.lagDeltakerKladd(sistEndret = LocalDateTime.now().minusDays(20))
+        TestRepository.insert(utdatertKladd)
+
+        val utdaterteKladder = repository.getUtdaterteKladder(LocalDateTime.now().minusWeeks(2))
+
+        utdaterteKladder.size shouldBe 1
+        utdaterteKladder.first().id shouldBe utdatertKladd.id
     }
 }
 

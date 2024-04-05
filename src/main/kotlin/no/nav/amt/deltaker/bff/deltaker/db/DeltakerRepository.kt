@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInn
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
@@ -88,6 +89,7 @@ class DeltakerRepository {
             objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
         },
         kanEndres = row.boolean("d.kan_endres"),
+        sistEndret = row.localDateTime("d.modified_at"),
     )
 
     fun upsert(deltaker: Deltaker) = Database.query { session ->
@@ -183,6 +185,24 @@ class DeltakerRepository {
         ).map {
             it.uuid("id")
         }.asList
+        session.run(query)
+    }
+
+    fun getUtdaterteKladder(sistEndret: LocalDateTime) = Database.query { session ->
+        val sql = getDeltakerSql(
+            """
+            where ds.gyldig_til is null
+                and ds.type = 'KLADD'
+                and d.modified_at < :sist_endret
+            """.trimMargin(),
+        )
+
+        val query = queryOf(
+            sql,
+            mapOf(
+                "sist_endret" to sistEndret,
+            ),
+        ).map(::rowMapper).asList
         session.run(query)
     }
 

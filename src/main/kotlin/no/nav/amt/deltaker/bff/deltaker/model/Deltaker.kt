@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class Deltaker(
@@ -18,6 +19,7 @@ data class Deltaker(
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
     val kanEndres: Boolean,
+    val sistEndret: LocalDateTime,
 ) {
     val fattetVedtak
         get() = historikk.firstOrNull {

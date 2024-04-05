@@ -101,6 +101,7 @@ object TestData {
         id: UUID = UUID.randomUUID(),
         navBruker: NavBruker = lagNavBruker(),
         deltakerliste: Deltakerliste = lagDeltakerliste(),
+        sistEndret: LocalDateTime = LocalDateTime.now(),
     ) = lagDeltaker(
         id = id,
         navBruker = navBruker,
@@ -113,6 +114,7 @@ object TestData {
         innhold = emptyList(),
         status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
         historikk = false,
+        sistEndret = sistEndret,
     )
 
     fun lagDeltaker(
@@ -128,6 +130,7 @@ object TestData {
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         historikk: Boolean = true,
         kanEndres: Boolean = true,
+        sistEndret: LocalDateTime = LocalDateTime.now(),
     ): Deltaker {
         val deltaker = Deltaker(
             id,
@@ -142,6 +145,7 @@ object TestData {
             status,
             emptyList(),
             kanEndres,
+            sistEndret,
         )
 
         return if (historikk) {
