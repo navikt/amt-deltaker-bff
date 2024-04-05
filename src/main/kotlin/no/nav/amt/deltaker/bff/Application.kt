@@ -27,6 +27,8 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.job.SlettUtdatertKladdJob
+import no.nav.amt.deltaker.bff.deltaker.job.leaderelection.LeaderElection
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -76,6 +78,8 @@ fun Application.module() {
             jackson { applicationConfig() }
         }
     }
+
+    val leaderElection = LeaderElection(httpClient, environment.electorPath)
 
     val azureAdTokenClient = AzureAdTokenClient(
         azureAdTokenUrl = environment.azureAdTokenUrl,
@@ -164,6 +168,9 @@ fun Application.module() {
         innbyggerService,
     )
     configureMonitoring()
+
+    val slettUtdatertKladdJob = SlettUtdatertKladdJob(leaderElection, attributes, deltakerRepository, pameldingService)
+    slettUtdatertKladdJob.startJob()
 
     attributes.put(isReadyKey, true)
 }
