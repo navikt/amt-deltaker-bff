@@ -23,9 +23,13 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
+const val AMT_PERSON_SERVICE_URL = "http://amt-person-service"
 
 fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
     val mockEngine = MockEngine {
@@ -67,6 +71,20 @@ fun mockAmtDeltakerClient() = AmtDeltakerClient(
     httpClient = mockHttpClient(),
     azureAdTokenClient = mockAzureAdClient(),
 )
+
+fun mockAmtPersonServiceClient(navEnhet: NavEnhet = TestData.lagNavEnhet()): AmtPersonServiceClient {
+    val navEnhetDto = NavEnhetDto(
+        id = navEnhet.id,
+        navn = navEnhet.navn,
+        enhetId = navEnhet.enhetsnummer,
+    )
+    return AmtPersonServiceClient(
+        baseUrl = AMT_PERSON_SERVICE_URL,
+        scope = "amt.personservice.scope",
+        httpClient = mockHttpClient(objectMapper.writeValueAsString(navEnhetDto)),
+        azureAdTokenClient = mockAzureAdClient(),
+    )
+}
 
 fun mockAzureAdClient() = AzureAdTokenClient(
     azureAdTokenUrl = "http://azure",

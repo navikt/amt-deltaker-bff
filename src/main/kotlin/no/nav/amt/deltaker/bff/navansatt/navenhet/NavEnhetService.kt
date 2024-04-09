@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.navansatt.navenhet
 
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.UUID
 
 class NavEnhetService(
@@ -10,13 +11,15 @@ class NavEnhetService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun hentEllerOpprettNavEnhet(enhetsnummer: String): NavEnhet {
-        repository.get(enhetsnummer)?.let { return it }
+    suspend fun opprettEllerOppdaterNavEnhet(enhetsnummer: String): NavEnhet {
+        repository.get(enhetsnummer)
+            ?.takeIf { it.sistEndret.isAfter(LocalDateTime.now().minusMonths(1)) }
+            ?.let { return it.toNavEnhet() }
 
-        log.info("Fant ikke nav-enhet med nummer $enhetsnummer, henter fra amt-person-service")
+        log.info("Fant ikke oppdatert nav-enhet med nummer $enhetsnummer, henter fra amt-person-service")
         val navEnhet = amtPersonServiceClient.hentNavEnhet(enhetsnummer)
-        return repository.upsert(navEnhet)
+        return repository.upsert(navEnhet).toNavEnhet()
     }
 
-    fun hentEnhet(id: UUID) = repository.get(id)
+    fun hentEnhet(id: UUID) = repository.get(id)?.toNavEnhet()
 }

@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -14,6 +15,7 @@ class PameldingService(
     private val deltakerService: DeltakerService,
     private val navBrukerService: NavBrukerService,
     private val amtDeltakerClient: AmtDeltakerClient,
+    private val navEnhetService: NavEnhetService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -55,6 +57,7 @@ class PameldingService(
     }
 
     suspend fun upsertUtkast(utkast: Utkast) {
+        navEnhetService.opprettEllerOppdaterNavEnhet(utkast.pamelding.endretAvEnhet)
         amtDeltakerClient.utkast(utkast)
     }
 
@@ -73,6 +76,7 @@ class PameldingService(
         avbruttAvEnhet: String,
         avbruttAv: String,
     ) {
+        navEnhetService.opprettEllerOppdaterNavEnhet(avbruttAvEnhet)
         amtDeltakerClient.avbrytUtkast(deltakerId, avbruttAv, avbruttAvEnhet)
     }
 }
