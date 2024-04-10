@@ -7,13 +7,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class NavEnhetRepository {
-    private fun rowMapper(row: Row) = NavEnhet(
+    private fun rowMapper(row: Row) = NavEnhetDbo(
         id = row.uuid("id"),
         enhetsnummer = row.string("nav_enhet_nummer"),
         navn = row.string("navn"),
+        sistEndret = row.localDateTime("modified_at"),
     )
 
-    fun upsert(navEnhet: NavEnhet): NavEnhet {
+    fun upsert(navEnhet: NavEnhet): NavEnhetDbo {
         val sql =
             """
             INSERT INTO nav_enhet(id, nav_enhet_nummer, navn, modified_at)
@@ -40,7 +41,7 @@ class NavEnhetRepository {
         } ?: throw RuntimeException("Noe gikk galt ved lagring av nav-enhet")
     }
 
-    fun get(enhetsnummer: String): NavEnhet? {
+    fun get(enhetsnummer: String): NavEnhetDbo? {
         return Database.query {
             val query = queryOf(
                 """select * from nav_enhet where nav_enhet_nummer = :nav_enhet_nummer""",
@@ -51,7 +52,7 @@ class NavEnhetRepository {
         }
     }
 
-    fun get(id: UUID): NavEnhet? {
+    fun get(id: UUID): NavEnhetDbo? {
         return Database.query {
             val query = queryOf(
                 """select * from nav_enhet where id = :id""",

@@ -13,7 +13,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetDbo
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
@@ -267,7 +267,7 @@ object TestRepository {
         it.update(queryOf(sql, params))
     }
 
-    fun insert(navEnhet: NavEnhet) = Database.query {
+    fun insert(navEnhetDbo: NavEnhetDbo) = Database.query {
         val sql =
             """
             insert into nav_enhet(id, nav_enhet_nummer, navn, modified_at)
@@ -276,10 +276,10 @@ object TestRepository {
             """.trimIndent()
 
         val params = mapOf(
-            "id" to navEnhet.id,
-            "nav_enhet_nummer" to navEnhet.enhetsnummer,
-            "navn" to navEnhet.navn,
-            "modified_at" to LocalDateTime.now(),
+            "id" to navEnhetDbo.id,
+            "nav_enhet_nummer" to navEnhetDbo.enhetsnummer,
+            "navn" to navEnhetDbo.navn,
+            "modified_at" to navEnhetDbo.sistEndret,
         )
 
         it.update(queryOf(sql, params))

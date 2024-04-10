@@ -132,12 +132,13 @@ fun Application.module() {
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
 
-    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient)
+    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService)
 
     val pameldingService = PameldingService(
         deltakerService = deltakerService,
         navBrukerService = navBrukerService,
         amtDeltakerClient = amtDeltakerClient,
+        navEnhetService = navEnhetService,
     )
 
     val endringsmeldingRepository = EndringsmeldingRepository()

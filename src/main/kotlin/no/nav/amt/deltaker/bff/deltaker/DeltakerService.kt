@@ -9,12 +9,14 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
     private val amtDeltakerClient: AmtDeltakerClient,
+    private val navEnhetService: NavEnhetService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -28,6 +30,7 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
     ): Deltaker {
+        navEnhetService.opprettEllerOppdaterNavEnhet(endretAvEnhet)
         val oppdatertDeltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> endreDeltaker(deltaker) {
                 amtDeltakerClient.endreBakgrunnsinformasjon(

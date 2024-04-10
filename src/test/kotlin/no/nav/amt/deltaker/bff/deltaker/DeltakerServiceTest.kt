@@ -7,12 +7,15 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import org.junit.Test
 import java.time.LocalDate
 
@@ -21,7 +24,8 @@ class DeltakerServiceTest {
         SingletonPostgresContainer.start()
     }
 
-    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient())
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService)
 
     @Test
     fun `oppdaterDeltaker(endring) - kaller client og returnerer deltaker`(): Unit = runBlocking {

@@ -6,18 +6,22 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.deltaker.model.sammenlignVedtak
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import org.junit.Assert.assertThrows
 import org.junit.BeforeClass
 import org.junit.Test
 
 class InnbyggerServiceTest {
     private val amtDeltakerClient = mockAmtDeltakerClient()
-    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient)
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService)
     private val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
 
     companion object {
