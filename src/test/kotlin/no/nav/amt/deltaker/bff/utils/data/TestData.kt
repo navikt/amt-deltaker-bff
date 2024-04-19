@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.Oppfolgingsperiode
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
@@ -274,7 +275,18 @@ object TestData {
         mellomnavn: String? = "Mellomnavn",
         etternavn: String = "Etternavn",
         adressebeskyttelse: Adressebeskyttelse? = null,
-    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse)
+        oppfolgingsperioder: List<Oppfolgingsperiode> = listOf(lagOppfolgingsperiode()),
+    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder)
+
+    fun lagOppfolgingsperiode(
+        id: UUID = UUID.randomUUID(),
+        startdato: LocalDateTime = LocalDateTime.now().minusMonths(1),
+        sluttdato: LocalDateTime? = null,
+    ) = Oppfolgingsperiode(
+        id,
+        startdato,
+        sluttdato,
+    )
 
     private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
         Tiltak.Type.JOBBK,

@@ -37,6 +37,7 @@ class DeltakerRepository {
             mellomnavn = row.stringOrNull("nb.mellomnavn"),
             etternavn = row.string("nb.etternavn"),
             adressebeskyttelse = row.stringOrNull("nb.adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
+            oppfolgingsperioder = row.stringOrNull("nb.oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
         ),
         deltakerliste = Deltakerliste(
             id = row.uuid("deltakerliste_id"),
@@ -398,6 +399,7 @@ class DeltakerRepository {
                    nb.mellomnavn as "nb.mellomnavn",
                    nb.etternavn as "nb.etternavn",
                    nb.adressebeskyttelse as "nb.adressebeskyttelse",
+                   nb.oppfolgingsperioder as "nb.oppfolgingsperioder",
                    ds.id as "ds.id",
                    ds.deltaker_id as "ds.deltaker_id",
                    ds.type as "ds.type",

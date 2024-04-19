@@ -77,10 +77,6 @@ class AmtPersonServiceClient(
     }
 }
 
-data class NavBrukerRequest(
-    val personident: String,
-)
-
 data class NavAnsattRequest(
     val navIdent: String,
 )

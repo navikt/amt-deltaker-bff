@@ -336,8 +336,8 @@ object TestRepository {
     fun insert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder)
             """.trimIndent()
 
         val params = mapOf(
@@ -347,6 +347,7 @@ object TestRepository {
             "mellomnavn" to bruker.mellomnavn,
             "etternavn" to bruker.etternavn,
             "adressebeskyttelse" to bruker.adressebeskyttelse?.name,
+            "oppfolgingsperioder" to toPGObject(bruker.oppfolgingsperioder),
         )
 
         it.update(queryOf(sql, params))

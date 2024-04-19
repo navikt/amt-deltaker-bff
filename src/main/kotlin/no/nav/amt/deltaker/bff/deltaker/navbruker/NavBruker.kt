@@ -9,6 +9,7 @@ data class NavBruker(
     val mellomnavn: String?,
     val etternavn: String,
     val adressebeskyttelse: Adressebeskyttelse?,
+    val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
 )
 
 enum class Adressebeskyttelse {
