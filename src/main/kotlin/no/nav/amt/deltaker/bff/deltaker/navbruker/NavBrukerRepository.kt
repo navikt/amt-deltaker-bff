@@ -1,8 +1,11 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
+import no.nav.amt.deltaker.bff.db.toPGObject
 import java.util.UUID
 
 class NavBrukerRepository {
@@ -13,13 +16,14 @@ class NavBrukerRepository {
         mellomnavn = row.stringOrNull("mellomnavn"),
         etternavn = row.string("etternavn"),
         adressebeskyttelse = row.stringOrNull("adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
+        oppfolgingsperioder = row.stringOrNull("oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
     )
 
     fun upsert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder)
             on conflict (person_id) do update set
                 personident = :personident,
                 fornavn = :fornavn,
@@ -37,6 +41,7 @@ class NavBrukerRepository {
             "mellomnavn" to bruker.mellomnavn,
             "etternavn" to bruker.etternavn,
             "adressebeskyttelse" to bruker.adressebeskyttelse?.name,
+            "oppfolgingsperioder" to toPGObject(bruker.oppfolgingsperioder),
         )
 
         it.run(queryOf(sql, params).map(::rowMapper).asSingle)
