@@ -9,12 +9,12 @@ data class TiltakstypeDto(
     val id: UUID,
     val navn: String,
     val tiltakskode: Tiltakstype.Tiltakskode,
-    val arenaKode: String,
+    val arenaKode: String?,
     val status: Tiltakstypestatus,
     val innsatsgrupper: Set<Innsatsgruppe>,
     val deltakerRegistreringInnhold: DeltakerRegistreringInnhold?,
 ) {
-    fun toModel(): Tiltakstype {
+    fun toModel(arenaKode: String): Tiltakstype {
         return Tiltakstype(
             id = id,
             navn = navn,

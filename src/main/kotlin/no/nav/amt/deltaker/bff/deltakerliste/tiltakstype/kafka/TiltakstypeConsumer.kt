@@ -36,8 +36,9 @@ class TiltakstypeConsumer(
 
     private fun handterTiltakstype(tiltakstype: TiltakstypeDto) {
         val stottedeTiltak = Tiltakstype.ArenaKode.entries.map { it.name }
-        if (tiltakstype.arenaKode !in stottedeTiltak || tiltakstype.status != Tiltakstypestatus.Aktiv) return
+        val arenaKode = tiltakstype.arenaKode
+        if (arenaKode !in stottedeTiltak || tiltakstype.status != Tiltakstypestatus.Aktiv) return
 
-        repository.upsert(tiltakstype.toModel())
+        repository.upsert(tiltakstype.toModel(arenaKode!!))
     }
 }
