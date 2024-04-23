@@ -394,8 +394,6 @@ class DeltakerRepository {
                    ds.modified_at as "ds.modified_at",
                    dl.id as deltakerliste_id,
                    dl.arrangor_id,
-                   dl.tiltaksnavn,
-                   dl.tiltakstype,
                    dl.navn AS deltakerliste_navn,
                    dl.status,
                    dl.start_dato,
@@ -416,7 +414,7 @@ class DeltakerRepository {
                 join deltaker_status ds on d.id = ds.deltaker_id
                 join deltakerliste dl on d.deltakerliste_id = dl.id
                 join arrangor a on a.id = dl.arrangor_id
-                join tiltakstype t on t.type = dl.tiltakstype
+                join tiltakstype t on t.id = dl.tiltakstype_id
                 left join arrangor oa on oa.id = a.overordnet_arrangor_id
                 $where
       """

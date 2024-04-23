@@ -40,8 +40,7 @@ class DeltakerlisteRepository {
                 navn, 
                 status, 
                 arrangor_id, 
-                tiltaksnavn, 
-                tiltakstype, 
+                tiltakstype_id, 
                 start_dato, 
                 slutt_dato, 
                 oppstart)
@@ -49,8 +48,7 @@ class DeltakerlisteRepository {
             		:navn,
             		:status,
             		:arrangor_id,
-            		:tiltaksnavn,
-            		:tiltakstype,
+            		:tiltakstype_id,
             		:start_dato,
             		:slutt_dato,
                     :oppstart)
@@ -58,8 +56,7 @@ class DeltakerlisteRepository {
             		navn     				= :navn,
             		status					= :status,
             		arrangor_id 			= :arrangor_id,
-            		tiltaksnavn				= :tiltaksnavn,
-            		tiltakstype				= :tiltakstype,
+            		tiltakstype_id			= :tiltakstype_id,
             		start_dato				= :start_dato,
             		slutt_dato				= :slutt_dato,
                     oppstart                = :oppstart,
@@ -74,8 +71,7 @@ class DeltakerlisteRepository {
                     "navn" to deltakerliste.navn,
                     "status" to deltakerliste.status.name,
                     "arrangor_id" to deltakerliste.arrangor.arrangor.id,
-                    "tiltaksnavn" to deltakerliste.tiltak.navn,
-                    "tiltakstype" to deltakerliste.tiltak.arenaKode.name,
+                    "tiltakstype_id" to deltakerliste.tiltak.id,
                     "start_dato" to deltakerliste.startDato,
                     "slutt_dato" to deltakerliste.sluttDato,
                     "oppstart" to deltakerliste.oppstart?.name,
@@ -101,8 +97,6 @@ class DeltakerlisteRepository {
             """
             SELECT d.id   AS deltakerliste_id,
                    arrangor_id,
-                   tiltaksnavn,
-                   tiltakstype,
                    d.navn AS deltakerliste_navn,
                    status,
                    start_dato,
@@ -121,7 +115,7 @@ class DeltakerlisteRepository {
             FROM deltakerliste d
                      JOIN arrangor a ON a.id = d.arrangor_id
                      LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
-                     LEFT JOIN tiltakstype t ON d.tiltakstype = t.type
+                     LEFT JOIN tiltakstype t ON d.tiltakstype_id = t.id
             WHERE d.id = :id
             """.trimIndent(),
             mapOf("id" to id),

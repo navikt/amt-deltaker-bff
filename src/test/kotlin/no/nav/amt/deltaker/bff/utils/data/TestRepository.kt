@@ -96,7 +96,7 @@ object TestRepository {
                 ),
             )
         } catch (e: Exception) {
-            log.warn("Tiltakstype ${tiltakstype.navn} er allerede opprettet")
+            log.warn("Tiltakstype ${tiltakstype.navn} er allerede opprettet", e)
         }
     }
 
@@ -122,8 +122,8 @@ object TestRepository {
         Database.query {
             val sql =
                 """
-                INSERT INTO deltakerliste( id, navn, status, arrangor_id, tiltaksnavn, tiltakstype, start_dato, slutt_dato, oppstart)
-                VALUES (:id, :navn, :status, :arrangor_id, :tiltaksnavn, :tiltakstype, :start_dato, :slutt_dato, :oppstart) 
+                INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltakstype_id, start_dato, slutt_dato, oppstart)
+                VALUES (:id, :navn, :status, :arrangor_id, :tiltakstype_id, :start_dato, :slutt_dato, :oppstart) 
                 """.trimIndent()
 
             it.update(
@@ -134,8 +134,7 @@ object TestRepository {
                         "navn" to deltakerliste.navn,
                         "status" to deltakerliste.status.name,
                         "arrangor_id" to deltakerliste.arrangor.arrangor.id,
-                        "tiltaksnavn" to deltakerliste.tiltak.navn,
-                        "tiltakstype" to deltakerliste.tiltak.arenaKode.name,
+                        "tiltakstype_id" to deltakerliste.tiltak.id,
                         "start_dato" to deltakerliste.startDato,
                         "slutt_dato" to deltakerliste.sluttDato,
                         "oppstart" to deltakerliste.oppstart?.name,
@@ -154,7 +153,7 @@ object TestRepository {
         try {
             insert(deltaker.deltakerliste)
         } catch (e: Exception) {
-            log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet")
+            log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet", e)
         }
 
         val sql =
