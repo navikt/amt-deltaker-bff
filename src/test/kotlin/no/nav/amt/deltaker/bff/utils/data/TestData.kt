@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
@@ -62,17 +63,19 @@ object TestData {
         Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
     )
 
-    private val tiltakstypeCache = mutableMapOf<Tiltakstype.ArenaKode, Tiltakstype>()
+    private val tiltakstypeCache = mutableMapOf<Tiltakstype.Tiltakskode, Tiltakstype>()
 
     fun lagTiltakstype(
         id: UUID = UUID.randomUUID(),
-        type: Tiltakstype.ArenaKode = Tiltakstype.ArenaKode.entries.random(),
-        navn: String = "Test tiltak $type",
+        tiltakskode: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.entries.random(),
+        arenaKode: Tiltakstype.ArenaKode = tiltakskode.toArenaKode(),
+        navn: String = "Test tiltak $arenaKode",
+        innsatsgrupper: Set<Innsatsgruppe> = setOf(Innsatsgruppe.STANDARD_INNSATS),
         innhold: DeltakerRegistreringInnhold? = lagDeltakerRegistreringInnhold(),
     ): Tiltakstype {
-        val tiltak = tiltakstypeCache[type] ?: Tiltakstype(id, navn, type, innhold)
+        val tiltak = tiltakstypeCache[tiltakskode] ?: Tiltakstype(id, navn, tiltakskode, arenaKode, innsatsgrupper, innhold)
         val nyttTiltak = tiltak.copy(navn = navn, innhold = innhold)
-        tiltakstypeCache[tiltak.arenaKode] = nyttTiltak
+        tiltakstypeCache[tiltak.tiltakskode] = nyttTiltak
 
         return nyttTiltak
     }
@@ -384,6 +387,19 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
         )
     }
     return deltaker.copy(historikk = this.historikk.plus(DeltakerHistorikk.Endring(deltakerEndring)))
+}
+
+fun Tiltakstype.Tiltakskode.toArenaKode() = when (this) {
+    Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> Tiltakstype.ArenaKode.ARBFORB
+    Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING -> Tiltakstype.ArenaKode.ARBRRHDAG
+    Tiltakstype.Tiltakskode.AVKLARING -> Tiltakstype.ArenaKode.AVKLARAG
+    Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> Tiltakstype.ArenaKode.DIGIOPPARB
+    Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> Tiltakstype.ArenaKode.GRUPPEAMO
+    Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> Tiltakstype.ArenaKode.GRUFAGYRKE
+    Tiltakstype.Tiltakskode.JOBBKLUBB -> Tiltakstype.ArenaKode.JOBBK
+    Tiltakstype.Tiltakskode.OPPFOLGING -> Tiltakstype.ArenaKode.INDOPPFAG
+    Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> Tiltakstype.ArenaKode.VASV
+    Tiltakstype.Tiltakskode.UKJENT -> Tiltakstype.ArenaKode.ARBFORB
 }
 
 fun DeltakerEndring.Aarsak.toStatusAarsak() = DeltakerStatus.Aarsak(

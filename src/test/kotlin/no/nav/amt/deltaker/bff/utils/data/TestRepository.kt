@@ -70,11 +70,15 @@ object TestRepository {
                 INSERT INTO tiltakstype(
                     id, 
                     navn, 
+                    tiltakskode,
                     type, 
+                    innsatsgrupper,
                     innhold)
                 VALUES (:id,
                         :navn,
+                        :tiltakskode,
                         :type,
+                        :innsatsgrupper,
                         :innhold)
                 """.trimIndent()
 
@@ -84,7 +88,9 @@ object TestRepository {
                     mapOf(
                         "id" to tiltakstype.id,
                         "navn" to tiltakstype.navn,
+                        "tiltakskode" to tiltakstype.tiltakskode.name,
                         "type" to tiltakstype.arenaKode.name,
+                        "innsatsgrupper" to toPGObject(tiltakstype.innsatsgrupper),
                         "innhold" to toPGObject(tiltakstype.innhold),
                     ),
                 ),

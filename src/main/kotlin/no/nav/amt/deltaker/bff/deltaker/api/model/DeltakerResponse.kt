@@ -104,6 +104,7 @@ fun Deltakerliste.Arrangor.getArrangorNavn(): String {
 fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {
     return innholdselementer
         .asSequence()
+        .plus(annetInnholdselement)
         .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
         .map { it.toInnhold() }
         .plus(valgtInnhold)

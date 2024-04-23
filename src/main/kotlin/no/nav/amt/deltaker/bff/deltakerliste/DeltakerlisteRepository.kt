@@ -1,12 +1,10 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -15,12 +13,7 @@ class DeltakerlisteRepository {
 
     private fun rowMapper(row: Row) = Deltakerliste(
         id = row.uuid("deltakerliste_id"),
-        tiltak = Tiltakstype(
-            id = row.uuid("t.id"),
-            navn = row.string("t.navn"),
-            arenaKode = Tiltakstype.ArenaKode.valueOf(row.string("t.type")),
-            innhold = row.stringOrNull("t.innhold")?.let { objectMapper.readValue(it) },
-        ),
+        tiltak = TiltakstypeRepository.rowMapper(row, "t"),
         navn = row.string("deltakerliste_navn"),
         status = Deltakerliste.Status.valueOf(row.string("status")),
         startDato = row.localDate("start_dato"),
@@ -121,7 +114,9 @@ class DeltakerlisteRepository {
                    oa.navn as overordnet_arrangor_navn,
                    t.id as "t.id",
                    t.navn as "t.navn",
+                   t.tiltakskode as "t.tiltakskode",
                    t.type as "t.type",
+                   t.innsatsgrupper as "t.innsatsgrupper",
                    t.innhold as "t.innhold"
             FROM deltakerliste d
                      JOIN arrangor a ON a.id = d.arrangor_id
