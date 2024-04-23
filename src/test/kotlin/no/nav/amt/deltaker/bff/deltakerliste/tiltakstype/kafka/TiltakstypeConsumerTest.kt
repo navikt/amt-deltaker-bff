@@ -29,7 +29,7 @@ class TiltakstypeConsumerTest {
         val tiltakstypeDto = TiltakstypeDto(
             id = tiltakstype.id,
             navn = tiltakstype.navn,
-            arenaKode = tiltakstype.type.name,
+            arenaKode = tiltakstype.arenaKode.name,
             status = Tiltakstypestatus.Aktiv,
             deltakerRegistreringInnhold = tiltakstype.innhold,
         )
@@ -41,7 +41,7 @@ class TiltakstypeConsumerTest {
                 objectMapper.writeValueAsString(tiltakstypeDto),
             )
 
-            repository.get(tiltakstype.type).getOrThrow() shouldBe tiltakstype
+            repository.get(tiltakstype.arenaKode).getOrThrow() shouldBe tiltakstype
         }
     }
 }

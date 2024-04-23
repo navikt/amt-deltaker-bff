@@ -5,7 +5,7 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.kafka.Consumer
 import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
@@ -46,7 +46,7 @@ class DeltakerlisteConsumer(
         if (!deltakerliste.tiltakstype.erStottet()) return
 
         val arrangor = arrangorService.hentArrangor(deltakerliste.virksomhetsnummer)
-        val tiltakstype = tiltakstypeRepository.get(Tiltak.Type.valueOf(deltakerliste.tiltakstype.arenaKode)).getOrThrow()
+        val tiltakstype = tiltakstypeRepository.get(Tiltakstype.ArenaKode.valueOf(deltakerliste.tiltakstype.arenaKode)).getOrThrow()
         repository.upsert(deltakerliste.toModel(arrangor, tiltakstype))
     }
 }

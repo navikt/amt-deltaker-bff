@@ -6,7 +6,6 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import org.slf4j.LoggerFactory
 
 class TiltakstypeRepository {
@@ -15,7 +14,7 @@ class TiltakstypeRepository {
     private fun rowMapper(row: Row) = Tiltakstype(
         id = row.uuid("id"),
         navn = row.string("navn"),
-        type = Tiltak.Type.valueOf(row.string("type")),
+        arenaKode = Tiltakstype.ArenaKode.valueOf(row.string("type")),
         innhold = row.stringOrNull("innhold")?.let { objectMapper.readValue(it) },
     )
 
@@ -44,7 +43,7 @@ class TiltakstypeRepository {
                 mapOf(
                     "id" to tiltakstype.id,
                     "navn" to tiltakstype.navn,
-                    "type" to tiltakstype.type.name,
+                    "type" to tiltakstype.arenaKode.name,
                     "innhold" to toPGObject(tiltakstype.innhold),
                 ),
             ),
@@ -53,7 +52,7 @@ class TiltakstypeRepository {
         log.info("Upsertet tiltakstype med id ${tiltakstype.id}")
     }
 
-    fun get(type: Tiltak.Type) = Database.query {
+    fun get(kode: Tiltakstype.ArenaKode) = Database.query {
         val query = queryOf(
             """
             SELECT id,
@@ -63,10 +62,10 @@ class TiltakstypeRepository {
             FROM tiltakstype
             WHERE type = :type
             """.trimIndent(),
-            mapOf("type" to type.name),
+            mapOf("type" to kode.name),
         ).map(::rowMapper).asSingle
 
         it.run(query)?.let { t -> Result.success(t) }
-            ?: Result.failure(NoSuchElementException("Fant ikke tiltakstype ${type.name}"))
+            ?: Result.failure(NoSuchElementException("Fant ikke tiltakstype ${kode.name}"))
     }
 }

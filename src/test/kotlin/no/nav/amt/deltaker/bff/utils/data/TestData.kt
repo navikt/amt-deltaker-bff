@@ -12,7 +12,6 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Oppfolgingsperiode
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
@@ -47,11 +46,11 @@ object TestData {
         overordnetArrangor: Arrangor? = null,
         arrangor: Arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor?.id),
         tiltak: Tiltakstype = lagTiltakstype(),
-        navn: String = "Test Deltakerliste ${tiltak.type}",
+        navn: String = "Test Deltakerliste ${tiltak.arenaKode}",
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
-        oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.type),
+        oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.arenaKode),
     ) = Deltakerliste(
         id,
         tiltak,
@@ -63,17 +62,17 @@ object TestData {
         Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
     )
 
-    private val tiltakstypeCache = mutableMapOf<Tiltak.Type, Tiltakstype>()
+    private val tiltakstypeCache = mutableMapOf<Tiltakstype.ArenaKode, Tiltakstype>()
 
     fun lagTiltakstype(
         id: UUID = UUID.randomUUID(),
-        type: Tiltak.Type = Tiltak.Type.entries.random(),
+        type: Tiltakstype.ArenaKode = Tiltakstype.ArenaKode.entries.random(),
         navn: String = "Test tiltak $type",
         innhold: DeltakerRegistreringInnhold? = lagDeltakerRegistreringInnhold(),
     ): Tiltakstype {
         val tiltak = tiltakstypeCache[type] ?: Tiltakstype(id, navn, type, innhold)
         val nyttTiltak = tiltak.copy(navn = navn, innhold = innhold)
-        tiltakstypeCache[tiltak.type] = nyttTiltak
+        tiltakstypeCache[tiltak.arenaKode] = nyttTiltak
 
         return nyttTiltak
     }
@@ -88,7 +87,7 @@ object TestData {
             id = deltakerliste.id,
             tiltakstype = DeltakerlisteDto.TiltakstypeDto(
                 deltakerliste.tiltak.navn,
-                deltakerliste.tiltak.type.name,
+                deltakerliste.tiltak.arenaKode.name,
             ),
             navn = deltakerliste.navn,
             startDato = deltakerliste.startDato,
@@ -288,10 +287,10 @@ object TestData {
         sluttdato,
     )
 
-    private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
-        Tiltak.Type.JOBBK,
-        Tiltak.Type.GRUPPEAMO,
-        Tiltak.Type.GRUFAGYRKE,
+    private fun finnOppstartstype(type: Tiltakstype.ArenaKode) = when (type) {
+        Tiltakstype.ArenaKode.JOBBK,
+        Tiltakstype.ArenaKode.GRUPPEAMO,
+        Tiltakstype.ArenaKode.GRUFAGYRKE,
         -> Deltakerliste.Oppstartstype.FELLES
 
         else -> Deltakerliste.Oppstartstype.LOPENDE

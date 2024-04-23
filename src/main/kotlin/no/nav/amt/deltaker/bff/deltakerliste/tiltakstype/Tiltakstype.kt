@@ -1,15 +1,26 @@
 package no.nav.amt.deltaker.bff.deltakerliste.tiltakstype
 
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.util.UUID
 
 data class Tiltakstype(
     val id: UUID,
     val navn: String,
-    val type: Tiltak.Type,
+    val arenaKode: ArenaKode,
     val innhold: DeltakerRegistreringInnhold?,
-)
+) {
+    enum class ArenaKode {
+        INDOPPFAG,
+        ARBFORB,
+        AVKLARAG,
+        VASV,
+        ARBRRHDAG,
+        DIGIOPPARB,
+        JOBBK,
+        GRUPPEAMO,
+        GRUFAGYRKE,
+    }
+}
 
 data class DeltakerRegistreringInnhold(
     val innholdselementer: List<Innholdselement>,

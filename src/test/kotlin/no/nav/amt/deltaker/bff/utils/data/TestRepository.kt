@@ -84,7 +84,7 @@ object TestRepository {
                     mapOf(
                         "id" to tiltakstype.id,
                         "navn" to tiltakstype.navn,
-                        "type" to tiltakstype.type.name,
+                        "type" to tiltakstype.arenaKode.name,
                         "innhold" to toPGObject(tiltakstype.innhold),
                     ),
                 ),
@@ -98,7 +98,7 @@ object TestRepository {
         try {
             insert(deltakerliste.tiltak)
         } catch (e: Exception) {
-            log.warn("Tiltakstype  ${deltakerliste.tiltak.type} er allerede opprettet")
+            log.warn("Tiltakstype  ${deltakerliste.tiltak.arenaKode} er allerede opprettet")
         }
         if (overordnetArrangor != null) {
             try {
@@ -129,7 +129,7 @@ object TestRepository {
                         "status" to deltakerliste.status.name,
                         "arrangor_id" to deltakerliste.arrangor.arrangor.id,
                         "tiltaksnavn" to deltakerliste.tiltak.navn,
-                        "tiltakstype" to deltakerliste.tiltak.type.name,
+                        "tiltakstype" to deltakerliste.tiltak.arenaKode.name,
                         "start_dato" to deltakerliste.startDato,
                         "slutt_dato" to deltakerliste.sluttDato,
                         "oppstart" to deltakerliste.oppstart?.name,

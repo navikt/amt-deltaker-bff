@@ -67,7 +67,7 @@ class PameldingServiceTest {
                 .first().id
             deltaker.deltakerliste.id shouldBe deltakerliste.id
             deltaker.deltakerliste.navn shouldBe deltakerliste.navn
-            deltaker.deltakerliste.tiltak.type shouldBe deltakerliste.tiltak.type
+            deltaker.deltakerliste.tiltak.arenaKode shouldBe deltakerliste.tiltak.arenaKode
             deltaker.deltakerliste.arrangor.arrangor shouldBe arrangor
             deltaker.deltakerliste.arrangor.overordnetArrangorNavn shouldBe overordnetArrangor.navn
             deltaker.deltakerliste.getOppstartstype() shouldBe deltakerliste.getOppstartstype()

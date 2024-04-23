@@ -18,7 +18,7 @@ class DeltakerlisteRepository {
         tiltak = Tiltakstype(
             id = row.uuid("t.id"),
             navn = row.string("t.navn"),
-            type = Tiltak.Type.valueOf(row.string("t.type")),
+            arenaKode = Tiltakstype.ArenaKode.valueOf(row.string("t.type")),
             innhold = row.stringOrNull("t.innhold")?.let { objectMapper.readValue(it) },
         ),
         navn = row.string("deltakerliste_navn"),
@@ -82,7 +82,7 @@ class DeltakerlisteRepository {
                     "status" to deltakerliste.status.name,
                     "arrangor_id" to deltakerliste.arrangor.arrangor.id,
                     "tiltaksnavn" to deltakerliste.tiltak.navn,
-                    "tiltakstype" to deltakerliste.tiltak.type.name,
+                    "tiltakstype" to deltakerliste.tiltak.arenaKode.name,
                     "start_dato" to deltakerliste.startDato,
                     "slutt_dato" to deltakerliste.sluttDato,
                     "oppstart" to deltakerliste.oppstart?.name,

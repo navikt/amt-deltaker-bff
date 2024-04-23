@@ -16,7 +16,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
@@ -44,7 +43,7 @@ class DeltakerRepository {
             tiltak = Tiltakstype(
                 id = row.uuid("t.id"),
                 navn = row.string("t.navn"),
-                type = Tiltak.Type.valueOf(row.string("t.type")),
+                arenaKode = Tiltakstype.ArenaKode.valueOf(row.string("t.type")),
                 innhold = row.stringOrNull("t.innhold")?.let {
                     objectMapper.readValue<DeltakerRegistreringInnhold?>(it)?.let { i ->
                         if (i.innholdselementer.isNotEmpty()) {

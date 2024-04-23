@@ -57,22 +57,22 @@ data class Deltakerliste(
         if (oppstart != null) {
             return oppstart == Oppstartstype.FELLES
         } else {
-            return kursTiltak.contains(tiltak.type)
+            return kursTiltak.contains(tiltak.arenaKode)
         }
     }
 
-    fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.type)
+    fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.arenaKode)
 }
 
 private val kursTiltak = setOf(
-    Tiltak.Type.JOBBK,
-    Tiltak.Type.GRUPPEAMO,
-    Tiltak.Type.GRUFAGYRKE,
+    Tiltakstype.ArenaKode.JOBBK,
+    Tiltakstype.ArenaKode.GRUPPEAMO,
+    Tiltakstype.ArenaKode.GRUFAGYRKE,
 )
 
 private val tiltakUtenDeltakerAdresset = setOf(
-    Tiltak.Type.DIGIOPPARB,
-    Tiltak.Type.JOBBK,
-    Tiltak.Type.GRUPPEAMO,
-    Tiltak.Type.GRUFAGYRKE,
+    Tiltakstype.ArenaKode.DIGIOPPARB,
+    Tiltakstype.ArenaKode.JOBBK,
+    Tiltakstype.ArenaKode.GRUPPEAMO,
+    Tiltakstype.ArenaKode.GRUFAGYRKE,
 )
