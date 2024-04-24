@@ -34,7 +34,6 @@ data class Tiltakstype(
         JOBBKLUBB,
         OPPFOLGING,
         VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-        UKJENT, // midlertidig kode til alle har blitt lest inn;
     }
 }
 
