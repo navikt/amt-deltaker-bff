@@ -16,10 +16,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -41,20 +38,7 @@ class DeltakerRepository {
         ),
         deltakerliste = Deltakerliste(
             id = row.uuid("deltakerliste_id"),
-            tiltak = Tiltakstype(
-                id = row.uuid("t.id"),
-                navn = row.string("t.navn"),
-                type = Tiltak.Type.valueOf(row.string("t.type")),
-                innhold = row.stringOrNull("t.innhold")?.let {
-                    objectMapper.readValue<DeltakerRegistreringInnhold?>(it)?.let { i ->
-                        if (i.innholdselementer.isNotEmpty()) {
-                            i.copy(innholdselementer = i.innholdselementer.plus(annetInnholdselement))
-                        } else {
-                            i
-                        }
-                    }
-                },
-            ),
+            tiltak = TiltakstypeRepository.rowMapper(row, "t"),
             navn = row.string("deltakerliste_navn"),
             status = Deltakerliste.Status.valueOf(row.string("status")),
             startDato = row.localDate("start_dato"),
@@ -410,8 +394,6 @@ class DeltakerRepository {
                    ds.modified_at as "ds.modified_at",
                    dl.id as deltakerliste_id,
                    dl.arrangor_id,
-                   dl.tiltaksnavn,
-                   dl.tiltakstype,
                    dl.navn AS deltakerliste_navn,
                    dl.status,
                    dl.start_dato,
@@ -423,14 +405,16 @@ class DeltakerRepository {
                    oa.navn  AS overordnet_arrangor_navn,
                    t.id as "t.id",
                    t.navn as "t.navn",
+                   t.tiltakskode as "t.tiltakskode",
                    t.type as "t.type",
+                   t.innsatsgrupper as "t.innsatsgrupper",
                    t.innhold as "t.innhold"
             from deltaker d 
                 join nav_bruker nb on d.person_id = nb.person_id
                 join deltaker_status ds on d.id = ds.deltaker_id
                 join deltakerliste dl on d.deltakerliste_id = dl.id
                 join arrangor a on a.id = dl.arrangor_id
-                join tiltakstype t on t.type = dl.tiltakstype
+                join tiltakstype t on t.id = dl.tiltakstype_id
                 left join arrangor oa on oa.id = a.overordnet_arrangor_id
                 $where
       """

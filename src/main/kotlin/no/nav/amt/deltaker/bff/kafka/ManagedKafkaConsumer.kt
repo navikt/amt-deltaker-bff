@@ -22,9 +22,9 @@ class ManagedKafkaConsumer<K, V>(
     private var running = true
 
     fun run() = scope.launch {
-        log.info("Started consumer for topic: $topic")
         KafkaConsumer<K, V>(config).use { consumer ->
             consumer.subscribe(listOf(topic))
+            log.info("Started consumer for topic: $topic")
             while (running) {
                 consumer.poll(Duration.ofMillis(1000)).forEach { record ->
                     process(record)

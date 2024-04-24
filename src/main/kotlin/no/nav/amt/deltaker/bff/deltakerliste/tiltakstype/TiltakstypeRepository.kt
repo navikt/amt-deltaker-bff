@@ -6,18 +6,27 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import org.slf4j.LoggerFactory
 
 class TiltakstypeRepository {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private fun rowMapper(row: Row) = Tiltakstype(
-        id = row.uuid("id"),
-        navn = row.string("navn"),
-        type = Tiltak.Type.valueOf(row.string("type")),
-        innhold = row.stringOrNull("innhold")?.let { objectMapper.readValue(it) },
-    )
+    companion object {
+        fun rowMapper(row: Row, alias: String? = null): Tiltakstype {
+            val prefix = alias?.let { "$alias." } ?: ""
+
+            val col = { label: String -> prefix + label }
+
+            return Tiltakstype(
+                id = row.uuid(col("id")),
+                navn = row.string(col("navn")),
+                tiltakskode = Tiltakstype.Tiltakskode.valueOf(row.string(col("tiltakskode"))),
+                arenaKode = Tiltakstype.ArenaKode.valueOf(row.string(col("type"))),
+                innsatsgrupper = row.string(col("innsatsgrupper")).let { objectMapper.readValue(it) },
+                innhold = row.stringOrNull(col("innhold"))?.let { objectMapper.readValue<DeltakerRegistreringInnhold?>(it) },
+            )
+        }
+    }
 
     fun upsert(tiltakstype: Tiltakstype) = Database.query {
         val sql =
@@ -25,15 +34,21 @@ class TiltakstypeRepository {
             INSERT INTO tiltakstype(
                 id, 
                 navn, 
+                tiltakskode,
                 type, 
+                innsatsgrupper,
                 innhold)
             VALUES (:id,
             		:navn,
+                    :tiltakskode,
             		:type,
+                    :innsatsgrupper,
             		:innhold)
             ON CONFLICT (id) DO UPDATE SET
             		navn     		    = :navn,
+                    tiltakskode         = :tiltakskode,
             		type				= :type,
+            		innsatsgrupper		= :innsatsgrupper,
             		innhold 			= :innhold,
                     modified_at         = current_timestamp
             """.trimIndent()
@@ -44,7 +59,9 @@ class TiltakstypeRepository {
                 mapOf(
                     "id" to tiltakstype.id,
                     "navn" to tiltakstype.navn,
-                    "type" to tiltakstype.type.name,
+                    "tiltakskode" to tiltakstype.tiltakskode.name,
+                    "type" to tiltakstype.arenaKode.name,
+                    "innsatsgrupper" to toPGObject(tiltakstype.innsatsgrupper),
                     "innhold" to toPGObject(tiltakstype.innhold),
                 ),
             ),
@@ -53,20 +70,22 @@ class TiltakstypeRepository {
         log.info("Upsertet tiltakstype med id ${tiltakstype.id}")
     }
 
-    fun get(type: Tiltak.Type) = Database.query {
+    fun get(kode: Tiltakstype.ArenaKode) = Database.query {
         val query = queryOf(
             """
             SELECT id,
                navn,
+               tiltakskode,
                type,
+               innsatsgrupper,
                innhold
             FROM tiltakstype
             WHERE type = :type
             """.trimIndent(),
-            mapOf("type" to type.name),
+            mapOf("type" to kode.name),
         ).map(::rowMapper).asSingle
 
         it.run(query)?.let { t -> Result.success(t) }
-            ?: Result.failure(NoSuchElementException("Fant ikke tiltakstype ${type.name}"))
+            ?: Result.failure(NoSuchElementException("Fant ikke tiltakstype ${kode.name}"))
     }
 }

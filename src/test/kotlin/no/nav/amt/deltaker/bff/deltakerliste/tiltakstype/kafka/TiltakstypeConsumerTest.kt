@@ -29,8 +29,9 @@ class TiltakstypeConsumerTest {
         val tiltakstypeDto = TiltakstypeDto(
             id = tiltakstype.id,
             navn = tiltakstype.navn,
-            arenaKode = tiltakstype.type.name,
-            status = Tiltakstypestatus.Aktiv,
+            tiltakskode = tiltakstype.tiltakskode,
+            arenaKode = tiltakstype.arenaKode.name,
+            innsatsgrupper = tiltakstype.innsatsgrupper,
             deltakerRegistreringInnhold = tiltakstype.innhold,
         )
         val consumer = TiltakstypeConsumer(repository)
@@ -41,7 +42,7 @@ class TiltakstypeConsumerTest {
                 objectMapper.writeValueAsString(tiltakstypeDto),
             )
 
-            repository.get(tiltakstype.type).getOrThrow() shouldBe tiltakstype
+            repository.get(tiltakstype.arenaKode).getOrThrow() shouldBe tiltakstype
         }
     }
 }

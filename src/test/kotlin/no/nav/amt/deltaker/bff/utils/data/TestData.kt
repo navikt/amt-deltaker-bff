@@ -6,13 +6,13 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Oppfolgingsperiode
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
@@ -47,11 +47,11 @@ object TestData {
         overordnetArrangor: Arrangor? = null,
         arrangor: Arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor?.id),
         tiltak: Tiltakstype = lagTiltakstype(),
-        navn: String = "Test Deltakerliste ${tiltak.type}",
+        navn: String = "Test Deltakerliste ${tiltak.arenaKode}",
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
-        oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.type),
+        oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.arenaKode),
     ) = Deltakerliste(
         id,
         tiltak,
@@ -63,17 +63,19 @@ object TestData {
         Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
     )
 
-    private val tiltakstypeCache = mutableMapOf<Tiltak.Type, Tiltakstype>()
+    private val tiltakstypeCache = mutableMapOf<Tiltakstype.Tiltakskode, Tiltakstype>()
 
     fun lagTiltakstype(
         id: UUID = UUID.randomUUID(),
-        type: Tiltak.Type = Tiltak.Type.entries.random(),
-        navn: String = "Test tiltak $type",
+        tiltakskode: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.entries.random(),
+        arenaKode: Tiltakstype.ArenaKode = tiltakskode.toArenaKode(),
+        navn: String = "Test tiltak $arenaKode",
+        innsatsgrupper: Set<Innsatsgruppe> = setOf(Innsatsgruppe.STANDARD_INNSATS),
         innhold: DeltakerRegistreringInnhold? = lagDeltakerRegistreringInnhold(),
     ): Tiltakstype {
-        val tiltak = tiltakstypeCache[type] ?: Tiltakstype(id, navn, type, innhold)
+        val tiltak = tiltakstypeCache[tiltakskode] ?: Tiltakstype(id, navn, tiltakskode, arenaKode, innsatsgrupper, innhold)
         val nyttTiltak = tiltak.copy(navn = navn, innhold = innhold)
-        tiltakstypeCache[tiltak.type] = nyttTiltak
+        tiltakstypeCache[tiltak.tiltakskode] = nyttTiltak
 
         return nyttTiltak
     }
@@ -88,7 +90,7 @@ object TestData {
             id = deltakerliste.id,
             tiltakstype = DeltakerlisteDto.TiltakstypeDto(
                 deltakerliste.tiltak.navn,
-                deltakerliste.tiltak.type.name,
+                deltakerliste.tiltak.arenaKode.name,
             ),
             navn = deltakerliste.navn,
             startDato = deltakerliste.startDato,
@@ -288,10 +290,10 @@ object TestData {
         sluttdato,
     )
 
-    private fun finnOppstartstype(type: Tiltak.Type) = when (type) {
-        Tiltak.Type.JOBBK,
-        Tiltak.Type.GRUPPEAMO,
-        Tiltak.Type.GRUFAGYRKE,
+    private fun finnOppstartstype(type: Tiltakstype.ArenaKode) = when (type) {
+        Tiltakstype.ArenaKode.JOBBK,
+        Tiltakstype.ArenaKode.GRUPPEAMO,
+        Tiltakstype.ArenaKode.GRUFAGYRKE,
         -> Deltakerliste.Oppstartstype.FELLES
 
         else -> Deltakerliste.Oppstartstype.LOPENDE
@@ -385,6 +387,18 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
         )
     }
     return deltaker.copy(historikk = this.historikk.plus(DeltakerHistorikk.Endring(deltakerEndring)))
+}
+
+fun Tiltakstype.Tiltakskode.toArenaKode() = when (this) {
+    Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> Tiltakstype.ArenaKode.ARBFORB
+    Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING -> Tiltakstype.ArenaKode.ARBRRHDAG
+    Tiltakstype.Tiltakskode.AVKLARING -> Tiltakstype.ArenaKode.AVKLARAG
+    Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> Tiltakstype.ArenaKode.DIGIOPPARB
+    Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING -> Tiltakstype.ArenaKode.GRUPPEAMO
+    Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> Tiltakstype.ArenaKode.GRUFAGYRKE
+    Tiltakstype.Tiltakskode.JOBBKLUBB -> Tiltakstype.ArenaKode.JOBBK
+    Tiltakstype.Tiltakskode.OPPFOLGING -> Tiltakstype.ArenaKode.INDOPPFAG
+    Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET -> Tiltakstype.ArenaKode.VASV
 }
 
 fun DeltakerEndring.Aarsak.toStatusAarsak() = DeltakerStatus.Aarsak(

@@ -6,7 +6,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import java.time.LocalDate
@@ -44,7 +44,7 @@ data class InnbyggerDeltakerResponse(
     data class DeltakerlisteDto(
         val deltakerlisteId: UUID,
         val deltakerlisteNavn: String,
-        val tiltakstype: Tiltak.Type,
+        val tiltakstype: Tiltakstype.ArenaKode,
         val arrangorNavn: String,
         val oppstartstype: Deltakerliste.Oppstartstype,
         val startdato: LocalDate,
@@ -58,7 +58,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSi
         deltakerliste = InnbyggerDeltakerResponse.DeltakerlisteDto(
             deltakerlisteId = deltakerliste.id,
             deltakerlisteNavn = deltakerliste.navn,
-            tiltakstype = deltakerliste.tiltak.type,
+            tiltakstype = deltakerliste.tiltak.arenaKode,
             arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
             oppstartstype = deltakerliste.getOppstartstype(),
             startdato = deltakerliste.startDato,

@@ -70,11 +70,15 @@ object TestRepository {
                 INSERT INTO tiltakstype(
                     id, 
                     navn, 
+                    tiltakskode,
                     type, 
+                    innsatsgrupper,
                     innhold)
                 VALUES (:id,
                         :navn,
+                        :tiltakskode,
                         :type,
+                        :innsatsgrupper,
                         :innhold)
                 """.trimIndent()
 
@@ -84,13 +88,15 @@ object TestRepository {
                     mapOf(
                         "id" to tiltakstype.id,
                         "navn" to tiltakstype.navn,
-                        "type" to tiltakstype.type.name,
+                        "tiltakskode" to tiltakstype.tiltakskode.name,
+                        "type" to tiltakstype.arenaKode.name,
+                        "innsatsgrupper" to toPGObject(tiltakstype.innsatsgrupper),
                         "innhold" to toPGObject(tiltakstype.innhold),
                     ),
                 ),
             )
         } catch (e: Exception) {
-            log.warn("Tiltakstype ${tiltakstype.navn} er allerede opprettet")
+            log.warn("Tiltakstype ${tiltakstype.navn} er allerede opprettet", e)
         }
     }
 
@@ -98,7 +104,7 @@ object TestRepository {
         try {
             insert(deltakerliste.tiltak)
         } catch (e: Exception) {
-            log.warn("Tiltakstype  ${deltakerliste.tiltak.type} er allerede opprettet")
+            log.warn("Tiltakstype  ${deltakerliste.tiltak.arenaKode} er allerede opprettet")
         }
         if (overordnetArrangor != null) {
             try {
@@ -116,8 +122,8 @@ object TestRepository {
         Database.query {
             val sql =
                 """
-                INSERT INTO deltakerliste( id, navn, status, arrangor_id, tiltaksnavn, tiltakstype, start_dato, slutt_dato, oppstart)
-                VALUES (:id, :navn, :status, :arrangor_id, :tiltaksnavn, :tiltakstype, :start_dato, :slutt_dato, :oppstart) 
+                INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltakstype_id, start_dato, slutt_dato, oppstart)
+                VALUES (:id, :navn, :status, :arrangor_id, :tiltakstype_id, :start_dato, :slutt_dato, :oppstart) 
                 """.trimIndent()
 
             it.update(
@@ -128,8 +134,7 @@ object TestRepository {
                         "navn" to deltakerliste.navn,
                         "status" to deltakerliste.status.name,
                         "arrangor_id" to deltakerliste.arrangor.arrangor.id,
-                        "tiltaksnavn" to deltakerliste.tiltak.navn,
-                        "tiltakstype" to deltakerliste.tiltak.type.name,
+                        "tiltakstype_id" to deltakerliste.tiltak.id,
                         "start_dato" to deltakerliste.startDato,
                         "slutt_dato" to deltakerliste.sluttDato,
                         "oppstart" to deltakerliste.oppstart?.name,
@@ -148,7 +153,7 @@ object TestRepository {
         try {
             insert(deltaker.deltakerliste)
         } catch (e: Exception) {
-            log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet")
+            log.warn("Deltakerliste med id ${deltaker.deltakerliste.id} er allerede opprettet", e)
         }
 
         val sql =
