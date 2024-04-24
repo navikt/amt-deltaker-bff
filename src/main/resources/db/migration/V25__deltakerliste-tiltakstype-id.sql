@@ -5,7 +5,7 @@ alter table deltakerliste add column tiltakstype_id uuid references tiltakstype;
 update deltakerliste
 set tiltakstype_id = t.id
 from tiltakstype t
-where t.id = deltakerliste.tiltakstype_id;
+where t.type = deltakerliste.tiltakstype;
 
 alter table deltakerliste alter column tiltakstype_id set not null;
 
