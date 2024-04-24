@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltakerliste.tiltakstype
 
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
+import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import java.util.UUID
 
 data class Tiltakstype(
