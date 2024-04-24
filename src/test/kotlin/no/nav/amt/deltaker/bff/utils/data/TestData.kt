@@ -278,7 +278,8 @@ object TestData {
         etternavn: String = "Etternavn",
         adressebeskyttelse: Adressebeskyttelse? = null,
         oppfolgingsperioder: List<Oppfolgingsperiode> = listOf(lagOppfolgingsperiode()),
-    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder)
+        innsatsgruppe: Innsatsgruppe? = Innsatsgruppe.STANDARD_INNSATS,
+    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe)
 
     fun lagOppfolgingsperiode(
         id: UUID = UUID.randomUUID(),

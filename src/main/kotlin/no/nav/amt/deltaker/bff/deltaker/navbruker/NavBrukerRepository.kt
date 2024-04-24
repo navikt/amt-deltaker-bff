@@ -6,6 +6,7 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
+import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import java.util.UUID
 
 class NavBrukerRepository {
@@ -17,19 +18,22 @@ class NavBrukerRepository {
         etternavn = row.string("etternavn"),
         adressebeskyttelse = row.stringOrNull("adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
         oppfolgingsperioder = row.stringOrNull("oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
+        innsatsgruppe = row.stringOrNull("innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
     )
 
     fun upsert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe)
             on conflict (person_id) do update set
                 personident = :personident,
                 fornavn = :fornavn,
                 mellomnavn = :mellomnavn,
                 etternavn = :etternavn,
                 adressebeskyttelse = :adressebeskyttelse,
+                oppfolgingsperioder = :oppfolgingsperioder,
+                innsatsgruppe = :innsatsgruppe,
                 modified_at = current_timestamp
             returning *
             """.trimIndent()
@@ -42,6 +46,7 @@ class NavBrukerRepository {
             "etternavn" to bruker.etternavn,
             "adressebeskyttelse" to bruker.adressebeskyttelse?.name,
             "oppfolgingsperioder" to toPGObject(bruker.oppfolgingsperioder),
+            "innsatsgruppe" to bruker.innsatsgruppe?.name,
         )
 
         it.run(queryOf(sql, params).map(::rowMapper).asSingle)
