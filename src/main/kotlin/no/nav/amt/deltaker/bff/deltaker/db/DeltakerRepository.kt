@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -35,6 +36,7 @@ class DeltakerRepository {
             etternavn = row.string("nb.etternavn"),
             adressebeskyttelse = row.stringOrNull("nb.adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
             oppfolgingsperioder = row.stringOrNull("nb.oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
+            innsatsgruppe = row.stringOrNull("nb.innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
         ),
         deltakerliste = Deltakerliste(
             id = row.uuid("deltakerliste_id"),
@@ -384,6 +386,7 @@ class DeltakerRepository {
                    nb.etternavn as "nb.etternavn",
                    nb.adressebeskyttelse as "nb.adressebeskyttelse",
                    nb.oppfolgingsperioder as "nb.oppfolgingsperioder",
+                   nb.innsatsgruppe as "nb.innsatsgruppe",
                    ds.id as "ds.id",
                    ds.deltaker_id as "ds.deltaker_id",
                    ds.type as "ds.type",
