@@ -10,7 +10,6 @@ data class TiltakstypeDto(
     val navn: String,
     val tiltakskode: Tiltakstype.Tiltakskode,
     val arenaKode: String?,
-    val status: Tiltakstypestatus,
     val innsatsgrupper: Set<Innsatsgruppe>,
     val deltakerRegistreringInnhold: DeltakerRegistreringInnhold?,
 ) {
@@ -24,10 +23,4 @@ data class TiltakstypeDto(
             innhold = deltakerRegistreringInnhold,
         )
     }
-}
-
-enum class Tiltakstypestatus {
-    Aktiv,
-    Planlagt,
-    Avsluttet,
 }
