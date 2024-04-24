@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltakerliste.tiltakstype
 
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
+import no.nav.amt.deltaker.bff.deltakerliste.Tiltak
 import java.util.UUID
 
 data class Tiltakstype(
@@ -34,7 +34,6 @@ data class Tiltakstype(
         JOBBKLUBB,
         OPPFOLGING,
         VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-        UKJENT, // midlertidig kode til alle har blitt lest inn;
     }
 }
 

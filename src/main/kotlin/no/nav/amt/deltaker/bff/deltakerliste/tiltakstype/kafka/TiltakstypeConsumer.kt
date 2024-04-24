@@ -16,14 +16,14 @@ import java.util.UUID
 
 class TiltakstypeConsumer(
     private val repository: TiltakstypeRepository,
-    kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
+    kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(autoOffsetReset = "earliest"),
 ) : Consumer<UUID, String?> {
     private val consumer = ManagedKafkaConsumer(
         topic = Environment.TILTAKSTYPE_TOPIC,
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
-            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
+            groupId = Environment.KAFKA_CONSUMER_GROUP_ID + "tiltakstyper",
         ),
         consume = ::consume,
     )
