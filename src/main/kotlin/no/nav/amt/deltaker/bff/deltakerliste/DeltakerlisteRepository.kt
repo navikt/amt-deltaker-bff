@@ -5,32 +5,39 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
+import no.nav.amt.deltaker.bff.utils.prefixColumn
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class DeltakerlisteRepository {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private fun rowMapper(row: Row) = Deltakerliste(
-        id = row.uuid("deltakerliste_id"),
-        tiltak = TiltakstypeRepository.rowMapper(row, "t"),
-        navn = row.string("deltakerliste_navn"),
-        status = Deltakerliste.Status.valueOf(row.string("status")),
-        startDato = row.localDate("start_dato"),
-        sluttDato = row.localDateOrNull("slutt_dato"),
-        oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
-        arrangor = Deltakerliste.Arrangor(
-            arrangor = Arrangor(
-                id = row.uuid("arrangor_id"),
-                navn = row.string("arrangor_navn"),
-                organisasjonsnummer = row.string("a.organisasjonsnummer"),
-                overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
-            ),
-            overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
-                row.string("overordnet_arrangor_navn")
-            },
-        ),
-    )
+    companion object {
+        fun rowMapper(row: Row, alias: String? = "dl"): Deltakerliste {
+            val col = prefixColumn(alias)
+
+            return Deltakerliste(
+                id = row.uuid(col("id")),
+                tiltak = TiltakstypeRepository.rowMapper(row, "t"),
+                navn = row.string(col("navn")),
+                status = Deltakerliste.Status.valueOf(row.string(col("status"))),
+                startDato = row.localDate(col("start_dato")),
+                sluttDato = row.localDateOrNull(col("slutt_dato")),
+                oppstart = Deltakerliste.Oppstartstype.valueOf(row.string(col("oppstart"))),
+                arrangor = Deltakerliste.Arrangor(
+                    arrangor = Arrangor(
+                        id = row.uuid("a.id"),
+                        navn = row.string("a.navn"),
+                        organisasjonsnummer = row.string("a.organisasjonsnummer"),
+                        overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
+                    ),
+                    overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
+                        row.string("oa.navn")
+                    },
+                ),
+            )
+        }
+    }
 
     fun upsert(deltakerliste: Deltakerliste) = Database.query {
         val sql =
@@ -95,28 +102,29 @@ class DeltakerlisteRepository {
     fun get(id: UUID) = Database.query {
         val query = queryOf(
             """
-            SELECT d.id   AS deltakerliste_id,
-                   arrangor_id,
-                   d.navn AS deltakerliste_navn,
-                   status,
-                   start_dato,
-                   slutt_dato,
-                   oppstart,
-                   a.navn             AS arrangor_navn,
+            SELECT 
+                   dl.id as "dl.id",
+                   dl.navn as "dl.navn",
+                   dl.status as "dl.status",
+                   dl.start_dato as "dl.start_dato",
+                   dl.slutt_dato as "dl.slutt_dato",
+                   dl.oppstart as "dl.oppstart",
+                   a.id as "a.id",
+                   a.navn as "a.navn",
                    a.organisasjonsnummer as "a.organisasjonsnummer",
                    a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
-                   oa.navn as overordnet_arrangor_navn,
+                   oa.navn as "oa.navn",
                    t.id as "t.id",
                    t.navn as "t.navn",
                    t.tiltakskode as "t.tiltakskode",
                    t.type as "t.type",
                    t.innsatsgrupper as "t.innsatsgrupper",
                    t.innhold as "t.innhold"
-            FROM deltakerliste d
-                     JOIN arrangor a ON a.id = d.arrangor_id
+            FROM deltakerliste dl
+                     JOIN arrangor a ON a.id = dl.arrangor_id
                      LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
-                     LEFT JOIN tiltakstype t ON d.tiltakstype_id = t.id
-            WHERE d.id = :id
+                     LEFT JOIN tiltakstype t ON dl.tiltakstype_id = t.id
+            WHERE dl.id = :id
             """.trimIndent(),
             mapOf("id" to id),
         ).map(::rowMapper).asSingle

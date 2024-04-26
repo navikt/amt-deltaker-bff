@@ -5,7 +5,6 @@ import kotliquery.Query
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
@@ -16,8 +15,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -38,26 +36,7 @@ class DeltakerRepository {
             oppfolgingsperioder = row.stringOrNull("nb.oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
             innsatsgruppe = row.stringOrNull("nb.innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
         ),
-        deltakerliste = Deltakerliste(
-            id = row.uuid("deltakerliste_id"),
-            tiltak = TiltakstypeRepository.rowMapper(row, "t"),
-            navn = row.string("deltakerliste_navn"),
-            status = Deltakerliste.Status.valueOf(row.string("status")),
-            startDato = row.localDate("start_dato"),
-            sluttDato = row.localDateOrNull("slutt_dato"),
-            oppstart = Deltakerliste.Oppstartstype.valueOf(row.string("oppstart")),
-            arrangor = Deltakerliste.Arrangor(
-                arrangor = Arrangor(
-                    id = row.uuid("arrangor_id"),
-                    navn = row.string("arrangor_navn"),
-                    organisasjonsnummer = row.string("a.organisasjonsnummer"),
-                    overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
-                ),
-                overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
-                    row.string("overordnet_arrangor_navn")
-                },
-            ),
-        ),
+        deltakerliste = DeltakerlisteRepository.rowMapper(row),
         startdato = row.localDateOrNull("d.startdato"),
         sluttdato = row.localDateOrNull("d.sluttdato"),
         dagerPerUke = row.floatOrNull("d.dager_per_uke"),
@@ -395,17 +374,17 @@ class DeltakerRepository {
                    ds.gyldig_til as "ds.gyldig_til",
                    ds.created_at as "ds.created_at",
                    ds.modified_at as "ds.modified_at",
-                   dl.id as deltakerliste_id,
-                   dl.arrangor_id,
-                   dl.navn AS deltakerliste_navn,
-                   dl.status,
-                   dl.start_dato,
-                   dl.slutt_dato,
-                   dl.oppstart,
-                   a.navn             AS arrangor_navn,
+                   dl.id as "dl.id",
+                   dl.navn as "dl.navn",
+                   dl.status as "dl.status",
+                   dl.start_dato as "dl.start_dato",
+                   dl.slutt_dato as "dl.slutt_dato",
+                   dl.oppstart as "dl.oppstart",
+                   a.id as "a.id",
+                   a.navn as "a.navn",
                    a.organisasjonsnummer as "a.organisasjonsnummer",
                    a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
-                   oa.navn  AS overordnet_arrangor_navn,
+                   oa.navn as "oa.navn",
                    t.id as "t.id",
                    t.navn as "t.navn",
                    t.tiltakskode as "t.tiltakskode",
