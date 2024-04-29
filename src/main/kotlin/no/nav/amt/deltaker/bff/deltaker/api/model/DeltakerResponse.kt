@@ -82,7 +82,7 @@ fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretA
         deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
             DeltakerResponse.DeltakelsesinnholdDto(
                 ledetekst = it.ledetekst,
-                innhold = fulltInnhold(innhold, it.innholdselementer),
+                innhold = fulltInnhold(innhold, it.innholdselementerMedAnnet),
             )
         },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
@@ -104,7 +104,6 @@ fun Deltakerliste.Arrangor.getArrangorNavn(): String {
 fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {
     return innholdselementer
         .asSequence()
-        .plus(annetInnholdselement)
         .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
         .map { it.toInnhold() }
         .plus(valgtInnhold)

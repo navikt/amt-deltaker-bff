@@ -89,7 +89,6 @@ class InputvalideringTest {
         val tiltaksinnhold = TestData.lagDeltakerRegistreringInnhold(
             innholdselementer = listOf(
                 Innholdselement("Type", "type"),
-                annetInnholdselement,
             ),
         )
 
