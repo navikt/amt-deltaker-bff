@@ -108,7 +108,9 @@ private fun validerInnhold(
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     valider: (innholdskoder: List<String>) -> Unit,
 ) {
-    val innholdskoder = tiltaksinnhold?.innholdselementer?.map { it.innholdskode }
+    val innholdskoder = tiltaksinnhold
+        ?.innholdselementerMedAnnet
+        ?.map { it.innholdskode }
 
     if (innholdskoder.isNullOrEmpty()) {
         require(innhold.isEmpty()) { "Et tiltak uten innholdselementer kan ikke ha noe innhold" }

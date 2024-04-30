@@ -40,7 +40,12 @@ data class Tiltakstype(
 data class DeltakerRegistreringInnhold(
     val innholdselementer: List<Innholdselement>,
     val ledetekst: String,
-)
+) {
+    val innholdselementerMedAnnet: List<Innholdselement> get() {
+        if (innholdselementer.isEmpty()) return emptyList()
+        return innholdselementer.plus(annetInnholdselement)
+    }
+}
 
 data class Innholdselement(
     val tekst: String,
