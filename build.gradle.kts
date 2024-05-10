@@ -4,12 +4,12 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    val kotlinVersion = "1.9.23"
+    val kotlinVersion = "1.9.24"
 
     kotlin("jvm") version kotlinVersion
-    id("io.ktor.plugin") version "2.3.10"
+    id("io.ktor.plugin") version "2.3.11"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
@@ -18,8 +18,8 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val kotlinVersion = "1.9.23"
-val ktorVersion = "2.3.10"
+val kotlinVersion = "1.9.24"
+val ktorVersion = "2.3.11"
 val logbackVersion = "1.5.6"
 val prometeusVersion = "1.12.5"
 val ktlintVersion = "1.2.1"
@@ -28,15 +28,15 @@ val logstashEncoderVersion = "7.4"
 val commonVersion = "3.2024.04.22_13.50-7815154a2573"
 val poaoTilgangVersion = "2024.04.25_14.10-afd419c1e0ec"
 val kafkaClientsVersion = "3.7.0"
-val testcontainersVersion = "1.19.7"
-val kotestVersion = "5.8.1"
+val testcontainersVersion = "1.19.8"
+val kotestVersion = "5.9.0"
 val flywayVersion = "10.12.0"
 val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.7.3"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.10"
-val nimbusVersion = "9.37.3"
+val nimbusVersion = "9.38"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
