@@ -80,9 +80,13 @@ fun Routing.registerDeltakerApi(
 
             log.info("Request: ${objectMapper.writeValueAsString(request)}")
 
+            val valgtInnhold = finnValgtInnhold(request.innhold, deltaker)
+
+            log.info("Valgt innhold: ${objectMapper.writeValueAsString(valgtInnhold)}")
+
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
+                endring = DeltakerEndring.Endring.EndreInnhold(valgtInnhold),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
