@@ -1,6 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -33,5 +37,74 @@ class InnholdDtoTest {
             innholdselement.toInnhold(true),
             annetInnholdselement.toInnhold(true, annetBeskrivelse),
         )
+    }
+
+    @Test
+    fun `finnValgtInnhold - annet - annet skal bli valgt`() {
+        val innholdRequest = objectMapper.readValue<EndreInnholdRequest>(
+            """    	
+            {
+              "innhold": [
+                {
+                  "innholdskode": "arbeidspraksis",
+                  "beskrivelse": null
+                },
+                {
+                  "innholdskode": "annet",
+                  "beskrivelse": "blabla"
+                }
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        val deltakerlisteInnhold = objectMapper.readValue<DeltakerRegistreringInnhold>(
+            """
+            {
+              "ledetekst": "Arbeidsforberedende trening er et tilbud for deg som først ønsker å jobbe i et tilrettelagt arbeidsmiljø.",
+              "innholdselementer": [
+                {
+                  "tekst": "Arbeidspraksis",
+                  "innholdskode": "arbeidspraksis"
+                },
+                {
+                  "tekst": "Karriereveiledning",
+                  "innholdskode": "karriereveiledning"
+                }
+              ],
+              "innholdselementerMedAnnet": [
+                {
+                  "tekst": "Arbeidspraksis",
+                  "innholdskode": "arbeidspraksis"
+                },
+                {
+                  "tekst": "Karriereveiledning",
+                  "innholdskode": "karriereveiledning"
+                },
+                {
+                  "tekst": "Annet",
+                  "innholdskode": "annet"
+                }
+              ]
+            }
+            """.trimIndent(),
+        )
+
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(
+                    innhold = deltakerlisteInnhold,
+                ),
+            ),
+        )
+
+        val valgtInnhold = finnValgtInnhold(
+            innhold = innholdRequest.innhold,
+            deltaker = deltaker,
+        )
+
+        valgtInnhold.size shouldBe 2
+        valgtInnhold.find { it.innholdskode == "arbeidspraksis" } shouldBe Innhold("Arbeidspraksis", "arbeidspraksis", true, null)
+        valgtInnhold.find { it.innholdskode == annetInnholdselement.innholdskode } shouldBe annetInnholdselement.toInnhold(true, "blabla")
     }
 }
