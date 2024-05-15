@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -43,7 +42,6 @@ class DeltakerService(
             }
 
             is DeltakerEndring.Endring.EndreInnhold -> endreDeltaker(deltaker) {
-                log.info("Endring: ${objectMapper.writeValueAsString(endring.innhold)}")
                 amtDeltakerClient.endreInnhold(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,

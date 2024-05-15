@@ -9,7 +9,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
@@ -78,15 +77,9 @@ fun Routing.registerDeltakerApi(
 
             request.valider(deltaker)
 
-            log.info("Request: ${objectMapper.writeValueAsString(request)}")
-
-            val valgtInnhold = finnValgtInnhold(request.innhold, deltaker)
-
-            log.info("Valgt innhold: ${objectMapper.writeValueAsString(valgtInnhold)}")
-
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreInnhold(valgtInnhold),
+                endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
