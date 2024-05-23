@@ -29,7 +29,9 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 class AmtDeltakerClient(
@@ -38,6 +40,8 @@ class AmtDeltakerClient(
     private val httpClient: HttpClient,
     private val azureAdTokenClient: AzureAdTokenClient,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): KladdResponse {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding") {
@@ -226,6 +230,18 @@ class AmtDeltakerClient(
         return response.body()
     }
 
+    suspend fun sistBesokt(deltakerId: UUID, sistBesokt: LocalDateTime) {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/deltaker/$deltakerId/$SIST_BESOKT") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(sistBesokt)
+        }
+        if (!response.status.isSuccess()) {
+            log.warn("Kunne ikke endre $SIST_BESOKT i amt-deltaker. Status=${response.status.value} error=${response.bodyAsText()}")
+        }
+    }
+
     companion object Endepunkt {
         const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
         const val INNHOLD = "innhold"
@@ -236,6 +252,7 @@ class AmtDeltakerClient(
         const val FORLENG_DELTAKELSE = "forleng"
         const val IKKE_AKTUELL = "ikke-aktuell"
         const val AVSLUTT_DELTAKELSE = "avslutt"
+        const val SIST_BESOKT = "sist-besokt"
     }
 }
 

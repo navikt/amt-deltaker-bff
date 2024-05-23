@@ -431,4 +431,20 @@ class DeltakerRepository {
 
         return kanOppdateres
     }
+
+    fun oppdaterSistBesokt(id: UUID, sistBesokt: LocalDateTime) = Database.query {
+        val sql =
+            """
+            update deltaker
+            set sist_besokt = :sist_besokt
+            where id = :id
+            """.trimIndent()
+
+        val params = mapOf(
+            "id" to id,
+            "sist_besokt" to sistBesokt,
+        )
+
+        it.update(queryOf(sql, params))
+    }
 }

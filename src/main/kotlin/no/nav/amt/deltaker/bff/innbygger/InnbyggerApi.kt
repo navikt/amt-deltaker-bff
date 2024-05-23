@@ -6,6 +6,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -35,6 +36,8 @@ fun Routing.registerInnbyggerApi(
             val innbygger = getPersonident()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
+
+            launch { deltakerService.oppdaterSistBesokt(deltaker) }
 
             call.respond(komplettInnbyggerDeltakerResponse(deltaker))
         }

@@ -44,7 +44,7 @@ import java.util.UUID
 class InnbyggerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
-    private val deltakerService = mockk<DeltakerService>()
+    private val deltakerService = mockk<DeltakerService>(relaxUnitFun = true)
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()

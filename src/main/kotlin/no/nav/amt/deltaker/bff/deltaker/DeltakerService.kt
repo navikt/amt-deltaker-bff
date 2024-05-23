@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerService(
@@ -171,6 +172,12 @@ class DeltakerService(
     private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
         val currentStatus = deltakerRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
         return currentStatus.type != deltakeroppdatering.status.type
+    }
+
+    suspend fun oppdaterSistBesokt(deltaker: Deltaker) {
+        val sistBesokt = LocalDateTime.now()
+        amtDeltakerClient.sistBesokt(deltaker.id, sistBesokt)
+        deltakerRepository.oppdaterSistBesokt(deltaker.id, sistBesokt)
     }
 }
 
