@@ -31,7 +31,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class AmtDeltakerClient(
@@ -230,7 +230,7 @@ class AmtDeltakerClient(
         return response.body()
     }
 
-    suspend fun sistBesokt(deltakerId: UUID, sistBesokt: LocalDateTime) {
+    suspend fun sistBesokt(deltakerId: UUID, sistBesokt: ZonedDateTime) {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/deltaker/$deltakerId/$SIST_BESOKT") {
             header(HttpHeaders.Authorization, token)

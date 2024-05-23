@@ -18,6 +18,7 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 
@@ -432,7 +433,7 @@ class DeltakerRepository {
         return kanOppdateres
     }
 
-    fun oppdaterSistBesokt(id: UUID, sistBesokt: LocalDateTime) = Database.query {
+    fun oppdaterSistBesokt(id: UUID, sistBesokt: ZonedDateTime) = Database.query {
         val sql =
             """
             update deltaker
