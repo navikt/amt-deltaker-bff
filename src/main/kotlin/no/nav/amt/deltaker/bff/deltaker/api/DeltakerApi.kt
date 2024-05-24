@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
@@ -36,13 +37,15 @@ fun Routing.registerDeltakerApi(
     deltakerService: DeltakerService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
+    amtDistribusjonClient: AmtDistribusjonClient,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
-    fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
+    suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-        return deltaker.toDeltakerResponse(ansatte, enhet)
+        val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker)
     }
 
     authenticate("VEILEDER") {
@@ -225,10 +228,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id ${deltaker.id}")
 
-            val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
-            val navEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-
-            call.respond(deltaker.toDeltakerResponse(ansatte, navEnhet))
+            call.respond(komplettDeltakerResponse(deltaker))
         }
 
         get("/deltaker/{deltakerId}/historikk") {

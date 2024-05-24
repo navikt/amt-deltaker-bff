@@ -18,6 +18,7 @@ import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
@@ -33,6 +34,7 @@ fun Application.configureRouting(
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
+    amtDistribusjonClient: AmtDistribusjonClient,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -64,6 +66,7 @@ fun Application.configureRouting(
             deltakerService,
             navAnsattService,
             navEnhetService,
+            amtDistribusjonClient,
         )
 
         registerPameldingApi(
@@ -72,6 +75,7 @@ fun Application.configureRouting(
             pameldingService,
             navAnsattService,
             navEnhetService,
+            amtDistribusjonClient,
         )
 
         registerInnbyggerApi(

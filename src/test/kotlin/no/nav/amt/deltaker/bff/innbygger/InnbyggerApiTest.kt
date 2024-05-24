@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -49,6 +50,7 @@ class InnbyggerApiTest {
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
     private val innbyggerService = mockk<InnbyggerService>()
+    private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
     @Before
     fun setup() {
@@ -162,6 +164,7 @@ class InnbyggerApiTest {
                 navAnsattService,
                 navEnhetService,
                 innbyggerService,
+                amtDistribusjonClient,
             )
         }
     }

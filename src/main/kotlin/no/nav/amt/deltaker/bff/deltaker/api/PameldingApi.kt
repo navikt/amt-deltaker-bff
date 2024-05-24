@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -36,6 +37,7 @@ fun Routing.registerPameldingApi(
     pameldingService: PameldingService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
+    amtDistribusjonClient: AmtDistribusjonClient,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -51,8 +53,9 @@ fun Routing.registerPameldingApi(
 
             val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
             val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
+            val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
 
-            call.respond(deltaker.toDeltakerResponse(ansatte, enhet))
+            call.respond(deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker))
         }
 
         post("/pamelding/{deltakerId}/kladd") {

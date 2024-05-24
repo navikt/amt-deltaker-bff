@@ -31,6 +31,7 @@ data class DeltakerResponse(
     val vedtaksinformasjon: VedtaksinformasjonDto?,
     val adresseDelesMedArrangor: Boolean,
     val kanEndres: Boolean,
+    val digitalBruker: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -58,7 +59,11 @@ data class DeltakerResponse(
     )
 }
 
-fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretAvEnhet: NavEnhet?): DeltakerResponse {
+fun Deltaker.toDeltakerResponse(
+    ansatte: Map<UUID, NavAnsatt>,
+    vedtakSistEndretAvEnhet: NavEnhet?,
+    digitalBruker: Boolean,
+): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
         fornavn = navBruker.fornavn,
@@ -88,6 +93,7 @@ fun Deltaker.toDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretA
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         adresseDelesMedArrangor = adresseDelesMedArrangor(),
         kanEndres = kanEndres,
+        digitalBruker = digitalBruker,
     )
 }
 
