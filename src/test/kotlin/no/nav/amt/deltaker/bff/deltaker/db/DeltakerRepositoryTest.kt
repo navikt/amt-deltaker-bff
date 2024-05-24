@@ -20,6 +20,7 @@ import org.junit.Test
 import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 class DeltakerRepositoryTest {
     companion object {
@@ -258,10 +259,10 @@ class DeltakerRepositoryTest {
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
 
-        val sistBesokt = LocalDateTime.now()
+        val sistBesokt = ZonedDateTime.now()
         repository.oppdaterSistBesokt(deltaker.id, sistBesokt)
 
-        val lagretSistBesokt = TestRepository.getDeltakerSistBesokt(deltaker.id)
+        val lagretSistBesokt = TestRepository.getDeltakerSistBesokt(deltaker.id)!!
         lagretSistBesokt shouldBeCloseTo sistBesokt
     }
 }

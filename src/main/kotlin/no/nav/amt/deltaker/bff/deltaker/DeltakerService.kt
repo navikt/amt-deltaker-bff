@@ -11,7 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 class DeltakerService(
@@ -175,7 +175,7 @@ class DeltakerService(
     }
 
     suspend fun oppdaterSistBesokt(deltaker: Deltaker) {
-        val sistBesokt = LocalDateTime.now()
+        val sistBesokt = ZonedDateTime.now()
         amtDeltakerClient.sistBesokt(deltaker.id, sistBesokt)
         deltakerRepository.oppdaterSistBesokt(deltaker.id, sistBesokt)
     }
