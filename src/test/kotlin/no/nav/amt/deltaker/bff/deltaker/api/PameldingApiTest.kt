@@ -20,6 +20,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
@@ -48,6 +49,7 @@ class PameldingApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
     @Before
     fun setup() {
@@ -101,13 +103,14 @@ class PameldingApiTest {
         coEvery { pameldingService.opprettKladd(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
 
         setUpTestApplication()
 
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
             TestCase.assertEquals(
-                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet)),
+                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet, true)),
                 bodyAsText(),
             )
         }
@@ -263,6 +266,7 @@ class PameldingApiTest {
                 navAnsattService,
                 navEnhetService,
                 mockk(),
+                amtDistribusjonClient,
             )
         }
     }

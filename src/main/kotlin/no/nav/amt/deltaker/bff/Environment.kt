@@ -23,6 +23,8 @@ data class Environment(
     val tokenXJwtIssuer: String = getEnvVar(TOKEN_X_ISSUER_KEY),
     val tokenXClientId: String = getEnvVar(TOKEN_X_CLIENT_ID_KEY),
     val electorPath: String = getEnvVar(ELECTOR_PATH),
+    val amtDistribusjonUrl: String = getEnvVar(AMT_DISTRIBUSJON_URL_KEY),
+    val amtDistribusjonScope: String = getEnvVar(AMT_DISTRIBUSJON_SCOPE_KEY),
 ) {
     companion object {
         const val DB_USERNAME_KEY = "DB_USERNAME"
@@ -48,6 +50,9 @@ data class Environment(
 
         const val AMT_DELTAKER_URL_KEY = "AMT_DELTAKER_URL"
         const val AMT_DELTAKER_SCOPE_KEY = "AMT_DELTAKER_SCOPE"
+
+        const val AMT_DISTRIBUSJON_URL_KEY = "AMT_DISTRIBUSJON_URL"
+        const val AMT_DISTRIBUSJON_SCOPE_KEY = "AMT_DISTRIBUSJON_SCOPE"
 
         const val AZURE_AD_TOKEN_URL_KEY = "AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"
         const val AZURE_APP_CLIENT_SECRET_KEY = "AZURE_APP_CLIENT_SECRET"

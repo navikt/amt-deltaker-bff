@@ -58,6 +58,7 @@ spec:
         - application: amt-arrangor
         - application: amt-person-service
         - application: amt-deltaker
+        - application: amt-distribusjon
         - application: poao-tilgang
           namespace: poao
   env:
@@ -77,6 +78,10 @@ spec:
       value: api://dev-gcp.amt.amt-deltaker/.default
     - name: AMT_DELTAKER_URL
       value: http://amt-deltaker
+    - name: AMT_DISTRIBUSJON_SCOPE
+      value: api://dev-gcp.amt.amt-distribusjon/.default
+    - name: AMT_DISTRIBUSJON_URL
+      value: http://amt-distribusjon
 
   gcp:
     sqlInstances:

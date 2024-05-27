@@ -26,6 +26,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.job.SlettUtdatertKladdJob
 import no.nav.amt.deltaker.bff.deltaker.job.leaderelection.LeaderElection
@@ -109,6 +110,13 @@ fun Application.module() {
         azureAdTokenClient = azureAdTokenClient,
     )
 
+    val amtDistribusjonClient = AmtDistribusjonClient(
+        baseUrl = environment.amtDistribusjonUrl,
+        scope = environment.amtDistribusjonScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
+    )
+
     val arrangorRepository = ArrangorRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattRepository = NavAnsattRepository()
@@ -167,6 +175,7 @@ fun Application.module() {
         navAnsattService,
         navEnhetService,
         innbyggerService,
+        amtDistribusjonClient,
     )
     configureMonitoring()
 
