@@ -12,7 +12,10 @@ data class UtkastRequest(
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
 ) {
-    fun valider(deltaker: Deltaker) {
+    fun valider(deltaker: Deltaker, digitalBruker: Boolean) {
+        require(digitalBruker) {
+            "Kan ikke dele utkast med en bruker som ikke er digital"
+        }
         validerBakgrunnsinformasjon(bakgrunnsinformasjon)
         validerDeltakelsesProsent(deltakelsesprosent)
         validerDagerPerUke(dagerPerUke)

@@ -64,6 +64,7 @@ class PameldingApiTest {
             Decision.Deny("Ikke tilgang", ""),
         )
         coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
 
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
@@ -164,6 +165,7 @@ class PameldingApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker()
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         coEvery { pameldingService.upsertUtkast(any()) } returns Unit
 
         setUpTestApplication()

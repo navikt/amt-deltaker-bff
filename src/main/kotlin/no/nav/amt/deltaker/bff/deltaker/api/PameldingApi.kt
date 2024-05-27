@@ -91,7 +91,8 @@ fun Routing.registerPameldingApi(
             val request = call.receive<UtkastRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            request.valider(deltaker)
+            val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+            request.valider(deltaker, digitalBruker)
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
