@@ -32,6 +32,8 @@ data class DeltakerResponse(
     val adresseDelesMedArrangor: Boolean,
     val kanEndres: Boolean,
     val digitalBruker: Boolean,
+    val maxVarighet: Long?,
+    val softMaxVarighet: Long?,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -94,6 +96,8 @@ fun Deltaker.toDeltakerResponse(
         adresseDelesMedArrangor = adresseDelesMedArrangor(),
         kanEndres = kanEndres,
         digitalBruker = digitalBruker,
+        maxVarighet = maxVarighet?.toMillis(),
+        softMaxVarighet = softMaxVarighet?.toMillis(),
     )
 }
 
