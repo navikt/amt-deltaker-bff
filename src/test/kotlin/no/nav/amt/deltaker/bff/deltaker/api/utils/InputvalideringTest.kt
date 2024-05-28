@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestData.input
@@ -257,6 +258,31 @@ class InputvalideringTest {
             validerSluttdatoForDeltaker(
                 startdato = LocalDate.now().minusDays(10),
                 sluttdato = LocalDate.now().plusYears(2),
+                opprinneligDeltaker = deltaker,
+            )
+        }
+    }
+
+    @Test
+    fun `validerSluttdato - skal feile hvis sluttdato er utenfor max varighet`() {
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK),
+            ),
+        )
+
+        shouldNotThrow<IllegalArgumentException> {
+            validerSluttdatoForDeltaker(
+                startdato = LocalDate.now(),
+                sluttdato = LocalDate.now().plusWeeks(8),
+                opprinneligDeltaker = deltaker,
+            )
+        }
+
+        shouldThrow<IllegalArgumentException> {
+            validerSluttdatoForDeltaker(
+                startdato = LocalDate.now(),
+                sluttdato = LocalDate.now().plusWeeks(8).plusDays(1),
                 opprinneligDeltaker = deltaker,
             )
         }
