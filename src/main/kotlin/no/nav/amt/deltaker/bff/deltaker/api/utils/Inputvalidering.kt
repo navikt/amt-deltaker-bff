@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import java.time.Duration
@@ -49,6 +50,9 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
 }
 
 fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
+    require(opprinneligDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT) {
+        "Kan ikke endre feilregistrert deltaker"
+    }
     if (opprinneligDeltaker.harSluttet()) {
         require(opprinneligDeltaker.kanEndres) {
             "Kan ikke endre avsluttet deltakelse når det finnes aktiv deltakelse på samme tiltak"
