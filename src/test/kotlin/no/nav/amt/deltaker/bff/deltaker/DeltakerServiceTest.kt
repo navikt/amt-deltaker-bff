@@ -238,4 +238,27 @@ class DeltakerServiceTest {
         val gammelDeltakerFraDb = service.get(gammelDeltaker.id).getOrThrow()
         gammelDeltakerFraDb.kanEndres shouldBe true
     }
+
+    @Test
+    fun `oppdaterDeltaker(deltakerOppdatering) - feilregistrert - setter kan ikke endres`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        TestRepository.insert(deltaker)
+        val deltakeroppdatering = Deltakeroppdatering(
+            id = deltaker.id,
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            bakgrunnsinformasjon = null,
+            innhold = emptyList(),
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+            historikk = emptyList(),
+        )
+
+        service.oppdaterDeltaker(deltakeroppdatering)
+
+        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        deltakerFraDb.status.type shouldBe DeltakerStatus.Type.FEILREGISTRERT
+        deltakerFraDb.kanEndres shouldBe false
+    }
 }

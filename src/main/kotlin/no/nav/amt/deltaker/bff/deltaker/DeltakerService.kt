@@ -153,6 +153,9 @@ class DeltakerService(
             )
         }
         deltakerRepository.update(deltakeroppdatering)
+        if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
+            deltakerRepository.settKanIkkeEndres(listOf(deltakeroppdatering.id))
+        }
     }
 
     fun delete(deltakerId: UUID) {
