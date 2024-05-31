@@ -63,7 +63,11 @@ class PameldingApiTest {
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
-        coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        coEvery { deltakerService.get(any()) } returns Result.success(
+            TestData.lagDeltaker(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+            ),
+        )
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
 
         setUpTestApplication()
@@ -163,7 +167,7 @@ class PameldingApiTest {
     @Test
     fun `pamelding deltakerId - har tilgang - oppretter utkast og returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         coEvery { pameldingService.upsertUtkast(any()) } returns Unit
@@ -187,7 +191,7 @@ class PameldingApiTest {
     @Test
     fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter ferdig godkjent deltaker og returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        val deltaker = TestData.lagDeltaker()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { pameldingService.upsertUtkast(any()) } returns Unit
 
