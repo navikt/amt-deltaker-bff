@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.utils
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
+import no.nav.amt.lib.testing.shouldBeCloseTo
 
 infix fun Endringsmelding?.shouldBe(other: Endringsmelding?) {
     if (this == null) {

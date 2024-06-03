@@ -4,11 +4,11 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
-import no.nav.amt.deltaker.bff.kafka.Consumer
-import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
+import no.nav.amt.lib.kafka.Consumer
+import no.nav.amt.lib.kafka.ManagedKafkaConsumer
+import no.nav.amt.lib.kafka.config.KafkaConfig
+import no.nav.amt.lib.kafka.config.KafkaConfigImpl
+import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.UUIDDeserializer
 import org.slf4j.LoggerFactory

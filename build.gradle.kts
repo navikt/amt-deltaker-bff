@@ -37,6 +37,7 @@ val postgresVersion = "42.7.3"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.11"
 val nimbusVersion = "9.39.3"
+val amtLibVersion = "1.2024.06.03_12.31-800644a77a1b"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -73,16 +74,17 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
+    implementation("no.nav.amt.lib:kafka:$amtLibVersion")
+    implementation("no.nav.amt.lib:utils:$amtLibVersion")
+
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
-    testImplementation("org.testcontainers:testcontainers:$testcontainersVersion")
-    testImplementation("org.testcontainers:postgresql:$testcontainersVersion")
-    testImplementation("org.testcontainers:kafka:$testcontainersVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusVersion")
+    testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
 }
 
 kotlin {

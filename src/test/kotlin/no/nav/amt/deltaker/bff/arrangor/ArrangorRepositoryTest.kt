@@ -1,8 +1,8 @@
 package no.nav.amt.deltaker.bff.arrangor
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.lib.testing.SingletonPostgresContainer
 import org.junit.BeforeClass
 import org.junit.Test
 

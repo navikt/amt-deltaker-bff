@@ -7,11 +7,11 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
-import no.nav.amt.deltaker.bff.kafka.Consumer
-import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
+import no.nav.amt.lib.kafka.Consumer
+import no.nav.amt.lib.kafka.ManagedKafkaConsumer
+import no.nav.amt.lib.kafka.config.KafkaConfig
+import no.nav.amt.lib.kafka.config.KafkaConfigImpl
+import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.UUIDDeserializer
 import org.slf4j.LoggerFactory
