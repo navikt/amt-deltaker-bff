@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.sammenlignDeltakereVedVedtak
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import no.nav.amt.deltaker.bff.utils.shouldBeCloseTo
+import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Test
 import java.time.LocalDateTime
 

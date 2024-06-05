@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.arrangor
 
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.db.Database
+import no.nav.amt.lib.utils.database.Database
 import java.time.LocalDateTime
 import java.util.UUID
 

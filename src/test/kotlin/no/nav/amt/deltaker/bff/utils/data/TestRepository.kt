@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.utils.data
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
-import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -14,6 +13,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetDbo
+import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID

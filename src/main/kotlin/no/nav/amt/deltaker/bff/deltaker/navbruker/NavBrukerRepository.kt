@@ -4,9 +4,9 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
-import no.nav.amt.deltaker.bff.db.Database
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
+import no.nav.amt.lib.utils.database.Database
 import java.util.UUID
 
 class NavBrukerRepository {

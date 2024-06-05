@@ -4,8 +4,8 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
-import no.nav.amt.deltaker.bff.utils.SingletonPostgresContainer
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.lib.testing.SingletonPostgresContainer
 import org.junit.BeforeClass
 import org.junit.Test
 

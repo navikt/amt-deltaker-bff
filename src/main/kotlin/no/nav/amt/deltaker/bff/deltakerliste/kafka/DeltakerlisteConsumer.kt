@@ -7,11 +7,11 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
-import no.nav.amt.deltaker.bff.kafka.Consumer
-import no.nav.amt.deltaker.bff.kafka.ManagedKafkaConsumer
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfig
-import no.nav.amt.deltaker.bff.kafka.config.KafkaConfigImpl
-import no.nav.amt.deltaker.bff.kafka.config.LocalKafkaConfig
+import no.nav.amt.lib.kafka.Consumer
+import no.nav.amt.lib.kafka.ManagedKafkaConsumer
+import no.nav.amt.lib.kafka.config.KafkaConfig
+import no.nav.amt.lib.kafka.config.KafkaConfigImpl
+import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.UUIDDeserializer
 import java.util.UUID
