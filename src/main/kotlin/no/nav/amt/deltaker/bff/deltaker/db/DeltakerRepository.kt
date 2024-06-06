@@ -130,6 +130,22 @@ class DeltakerRepository {
         it.run(query)
     }
 
+    fun getMany(personident: String) = Database.query {
+        val sql = getDeltakerSql(
+            """ where nb.personident = :personident
+                    and ds.gyldig_til is null
+            """.trimMargin(),
+        )
+
+        val query = queryOf(
+            sql,
+            mapOf(
+                "personident" to personident,
+            ),
+        ).map(::rowMapper).asList
+        it.run(query)
+    }
+
     fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID) = Database.query { session ->
         val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
         val sql =

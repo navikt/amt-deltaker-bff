@@ -161,7 +161,7 @@ fun Application.module() {
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository),
         NavAnsattConsumer(navAnsattService),
-        NavBrukerConsumer(navBrukerRepository),
+        NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
         DeltakerV2Consumer(deltakerService),
     )

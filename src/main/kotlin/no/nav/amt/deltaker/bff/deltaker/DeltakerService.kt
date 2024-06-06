@@ -25,6 +25,8 @@ class DeltakerService(
 
     fun getDeltakelser(personident: String, deltakerlisteId: UUID) = deltakerRepository.getMany(personident, deltakerlisteId)
 
+    fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
+
     suspend fun oppdaterDeltaker(
         deltaker: Deltaker,
         endring: DeltakerEndring.Endring,
