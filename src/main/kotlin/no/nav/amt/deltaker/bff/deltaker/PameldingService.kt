@@ -79,4 +79,8 @@ class PameldingService(
         navEnhetService.opprettEllerOppdaterNavEnhet(avbruttAvEnhet)
         amtDeltakerClient.avbrytUtkast(deltakerId, avbruttAv, avbruttAvEnhet)
     }
+
+    fun getKladder(personident: String): List<Deltaker> {
+        return deltakerService.getDeltakelser(personident).filter { it.status.type == DeltakerStatus.Type.KLADD }
+    }
 }

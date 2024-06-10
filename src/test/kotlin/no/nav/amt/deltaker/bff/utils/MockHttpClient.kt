@@ -27,6 +27,7 @@ import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import java.util.UUID
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
 const val AMT_PERSON_SERVICE_URL = "http://amt-person-service"
@@ -145,6 +146,14 @@ object MockResponseHandler {
                 ),
             )
         }
+    }
+
+    fun addSlettKladdResponse(deltakerId: UUID) {
+        val url = "$AMT_DELTAKER_URL/pamelding/$deltakerId"
+        addResponse(
+            url = url,
+            method = HttpMethod.Delete,
+        )
     }
 
     fun addEndringsresponse(
