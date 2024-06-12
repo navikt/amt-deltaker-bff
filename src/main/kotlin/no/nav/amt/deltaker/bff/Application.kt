@@ -159,7 +159,7 @@ fun Application.module() {
     val consumers = listOf(
         EndringsmeldingConsumer(endringsmeldingService),
         ArrangorConsumer(arrangorRepository),
-        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository),
+        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService),
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
