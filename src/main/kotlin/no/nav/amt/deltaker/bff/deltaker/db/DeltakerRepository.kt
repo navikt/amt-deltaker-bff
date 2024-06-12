@@ -146,6 +146,23 @@ class DeltakerRepository {
         it.run(query)
     }
 
+    fun getKladderForDeltakerliste(deltakerlisteId: UUID) = Database.query {
+        val sql = getDeltakerSql(
+            """ where d.deltakerliste_id = :deltakerliste_id 
+                    and ds.type = 'KLADD'
+                    and ds.gyldig_til is null
+            """.trimMargin(),
+        )
+
+        val query = queryOf(
+            sql,
+            mapOf(
+                "deltakerliste_id" to deltakerlisteId,
+            ),
+        ).map(::rowMapper).asList
+        it.run(query)
+    }
+
     fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID) = Database.query { session ->
         val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
         val sql =

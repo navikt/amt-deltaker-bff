@@ -83,4 +83,8 @@ class PameldingService(
     fun getKladder(personident: String): List<Deltaker> {
         return deltakerService.getDeltakelser(personident).filter { it.status.type == DeltakerStatus.Type.KLADD }
     }
+
+    fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> {
+        return deltakerService.getKladderForDeltakerliste(deltakerlisteId)
+    }
 }
