@@ -1,10 +1,12 @@
 package no.nav.amt.deltaker.bff.application.plugins
 
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.application.install
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
@@ -35,6 +37,7 @@ fun Application.configureRouting(
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
     amtDistribusjonClient: AmtDistribusjonClient,
+    allowedOrigin: List<String>,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -58,6 +61,18 @@ fun Application.configureRouting(
             call.respondText(text = "500: ${cause.message}", status = HttpStatusCode.InternalServerError)
         }
     }
+
+    install(CORS) {
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Delete)
+        allowedOrigin.forEach { hosts.add("https://$it") }
+        allowHeader("nav_csrf_protection")
+        allowCredentials = true
+        allowNonSimpleContentTypes = true
+    }
+
     routing {
         registerHealthApi()
 

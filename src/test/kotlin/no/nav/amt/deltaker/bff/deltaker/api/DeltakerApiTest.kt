@@ -501,6 +501,7 @@ class DeltakerApiTest {
                 navEnhetService,
                 mockk(),
                 amtDistribusjonClient,
+                listOf("*"),
             )
         }
     }

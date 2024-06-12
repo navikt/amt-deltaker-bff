@@ -101,6 +101,7 @@ class AuthenticationTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                listOf("*"),
             )
             setUpTestRoute()
         }

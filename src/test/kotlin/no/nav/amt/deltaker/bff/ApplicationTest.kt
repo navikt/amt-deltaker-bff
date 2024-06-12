@@ -27,6 +27,7 @@ class ApplicationTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                listOf("*"),
             )
         }
         client.get("/internal/health/liveness").apply {

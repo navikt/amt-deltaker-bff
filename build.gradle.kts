@@ -48,6 +48,7 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging-jvm")
     implementation("io.ktor:ktor-server-call-id-jvm")
     implementation("io.ktor:ktor-server-metrics-micrometer-jvm")
+    implementation("io.ktor:ktor-server-cors")
     implementation("io.micrometer:micrometer-registry-prometheus:$prometeusVersion")
     implementation("io.ktor:ktor-server-host-common-jvm")
     implementation("io.ktor:ktor-server-status-pages-jvm")

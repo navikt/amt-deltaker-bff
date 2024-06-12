@@ -176,6 +176,7 @@ fun Application.module() {
         navEnhetService,
         innbyggerService,
         amtDistribusjonClient,
+        environment.allowedOrigin,
     )
     configureMonitoring()
 

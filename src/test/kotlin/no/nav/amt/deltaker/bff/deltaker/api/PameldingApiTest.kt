@@ -273,6 +273,7 @@ class PameldingApiTest {
                 navEnhetService,
                 mockk(),
                 amtDistribusjonClient,
+                listOf("*"),
             )
         }
     }

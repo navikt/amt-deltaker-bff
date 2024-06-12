@@ -82,6 +82,8 @@ spec:
       value: api://dev-gcp.amt.amt-distribusjon/.default
     - name: AMT_DISTRIBUSJON_URL
       value: http://amt-distribusjon
+    - name: ALLOWED_ORIGIN
+      value: cdn.nav.no,amt-deltaker-flate.intern.dev.nav.no,amt-deltaker-flate.ansatt.dev.nav.no,amt.intern.dev.nav.no,amt.ansatt.dev.nav.no
 
   gcp:
     sqlInstances:

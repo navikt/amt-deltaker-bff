@@ -24,6 +24,7 @@ data class Environment(
     val electorPath: String = getEnvVar(ELECTOR_PATH),
     val amtDistribusjonUrl: String = getEnvVar(AMT_DISTRIBUSJON_URL_KEY),
     val amtDistribusjonScope: String = getEnvVar(AMT_DISTRIBUSJON_SCOPE_KEY),
+    val allowedOrigin: List<String> = getEnvVar("ALLOWED_ORIGIN_KEY").split(","),
 ) {
     companion object {
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
@@ -61,6 +62,8 @@ data class Environment(
         const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"
 
         const val ELECTOR_PATH = "ELECTOR_PATH"
+
+        const val ALLOWED_ORIGIN_KEY = "ALLOWED_ORIGIN"
 
         const val HTTP_CLIENT_TIMEOUT_MS = 10_000
 

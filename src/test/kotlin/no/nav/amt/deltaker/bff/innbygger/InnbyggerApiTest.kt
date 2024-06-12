@@ -165,6 +165,7 @@ class InnbyggerApiTest {
                 navEnhetService,
                 innbyggerService,
                 amtDistribusjonClient,
+                listOf("*"),
             )
         }
     }
