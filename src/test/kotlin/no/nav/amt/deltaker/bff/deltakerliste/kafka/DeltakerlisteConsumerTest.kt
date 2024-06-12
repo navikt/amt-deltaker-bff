@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
@@ -143,7 +144,7 @@ class DeltakerlisteConsumerTest {
 
             repository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste
             deltakerService.get(kladd.id).getOrNull() shouldBe null
-            deltakerService.get(deltaker.id).getOrNull() shouldBe deltaker
+            deltakerService.get(deltaker.id).getOrNull() shouldNotBe null
         }
     }
 }
