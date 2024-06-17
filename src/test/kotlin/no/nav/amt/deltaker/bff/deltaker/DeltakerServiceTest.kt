@@ -58,6 +58,9 @@ class DeltakerServiceTest {
                     "beskrivelse",
                 ),
             ),
+            DeltakerEndring.Endring.ReaktiverDeltakelse(
+                reaktivertDato = LocalDate.now(),
+            ),
         )
 
         endringer.forEach { endring ->
@@ -113,6 +116,12 @@ class DeltakerServiceTest {
                     oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+                }
+
+                is DeltakerEndring.Endring.ReaktiverDeltakelse -> {
+                    oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
+                    oppdatertDeltaker.startdato shouldBe null
+                    oppdatertDeltaker.sluttdato shouldBe null
                 }
             }
         }

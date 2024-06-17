@@ -100,6 +100,7 @@ class DeltakerApiTest {
         ) { postRequest(avsluttDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -113,6 +114,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/ikke-aktuell") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/forleng") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/avslutt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
     }
@@ -476,6 +478,42 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `reaktiver - har tilgang - returnerer oppdatert deltaker`() {
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL))
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            startdato = null,
+            sluttdato = null,
+        )
+
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/reaktiver") { noBodyRequest() }
+                .apply {
+                    status shouldBe HttpStatusCode.OK
+                    bodyAsText() shouldBe objectMapper.writeValueAsString(
+                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    )
+                }
+        }
+    }
+
+    @Test
+    fun `reaktiver - deltaker har sluttet - returnerer bad request`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
+            sluttdato = LocalDate.now().minusMonths(1),
+        )
+
+        mockTestApi(deltaker, null) { client, _, _ ->
+            client.post("/deltaker/${deltaker.id}/reaktiver") { noBodyRequest() }
+                .apply {
+                    status shouldBe HttpStatusCode.BadRequest
+                }
+        }
+    }
+
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -487,6 +525,7 @@ class DeltakerApiTest {
                 )
             }",
         )
+        header("aktiv-enhet", "0101")
     }
 
     private fun ApplicationTestBuilder.setUpTestApplication() {

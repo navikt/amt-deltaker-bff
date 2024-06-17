@@ -162,15 +162,16 @@ object MockResponseHandler {
         status: HttpStatusCode = HttpStatusCode.OK,
     ) {
         val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/" + when (endring) {
-            is DeltakerEndring.Endring.AvsluttDeltakelse -> AmtDeltakerClient.Endepunkt.AVSLUTT_DELTAKELSE
-            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.Endepunkt.BAKGRUNNSINFORMASJON
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.Endepunkt.DELTAKELSESMENGDE
-            is DeltakerEndring.Endring.EndreInnhold -> AmtDeltakerClient.Endepunkt.INNHOLD
-            is DeltakerEndring.Endring.EndreSluttarsak -> AmtDeltakerClient.Endepunkt.SLUTTARSAK
-            is DeltakerEndring.Endring.EndreSluttdato -> AmtDeltakerClient.Endepunkt.SLUTTDATO
-            is DeltakerEndring.Endring.EndreStartdato -> AmtDeltakerClient.Endepunkt.STARTDATO
-            is DeltakerEndring.Endring.ForlengDeltakelse -> AmtDeltakerClient.Endepunkt.FORLENG_DELTAKELSE
-            is DeltakerEndring.Endring.IkkeAktuell -> AmtDeltakerClient.Endepunkt.IKKE_AKTUELL
+            is DeltakerEndring.Endring.AvsluttDeltakelse -> AmtDeltakerClient.AVSLUTT_DELTAKELSE
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.BAKGRUNNSINFORMASJON
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.DELTAKELSESMENGDE
+            is DeltakerEndring.Endring.EndreInnhold -> AmtDeltakerClient.INNHOLD
+            is DeltakerEndring.Endring.EndreSluttarsak -> AmtDeltakerClient.SLUTTARSAK
+            is DeltakerEndring.Endring.EndreSluttdato -> AmtDeltakerClient.SLUTTDATO
+            is DeltakerEndring.Endring.EndreStartdato -> AmtDeltakerClient.STARTDATO
+            is DeltakerEndring.Endring.ForlengDeltakelse -> AmtDeltakerClient.FORLENG_DELTAKELSE
+            is DeltakerEndring.Endring.IkkeAktuell -> AmtDeltakerClient.IKKE_AKTUELL
+            is DeltakerEndring.Endring.ReaktiverDeltakelse -> AmtDeltakerClient.REAKTIVER
         }
 
         addResponse(

@@ -120,6 +120,14 @@ class DeltakerService(
                     aarsak = endring.aarsak,
                 )
             }
+
+            is DeltakerEndring.Endring.ReaktiverDeltakelse -> endreDeltaker(deltaker) {
+                amtDeltakerClient.reaktiverDeltakelse(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                )
+            }
         }
         return oppdatertDeltaker
     }

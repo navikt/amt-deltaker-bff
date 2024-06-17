@@ -25,11 +25,13 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanReaktiveres
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.util.UUID
 
 fun Routing.registerDeltakerApi(
@@ -187,6 +189,25 @@ fun Routing.registerDeltakerApi(
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
                 endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
+                endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
+            )
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+        }
+
+        post("/deltaker/{deltakerId}/reaktiver") {
+            val navIdent = getNavIdent()
+
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            validerDeltakerKanReaktiveres(deltaker)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                deltaker = deltaker,
+                endring = DeltakerEndring.Endring.ReaktiverDeltakelse(LocalDate.now()),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )
