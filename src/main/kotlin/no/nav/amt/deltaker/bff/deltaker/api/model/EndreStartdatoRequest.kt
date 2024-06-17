@@ -16,7 +16,7 @@ data class EndreStartdatoRequest(
     fun valider(opprinneligDeltaker: Deltaker) {
         validerDeltakerKanEndres(opprinneligDeltaker)
         require(opprinneligDeltaker.status.type in kanEndreStartdato) {
-            "Kan ikke endre sluttdato for deltaker som ikke har sluttet"
+            "Kan ikke endre startdato for deltaker med status ${opprinneligDeltaker.status.type}"
         }
         require(startdato == null || !startdato.isBefore(opprinneligDeltaker.deltakerliste.startDato)) {
             "Startdato kan ikke være tidligere enn deltakerlistens startdato"
