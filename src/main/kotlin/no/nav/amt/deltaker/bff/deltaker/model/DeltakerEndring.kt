@@ -90,5 +90,9 @@ data class DeltakerEndring(
         data class EndreSluttarsak(
             val aarsak: Aarsak,
         ) : Endring()
+
+        data class ReaktiverDeltakelse(
+            val reaktivertDato: LocalDate,
+        ) : Endring()
     }
 }

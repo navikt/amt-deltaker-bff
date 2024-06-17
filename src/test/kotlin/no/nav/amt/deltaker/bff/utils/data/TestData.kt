@@ -386,6 +386,12 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
                 beskrivelse = endring.aarsak.beskrivelse,
             ),
         )
+
+        is DeltakerEndring.Endring.ReaktiverDeltakelse -> this.copy(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            startdato = null,
+            sluttdato = null,
+        )
     }
     return deltaker.copy(historikk = this.historikk.plus(DeltakerHistorikk.Endring(deltakerEndring)))
 }

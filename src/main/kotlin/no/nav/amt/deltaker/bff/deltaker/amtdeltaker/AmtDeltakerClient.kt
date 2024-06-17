@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseReq
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.OpprettKladdRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttarsakRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
@@ -181,6 +182,12 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
     ) = postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak), IKKE_AKTUELL)
 
+    suspend fun reaktiverDeltakelse(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+    ) = postEndring(deltakerId, ReaktiverDeltakelseRequest(endretAv, endretAvEnhet), REAKTIVER)
+
     suspend fun avsluttDeltakelse(
         deltakerId: UUID,
         endretAv: String,
@@ -253,6 +260,7 @@ class AmtDeltakerClient(
         const val IKKE_AKTUELL = "ikke-aktuell"
         const val AVSLUTT_DELTAKELSE = "avslutt"
         const val SIST_BESOKT = "sist-besokt"
+        const val REAKTIVER = "reaktiver"
     }
 }
 

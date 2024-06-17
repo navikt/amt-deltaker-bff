@@ -49,6 +49,13 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
+fun validerDeltakerKanReaktiveres(opprinneligDeltaker: Deltaker) {
+    require(opprinneligDeltaker.status.type == DeltakerStatus.Type.IKKE_AKTUELL) {
+        "Kan ikke reaktivere deltaker som har annen status enn ikke aktuell"
+    }
+    validerDeltakerKanEndres(opprinneligDeltaker)
+}
+
 fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
     require(opprinneligDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT) {
         "Kan ikke endre feilregistrert deltaker"
