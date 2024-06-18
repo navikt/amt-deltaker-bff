@@ -50,7 +50,7 @@ data class DeltakerEndring(
         JsonSubTypes.Type(value = Endring.ForlengDeltakelse::class, name = "ForlengDeltakelse"),
         JsonSubTypes.Type(value = Endring.AvsluttDeltakelse::class, name = "AvsluttDeltakelse"),
         JsonSubTypes.Type(value = Endring.EndreSluttarsak::class, name = "EndreSluttarsak"),
-        JsonSubTypes.Type(value = Endring.ReaktiverDeltakelse::class, name = "ReaktiverDeltakelse")
+        JsonSubTypes.Type(value = Endring.ReaktiverDeltakelse::class, name = "ReaktiverDeltakelse"),
     )
     sealed class Endring {
         data class EndreBakgrunnsinformasjon(
