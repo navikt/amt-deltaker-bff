@@ -29,9 +29,12 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -165,16 +168,18 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `pamelding deltakerId - har tilgang - oppretter utkast og returnerer 200`() = testApplication {
+    fun `pamelding deltakerId - har tilgang - oppretter utkast og returnerer deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
-        coEvery { pameldingService.upsertUtkast(any()) } returns Unit
+        coEvery { pameldingService.upsertUtkast(any()) } returns deltaker
+        val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
             status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true))
         }
     }
 
@@ -189,23 +194,19 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter ferdig godkjent deltaker og returnerer 200`() = testApplication {
+    fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter og returnerer ferdig godkjent deltaker`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery { pameldingService.upsertUtkast(any()) } returns Unit
+        coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
+        coEvery { pameldingService.upsertUtkast(any()) } returns deltaker
+        val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}/utenGodkjenning") {
-            postRequest(
-                pameldingUtenGodkjenningRequest(
-                    deltaker.innhold.toInnholdDto(),
-                ),
-            )
+        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true))
         }
-            .apply {
-                status shouldBe HttpStatusCode.OK
-            }
     }
 
     @Test
@@ -288,6 +289,16 @@ class PameldingApiTest {
         null,
         null,
     )
+
+    private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
+        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
+        val enhet = deltaker.vedtaksinformasjon?.let { TestData.lagNavEnhet(id = it.sistEndretAvEnhet) }
+
+        every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
+        enhet?.let { every { navEnhetService.hentEnhet(it.id) } returns it }
+
+        return Pair(ansatte, enhet)
+    }
 }
 
 private fun List<Innhold>.toInnholdDto() = this.map {

@@ -60,7 +60,7 @@ class AmtDeltakerClient(
         return response.body()
     }
 
-    suspend fun utkast(utkast: Utkast) {
+    suspend fun utkast(utkast: Utkast): Deltakeroppdatering {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding/${utkast.deltakerId}") {
             header(HttpHeaders.Authorization, token)
@@ -74,6 +74,8 @@ class AmtDeltakerClient(
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
+
+        return response.body()
     }
 
     suspend fun slettKladd(deltakerId: UUID) {

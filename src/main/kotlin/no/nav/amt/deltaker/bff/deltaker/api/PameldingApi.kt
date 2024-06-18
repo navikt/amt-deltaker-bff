@@ -17,12 +17,14 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -41,6 +43,14 @@ fun Routing.registerPameldingApi(
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
+    suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
+        val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
+        val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
+        val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+
+        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker)
+    }
+
     authenticate("VEILEDER") {
         post("/pamelding") {
             val request = call.receive<PameldingRequest>()
@@ -51,11 +61,7 @@ fun Routing.registerPameldingApi(
                 personident = request.personident,
             )
 
-            val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
-            val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-            val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-
-            call.respond(deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker))
+            call.respond(komplettDeltakerResponse(deltaker))
         }
 
         post("/pamelding/{deltakerId}/kladd") {
@@ -98,7 +104,7 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            pameldingService.upsertUtkast(
+            val oppdatertDeltaker = pameldingService.upsertUtkast(
                 Utkast(
                     deltakerId = deltaker.id,
                     pamelding = Pamelding(
@@ -115,7 +121,7 @@ fun Routing.registerPameldingApi(
 
             MetricRegister.DELT_UTKAST.inc()
 
-            call.respond(HttpStatusCode.OK)
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/pamelding/{deltakerId}/avbryt") {
