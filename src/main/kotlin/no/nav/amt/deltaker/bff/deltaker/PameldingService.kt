@@ -56,9 +56,12 @@ class PameldingService(
         )
     }
 
-    suspend fun upsertUtkast(utkast: Utkast) {
+    suspend fun upsertUtkast(utkast: Utkast): Deltaker {
         navEnhetService.opprettEllerOppdaterNavEnhet(utkast.pamelding.endretAvEnhet)
-        amtDeltakerClient.utkast(utkast)
+        val deltakeroppdatering = amtDeltakerClient.utkast(utkast)
+
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
+        return deltakerService.get(utkast.deltakerId).getOrThrow()
     }
 
     suspend fun slettKladd(deltaker: Deltaker): Boolean {

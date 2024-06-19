@@ -7,6 +7,9 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
+import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
+import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
@@ -138,6 +141,42 @@ class PameldingServiceTest {
 
             nyDeltaker.id shouldNotBe deltaker.id
             nyDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
+        }
+    }
+
+    @Test
+    fun `upsertUtkast - oppdaterer og returnerer deltaker`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+        TestRepository.insert(deltaker)
+
+        val forventetDeltaker = deltaker.copy(
+            innhold = listOf(Innhold("nytt innhold", "nytt-innhold", true, null)),
+            bakgrunnsinformasjon = "Noe ny informasjon",
+            deltakelsesprosent = 42F,
+            dagerPerUke = 3F,
+        )
+
+        MockResponseHandler.addUtkastResponse(forventetDeltaker)
+
+        val utkast = Utkast(
+            deltaker.id,
+            Pamelding(
+                forventetDeltaker.innhold,
+                forventetDeltaker.bakgrunnsinformasjon,
+                forventetDeltaker.deltakelsesprosent,
+                forventetDeltaker.dagerPerUke,
+                endretAv = "Veileder",
+                endretAvEnhet = "Naverstad",
+            ),
+            false,
+        )
+
+        runBlocking {
+            val oppdatertDeltaker = pameldingService.upsertUtkast(utkast)
+            oppdatertDeltaker.innhold shouldBe forventetDeltaker.innhold
+            oppdatertDeltaker.bakgrunnsinformasjon shouldBe forventetDeltaker.bakgrunnsinformasjon
+            oppdatertDeltaker.deltakelsesprosent shouldBe forventetDeltaker.deltakelsesprosent
+            oppdatertDeltaker.dagerPerUke shouldBe forventetDeltaker.dagerPerUke
         }
     }
 }
