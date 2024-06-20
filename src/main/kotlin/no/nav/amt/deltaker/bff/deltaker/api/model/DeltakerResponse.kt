@@ -58,6 +58,7 @@ data class DeltakerResponse(
         val oppstartstype: Deltakerliste.Oppstartstype,
         val startdato: LocalDate,
         val sluttdato: LocalDate?,
+        val status: Deltakerliste.Status,
     )
 }
 
@@ -79,6 +80,7 @@ fun Deltaker.toDeltakerResponse(
             oppstartstype = deltakerliste.getOppstartstype(),
             startdato = deltakerliste.startDato,
             sluttdato = deltakerliste.sluttDato,
+            status = deltakerliste.status,
         ),
         status = status,
         startdato = startdato,
