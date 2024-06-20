@@ -165,7 +165,9 @@ class DeltakerService(
             )
         }
         deltakerRepository.update(deltakeroppdatering)
-        if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
+        if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
+            deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+        ) {
             deltakerRepository.settKanIkkeEndres(listOf(deltakeroppdatering.id))
         }
     }

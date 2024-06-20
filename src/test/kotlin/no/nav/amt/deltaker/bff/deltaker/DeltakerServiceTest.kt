@@ -270,4 +270,31 @@ class DeltakerServiceTest {
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.FEILREGISTRERT
         deltakerFraDb.kanEndres shouldBe false
     }
+
+    @Test
+    fun `oppdaterDeltaker(deltakerOppdatering) - avlyst gjennomforing - setter kan ikke endres`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        TestRepository.insert(deltaker)
+        val deltakeroppdatering = Deltakeroppdatering(
+            id = deltaker.id,
+            startdato = null,
+            sluttdato = null,
+            dagerPerUke = null,
+            deltakelsesprosent = null,
+            bakgrunnsinformasjon = null,
+            innhold = emptyList(),
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.IKKE_AKTUELL,
+                aarsak = DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
+            ),
+            historikk = emptyList(),
+        )
+
+        service.oppdaterDeltaker(deltakeroppdatering)
+
+        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        deltakerFraDb.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
+        deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+        deltakerFraDb.kanEndres shouldBe false
+    }
 }
