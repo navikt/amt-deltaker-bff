@@ -59,6 +59,7 @@ data class DeltakerResponse(
         val startdato: LocalDate,
         val sluttdato: LocalDate?,
         val status: Deltakerliste.Status,
+        val tilgjengeligInnhold: List<Innholdselement>,
     )
 }
 
@@ -81,6 +82,7 @@ fun Deltaker.toDeltakerResponse(
             startdato = deltakerliste.startDato,
             sluttdato = deltakerliste.sluttDato,
             status = deltakerliste.status,
+            tilgjengeligInnhold = deltakerliste.tiltak.innhold?.innholdselementerMedAnnet ?: emptyList(),
         ),
         status = status,
         startdato = startdato,
