@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
-import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetDbo
 import no.nav.amt.lib.utils.database.Database
@@ -24,7 +23,6 @@ object TestRepository {
     fun cleanDatabase() = Database.query { session ->
         val tables = listOf(
             "deltaker_status",
-            "endringsmelding",
             "nav_ansatt",
             "nav_enhet",
             "deltaker",
@@ -285,54 +283,6 @@ object TestRepository {
             "nav_enhet_nummer" to navEnhetDbo.enhetsnummer,
             "navn" to navEnhetDbo.navn,
             "modified_at" to navEnhetDbo.sistEndret,
-        )
-
-        it.update(queryOf(sql, params))
-    }
-
-    fun insert(endringsmelding: Endringsmelding) = Database.query {
-        try {
-            insert(TestData.lagDeltaker(endringsmelding.deltakerId))
-        } catch (e: Exception) {
-            log.warn("Deltaker med id ${endringsmelding.deltakerId} finnes fra før")
-        }
-
-        val sql =
-            """
-            insert into endringsmelding(
-                id,
-                deltaker_id, 
-                utfort_av_nav_ansatt_id, 
-                opprettet_av_arrangor_ansatt_id, 
-                utfort_tidspunkt,
-                status, 
-                type, 
-                innhold, 
-                created_at
-            )
-            values (
-                :id, 
-                :deltaker_id, 
-                :utfort_av_nav_ansatt_id, 
-                :opprettet_av_arrangor_ansatt_id, 
-                :utfort_tidspunkt,
-                :status, 
-                :type, 
-                :innhold, 
-                :created_at
-            )
-            """.trimIndent()
-
-        val params = mapOf(
-            "id" to endringsmelding.id,
-            "deltaker_id" to endringsmelding.deltakerId,
-            "utfort_av_nav_ansatt_id" to endringsmelding.utfortAvNavAnsattId,
-            "opprettet_av_arrangor_ansatt_id" to endringsmelding.opprettetAvArrangorAnsattId,
-            "utfort_tidspunkt" to endringsmelding.utfortTidspunkt,
-            "status" to endringsmelding.status.name,
-            "type" to endringsmelding.type.name,
-            "innhold" to toPGObject(endringsmelding.innhold),
-            "created_at" to endringsmelding.createdAt,
         )
 
         it.update(queryOf(sql, params))

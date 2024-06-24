@@ -36,9 +36,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka.TiltakstypeConsumer
-import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingConsumer
-import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingRepository
-import no.nav.amt.deltaker.bff.endringsmelding.EndringsmeldingService
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
@@ -149,15 +146,11 @@ fun Application.module() {
         navEnhetService = navEnhetService,
     )
 
-    val endringsmeldingRepository = EndringsmeldingRepository()
-    val endringsmeldingService = EndringsmeldingService(deltakerService, navAnsattService, endringsmeldingRepository)
-
     val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
 
     val tiltakstypeRepository = TiltakstypeRepository()
 
     val consumers = listOf(
-        EndringsmeldingConsumer(endringsmeldingService),
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService),
         NavAnsattConsumer(navAnsattService),
