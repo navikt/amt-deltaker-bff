@@ -17,7 +17,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
-import no.nav.amt.deltaker.bff.endringsmelding.Endringsmelding
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import java.time.LocalDate
@@ -245,30 +244,6 @@ object TestData {
         navEnhetCache[enhetsnummer] = enhet
         return enhet
     }
-
-    fun lagEndringsmelding(
-        id: UUID = UUID.randomUUID(),
-        deltakerId: UUID = UUID.randomUUID(),
-        utfortAvNavAnsattId: UUID? = null,
-        utfortTidspunkt: LocalDateTime? = null,
-        opprettetAvArrangorAnsattId: UUID = UUID.randomUUID(),
-        opprettet: LocalDateTime = LocalDateTime.now(),
-        status: Endringsmelding.Status = Endringsmelding.Status.AKTIV,
-        innhold: Endringsmelding.Innhold = Endringsmelding.Innhold.LeggTilOppstartsdatoInnhold(
-            LocalDate.now().plusDays(2),
-        ),
-        type: Endringsmelding.Type = Endringsmelding.Type.LEGG_TIL_OPPSTARTSDATO,
-    ) = Endringsmelding(
-        id,
-        deltakerId,
-        utfortAvNavAnsattId,
-        utfortTidspunkt,
-        opprettetAvArrangorAnsattId,
-        opprettet,
-        status,
-        innhold,
-        type,
-    )
 
     fun lagNavBruker(
         personId: UUID = UUID.randomUUID(),
