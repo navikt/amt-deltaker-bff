@@ -243,6 +243,25 @@ fun Routing.registerDeltakerApi(
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
+        post("/deltaker/{deltakerId}/forleng") {
+            val navIdent = getNavIdent()
+            val request = call.receive<ForlengDeltakelseRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            request.valider(deltaker)
+
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+                deltaker = deltaker,
+                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse),
+                endretAv = navIdent,
+                endretAvEnhet = enhetsnummer,
+            )
+            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+        }
+
         get("/deltaker/{deltakerId}") {
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -263,25 +282,6 @@ fun Routing.registerDeltakerApi(
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
 
             call.respond(historikk.toResponse(ansatte))
-        }
-
-        post("/deltaker/{deltakerId}/forleng") {
-            val navIdent = getNavIdent()
-            val request = call.receive<ForlengDeltakelseRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
     }
 }
