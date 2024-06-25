@@ -175,7 +175,8 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         sluttdato: LocalDate,
-    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato), FORLENG_DELTAKELSE)
+        begrunnelse: String?,
+    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, begrunnelse), FORLENG_DELTAKELSE)
 
     suspend fun ikkeAktuell(
         deltakerId: UUID,

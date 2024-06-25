@@ -8,6 +8,7 @@ import java.time.LocalDate
 
 data class ForlengDeltakelseRequest(
     val sluttdato: LocalDate,
+    val begrunnelse: String?,
 ) {
     fun valider(opprinneligDeltaker: Deltaker) {
         require(!nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker)) {

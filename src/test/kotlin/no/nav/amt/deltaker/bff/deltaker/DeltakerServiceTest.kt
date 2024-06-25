@@ -44,7 +44,7 @@ class DeltakerServiceTest {
                     "beskrivelse",
                 ),
             ),
-            DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now()),
+            DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now(), "begrunnelse"),
             DeltakerEndring.Endring.IkkeAktuell(
                 aarsak = DeltakerEndring.Aarsak(
                     DeltakerEndring.Aarsak.Type.ANNET,

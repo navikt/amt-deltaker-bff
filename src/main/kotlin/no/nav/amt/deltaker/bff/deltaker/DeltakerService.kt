@@ -109,6 +109,7 @@ class DeltakerService(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
                     sluttdato = endring.sluttdato,
+                    begrunnelse = endring.begrunnelse,
                 )
             }
 
