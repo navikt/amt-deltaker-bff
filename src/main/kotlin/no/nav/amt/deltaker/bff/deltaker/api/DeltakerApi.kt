@@ -26,6 +26,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanReaktiveres
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -39,6 +40,7 @@ fun Routing.registerDeltakerApi(
     deltakerService: DeltakerService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
+    forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
@@ -47,7 +49,8 @@ fun Routing.registerDeltakerApi(
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
         val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker)
+        val forslag = forslagService.getForDeltaker(deltaker.id)
+        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker, forslag)
     }
 
     authenticate("VEILEDER") {

@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -25,6 +26,7 @@ data class InnbyggerDeltakerResponse(
     val deltakelsesinnhold: DeltakelsesinnholdDto?,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
     val adresseDelesMedArrangor: Boolean,
+    val forslag: List<Forslag>,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -52,7 +54,11 @@ data class InnbyggerDeltakerResponse(
     )
 }
 
-fun Deltaker.toInnbyggerDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretAvEnhet: NavEnhet?): InnbyggerDeltakerResponse {
+fun Deltaker.toInnbyggerDeltakerResponse(
+    ansatte: Map<UUID, NavAnsatt>,
+    vedtakSistEndretAvEnhet: NavEnhet?,
+    forslag: List<Forslag>,
+): InnbyggerDeltakerResponse {
     return InnbyggerDeltakerResponse(
         deltakerId = id,
         deltakerliste = InnbyggerDeltakerResponse.DeltakerlisteDto(
@@ -78,6 +84,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(ansatte: Map<UUID, NavAnsatt>, vedtakSi
         },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         adresseDelesMedArrangor = adresseDelesMedArrangor(),
+        forslag = forslag,
     )
 }
 

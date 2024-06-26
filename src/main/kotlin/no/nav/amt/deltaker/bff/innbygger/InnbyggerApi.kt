@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.innbygger.model.InnbyggerDeltakerResponse
@@ -24,11 +25,13 @@ fun Routing.registerInnbyggerApi(
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
+    forslagService: ForslagService,
 ) {
     fun komplettInnbyggerDeltakerResponse(deltaker: Deltaker): InnbyggerDeltakerResponse {
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-        return deltaker.toInnbyggerDeltakerResponse(ansatte, enhet)
+        val forslag = forslagService.getForDeltaker(deltaker.id)
+        return deltaker.toInnbyggerDeltakerResponse(ansatte, enhet, forslag)
     }
 
     authenticate("INNBYGGER") {

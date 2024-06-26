@@ -22,6 +22,7 @@ object TestRepository {
 
     fun cleanDatabase() = Database.query { session ->
         val tables = listOf(
+            "forslag",
             "deltaker_status",
             "nav_ansatt",
             "nav_enhet",

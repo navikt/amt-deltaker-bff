@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -34,6 +35,7 @@ fun Application.configureRouting(
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
+    forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
 ) {
     install(StatusPages) {
@@ -66,6 +68,7 @@ fun Application.configureRouting(
             deltakerService,
             navAnsattService,
             navEnhetService,
+            forslagService,
             amtDistribusjonClient,
         )
 
@@ -75,6 +78,7 @@ fun Application.configureRouting(
             pameldingService,
             navAnsattService,
             navEnhetService,
+            forslagService,
             amtDistribusjonClient,
         )
 
@@ -84,6 +88,7 @@ fun Application.configureRouting(
             navAnsattService,
             navEnhetService,
             innbyggerService,
+            forslagService,
         )
 
         val catchAllRoute = "{...}"

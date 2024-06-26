@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.toTitleCase
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -34,6 +35,7 @@ data class DeltakerResponse(
     val digitalBruker: Boolean,
     val maxVarighet: Long?,
     val softMaxVarighet: Long?,
+    val forslag: List<Forslag>,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -67,6 +69,7 @@ fun Deltaker.toDeltakerResponse(
     ansatte: Map<UUID, NavAnsatt>,
     vedtakSistEndretAvEnhet: NavEnhet?,
     digitalBruker: Boolean,
+    forslag: List<Forslag>,
 ): DeltakerResponse {
     return DeltakerResponse(
         deltakerId = id,
@@ -102,6 +105,7 @@ fun Deltaker.toDeltakerResponse(
         digitalBruker = digitalBruker,
         maxVarighet = maxVarighet?.toMillis(),
         softMaxVarighet = softMaxVarighet?.toMillis(),
+        forslag = forslag,
     )
 }
 

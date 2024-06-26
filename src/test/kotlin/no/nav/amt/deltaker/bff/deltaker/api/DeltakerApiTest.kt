@@ -38,6 +38,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -48,6 +49,7 @@ import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.generateJWT
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
@@ -64,6 +66,7 @@ class DeltakerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val forslagService = mockk<ForslagService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
     @Before
@@ -133,7 +136,7 @@ class DeltakerApiTest {
                 .apply {
                     status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
-                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                     )
                 }
         }
@@ -169,7 +172,7 @@ class DeltakerApiTest {
             }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -189,7 +192,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -209,7 +212,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -229,7 +232,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -263,7 +266,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -290,6 +293,7 @@ class DeltakerApiTest {
                         ansatte,
                         enhet,
                         true,
+                        emptyList(),
                     ),
                 )
             }
@@ -303,7 +307,7 @@ class DeltakerApiTest {
         mockTestApi(deltaker, null) { client, ansatte, enhet ->
             client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true))
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
             }
         }
     }
@@ -339,7 +343,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -385,7 +389,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -435,7 +439,7 @@ class DeltakerApiTest {
             client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                 )
             }
         }
@@ -493,7 +497,7 @@ class DeltakerApiTest {
                 .apply {
                     status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
-                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true),
+                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                     )
                 }
         }
@@ -539,6 +543,7 @@ class DeltakerApiTest {
                 navAnsattService,
                 navEnhetService,
                 mockk(),
+                forslagService,
                 amtDistribusjonClient,
             )
         }
@@ -559,12 +564,14 @@ class DeltakerApiTest {
     private fun mockTestApi(
         deltaker: Deltaker,
         oppdatertDeltaker: Deltaker?,
+        forslag: List<Forslag> = emptyList(),
         block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
     ) = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
+        every { forslagService.getForDeltaker(deltaker.id) } returns forslag
 
         val (ansatte, enhet) = if (oppdatertDeltaker != null) {
             coEvery {

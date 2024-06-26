@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -226,6 +227,16 @@ object TestData {
         endretAvEnhet: UUID = UUID.randomUUID(),
         endret: LocalDateTime = LocalDateTime.now(),
     ) = DeltakerEndring(id, deltakerId, endring, endretAv, endretAvEnhet, endret)
+
+    fun lagForslag(
+        id: UUID = UUID.randomUUID(),
+        deltakerId: UUID = UUID.randomUUID(),
+        opprettetAvArrangorAnsattId: UUID = UUID.randomUUID(),
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        begrunnelse: String = "Begrunnelse fra arrangør",
+        endring: Forslag.Endring = Forslag.ForlengDeltakelse(LocalDate.now().plusWeeks(2)),
+        status: Forslag.Status = Forslag.Status.VenterPaSvar,
+    ) = Forslag(id, deltakerId, opprettetAvArrangorAnsattId, opprettet, begrunnelse, endring, status)
 
     fun lagNavAnsatt(
         id: UUID = UUID.randomUUID(),

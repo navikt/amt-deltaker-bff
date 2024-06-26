@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -34,6 +35,7 @@ import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.tokenXToken
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
@@ -49,6 +51,7 @@ class InnbyggerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val forslagService = mockk<ForslagService>()
     private val innbyggerService = mockk<InnbyggerService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
@@ -82,14 +85,16 @@ class InnbyggerApiTest {
     @Test
     fun `get id - innbygger har tilgang - returnerer 200 og deltaker`() {
         val deltaker = TestData.lagDeltaker()
+        val forslag = TestData.lagForslag(deltakerId = deltaker.id)
 
-        mockTestApi(deltaker) { client, ansatte, enhet ->
+        mockTestApi(deltaker, forslag = listOf(forslag)) { client, ansatte, enhet ->
             val res = client.get("/innbygger/${deltaker.id}") { noBodyRequest() }
             res.status shouldBe HttpStatusCode.OK
             res.bodyAsText() shouldBe objectMapper.writeValueAsString(
                 deltaker.toInnbyggerDeltakerResponse(
                     ansatte,
                     enhet,
+                    listOf(forslag),
                 ),
             )
         }
@@ -141,6 +146,7 @@ class InnbyggerApiTest {
                 deltakerMedFattetVedak.toInnbyggerDeltakerResponse(
                     ansatte,
                     enhet,
+                    emptyList(),
                 ),
             )
         }
@@ -164,6 +170,7 @@ class InnbyggerApiTest {
                 navAnsattService,
                 navEnhetService,
                 innbyggerService,
+                forslagService,
                 amtDistribusjonClient,
             )
         }
@@ -172,10 +179,12 @@ class InnbyggerApiTest {
     private fun mockTestApi(
         deltaker: Deltaker,
         oppdatertDeltaker: Deltaker? = null,
+        forslag: List<Forslag> = emptyList(),
         block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
     ) = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { forslagService.getForDeltaker(deltaker.id) } returns forslag
 
         val (ansatte, enhet) = if (oppdatertDeltaker == null) {
             mockAnsatteOgEnhetForDeltaker(deltaker)
