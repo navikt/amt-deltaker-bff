@@ -29,6 +29,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ArrangorMeldingConsumer
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.job.SlettUtdatertKladdJob
 import no.nav.amt.deltaker.bff.deltaker.job.leaderelection.LeaderElection
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
@@ -152,6 +153,7 @@ fun Application.module() {
 
     val tiltakstypeRepository = TiltakstypeRepository()
     val forslagRepository = ForslagRepository()
+    val forslagService = ForslagService(forslagRepository)
 
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
@@ -160,7 +162,7 @@ fun Application.module() {
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
         DeltakerV2Consumer(deltakerService),
-        ArrangorMeldingConsumer(forslagRepository),
+        ArrangorMeldingConsumer(forslagService),
     )
     consumers.forEach { it.run() }
 
@@ -172,6 +174,7 @@ fun Application.module() {
         navAnsattService,
         navEnhetService,
         innbyggerService,
+        forslagService,
         amtDistribusjonClient,
     )
     configureMonitoring()

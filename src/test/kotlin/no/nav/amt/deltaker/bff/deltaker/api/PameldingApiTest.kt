@@ -29,6 +29,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
@@ -52,6 +53,7 @@ class PameldingApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val forslagService = mockk<ForslagService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
     @Before
@@ -111,6 +113,7 @@ class PameldingApiTest {
         coEvery { pameldingService.opprettKladd(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
 
         setUpTestApplication()
@@ -118,7 +121,7 @@ class PameldingApiTest {
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             TestCase.assertEquals(HttpStatusCode.OK, status)
             TestCase.assertEquals(
-                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet, true)),
+                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet, true, emptyList())),
                 bodyAsText(),
             )
         }
@@ -174,12 +177,13 @@ class PameldingApiTest {
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         coEvery { pameldingService.upsertUtkast(any()) } returns deltaker
+        coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true))
+            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
         }
     }
 
@@ -200,12 +204,13 @@ class PameldingApiTest {
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         coEvery { pameldingService.upsertUtkast(any()) } returns deltaker
+        coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true))
+            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
         }
     }
 
@@ -273,6 +278,7 @@ class PameldingApiTest {
                 navAnsattService,
                 navEnhetService,
                 mockk(),
+                forslagService,
                 amtDistribusjonClient,
             )
         }

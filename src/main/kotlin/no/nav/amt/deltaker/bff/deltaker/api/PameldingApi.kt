@@ -24,6 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningReques
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
@@ -39,6 +40,7 @@ fun Routing.registerPameldingApi(
     pameldingService: PameldingService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
+    forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
@@ -47,8 +49,9 @@ fun Routing.registerPameldingApi(
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
         val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+        val forslag = forslagService.getForDeltaker(deltaker.id)
 
-        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker)
+        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker, forslag)
     }
 
     authenticate("VEILEDER") {

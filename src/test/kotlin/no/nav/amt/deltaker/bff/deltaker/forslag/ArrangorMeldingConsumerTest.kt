@@ -16,12 +16,14 @@ import java.util.UUID
 class ArrangorMeldingConsumerTest {
     companion object {
         lateinit var repository: ForslagRepository
+        lateinit var service: ForslagService
 
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgresContainer.start()
             repository = ForslagRepository()
+            service = ForslagService(repository)
         }
     }
 
@@ -32,7 +34,7 @@ class ArrangorMeldingConsumerTest {
 
     @Test
     fun `consume - forslag VentarPaSvar - lagrer`(): Unit = runBlocking {
-        val consumer = ArrangorMeldingConsumer(repository)
+        val consumer = ArrangorMeldingConsumer(service)
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
@@ -49,7 +51,7 @@ class ArrangorMeldingConsumerTest {
 
     @Test
     fun `consume - forslag tilbakekalt - sletter`(): Unit = runBlocking {
-        val consumer = ArrangorMeldingConsumer(repository)
+        val consumer = ArrangorMeldingConsumer(service)
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)

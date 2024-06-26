@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class ArrangorMeldingConsumer(
-    private val repository: ForslagRepository,
+    private val forslagService: ForslagService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl("earliest"),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -34,16 +34,16 @@ class ArrangorMeldingConsumer(
     override suspend fun consume(key: UUID, value: String?) {
         if (value == null) {
             log.warn("Mottok tombstone for melding med id: $key")
-            repository.delete(key)
+            forslagService.delete(key)
             return
         }
         val melding = objectMapper.readValue<Melding>(value)
         if (melding is Forslag) {
             if (melding.status is Forslag.Status.VenterPaSvar) {
-                repository.upsert(melding)
+                forslagService.upsert(melding)
                 log.info("Lagret forslag med id $key")
             } else {
-                repository.delete(key)
+                forslagService.delete(key)
                 log.info("Slettet forslag med status ${melding.status.javaClass.simpleName}, id $key")
             }
         }
