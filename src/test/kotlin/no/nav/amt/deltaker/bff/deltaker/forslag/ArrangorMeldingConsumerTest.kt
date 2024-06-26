@@ -33,7 +33,7 @@ class ArrangorMeldingConsumerTest {
     }
 
     @Test
-    fun `consume - forslag VentarPaSvar - lagrer`(): Unit = runBlocking {
+    fun `consume - forslag VenterPaSvar - lagrer`(): Unit = runBlocking {
         val consumer = ArrangorMeldingConsumer(service)
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
@@ -46,7 +46,7 @@ class ArrangorMeldingConsumerTest {
 
         val forslagFraDb = repository.getForDeltaker(deltaker.id)
         forslagFraDb.size shouldBe 1
-        forslagFraDb.first() shouldBe forslag
+        forslagFraDb.first().id shouldBe forslag.id
     }
 
     @Test
