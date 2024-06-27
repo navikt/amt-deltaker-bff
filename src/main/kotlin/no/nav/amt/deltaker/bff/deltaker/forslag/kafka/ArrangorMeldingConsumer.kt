@@ -1,8 +1,9 @@
-package no.nav.amt.deltaker.bff.deltaker.forslag
+package no.nav.amt.deltaker.bff.deltaker.forslag.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.kafka.ManagedKafkaConsumer
 import no.nav.amt.lib.kafka.config.KafkaConfig

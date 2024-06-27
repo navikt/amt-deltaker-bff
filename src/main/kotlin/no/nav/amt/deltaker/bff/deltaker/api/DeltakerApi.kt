@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
@@ -285,6 +286,24 @@ fun Routing.registerDeltakerApi(
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
 
             call.respond(historikk.toResponse(ansatte))
+        }
+
+        post("/forslag/{forslagId}/avvis") {
+            val navIdent = getNavIdent()
+            val request = call.receive<AvvisForslagRequest>()
+            val forslag = forslagService.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
+            val deltaker = deltakerService.get(forslag.deltakerId).getOrThrow()
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            forslagService.avvisForslag(
+                opprinneligForslag = forslag,
+                begrunnelse = request.begrunnelseFraNav,
+                avvistAvAnsatt = navIdent,
+                avvistAvEnhet = enhetsnummer,
+            )
+            call.respond(komplettDeltakerResponse(deltaker))
         }
     }
 }

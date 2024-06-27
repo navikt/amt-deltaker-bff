@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
@@ -66,7 +67,7 @@ class DeltakerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
-    private val forslagService = mockk<ForslagService>()
+    private val forslagService = mockk<ForslagService>(relaxed = true)
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
     @Before
@@ -81,6 +82,7 @@ class DeltakerApiTest {
             Decision.Deny("Ikke tilgang", ""),
         )
         coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
 
         setUpTestApplication()
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") {
@@ -104,6 +106,7 @@ class DeltakerApiTest {
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/forslag/${UUID.randomUUID()}/avvis") { postRequest(avvisForslagRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -120,6 +123,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/forslag/${UUID.randomUUID()}/avvis").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -518,6 +522,23 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `avvis forslag - har tilgang - returnerer oppdatert deltaker`() {
+        val deltaker = TestData.lagDeltaker()
+        val forslag = TestData.lagForslag(deltakerId = deltaker.id)
+        every { forslagService.get(forslag.id) } returns Result.success(forslag)
+
+        mockTestApi(deltaker, deltaker, emptyList()) { client, ansatte, enhet ->
+            client.post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
+                .apply {
+                    status shouldBe HttpStatusCode.OK
+                    bodyAsText() shouldBe objectMapper.writeValueAsString(
+                        deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                    )
+                }
+        }
+    }
+
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -560,6 +581,7 @@ class DeltakerApiTest {
     private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
     private val sluttarsakRequest =
         EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
+    private val avvisForslagRequest = AvvisForslagRequest("Avvist fordi..")
 
     private fun mockTestApi(
         deltaker: Deltaker,

@@ -35,7 +35,7 @@ class DeltakerService(
         endretAv: String,
         endretAvEnhet: String,
     ): Deltaker {
-        navEnhetService.opprettEllerOppdaterNavEnhet(endretAvEnhet)
+        navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
         val oppdatertDeltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> endreDeltaker(deltaker) {
                 amtDeltakerClient.endreBakgrunnsinformasjon(

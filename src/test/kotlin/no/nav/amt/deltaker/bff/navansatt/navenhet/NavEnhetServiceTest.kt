@@ -28,19 +28,19 @@ class NavEnhetServiceTest {
     }
 
     @Test
-    fun `opprettEllerOppdaterNavEnhet - navenhet finnes i db - henter fra db`() {
+    fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes i db - henter fra db`() {
         val navEnhet = TestData.lagNavEnhet()
         repository.upsert(navEnhet)
         val navEnhetService = NavEnhetService(repository, mockk())
 
         runBlocking {
-            val navEnhetFraDb = navEnhetService.opprettEllerOppdaterNavEnhet(navEnhet.enhetsnummer)
+            val navEnhetFraDb = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhet.enhetsnummer)
             navEnhetFraDb shouldBe navEnhet
         }
     }
 
     @Test
-    fun `opprettEllerOppdaterNavEnhet - navenhet finnes ikke i db - henter fra personservice og lagrer`() {
+    fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes ikke i db - henter fra personservice og lagrer`() {
         val navEnhetResponse = TestData.lagNavEnhet()
         val httpClient =
             mockHttpClient(
@@ -55,7 +55,7 @@ class NavEnhetServiceTest {
         val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
 
         runBlocking {
-            val navEnhet = navEnhetService.opprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
+            val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
 
             navEnhet shouldBe navEnhetResponse
             repository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse
@@ -63,7 +63,7 @@ class NavEnhetServiceTest {
     }
 
     @Test
-    fun `opprettEllerOppdaterNavEnhet - utdatert navenhet finnes i db - henter fra personservice og oppdaterer`() {
+    fun `hentOpprettEllerOppdaterNavEnhet - utdatert navenhet finnes i db - henter fra personservice og oppdaterer`() {
         val utdatertNavEnhet = TestData.lagNavEnhet()
         TestRepository.insert(
             NavEnhetDbo(
@@ -87,7 +87,7 @@ class NavEnhetServiceTest {
         val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
 
         runBlocking {
-            val navEnhet = navEnhetService.opprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
+            val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
 
             navEnhet shouldBe navEnhetResponse
             repository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse

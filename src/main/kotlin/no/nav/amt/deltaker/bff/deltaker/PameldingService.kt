@@ -57,7 +57,7 @@ class PameldingService(
     }
 
     suspend fun upsertUtkast(utkast: Utkast): Deltaker {
-        navEnhetService.opprettEllerOppdaterNavEnhet(utkast.pamelding.endretAvEnhet)
+        navEnhetService.hentOpprettEllerOppdaterNavEnhet(utkast.pamelding.endretAvEnhet)
         val deltakeroppdatering = amtDeltakerClient.utkast(utkast)
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
@@ -79,7 +79,7 @@ class PameldingService(
         avbruttAvEnhet: String,
         avbruttAv: String,
     ) {
-        navEnhetService.opprettEllerOppdaterNavEnhet(avbruttAvEnhet)
+        navEnhetService.hentOpprettEllerOppdaterNavEnhet(avbruttAvEnhet)
         amtDeltakerClient.avbrytUtkast(deltakerId, avbruttAv, avbruttAvEnhet)
     }
 
