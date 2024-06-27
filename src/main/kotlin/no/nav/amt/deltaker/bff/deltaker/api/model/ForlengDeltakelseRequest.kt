@@ -1,14 +1,17 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerForslagEllerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import java.time.LocalDate
+import java.util.UUID
 
 data class ForlengDeltakelseRequest(
     val sluttdato: LocalDate,
     val begrunnelse: String?,
+    val forslagId: UUID?,
 ) {
     fun valider(opprinneligDeltaker: Deltaker) {
         require(!nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker)) {
@@ -19,6 +22,7 @@ data class ForlengDeltakelseRequest(
             "Kan ikke forlenge deltakelse for deltaker med status ${opprinneligDeltaker.status.type}"
         }
         validerDeltakerKanEndres(opprinneligDeltaker)
+        validerForslagEllerBegrunnelse(forslagId, begrunnelse)
     }
 
     private fun nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker: Deltaker) =

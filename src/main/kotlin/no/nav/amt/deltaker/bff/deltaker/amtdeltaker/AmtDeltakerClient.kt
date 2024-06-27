@@ -30,6 +30,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -176,7 +177,8 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         sluttdato: LocalDate,
         begrunnelse: String?,
-    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, begrunnelse), FORLENG_DELTAKELSE)
+        forslag: Forslag?,
+    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, begrunnelse, forslag), FORLENG_DELTAKELSE)
 
     suspend fun ikkeAktuell(
         deltakerId: UUID,

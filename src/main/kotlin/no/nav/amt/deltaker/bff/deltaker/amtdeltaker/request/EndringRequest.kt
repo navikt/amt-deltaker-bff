@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request
 
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
 
 sealed interface EndringRequest {
@@ -52,6 +53,7 @@ data class ForlengDeltakelseRequest(
     override val endretAvEnhet: String,
     val sluttdato: LocalDate,
     val begrunnelse: String?,
+    val forslag: Forslag?,
 ) : EndringRequest
 
 data class IkkeAktuellRequest(

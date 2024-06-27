@@ -141,7 +141,10 @@ fun Application.module() {
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     val deltakerRepository = DeltakerRepository()
 
-    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService)
+    val forslagRepository = ForslagRepository()
+    val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer())
+
+    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService, forslagService)
 
     val pameldingService = PameldingService(
         deltakerService = deltakerService,
@@ -153,8 +156,6 @@ fun Application.module() {
     val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
 
     val tiltakstypeRepository = TiltakstypeRepository()
-    val forslagRepository = ForslagRepository()
-    val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer())
 
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),

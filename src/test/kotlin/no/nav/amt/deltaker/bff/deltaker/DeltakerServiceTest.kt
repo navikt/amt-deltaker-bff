@@ -1,12 +1,18 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
@@ -15,9 +21,12 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonPostgresContainer
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 
 class DeltakerServiceTest {
     init {
@@ -25,7 +34,10 @@ class DeltakerServiceTest {
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService)
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockk())
+    private val arrangorMeldingProducer = mockk<ArrangorMeldingProducer>(relaxed = true)
+    private val forslagService = ForslagService(ForslagRepository(), navAnsattService, navEnhetService, arrangorMeldingProducer)
+    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, forslagService)
 
     @Test
     fun `oppdaterDeltaker(endring) - kaller client og returnerer deltaker`(): Unit = runBlocking {
@@ -44,7 +56,7 @@ class DeltakerServiceTest {
                     "beskrivelse",
                 ),
             ),
-            DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now(), "begrunnelse"),
+            DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now(), "begrunnelse", null),
             DeltakerEndring.Endring.IkkeAktuell(
                 aarsak = DeltakerEndring.Aarsak(
                     DeltakerEndring.Aarsak.Type.ANNET,
@@ -125,6 +137,35 @@ class DeltakerServiceTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `oppdaterDeltaker(endring med forslag) - kaller client og returnerer deltaker, sletter forslag`(): Unit = runBlocking {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        val forslag = TestData.lagForslag(deltakerId = deltaker.id)
+        forslagService.upsert(forslag)
+        val godkjentForslag = forslag.copy(
+            status = Forslag.Status.Godkjent(Forslag.NavAnsatt(UUID.randomUUID(), UUID.randomUUID()), LocalDateTime.now()),
+        )
+
+        val endring = DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now(), "begrunnelse", godkjentForslag)
+
+        MockResponseHandler.addEndringsresponse(
+            deltaker.endre(TestData.lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
+            endring,
+        )
+
+        val oppdatertDeltaker = service.oppdaterDeltaker(
+            deltaker,
+            endring,
+            "navIdent",
+            "enhetsnummer",
+            forslag.id,
+        )
+
+        oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+        forslagService.getForDeltaker(deltaker.id) shouldBe emptyList()
     }
 
     @Test

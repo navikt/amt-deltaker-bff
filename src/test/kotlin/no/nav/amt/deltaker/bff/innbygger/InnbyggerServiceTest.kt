@@ -1,10 +1,12 @@
 package no.nav.amt.deltaker.bff.innbygger
 
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.sammenlignDeltakere
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.sammenlignVedtak
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -21,7 +23,8 @@ import org.junit.Test
 class InnbyggerServiceTest {
     private val amtDeltakerClient = mockAmtDeltakerClient()
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService)
+    private val forslagService = mockk<ForslagService>()
+    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService, forslagService)
     private val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
 
     companion object {

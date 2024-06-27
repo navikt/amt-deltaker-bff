@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -78,6 +79,7 @@ data class DeltakerEndring(
         data class ForlengDeltakelse(
             val sluttdato: LocalDate,
             val begrunnelse: String?,
+            val forslag: Forslag?,
         ) : Endring()
 
         data class IkkeAktuell(

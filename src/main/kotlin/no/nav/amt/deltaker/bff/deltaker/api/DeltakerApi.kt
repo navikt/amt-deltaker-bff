@@ -32,8 +32,10 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 fun Routing.registerDeltakerApi(
@@ -256,12 +258,24 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            val forslag = request.forslagId?.let { forslagService.get(it).getOrThrow() }
+
+            val godkjentForslag = forslag?.copy(
+                status = Forslag.Status.Godkjent(
+                    godkjentAv = Forslag.NavAnsatt(
+                        id = navAnsattService.hentEllerOpprettNavAnsatt(navIdent).id,
+                        enhetId = navEnhetService.hentOpprettEllerOppdaterNavEnhet(enhetsnummer).id,
+                    ),
+                    godkjent = LocalDateTime.now(),
+                ),
+            )
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse),
+                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse, godkjentForslag),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
+                forslagId = request.forslagId,
             )
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
