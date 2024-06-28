@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -56,6 +57,16 @@ class NavAnsattService(
                         it.vedtak.sistEndretAv,
                         it.vedtak.opprettetAv,
                     )
+                }
+
+                is DeltakerHistorikk.Forslag -> {
+                    when (it.forslag.status) {
+                        is Forslag.Status.VenterPaSvar,
+                        is Forslag.Status.Tilbakekalt,
+                        -> emptyList()
+                        is Forslag.Status.Avvist -> listOfNotNull((it.forslag.status as Forslag.Status.Avvist).avvistAv.id)
+                        is Forslag.Status.Godkjent -> listOfNotNull((it.forslag.status as Forslag.Status.Godkjent).godkjentAv.id)
+                    }
                 }
             }
         }.distinct()

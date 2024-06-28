@@ -36,6 +36,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
@@ -323,11 +324,14 @@ class DeltakerApiTest {
         mockTestApi(deltaker, null) { client, _, _ ->
             val historikk = deltaker.getDeltakerHistorikSortert()
             val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
+            val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
             every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
             client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse(ansatte))
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
+                )
             }
         }
     }

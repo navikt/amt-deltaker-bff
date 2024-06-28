@@ -1,13 +1,11 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker
 
 import io.kotest.matchers.shouldBe
-import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
@@ -24,12 +22,10 @@ class NavBrukerConsumerTest {
     companion object {
         private val repository: NavBrukerRepository = NavBrukerRepository()
         private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-        private val forslagService = mockk<ForslagService>()
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
-            forslagService = forslagService,
         )
 
         private var pameldingService = PameldingService(

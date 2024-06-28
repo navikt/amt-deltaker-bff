@@ -1,6 +1,8 @@
 package no.nav.amt.deltaker.bff.navansatt.navenhet
 
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
@@ -22,4 +24,35 @@ class NavEnhetService(
     }
 
     fun hentEnhet(id: UUID) = repository.get(id)?.toNavEnhet()
+
+    fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
+        val ider = historikk.flatMap {
+            when (it) {
+                is DeltakerHistorikk.Endring -> {
+                    listOf(it.endring.endretAvEnhet)
+                }
+
+                is DeltakerHistorikk.Vedtak -> {
+                    listOfNotNull(
+                        it.vedtak.sistEndretAvEnhet,
+                        it.vedtak.opprettetAvEnhet,
+                    )
+                }
+
+                is DeltakerHistorikk.Forslag -> {
+                    when (it.forslag.status) {
+                        is Forslag.Status.VenterPaSvar,
+                        is Forslag.Status.Tilbakekalt,
+                        -> emptyList()
+                        is Forslag.Status.Avvist -> listOfNotNull((it.forslag.status as Forslag.Status.Avvist).avvistAv.enhetId)
+                        is Forslag.Status.Godkjent -> listOfNotNull((it.forslag.status as Forslag.Status.Godkjent).godkjentAv.enhetId)
+                    }
+                }
+            }
+        }.distinct()
+
+        return hentEnheter(ider)
+    }
+
+    private fun hentEnheter(enhetIder: List<UUID>) = repository.getMany(enhetIder).map { it.toNavEnhet() }.associateBy { it.id }
 }

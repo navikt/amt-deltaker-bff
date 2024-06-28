@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.sammenlignDeltakereVedVedtak
+import no.nav.amt.deltaker.bff.kafka.utils.sammenlignForslagStatus
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Test
@@ -111,6 +112,17 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.vedtak.opprettetAv shouldBe b.vedtak.opprettetAv
             a.vedtak.opprettetAvEnhet shouldBe b.vedtak.opprettetAvEnhet
             a.vedtak.opprettet shouldBeCloseTo b.vedtak.opprettet
+        }
+
+        is DeltakerHistorikk.Forslag -> {
+            b as DeltakerHistorikk.Forslag
+            a.forslag.id shouldBe b.forslag.id
+            a.forslag.deltakerId shouldBe b.forslag.deltakerId
+            a.forslag.opprettet shouldBeCloseTo b.forslag.opprettet
+            a.forslag.begrunnelse shouldBe b.forslag.begrunnelse
+            a.forslag.opprettetAvArrangorAnsattId shouldBe b.forslag.opprettetAvArrangorAnsattId
+            a.forslag.endring shouldBe b.forslag.endring
+            sammenlignForslagStatus(a.forslag.status, b.forslag.status)
         }
     }
 }

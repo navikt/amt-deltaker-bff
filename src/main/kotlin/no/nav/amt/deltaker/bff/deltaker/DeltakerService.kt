@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -19,7 +18,6 @@ class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
     private val amtDeltakerClient: AmtDeltakerClient,
     private val navEnhetService: NavEnhetService,
-    private val forslagService: ForslagService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -113,7 +111,7 @@ class DeltakerService(
                     endretAvEnhet = endretAvEnhet,
                     sluttdato = endring.sluttdato,
                     begrunnelse = endring.begrunnelse,
-                    forslag = endring.forslag,
+                    forslagId = forslagId,
                 )
             }
 
@@ -133,10 +131,6 @@ class DeltakerService(
                     endretAvEnhet = endretAvEnhet,
                 )
             }
-        }
-        if (forslagId != null) {
-            forslagService.delete(forslagId)
-            log.info("Slettet godkjent forslag med id $forslagId")
         }
         return oppdatertDeltaker
     }

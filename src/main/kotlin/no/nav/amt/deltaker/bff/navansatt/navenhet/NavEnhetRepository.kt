@@ -62,4 +62,17 @@ class NavEnhetRepository {
             it.run(query)
         }
     }
+
+    fun getMany(enhetIder: List<UUID>) = Database.query {
+        if (enhetIder.isEmpty()) return@query emptyList()
+
+        val statement = "select * from nav_enhet where id in (${enhetIder.joinToString { "?" }})"
+
+        val query = queryOf(
+            statement,
+            *enhetIder.toTypedArray(),
+        )
+
+        it.run(query.map(::rowMapper).asList)
+    }
 }

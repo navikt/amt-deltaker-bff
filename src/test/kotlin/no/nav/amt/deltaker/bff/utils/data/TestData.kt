@@ -226,7 +226,8 @@ object TestData {
         endretAv: UUID = UUID.randomUUID(),
         endretAvEnhet: UUID = UUID.randomUUID(),
         endret: LocalDateTime = LocalDateTime.now(),
-    ) = DeltakerEndring(id, deltakerId, endring, endretAv, endretAvEnhet, endret)
+        forslag: Forslag? = null,
+    ) = DeltakerEndring(id, deltakerId, endring, endretAv, endretAvEnhet, endret, forslag)
 
     fun lagForslag(
         id: UUID = UUID.randomUUID(),
@@ -303,8 +304,43 @@ object TestData {
                     it.vedtak.opprettetAv,
                 )
             }
+
+            is DeltakerHistorikk.Forslag -> {
+                when (it.forslag.status) {
+                    is Forslag.Status.VenterPaSvar,
+                    is Forslag.Status.Tilbakekalt,
+                    -> emptyList()
+                    is Forslag.Status.Avvist -> listOfNotNull((it.forslag.status as Forslag.Status.Avvist).avvistAv.id)
+                    is Forslag.Status.Godkjent -> listOfNotNull((it.forslag.status as Forslag.Status.Godkjent).godkjentAv.id)
+                }
+            }
         }
     }.distinct().map { lagNavAnsatt(id = it) }
+
+    fun lagNavEnheterForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
+        when (it) {
+            is DeltakerHistorikk.Endring -> {
+                listOf(it.endring.endretAvEnhet)
+            }
+
+            is DeltakerHistorikk.Vedtak -> {
+                listOfNotNull(
+                    it.vedtak.sistEndretAvEnhet,
+                    it.vedtak.opprettetAvEnhet,
+                )
+            }
+
+            is DeltakerHistorikk.Forslag -> {
+                when (it.forslag.status) {
+                    is Forslag.Status.VenterPaSvar,
+                    is Forslag.Status.Tilbakekalt,
+                    -> emptyList()
+                    is Forslag.Status.Avvist -> listOfNotNull((it.forslag.status as Forslag.Status.Avvist).avvistAv.enhetId)
+                    is Forslag.Status.Godkjent -> listOfNotNull((it.forslag.status as Forslag.Status.Godkjent).godkjentAv.enhetId)
+                }
+            }
+        }
+    }.distinct().map { lagNavEnhet(id = it) }
 
     fun leggTilHistorikk(
         deltaker: Deltaker,

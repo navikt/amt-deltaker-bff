@@ -14,6 +14,7 @@ data class DeltakerEndring(
     val endretAv: UUID,
     val endretAvEnhet: UUID,
     val endret: LocalDateTime,
+    val forslag: Forslag?,
 ) {
     data class Aarsak(
         val type: Type,
@@ -79,7 +80,6 @@ data class DeltakerEndring(
         data class ForlengDeltakelse(
             val sluttdato: LocalDate,
             val begrunnelse: String?,
-            val forslag: Forslag?,
         ) : Endring()
 
         data class IkkeAktuell(

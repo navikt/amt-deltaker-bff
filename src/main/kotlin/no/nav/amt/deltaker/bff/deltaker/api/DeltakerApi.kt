@@ -24,6 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanReaktiveres
@@ -32,10 +33,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
-import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.UUID
 
 fun Routing.registerDeltakerApi(
@@ -258,25 +257,19 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
-            val forslag = request.forslagId?.let { forslagService.get(it).getOrThrow() }
-
-            val godkjentForslag = forslag?.copy(
-                status = Forslag.Status.Godkjent(
-                    godkjentAv = Forslag.NavAnsatt(
-                        id = navAnsattService.hentEllerOpprettNavAnsatt(navIdent).id,
-                        enhetId = navEnhetService.hentOpprettEllerOppdaterNavEnhet(enhetsnummer).id,
-                    ),
-                    godkjent = LocalDateTime.now(),
-                ),
-            )
+            request.forslagId?.let { forslagService.get(it).getOrThrow() }
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse, godkjentForslag),
+                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
                 forslagId = request.forslagId,
             )
+            request.forslagId?.let {
+                forslagService.delete(it)
+                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
+            }
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
@@ -298,8 +291,11 @@ fun Routing.registerDeltakerApi(
             val historikk = deltaker.getDeltakerHistorikSortert()
 
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
+            val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
-            call.respond(historikk.toResponse(ansatte))
+            val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
+
+            call.respond(historikk.toResponse(ansatte, arrangornavn, enheter))
         }
 
         post("/forslag/{forslagId}/avvis") {
