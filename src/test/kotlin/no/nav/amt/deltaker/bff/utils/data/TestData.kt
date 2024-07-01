@@ -368,10 +368,12 @@ object TestData {
         deltaker: Deltaker,
         vedtak: List<Vedtak> = emptyList(),
         endringer: List<DeltakerEndring> = emptyList(),
+        forslag: List<Forslag> = emptyList(),
     ) = deltaker.copy(
         historikk = deltaker.historikk
             .plus(vedtak.map { DeltakerHistorikk.Vedtak(it) })
-            .plus(endringer.map { DeltakerHistorikk.Endring(it) }),
+            .plus(endringer.map { DeltakerHistorikk.Endring(it) })
+            .plus(forslag.map { DeltakerHistorikk.Forslag(it) }),
     )
 }
 

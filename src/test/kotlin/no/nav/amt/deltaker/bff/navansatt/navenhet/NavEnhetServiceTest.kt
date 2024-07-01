@@ -4,16 +4,19 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.deltaker.bff.utils.mockHttpClient
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonPostgresContainer
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDateTime
+import java.util.UUID
 
 class NavEnhetServiceTest {
     companion object {
@@ -92,5 +95,41 @@ class NavEnhetServiceTest {
             navEnhet shouldBe navEnhetResponse
             repository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse
         }
+    }
+
+    @Test
+    fun `hentEnheterForHistorikk - historikk endret av flere ansatte - returnerer alle enheter`() {
+        val navEnhetService = NavEnhetService(repository, mockk())
+        val deltaker = TestData.lagDeltaker()
+        val vedtak = TestData.lagVedtak(
+            deltakerVedVedtak = deltaker,
+            fattet = LocalDateTime.now(),
+            fattetAvNav = true,
+        )
+        val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
+        val forslag = TestData.lagForslag(
+            deltakerId = deltaker.id,
+            status = Forslag.Status.Avvist(
+                avvistAv = Forslag.NavAnsatt(UUID.randomUUID(), UUID.randomUUID()),
+                avvist = LocalDateTime.now(),
+                begrunnelseFraNav = "Begrunnelse",
+            ),
+        )
+
+        val historikk = listOf(
+            DeltakerHistorikk.Endring(deltakerEndring),
+            DeltakerHistorikk.Vedtak(vedtak),
+            DeltakerHistorikk.Forslag(forslag),
+        )
+
+        val enheter = TestData.lagNavEnheterForHistorikk(historikk)
+
+        enheter.forEach { TestRepository.insert(it) }
+        TestRepository.insert(deltaker)
+
+        val faktiskeEnheter = navEnhetService.hentEnheterForHistorikk(historikk)
+        faktiskeEnheter.size shouldBe enheter.size
+
+        faktiskeEnheter.toList().map { it.second }.containsAll(enheter) shouldBe true
     }
 }

@@ -615,9 +615,11 @@ class DeltakerApiTest {
     private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
         val enhet = deltaker.vedtaksinformasjon?.let { TestData.lagNavEnhet(id = it.sistEndretAvEnhet) }
+        val enheter = TestData.lagNavEnheterForHistorikk(deltaker.historikk).associateBy { it.id }
 
         every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         enhet?.let { every { navEnhetService.hentEnhet(it.id) } returns it }
+        every { navEnhetService.hentEnheterForHistorikk(any()) } returns enheter
 
         return Pair(ansatte, enhet)
     }
