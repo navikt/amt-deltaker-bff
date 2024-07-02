@@ -2,9 +2,9 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
-import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
@@ -31,7 +31,7 @@ data class VedtakResponse(
     val fattet: LocalDateTime?,
     val bakgrunnsinformasjon: String?,
     val fattetAvNav: Boolean,
-    val innhold: List<Innhold>,
+    val deltakelsesinnhold: Deltakelsesinnhold?,
     val opprettetAv: String,
     val opprettetAvEnhet: String,
     val opprettet: LocalDateTime,
@@ -83,7 +83,7 @@ fun DeltakerEndring.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID,
 fun Vedtak.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = VedtakResponse(
     fattet = fattet,
     bakgrunnsinformasjon = deltakerVedVedtak.bakgrunnsinformasjon,
-    innhold = deltakerVedVedtak.innhold,
+    deltakelsesinnhold = deltakerVedVedtak.deltakelsesinnhold,
     fattetAvNav = fattetAvNav,
     opprettetAv = ansatte[opprettetAv]!!.navn,
     opprettetAvEnhet = enheter[opprettetAvEnhet]!!.navn,
