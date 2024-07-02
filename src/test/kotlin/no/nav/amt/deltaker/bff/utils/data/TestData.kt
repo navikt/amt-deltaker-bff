@@ -306,12 +306,12 @@ object TestData {
             }
 
             is DeltakerHistorikk.Forslag -> {
-                when (it.forslag.status) {
+                when (val status = it.forslag.status) {
                     is Forslag.Status.VenterPaSvar,
                     is Forslag.Status.Tilbakekalt,
                     -> emptyList()
-                    is Forslag.Status.Avvist -> listOfNotNull((it.forslag.status as Forslag.Status.Avvist).avvistAv.id)
-                    is Forslag.Status.Godkjent -> listOfNotNull((it.forslag.status as Forslag.Status.Godkjent).godkjentAv.id)
+                    is Forslag.Status.Avvist -> listOfNotNull(status.avvistAv.id)
+                    is Forslag.Status.Godkjent -> listOfNotNull(status.godkjentAv.id)
                 }
             }
         }
@@ -331,12 +331,12 @@ object TestData {
             }
 
             is DeltakerHistorikk.Forslag -> {
-                when (it.forslag.status) {
+                when (val status = it.forslag.status) {
                     is Forslag.Status.VenterPaSvar,
                     is Forslag.Status.Tilbakekalt,
                     -> emptyList()
-                    is Forslag.Status.Avvist -> listOfNotNull((it.forslag.status as Forslag.Status.Avvist).avvistAv.enhetId)
-                    is Forslag.Status.Godkjent -> listOfNotNull((it.forslag.status as Forslag.Status.Godkjent).godkjentAv.enhetId)
+                    is Forslag.Status.Avvist -> listOfNotNull(status.avvistAv.enhetId)
+                    is Forslag.Status.Godkjent -> listOfNotNull(status.godkjentAv.enhetId)
                 }
             }
         }

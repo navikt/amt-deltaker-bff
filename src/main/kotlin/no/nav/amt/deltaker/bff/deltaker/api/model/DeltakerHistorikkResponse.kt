@@ -105,12 +105,12 @@ fun Forslag.toResponse(
 }
 
 private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagResponseStatus {
-    return when (status) {
+    return when (val status = status) {
         is Forslag.Status.VenterPaSvar,
         is Forslag.Status.Godkjent,
         -> throw IllegalStateException("Ulovlig status for forslag i deltakerhistorikk for deltaker $deltakerId")
         is Forslag.Status.Avvist -> {
-            val avvist = status as Forslag.Status.Avvist
+            val avvist = status
             ForslagResponseStatus.Avvist(
                 avvistAv = ansatte[avvist.avvistAv.id]!!.navn,
                 avvistAvEnhet = enheter[avvist.avvistAv.enhetId]!!.navn,
@@ -118,6 +118,6 @@ private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enhe
                 begrunnelseFraNav = avvist.begrunnelseFraNav,
             )
         }
-        is Forslag.Status.Tilbakekalt -> ForslagResponseStatus.Tilbakekalt((status as Forslag.Status.Tilbakekalt).tilbakekalt)
+        is Forslag.Status.Tilbakekalt -> ForslagResponseStatus.Tilbakekalt(status.tilbakekalt)
     }
 }
