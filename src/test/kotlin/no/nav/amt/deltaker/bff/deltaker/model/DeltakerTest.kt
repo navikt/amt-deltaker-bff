@@ -2,10 +2,13 @@ package no.nav.amt.deltaker.bff.deltaker.model
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.sammenlignDeltakereVedVedtak
+import no.nav.amt.deltaker.bff.kafka.utils.sammenlignForslagStatus
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Test
 import java.time.LocalDateTime
+import java.util.UUID
 
 class DeltakerTest {
     @Test
@@ -20,18 +23,26 @@ class DeltakerTest {
             deltakerId = baseDeltaker.id,
             endret = LocalDateTime.now().minusDays(20),
         )
+        val forslag = TestData.lagForslag(
+            deltakerId = baseDeltaker.id,
+            status = Forslag.Status.Tilbakekalt(
+                tilbakekaltAvArrangorAnsattId = UUID.randomUUID(),
+                tilbakekalt = LocalDateTime.now().minusDays(18),
+            ),
+        )
         val nyEndring = TestData.lagDeltakerEndring(
             deltakerId = baseDeltaker.id,
             endret = LocalDateTime.now().minusDays(1),
         )
-        val deltaker = TestData.leggTilHistorikk(baseDeltaker, listOf(vedtak), listOf(gammelEndring, nyEndring))
+        val deltaker = TestData.leggTilHistorikk(baseDeltaker, listOf(vedtak), listOf(gammelEndring, nyEndring), listOf(forslag))
 
         val historikk = deltaker.getDeltakerHistorikSortert()
 
-        historikk.size shouldBe 3
+        historikk.size shouldBe 4
         sammenlignHistorikk(historikk[0], DeltakerHistorikk.Endring(nyEndring))
-        sammenlignHistorikk(historikk[1], DeltakerHistorikk.Endring(gammelEndring))
-        sammenlignHistorikk(historikk[2], DeltakerHistorikk.Vedtak(vedtak))
+        sammenlignHistorikk(historikk[1], DeltakerHistorikk.Forslag(forslag))
+        sammenlignHistorikk(historikk[2], DeltakerHistorikk.Endring(gammelEndring))
+        sammenlignHistorikk(historikk[3], DeltakerHistorikk.Vedtak(vedtak))
     }
 
     @Test
@@ -111,6 +122,17 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.vedtak.opprettetAv shouldBe b.vedtak.opprettetAv
             a.vedtak.opprettetAvEnhet shouldBe b.vedtak.opprettetAvEnhet
             a.vedtak.opprettet shouldBeCloseTo b.vedtak.opprettet
+        }
+
+        is DeltakerHistorikk.Forslag -> {
+            b as DeltakerHistorikk.Forslag
+            a.forslag.id shouldBe b.forslag.id
+            a.forslag.deltakerId shouldBe b.forslag.deltakerId
+            a.forslag.opprettet shouldBeCloseTo b.forslag.opprettet
+            a.forslag.begrunnelse shouldBe b.forslag.begrunnelse
+            a.forslag.opprettetAvArrangorAnsattId shouldBe b.forslag.opprettetAvArrangorAnsattId
+            a.forslag.endring shouldBe b.forslag.endring
+            sammenlignForslagStatus(a.forslag.status, b.forslag.status)
         }
     }
 }

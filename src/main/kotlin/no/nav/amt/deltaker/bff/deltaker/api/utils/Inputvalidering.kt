@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInn
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import java.time.Duration
 import java.time.LocalDate
+import java.util.UUID
 
 const val MAX_BAKGRUNNSINFORMASJON_LENGDE = 1000
 const val MAX_ANNET_INNHOLD_LENGDE = 250
@@ -67,6 +68,12 @@ fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
         require(opprinneligDeltaker.harSluttetForMindreEnnToMndSiden()) {
             "Kan ikke endre deltaker som fikk avsluttende status for mer enn to måneder siden"
         }
+    }
+}
+
+fun validerForslagEllerBegrunnelse(forslagId: UUID?, begrunnelse: String?) {
+    require(forslagId != null || !begrunnelse.isNullOrEmpty()) {
+        "Må ha begrunnelse hvis ikke det er et godkjent forslag"
     }
 }
 

@@ -238,4 +238,5 @@ private val DeltakerHistorikk.id
     get() = when (this) {
         is DeltakerHistorikk.Endring -> endring.id
         is DeltakerHistorikk.Vedtak -> vedtak.id
+        is DeltakerHistorikk.Forslag -> forslag.id
     }

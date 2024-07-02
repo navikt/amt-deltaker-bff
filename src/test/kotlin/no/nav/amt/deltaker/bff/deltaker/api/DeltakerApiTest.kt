@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
@@ -35,6 +36,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
@@ -66,7 +68,7 @@ class DeltakerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
-    private val forslagService = mockk<ForslagService>()
+    private val forslagService = mockk<ForslagService>(relaxed = true)
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
 
     @Before
@@ -81,6 +83,7 @@ class DeltakerApiTest {
             Decision.Deny("Ikke tilgang", ""),
         )
         coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
 
         setUpTestApplication()
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") {
@@ -104,6 +107,7 @@ class DeltakerApiTest {
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/forslag/${UUID.randomUUID()}/avvis") { postRequest(avvisForslagRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -120,6 +124,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/forslag/${UUID.randomUUID()}/avvis").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -319,11 +324,14 @@ class DeltakerApiTest {
         mockTestApi(deltaker, null) { client, _, _ ->
             val historikk = deltaker.getDeltakerHistorikSortert()
             val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
+            val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
             every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
             client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(historikk.toResponse(ansatte))
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
+                )
             }
         }
     }
@@ -518,6 +526,23 @@ class DeltakerApiTest {
         }
     }
 
+    @Test
+    fun `avvis forslag - har tilgang - returnerer oppdatert deltaker`() {
+        val deltaker = TestData.lagDeltaker()
+        val forslag = TestData.lagForslag(deltakerId = deltaker.id)
+        every { forslagService.get(forslag.id) } returns Result.success(forslag)
+
+        mockTestApi(deltaker, deltaker, emptyList()) { client, ansatte, enhet ->
+            client.post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
+                .apply {
+                    status shouldBe HttpStatusCode.OK
+                    bodyAsText() shouldBe objectMapper.writeValueAsString(
+                        deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                    )
+                }
+        }
+    }
+
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -554,12 +579,13 @@ class DeltakerApiTest {
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
-    private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3), "begrunnelse")
+    private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3), "begrunnelse", null)
     private val avsluttDeltakelseRequest =
         AvsluttDeltakelseRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), LocalDate.now())
     private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
     private val sluttarsakRequest =
         EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
+    private val avvisForslagRequest = AvvisForslagRequest("Avvist fordi..")
 
     private fun mockTestApi(
         deltaker: Deltaker,
@@ -589,9 +615,11 @@ class DeltakerApiTest {
     private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
         val enhet = deltaker.vedtaksinformasjon?.let { TestData.lagNavEnhet(id = it.sistEndretAvEnhet) }
+        val enheter = TestData.lagNavEnheterForHistorikk(deltaker.historikk).associateBy { it.id }
 
         every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         enhet?.let { every { navEnhetService.hentEnhet(it.id) } returns it }
+        every { navEnhetService.hentEnheterForHistorikk(any()) } returns enheter
 
         return Pair(ansatte, enhet)
     }

@@ -34,8 +34,9 @@ class DeltakerService(
         endring: DeltakerEndring.Endring,
         endretAv: String,
         endretAvEnhet: String,
+        forslagId: UUID? = null,
     ): Deltaker {
-        navEnhetService.opprettEllerOppdaterNavEnhet(endretAvEnhet)
+        navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
         val oppdatertDeltaker = when (endring) {
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> endreDeltaker(deltaker) {
                 amtDeltakerClient.endreBakgrunnsinformasjon(
@@ -110,6 +111,7 @@ class DeltakerService(
                     endretAvEnhet = endretAvEnhet,
                     sluttdato = endring.sluttdato,
                     begrunnelse = endring.begrunnelse,
+                    forslagId = forslagId,
                 )
             }
 

@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetDbo
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
@@ -284,6 +285,23 @@ object TestRepository {
             "nav_enhet_nummer" to navEnhetDbo.enhetsnummer,
             "navn" to navEnhetDbo.navn,
             "modified_at" to navEnhetDbo.sistEndret,
+        )
+
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(navEnhet: NavEnhet) = Database.query {
+        val sql =
+            """
+            insert into nav_enhet(id, nav_enhet_nummer, navn)
+            values (:id, :nav_enhet_nummer, :navn) 
+            on conflict (id) do nothing;
+            """.trimIndent()
+
+        val params = mapOf(
+            "id" to navEnhet.id,
+            "nav_enhet_nummer" to navEnhet.enhetsnummer,
+            "navn" to navEnhet.navn,
         )
 
         it.update(queryOf(sql, params))

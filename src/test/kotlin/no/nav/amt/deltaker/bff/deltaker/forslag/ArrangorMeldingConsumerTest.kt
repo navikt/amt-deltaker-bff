@@ -1,8 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.forslag
 
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingConsumer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.arrangor.melding.Forslag
@@ -23,7 +25,7 @@ class ArrangorMeldingConsumerTest {
         fun setup() {
             SingletonPostgresContainer.start()
             repository = ForslagRepository()
-            service = ForslagService(repository)
+            service = ForslagService(repository, mockk(), mockk(), mockk())
         }
     }
 

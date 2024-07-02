@@ -46,6 +46,26 @@ class ForslagRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
+    fun get(id: UUID) = Database.query {
+        val query = queryOf(
+            """
+            SELECT 
+                f.id as "f.id",
+                f.deltaker_id as "f.deltaker_id",
+                f.arrangoransatt_id as "f.arrangoransatt_id",
+                f.opprettet as "f.opprettet",
+                f.begrunnelse as "f.begrunnelse",
+                f.endring as "f.endring",
+                f.status as "f.status"
+            FROM forslag f 
+            WHERE f.deltaker_id = :deltaker_id;
+            """.trimIndent(),
+            mapOf("id" to id),
+        ).map(::rowMapper).asSingle
+        it.run(query)?.let { d -> Result.success(d) }
+            ?: Result.failure(NoSuchElementException("Ingen forslag med id $id"))
+    }
+
     fun upsert(forslag: Forslag) = Database.query {
         val sql =
             """

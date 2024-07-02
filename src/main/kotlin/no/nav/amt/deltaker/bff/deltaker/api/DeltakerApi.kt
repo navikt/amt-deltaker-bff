@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
@@ -23,6 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanReaktiveres
@@ -255,13 +257,19 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            request.forslagId?.let { forslagService.get(it).getOrThrow() }
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
                 endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
+                forslagId = request.forslagId,
             )
+            request.forslagId?.let {
+                forslagService.delete(it)
+                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
+            }
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
@@ -283,8 +291,29 @@ fun Routing.registerDeltakerApi(
             val historikk = deltaker.getDeltakerHistorikSortert()
 
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
+            val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
-            call.respond(historikk.toResponse(ansatte))
+            val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
+
+            call.respond(historikk.toResponse(ansatte, arrangornavn, enheter))
+        }
+
+        post("/forslag/{forslagId}/avvis") {
+            val navIdent = getNavIdent()
+            val request = call.receive<AvvisForslagRequest>()
+            val forslag = forslagService.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
+            val deltaker = deltakerService.get(forslag.deltakerId).getOrThrow()
+            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
+            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+            forslagService.avvisForslag(
+                opprinneligForslag = forslag,
+                begrunnelse = request.begrunnelseFraNav,
+                avvistAvAnsatt = navIdent,
+                avvistAvEnhet = enhetsnummer,
+            )
+            call.respond(komplettDeltakerResponse(deltaker))
         }
     }
 }
