@@ -438,6 +438,11 @@ class DeltakerRepository {
     private fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
         val eksisterendeDeltaker = get(oppdatering.id).getOrThrow()
 
+        if (oppdatering.forcedUpdate == true) {
+            log.info("Tvungen oppdtaering på deltaker med id ${oppdatering.id}")
+            return true
+        }
+
         if (eksisterendeDeltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
             log.warn("Har mottatt oppdatering på feilregistrert deltaker, ignorerer, ${oppdatering.id}")
             return false

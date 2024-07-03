@@ -64,6 +64,7 @@ data class DeltakerV2Dto(
     val kilde: Kilde?,
     val innhold: Deltakelsesinnhold?,
     val historikk: List<DeltakerHistorikk>?,
+    val forcedUpdate: Boolean? = false,
 ) {
     fun toDeltakerOppdatering(): Deltakeroppdatering {
         require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
@@ -86,6 +87,7 @@ data class DeltakerV2Dto(
                 opprettet = status.opprettetDato,
             ),
             historikk = historikk,
+            forcedUpdate = forcedUpdate,
         )
     }
 

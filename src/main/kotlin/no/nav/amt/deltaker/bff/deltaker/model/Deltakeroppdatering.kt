@@ -13,4 +13,5 @@ data class Deltakeroppdatering(
     val innhold: List<Innhold>,
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
+    val forcedUpdate: Boolean? = false,
 )
