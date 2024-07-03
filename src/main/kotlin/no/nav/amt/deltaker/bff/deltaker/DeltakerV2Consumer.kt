@@ -3,10 +3,10 @@ package no.nav.amt.deltaker.bff.deltaker
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.kafka.ManagedKafkaConsumer
 import no.nav.amt.lib.kafka.config.KafkaConfig
@@ -101,10 +101,5 @@ data class DeltakerV2Dto(
         val aarsaksbeskrivelse: String?,
         val gyldigFra: LocalDateTime,
         val opprettetDato: LocalDateTime,
-    )
-
-    data class Deltakelsesinnhold(
-        val ledetekst: String,
-        val innhold: List<Innhold>,
     )
 }

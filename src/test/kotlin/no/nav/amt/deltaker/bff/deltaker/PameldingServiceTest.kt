@@ -3,7 +3,9 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerVedVedtak
@@ -188,7 +190,7 @@ fun sammenlignDeltakereVedVedtak(a: DeltakerVedVedtak, b: DeltakerVedVedtak) {
     a.dagerPerUke shouldBe b.dagerPerUke
     a.deltakelsesprosent shouldBe b.deltakelsesprosent
     a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
-    a.innhold shouldBe b.innhold
+    a.deltakelsesinnhold shouldBe b.deltakelsesinnhold
     a.status.id shouldBe b.status.id
     a.status.type shouldBe b.status.type
     a.status.aarsak shouldBe b.status.aarsak
@@ -204,6 +206,11 @@ fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
     dagerPerUke,
     deltakelsesprosent,
     bakgrunnsinformasjon,
-    innhold,
+    deltakerliste.tiltak.innhold?.let {
+        Deltakelsesinnhold(
+            ledetekst = it.ledetekst,
+            innhold = fulltInnhold(innhold, it.innholdselementerMedAnnet),
+        )
+    },
     status,
 )
