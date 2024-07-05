@@ -309,7 +309,7 @@ fun Routing.registerDeltakerApi(
 
             forslagService.avvisForslag(
                 opprinneligForslag = forslag,
-                begrunnelse = request.begrunnelseFraNav,
+                begrunnelse = request.begrunnelse,
                 avvistAvAnsatt = navIdent,
                 avvistAvEnhet = enhetsnummer,
             )
