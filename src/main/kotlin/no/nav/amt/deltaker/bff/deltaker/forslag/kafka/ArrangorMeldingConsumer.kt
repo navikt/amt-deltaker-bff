@@ -18,6 +18,7 @@ import java.util.UUID
 
 class ArrangorMeldingConsumer(
     private val forslagService: ForslagService,
+    private val isDev: Boolean = Environment.isDev(),
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl("earliest"),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -41,8 +42,16 @@ class ArrangorMeldingConsumer(
         val melding = objectMapper.readValue<Melding>(value)
         if (melding is Forslag) {
             if (melding.status is Forslag.Status.VenterPaSvar) {
-                forslagService.upsert(melding)
-                log.info("Lagret forslag med id $key")
+                if (forslagService.kanLagres(melding.deltakerId)) {
+                    forslagService.upsert(melding)
+                    log.info("Lagret forslag med id $key")
+                } else {
+                    if (isDev) {
+                        log.error("Mottatt forslag på deltaker som ikke finnes, deltakerid ${melding.deltakerId}, ignorerer")
+                    } else {
+                        throw RuntimeException("Mottatt forslag på deltaker som ikke finnes, deltakerid ${melding.deltakerId}")
+                    }
+                }
             } else {
                 forslagService.delete(key)
                 log.info("Slettet forslag med status ${melding.status.javaClass.simpleName}, id $key")
