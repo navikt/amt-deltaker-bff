@@ -58,7 +58,7 @@ class ForslagRepository {
                 f.endring as "f.endring",
                 f.status as "f.status"
             FROM forslag f 
-            WHERE f.deltaker_id = :deltaker_id;
+            WHERE f.id = :id;
             """.trimIndent(),
             mapOf("id" to id),
         ).map(::rowMapper).asSingle
