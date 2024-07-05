@@ -10,6 +10,8 @@ import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
+import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -57,6 +59,21 @@ fun Routing.registerInnbyggerApi(
             val oppdatertDeltaker = innbyggerService.fattVedtak(deltaker)
 
             call.respond(komplettInnbyggerDeltakerResponse(oppdatertDeltaker))
+        }
+
+        get("/innbygger/{id}/historikk") {
+            val innbygger = getPersonident()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
+            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
+
+            val historikk = deltaker.getDeltakerHistorikkSortert()
+
+            val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
+            val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
+
+            val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
+
+            call.respond(historikk.toResponse(ansatte, arrangornavn, enheter))
         }
     }
 }
