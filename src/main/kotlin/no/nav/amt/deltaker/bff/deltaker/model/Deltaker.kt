@@ -41,7 +41,7 @@ data class Deltaker(
             ikkeFattetVedtak
         }
 
-    fun getDeltakerHistorikSortert() = historikk.sortedByDescending { it.sistEndret }
+    fun getDeltakerHistorikkSortert() = historikk.sortedByDescending { it.sistEndret }
 
     fun harSluttet(): Boolean {
         return status.type in AVSLUTTENDE_STATUSER

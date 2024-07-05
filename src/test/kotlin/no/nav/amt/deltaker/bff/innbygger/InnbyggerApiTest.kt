@@ -23,6 +23,8 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
+import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
@@ -71,6 +73,7 @@ class InnbyggerApiTest {
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.get("/innbygger/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -80,6 +83,7 @@ class InnbyggerApiTest {
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.post("/innbygger/${UUID.randomUUID()}/godkjenn-utkast").status shouldBe HttpStatusCode.Unauthorized
+        client.get("/innbygger/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -152,6 +156,25 @@ class InnbyggerApiTest {
         }
     }
 
+    @Test
+    fun `getHistorikk - deltaker finnes, har tilgang - returnerer historikk`() {
+        val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
+
+        mockTestApi(deltaker, null) { client, _, _ ->
+            val historikk = deltaker.getDeltakerHistorikkSortert()
+            val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
+            val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
+
+            every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+            client.get("/innbygger/${deltaker.id}/historikk") { noBodyRequest() }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
+                )
+            }
+        }
+    }
+
     private fun HttpRequestBuilder.noBodyRequest() {
         header(
             HttpHeaders.Authorization,
@@ -199,9 +222,11 @@ class InnbyggerApiTest {
     private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
         val enhet = deltaker.vedtaksinformasjon?.let { TestData.lagNavEnhet(id = it.sistEndretAvEnhet) }
+        val enheter = TestData.lagNavEnheterForHistorikk(deltaker.historikk).associateBy { it.id }
 
         every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         enhet?.let { every { navEnhetService.hentEnhet(it.id) } returns it }
+        every { navEnhetService.hentEnheterForHistorikk(any()) } returns enheter
 
         return Pair(ansatte, enhet)
     }

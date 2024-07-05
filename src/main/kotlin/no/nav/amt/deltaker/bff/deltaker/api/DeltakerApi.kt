@@ -288,7 +288,7 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
-            val historikk = deltaker.getDeltakerHistorikSortert()
+            val historikk = deltaker.getDeltakerHistorikkSortert()
 
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
             val enheter = navEnhetService.hentEnheterForHistorikk(historikk)

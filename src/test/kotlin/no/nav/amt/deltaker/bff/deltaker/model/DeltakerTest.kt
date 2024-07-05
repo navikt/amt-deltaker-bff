@@ -36,7 +36,7 @@ class DeltakerTest {
         )
         val deltaker = TestData.leggTilHistorikk(baseDeltaker, listOf(vedtak), listOf(gammelEndring, nyEndring), listOf(forslag))
 
-        val historikk = deltaker.getDeltakerHistorikSortert()
+        val historikk = deltaker.getDeltakerHistorikkSortert()
 
         historikk.size shouldBe 4
         sammenlignHistorikk(historikk[0], DeltakerHistorikk.Endring(nyEndring))
@@ -48,7 +48,7 @@ class DeltakerTest {
     @Test
     fun `getDeltakerHistorikkSortert - ingen historikk - returner tom liste`() {
         val deltaker = TestData.lagDeltaker(historikk = false)
-        deltaker.getDeltakerHistorikSortert() shouldBe emptyList()
+        deltaker.getDeltakerHistorikkSortert() shouldBe emptyList()
     }
 
     @Test

@@ -322,7 +322,7 @@ class DeltakerApiTest {
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
 
         mockTestApi(deltaker, null) { client, _, _ ->
-            val historikk = deltaker.getDeltakerHistorikSortert()
+            val historikk = deltaker.getDeltakerHistorikkSortert()
             val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
             val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
