@@ -50,6 +50,7 @@ class DeltakerServiceTest {
                     DeltakerEndring.Aarsak.Type.ANNET,
                     "beskrivelse",
                 ),
+                begrunnelse = "begrunnelse",
             ),
             DeltakerEndring.Endring.AvsluttDeltakelse(
                 sluttdato = LocalDate.now(),
@@ -57,6 +58,7 @@ class DeltakerServiceTest {
                     DeltakerEndring.Aarsak.Type.ANNET,
                     "beskrivelse",
                 ),
+                begrunnelse = "begrunnelse",
             ),
             DeltakerEndring.Endring.ReaktiverDeltakelse(
                 reaktivertDato = LocalDate.now(),

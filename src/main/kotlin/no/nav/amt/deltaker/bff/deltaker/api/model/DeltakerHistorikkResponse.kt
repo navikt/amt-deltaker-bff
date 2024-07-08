@@ -39,7 +39,7 @@ data class VedtakResponse(
 
 data class ForslagResponse(
     val opprettet: LocalDateTime,
-    val begrunnelseFraArrangor: String,
+    val begrunnelseFraArrangor: String?,
     val arrangorNavn: String,
     val endring: Forslag.Endring,
     val status: ForslagResponseStatus,

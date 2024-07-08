@@ -6,11 +6,14 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import java.time.LocalDate
+import java.util.UUID
 
 data class AvsluttDeltakelseRequest(
     val aarsak: DeltakerEndring.Aarsak,
     val sluttdato: LocalDate?,
     val harDeltatt: Boolean? = true,
+    val begrunnelse: String?,
+    val forslagId: UUID?,
 ) {
     fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)

@@ -4,9 +4,12 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import java.util.UUID
 
 data class IkkeAktuellRequest(
     val aarsak: DeltakerEndring.Aarsak,
+    val begrunnelse: String?,
+    val forslagId: UUID?,
 ) {
     fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
