@@ -36,7 +36,7 @@ val postgresVersion = "42.7.3"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.11"
 val nimbusVersion = "9.40"
-val amtLibVersion = "1.2024.07.02_08.30-2388f696f1da"
+val amtLibVersion = "1.2024.07.08_05.31-6fd9c891d0e6"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
