@@ -190,13 +190,19 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            request.forslagId?.let { forslagService.get(it).getOrThrow() }
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
+                endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
+                forslagId = request.forslagId,
             )
+            request.forslagId?.let {
+                forslagService.delete(it)
+                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
+            }
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
@@ -229,21 +235,28 @@ fun Routing.registerDeltakerApi(
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             request.valider(deltaker)
+            request.forslagId?.let { forslagService.get(it).getOrThrow() }
 
             val oppdatertDeltaker = if (request.harDeltatt() && request.sluttdato != null) {
                 deltakerService.oppdaterDeltaker(
                     deltaker = deltaker,
-                    endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato),
+                    endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse),
                     endretAv = navIdent,
                     endretAvEnhet = enhetsnummer,
+                    forslagId = request.forslagId,
                 )
             } else {
                 deltakerService.oppdaterDeltaker(
                     deltaker = deltaker,
-                    endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak),
+                    endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse),
                     endretAv = navIdent,
                     endretAvEnhet = enhetsnummer,
+                    forslagId = request.forslagId,
                 )
+            }
+            request.forslagId?.let {
+                forslagService.delete(it)
+                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
             }
             call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }

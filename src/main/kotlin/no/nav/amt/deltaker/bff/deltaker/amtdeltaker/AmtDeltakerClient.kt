@@ -184,7 +184,9 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         aarsak: DeltakerEndring.Aarsak,
-    ) = postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak), IKKE_AKTUELL)
+        begrunnelse: String?,
+        forslagId: UUID?,
+    ) = postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak, begrunnelse, forslagId), IKKE_AKTUELL)
 
     suspend fun reaktiverDeltakelse(
         deltakerId: UUID,
@@ -198,9 +200,11 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         sluttdato: LocalDate,
         aarsak: DeltakerEndring.Aarsak,
+        begrunnelse: String?,
+        forslagId: UUID?,
     ) = postEndring(
         deltakerId,
-        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, aarsak),
+        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, aarsak, begrunnelse, forslagId),
         AVSLUTT_DELTAKELSE,
     )
 

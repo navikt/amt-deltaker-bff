@@ -60,6 +60,8 @@ data class IkkeAktuellRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
     val aarsak: DeltakerEndring.Aarsak,
+    val begrunnelse: String?,
+    val forslagId: UUID?,
 ) : EndringRequest
 
 data class AvsluttDeltakelseRequest(
@@ -67,6 +69,8 @@ data class AvsluttDeltakelseRequest(
     override val endretAvEnhet: String,
     val sluttdato: LocalDate,
     val aarsak: DeltakerEndring.Aarsak,
+    val begrunnelse: String?,
+    val forslagId: UUID?,
 ) : EndringRequest
 
 data class ReaktiverDeltakelseRequest(

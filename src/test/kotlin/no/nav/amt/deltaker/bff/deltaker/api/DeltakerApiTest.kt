@@ -417,6 +417,8 @@ class DeltakerApiTest {
             aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
             sluttdato = null,
             harDeltatt = true,
+            begrunnelse = null,
+            forslagId = null,
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, _, _ ->
@@ -441,6 +443,8 @@ class DeltakerApiTest {
             aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT),
             sluttdato = null,
             harDeltatt = false,
+            begrunnelse = "begrunnelse",
+            forslagId = null,
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
@@ -470,6 +474,8 @@ class DeltakerApiTest {
             aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT),
             sluttdato = null,
             harDeltatt = false,
+            begrunnelse = null,
+            forslagId = null,
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, _, _ ->
@@ -578,10 +584,16 @@ class DeltakerApiTest {
     private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2))
-    private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB))
+    private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), "begrunnelse", null)
     private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3), "begrunnelse", null)
     private val avsluttDeltakelseRequest =
-        AvsluttDeltakelseRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), LocalDate.now())
+        AvsluttDeltakelseRequest(
+            DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
+            LocalDate.now(),
+            harDeltatt = true,
+            "begrunnelse",
+            null,
+        )
     private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
     private val sluttarsakRequest =
         EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
