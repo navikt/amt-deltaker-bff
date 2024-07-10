@@ -35,6 +35,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
@@ -106,7 +107,9 @@ class DeltakerApiTest {
         ) { postRequest(avsluttDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post(
+            "/deltaker/${UUID.randomUUID()}/reaktiver",
+        ) { postRequest(reaktiverDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/forslag/${UUID.randomUUID()}/avvis") { postRequest(avvisForslagRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
@@ -507,7 +510,7 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/reaktiver") { noBodyRequest() }
+            client.post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
@@ -525,7 +528,7 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/reaktiver") { noBodyRequest() }
+            client.post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.BadRequest
                 }
@@ -585,6 +588,7 @@ class DeltakerApiTest {
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), "begrunnelse", null)
+    private val reaktiverDeltakelseRequest = ReaktiverDeltakelseRequest("begrunnelse")
     private val forlengDeltakelseRequest = ForlengDeltakelseRequest(LocalDate.now().plusWeeks(3), "begrunnelse", null)
     private val avsluttDeltakelseRequest =
         AvsluttDeltakelseRequest(

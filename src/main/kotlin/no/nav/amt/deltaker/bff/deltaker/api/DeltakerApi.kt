@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
@@ -208,6 +209,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/reaktiver") {
             val navIdent = getNavIdent()
+            val request = call.receive<ReaktiverDeltakelseRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
@@ -218,7 +220,7 @@ fun Routing.registerDeltakerApi(
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,
-                endring = DeltakerEndring.Endring.ReaktiverDeltakelse(LocalDate.now()),
+                endring = DeltakerEndring.Endring.ReaktiverDeltakelse(LocalDate.now(), request.begrunnelse),
                 endretAv = navIdent,
                 endretAvEnhet = enhetsnummer,
             )

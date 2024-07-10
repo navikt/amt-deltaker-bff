@@ -133,6 +133,7 @@ class DeltakerService(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
+                    begrunnelse = endring.begrunnelse,
                 )
             }
         }
