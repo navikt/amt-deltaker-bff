@@ -192,7 +192,8 @@ class AmtDeltakerClient(
         deltakerId: UUID,
         endretAv: String,
         endretAvEnhet: String,
-    ) = postEndring(deltakerId, ReaktiverDeltakelseRequest(endretAv, endretAvEnhet), REAKTIVER)
+        begrunnelse: String,
+    ) = postEndring(deltakerId, ReaktiverDeltakelseRequest(endretAv, endretAvEnhet, begrunnelse), REAKTIVER)
 
     suspend fun avsluttDeltakelse(
         deltakerId: UUID,

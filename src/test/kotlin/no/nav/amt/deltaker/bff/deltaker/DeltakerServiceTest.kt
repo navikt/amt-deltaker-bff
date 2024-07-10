@@ -62,6 +62,7 @@ class DeltakerServiceTest {
             ),
             DeltakerEndring.Endring.ReaktiverDeltakelse(
                 reaktivertDato = LocalDate.now(),
+                begrunnelse = "begrunnelse",
             ),
         )
 
