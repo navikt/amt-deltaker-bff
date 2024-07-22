@@ -80,6 +80,10 @@ object TestRepository {
                         :type,
                         :innsatsgrupper,
                         :innhold)
+                ON CONFLICT (id) DO UPDATE SET
+                    navn = :navn,
+                    innsatsgrupper = :innsatsgrupper,
+                    innhold = :innhold
                 """.trimIndent()
 
             it.update(

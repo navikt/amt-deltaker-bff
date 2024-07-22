@@ -54,5 +54,11 @@ fun sammenlignForslagStatus(a: Forslag.Status, b: Forslag.Status) {
             a.tilbakekalt shouldBeCloseTo b.tilbakekalt
             a.tilbakekaltAvArrangorAnsattId shouldBe b.tilbakekaltAvArrangorAnsattId
         }
+
+        is Forslag.Status.Erstattet -> {
+            b as Forslag.Status.Erstattet
+            a.erstattetMedForslagId shouldBe b.erstattetMedForslagId
+            a.erstattet shouldBeCloseTo b.erstattet
+        }
     }
 }
