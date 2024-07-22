@@ -129,7 +129,9 @@ object TestData {
         dagerPerUke: Float? = 5F,
         deltakelsesprosent: Float? = 100F,
         bakgrunnsinformasjon: String? = "Søkes inn fordi...",
-        innhold: List<Innhold> = deltakerliste.tiltak.innhold?.innholdselementer?.map { it.toInnhold() } ?: emptyList(),
+        innhold: List<Innhold> = deltakerliste.tiltak.innhold
+            ?.innholdselementer
+            ?.map { it.toInnhold() } ?: emptyList(),
         status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         historikk: Boolean = true,
         kanEndres: Boolean = true,
@@ -292,55 +294,15 @@ object TestData {
         deltaker.vedtaksinformasjon?.opprettetAv,
     ).distinct().map { lagNavAnsatt(id = it) }
 
-    fun lagNavAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
-        when (it) {
-            is DeltakerHistorikk.Endring -> {
-                listOf(it.endring.endretAv)
-            }
+    fun lagNavAnsatteForHistorikk(historikk: List<DeltakerHistorikk>) = historikk
+        .flatMap { it.navAnsatte() }
+        .distinct()
+        .map { lagNavAnsatt(id = it) }
 
-            is DeltakerHistorikk.Vedtak -> {
-                listOfNotNull(
-                    it.vedtak.sistEndretAv,
-                    it.vedtak.opprettetAv,
-                )
-            }
-
-            is DeltakerHistorikk.Forslag -> {
-                when (val status = it.forslag.status) {
-                    is Forslag.Status.VenterPaSvar,
-                    is Forslag.Status.Tilbakekalt,
-                    -> emptyList()
-                    is Forslag.Status.Avvist -> listOfNotNull(status.avvistAv.id)
-                    is Forslag.Status.Godkjent -> listOfNotNull(status.godkjentAv.id)
-                }
-            }
-        }
-    }.distinct().map { lagNavAnsatt(id = it) }
-
-    fun lagNavEnheterForHistorikk(historikk: List<DeltakerHistorikk>) = historikk.flatMap {
-        when (it) {
-            is DeltakerHistorikk.Endring -> {
-                listOf(it.endring.endretAvEnhet)
-            }
-
-            is DeltakerHistorikk.Vedtak -> {
-                listOfNotNull(
-                    it.vedtak.sistEndretAvEnhet,
-                    it.vedtak.opprettetAvEnhet,
-                )
-            }
-
-            is DeltakerHistorikk.Forslag -> {
-                when (val status = it.forslag.status) {
-                    is Forslag.Status.VenterPaSvar,
-                    is Forslag.Status.Tilbakekalt,
-                    -> emptyList()
-                    is Forslag.Status.Avvist -> listOfNotNull(status.avvistAv.enhetId)
-                    is Forslag.Status.Godkjent -> listOfNotNull(status.godkjentAv.enhetId)
-                }
-            }
-        }
-    }.distinct().map { lagNavEnhet(id = it) }
+    fun lagNavEnheterForHistorikk(historikk: List<DeltakerHistorikk>) = historikk
+        .flatMap { it.navEnheter() }
+        .distinct()
+        .map { lagNavEnhet(id = it) }
 
     fun leggTilHistorikk(
         deltaker: Deltaker,

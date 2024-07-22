@@ -12,9 +12,36 @@ sealed class DeltakerHistorikk {
             is Forslag -> forslag.sistEndret
         }
 
-    data class Endring(val endring: DeltakerEndring) : DeltakerHistorikk()
+    data class Endring(
+        val endring: DeltakerEndring,
+    ) : DeltakerHistorikk()
 
-    data class Vedtak(val vedtak: no.nav.amt.deltaker.bff.deltaker.model.Vedtak) : DeltakerHistorikk()
+    data class Vedtak(
+        val vedtak: no.nav.amt.deltaker.bff.deltaker.model.Vedtak,
+    ) : DeltakerHistorikk()
 
-    data class Forslag(val forslag: no.nav.amt.lib.models.arrangor.melding.Forslag) : DeltakerHistorikk()
+    data class Forslag(
+        val forslag: no.nav.amt.lib.models.arrangor.melding.Forslag,
+    ) : DeltakerHistorikk()
+
+    fun navAnsatte() = when (this) {
+        is Endring -> listOf(this.endring.endretAv)
+        is Vedtak -> listOfNotNull(this.vedtak.sistEndretAv, this.vedtak.opprettetAv)
+        is Forslag -> listOfNotNull(this.forslag.getNavAnsatt()?.id)
+    }
+
+    fun navEnheter() = when (this) {
+        is Endring -> listOf(this.endring.endretAvEnhet)
+        is Vedtak -> listOfNotNull(this.vedtak.sistEndretAvEnhet, this.vedtak.opprettetAvEnhet)
+        is Forslag -> listOfNotNull(this.forslag.getNavAnsatt()?.enhetId)
+    }
+}
+
+private fun Forslag.getNavAnsatt() = when (val status = this.status) {
+    is Forslag.Status.Avvist -> status.avvistAv
+    is Forslag.Status.Godkjent -> status.godkjentAv
+    is Forslag.Status.Erstattet,
+    is Forslag.Status.Tilbakekalt,
+    Forslag.Status.VenterPaSvar,
+    -> null
 }

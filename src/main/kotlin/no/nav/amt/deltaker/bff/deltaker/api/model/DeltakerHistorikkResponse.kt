@@ -57,19 +57,21 @@ sealed interface ForslagResponseStatus {
     data class Tilbakekalt(
         val tilbakekalt: LocalDateTime,
     ) : ForslagResponseStatus
+
+    data class Erstattet(
+        val erstattet: LocalDateTime,
+    ) : ForslagResponseStatus
 }
 
 fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
     enheter: Map<UUID, NavEnhet>,
-): List<DeltakerHistorikkResponse> {
-    return this.map {
-        when (it) {
-            is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter)
-            is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
-            is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
-        }
+): List<DeltakerHistorikkResponse> = this.map {
+    when (it) {
+        is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter)
+        is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
+        is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
     }
 }
 
@@ -94,21 +96,20 @@ fun Forslag.toResponse(
     arrangornavn: String,
     ansatte: Map<UUID, NavAnsatt>,
     enheter: Map<UUID, NavEnhet>,
-): ForslagResponse {
-    return ForslagResponse(
-        opprettet = opprettet,
-        begrunnelseFraArrangor = begrunnelse,
-        arrangorNavn = arrangornavn,
-        endring = endring,
-        status = getForslagResponseStatus(ansatte, enheter),
-    )
-}
+): ForslagResponse = ForslagResponse(
+    opprettet = opprettet,
+    begrunnelseFraArrangor = begrunnelse,
+    arrangorNavn = arrangornavn,
+    endring = endring,
+    status = getForslagResponseStatus(ansatte, enheter),
+)
 
-private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagResponseStatus {
-    return when (val status = status) {
+private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagResponseStatus =
+    when (val status = status) {
         is Forslag.Status.VenterPaSvar,
         is Forslag.Status.Godkjent,
         -> throw IllegalStateException("Ulovlig status for forslag i deltakerhistorikk for deltaker $deltakerId")
+
         is Forslag.Status.Avvist -> {
             val avvist = status
             ForslagResponseStatus.Avvist(
@@ -118,6 +119,7 @@ private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enhe
                 begrunnelseFraNav = avvist.begrunnelseFraNav,
             )
         }
+
         is Forslag.Status.Tilbakekalt -> ForslagResponseStatus.Tilbakekalt(status.tilbakekalt)
+        is Forslag.Status.Erstattet -> ForslagResponseStatus.Erstattet(status.erstattet)
     }
-}

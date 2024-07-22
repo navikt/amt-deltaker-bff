@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
-import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -28,9 +27,7 @@ class NavAnsattService(
         return oppdaterNavAnsatt(navAnsatt)
     }
 
-    fun oppdaterNavAnsatt(navAnsatt: NavAnsatt): NavAnsatt {
-        return repository.upsert(navAnsatt)
-    }
+    fun oppdaterNavAnsatt(navAnsatt: NavAnsatt): NavAnsatt = repository.upsert(navAnsatt)
 
     fun slettNavAnsatt(navAnsattId: UUID) {
         repository.delete(navAnsattId)
@@ -46,31 +43,7 @@ class NavAnsattService(
     }
 
     fun hentAnsatteForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavAnsatt> {
-        val ider = historikk.flatMap {
-            when (it) {
-                is DeltakerHistorikk.Endring -> {
-                    listOf(it.endring.endretAv)
-                }
-
-                is DeltakerHistorikk.Vedtak -> {
-                    listOfNotNull(
-                        it.vedtak.sistEndretAv,
-                        it.vedtak.opprettetAv,
-                    )
-                }
-
-                is DeltakerHistorikk.Forslag -> {
-                    when (val status = it.forslag.status) {
-                        is Forslag.Status.VenterPaSvar,
-                        is Forslag.Status.Tilbakekalt,
-                        -> emptyList()
-                        is Forslag.Status.Avvist -> listOfNotNull(status.avvistAv.id)
-                        is Forslag.Status.Godkjent -> listOfNotNull(status.godkjentAv.id)
-                    }
-                }
-            }
-        }.distinct()
-
+        val ider = historikk.flatMap { it.navAnsatte() }.distinct()
         return hentAnsatte(ider)
     }
 
