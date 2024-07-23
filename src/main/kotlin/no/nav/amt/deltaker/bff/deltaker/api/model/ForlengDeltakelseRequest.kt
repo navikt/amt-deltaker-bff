@@ -11,8 +11,8 @@ import java.util.UUID
 data class ForlengDeltakelseRequest(
     val sluttdato: LocalDate,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) : Endringsrequest {
+    override val forslagId: UUID?,
+) : EndringsforslagRequest {
     override fun valider(opprinneligDeltaker: Deltaker) {
         require(!nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker)) {
             "Ny sluttdato må være etter opprinnelig sluttdato ved forlengelse"

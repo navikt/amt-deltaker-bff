@@ -13,8 +13,8 @@ data class AvsluttDeltakelseRequest(
     val sluttdato: LocalDate?,
     val harDeltatt: Boolean? = true,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) : Endringsrequest {
+    override val forslagId: UUID?,
+) : EndringsforslagRequest {
     override fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         require(opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR) {

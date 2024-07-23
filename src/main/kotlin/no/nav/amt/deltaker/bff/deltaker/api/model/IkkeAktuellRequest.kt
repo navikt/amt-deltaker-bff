@@ -9,8 +9,8 @@ import java.util.UUID
 data class IkkeAktuellRequest(
     val aarsak: DeltakerEndring.Aarsak,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) : Endringsrequest {
+    override val forslagId: UUID?,
+) : EndringsforslagRequest {
     override fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         require(opprinneligDeltaker.status.type == DeltakerStatus.Type.VENTER_PA_OPPSTART) {
