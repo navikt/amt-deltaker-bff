@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDagerPerUke
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakelsesProsent
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
@@ -9,11 +10,13 @@ import java.util.UUID
 data class EndreDeltakelsesmengdeRequest(
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
+    val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
     override fun valider(deltaker: Deltaker) {
         validerDeltakelsesProsent(deltakelsesprosent)
         validerDagerPerUke(dagerPerUke)
         validerDeltakerKanEndres(deltaker)
+        validerBegrunnelse(begrunnelse)
     }
 }

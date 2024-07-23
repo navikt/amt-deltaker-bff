@@ -117,10 +117,10 @@ class AmtDeltakerClient(
         deltakerId: UUID,
         endretAv: String,
         endretAvEnhet: String,
-        bakgrunnsinformasjon: String?,
+        endring: DeltakerEndring.Endring.EndreBakgrunnsinformasjon,
     ) = postEndring(
         deltakerId = deltakerId,
-        request = BakgrunnsinformasjonRequest(endretAv, endretAvEnhet, bakgrunnsinformasjon),
+        request = BakgrunnsinformasjonRequest(endretAv, endretAvEnhet, endring.bakgrunnsinformasjon),
         endepunkt = BAKGRUNNSINFORMASJON,
     )
 
@@ -137,13 +137,17 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         deltakelsesprosent: Float?,
         dagerPerUke: Float?,
+        begrunnelse: String?,
+        forslagId: UUID?,
     ) = postEndring(
         deltakerId,
         DeltakelsesmengdeRequest(
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
             deltakelsesprosent = deltakelsesprosent?.toInt(),
             dagerPerUke = dagerPerUke?.toInt(),
+            begrunnelse = begrunnelse,
         ),
         DELTAKELSESMENGDE,
     )
@@ -177,7 +181,7 @@ class AmtDeltakerClient(
         sluttdato: LocalDate,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, begrunnelse, forslagId), FORLENG_DELTAKELSE)
+    ) = postEndring(deltakerId, ForlengDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, begrunnelse), FORLENG_DELTAKELSE)
 
     suspend fun ikkeAktuell(
         deltakerId: UUID,
@@ -186,7 +190,7 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, aarsak, begrunnelse, forslagId), IKKE_AKTUELL)
+    ) = postEndring(deltakerId, IkkeAktuellRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse), IKKE_AKTUELL)
 
     suspend fun reaktiverDeltakelse(
         deltakerId: UUID,
@@ -205,7 +209,7 @@ class AmtDeltakerClient(
         forslagId: UUID?,
     ) = postEndring(
         deltakerId,
-        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, sluttdato, aarsak, begrunnelse, forslagId),
+        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
         AVSLUTT_DELTAKELSE,
     )
 

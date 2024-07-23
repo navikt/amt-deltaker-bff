@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerForslagEllerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
@@ -23,6 +24,7 @@ data class ForlengDeltakelseRequest(
         }
         validerDeltakerKanEndres(deltaker)
         validerForslagEllerBegrunnelse(forslagId, begrunnelse)
+        validerBegrunnelse(begrunnelse)
     }
 
     private fun nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker: Deltaker) =

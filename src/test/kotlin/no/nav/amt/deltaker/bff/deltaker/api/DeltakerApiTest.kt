@@ -87,15 +87,11 @@ class DeltakerApiTest {
         every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
 
         setUpTestApplication()
-        client
-            .post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") {
-                postRequest(bakgrunnsinformasjonRequest)
-            }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe
+            HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/innhold") { postRequest(innholdRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client
-            .post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") {
-                postRequest(deltakelsesmengdeRequest)
-            }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe
+            HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/sluttdato") { postRequest(sluttdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client
@@ -601,7 +597,7 @@ class DeltakerApiTest {
 
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
-    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3, null)
+    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3, "begrunnelse", null)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), "begrunnelse", null)
     private val reaktiverDeltakelseRequest = ReaktiverDeltakelseRequest("begrunnelse")

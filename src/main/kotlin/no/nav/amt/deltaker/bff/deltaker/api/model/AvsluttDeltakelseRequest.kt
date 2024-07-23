@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -17,6 +18,7 @@ data class AvsluttDeltakelseRequest(
 ) : EndringsforslagRequest {
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
+        validerBegrunnelse(begrunnelse)
         require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
             "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR"
         }

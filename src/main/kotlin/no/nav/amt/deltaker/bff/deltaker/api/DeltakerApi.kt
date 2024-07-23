@@ -111,6 +111,7 @@ fun Routing.registerDeltakerApi(
                 DeltakerEndring.Endring.EndreDeltakelsesmengde(
                     deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                     dagerPerUke = request.dagerPerUke?.toFloat(),
+                    begrunnelse = request.begrunnelse,
                 )
             }
         }

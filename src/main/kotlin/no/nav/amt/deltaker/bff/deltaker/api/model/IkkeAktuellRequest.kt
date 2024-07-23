@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -16,5 +17,6 @@ data class IkkeAktuellRequest(
         require(deltaker.status.type == DeltakerStatus.Type.VENTER_PA_OPPSTART) {
             "Kan ikke sette deltaker med status ${deltaker.status.type} til ikke aktuell"
         }
+        validerBegrunnelse(begrunnelse)
     }
 }

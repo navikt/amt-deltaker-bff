@@ -10,6 +10,10 @@ sealed interface EndringRequest {
     val endretAvEnhet: String
 }
 
+sealed interface EndringForslagRequest : EndringRequest {
+    val forslagId: UUID?
+}
+
 data class BakgrunnsinformasjonRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
@@ -25,15 +29,17 @@ data class InnholdRequest(
 data class DeltakelsesmengdeRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
+    override val forslagId: UUID?,
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
-) : EndringRequest
+    val begrunnelse: String?,
+) : EndringForslagRequest
 
 data class StartdatoRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
     val startdato: LocalDate?,
-    val sluttdato: LocalDate?,
+    val sluttdato: LocalDate? = null,
 ) : EndringRequest
 
 data class SluttdatoRequest(
@@ -51,27 +57,27 @@ data class SluttarsakRequest(
 data class ForlengDeltakelseRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
+    override val forslagId: UUID?,
     val sluttdato: LocalDate,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) : EndringRequest
+) : EndringForslagRequest
 
 data class IkkeAktuellRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
+    override val forslagId: UUID?,
     val aarsak: DeltakerEndring.Aarsak,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) : EndringRequest
+) : EndringForslagRequest
 
 data class AvsluttDeltakelseRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
+    override val forslagId: UUID?,
     val sluttdato: LocalDate,
     val aarsak: DeltakerEndring.Aarsak,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) : EndringRequest
+) : EndringForslagRequest
 
 data class ReaktiverDeltakelseRequest(
     override val endretAv: String,
