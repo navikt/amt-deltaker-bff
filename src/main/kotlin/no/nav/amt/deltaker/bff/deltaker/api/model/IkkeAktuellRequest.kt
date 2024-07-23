@@ -11,10 +11,10 @@ data class IkkeAktuellRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    override fun valider(opprinneligDeltaker: Deltaker) {
+    override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
-        require(opprinneligDeltaker.status.type == DeltakerStatus.Type.VENTER_PA_OPPSTART) {
-            "Kan ikke sette deltaker med status ${opprinneligDeltaker.status.type} til ikke aktuell"
+        require(deltaker.status.type == DeltakerStatus.Type.VENTER_PA_OPPSTART) {
+            "Kan ikke sette deltaker med status ${deltaker.status.type} til ikke aktuell"
         }
     }
 }

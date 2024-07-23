@@ -13,15 +13,15 @@ data class ForlengDeltakelseRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    override fun valider(opprinneligDeltaker: Deltaker) {
-        require(!nySluttdatoErTidligereEnnForrigeSluttdato(opprinneligDeltaker)) {
+    override fun valider(deltaker: Deltaker) {
+        require(!nySluttdatoErTidligereEnnForrigeSluttdato(deltaker)) {
             "Ny sluttdato må være etter opprinnelig sluttdato ved forlengelse"
         }
-        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
-        require(deltakerDeltarEllerHarSluttet(opprinneligDeltaker)) {
-            "Kan ikke forlenge deltakelse for deltaker med status ${opprinneligDeltaker.status.type}"
+        validerSluttdatoForDeltaker(sluttdato, deltaker.startdato, deltaker)
+        require(deltakerDeltarEllerHarSluttet(deltaker)) {
+            "Kan ikke forlenge deltakelse for deltaker med status ${deltaker.status.type}"
         }
-        validerDeltakerKanEndres(opprinneligDeltaker)
+        validerDeltakerKanEndres(deltaker)
         validerForslagEllerBegrunnelse(forslagId, begrunnelse)
     }
 

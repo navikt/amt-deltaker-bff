@@ -11,9 +11,9 @@ data class EndreDeltakelsesmengdeRequest(
     val dagerPerUke: Int?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    override fun valider(opprinneligDeltaker: Deltaker) {
+    override fun valider(deltaker: Deltaker) {
         validerDeltakelsesProsent(deltakelsesprosent)
         validerDagerPerUke(dagerPerUke)
-        validerDeltakerKanEndres(opprinneligDeltaker)
+        validerDeltakerKanEndres(deltaker)
     }
 }

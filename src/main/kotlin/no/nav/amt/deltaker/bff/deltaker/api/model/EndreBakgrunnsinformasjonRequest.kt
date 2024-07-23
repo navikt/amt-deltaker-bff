@@ -7,8 +7,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 data class EndreBakgrunnsinformasjonRequest(
     val bakgrunnsinformasjon: String?,
 ) : Endringsrequest {
-    override fun valider(opprinneligDeltaker: Deltaker) {
+    override fun valider(deltaker: Deltaker) {
         validerBakgrunnsinformasjon(bakgrunnsinformasjon)
-        validerDeltakerKanEndres(opprinneligDeltaker)
+        validerDeltakerKanEndres(deltaker)
     }
 }

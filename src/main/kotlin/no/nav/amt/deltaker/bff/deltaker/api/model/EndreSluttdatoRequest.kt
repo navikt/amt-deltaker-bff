@@ -11,11 +11,11 @@ data class EndreSluttdatoRequest(
 ) : Endringsrequest {
     private val kanEndreSluttdato = listOf(DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.FULLFORT)
 
-    override fun valider(opprinneligDeltaker: Deltaker) {
-        validerDeltakerKanEndres(opprinneligDeltaker)
-        require(opprinneligDeltaker.status.type in kanEndreSluttdato) {
+    override fun valider(deltaker: Deltaker) {
+        validerDeltakerKanEndres(deltaker)
+        require(deltaker.status.type in kanEndreSluttdato) {
             "Kan ikke endre sluttdato for deltaker som ikke har sluttet"
         }
-        validerSluttdatoForDeltaker(sluttdato, opprinneligDeltaker.startdato, opprinneligDeltaker)
+        validerSluttdatoForDeltaker(sluttdato, deltaker.startdato, deltaker)
     }
 }
