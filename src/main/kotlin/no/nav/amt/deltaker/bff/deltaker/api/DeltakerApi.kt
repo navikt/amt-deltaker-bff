@@ -28,7 +28,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
-import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanReaktiveres
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -216,7 +215,7 @@ fun Routing.registerDeltakerApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            validerDeltakerKanReaktiveres(deltaker)
+            request.valider(deltaker)
 
             val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker = deltaker,

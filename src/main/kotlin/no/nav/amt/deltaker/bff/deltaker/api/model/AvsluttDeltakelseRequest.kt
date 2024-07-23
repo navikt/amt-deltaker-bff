@@ -14,8 +14,8 @@ data class AvsluttDeltakelseRequest(
     val harDeltatt: Boolean? = true,
     val begrunnelse: String?,
     val forslagId: UUID?,
-) {
-    fun valider(opprinneligDeltaker: Deltaker) {
+) : Endringsrequest {
+    override fun valider(opprinneligDeltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         require(opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR) {
             "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR"
@@ -35,6 +35,6 @@ data class AvsluttDeltakelseRequest(
     fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
 }
 
-fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean {
-    return opprinneligDeltaker.status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusDays(15))
-}
+fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean = opprinneligDeltaker.status.gyldigFra
+    .toLocalDate()
+    .isAfter(LocalDate.now().minusDays(15))

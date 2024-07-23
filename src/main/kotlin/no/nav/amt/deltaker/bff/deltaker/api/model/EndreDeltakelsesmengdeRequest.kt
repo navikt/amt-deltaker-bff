@@ -8,8 +8,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 data class EndreDeltakelsesmengdeRequest(
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
-) {
-    fun valider(opprinneligDeltaker: Deltaker) {
+) : Endringsrequest {
+    override fun valider(opprinneligDeltaker: Deltaker) {
         validerDeltakelsesProsent(deltakelsesprosent)
         validerDagerPerUke(dagerPerUke)
         validerDeltakerKanEndres(opprinneligDeltaker)
