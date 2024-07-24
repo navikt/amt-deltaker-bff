@@ -63,21 +63,29 @@ fun Application.configureAuthentication(environment: Environment) {
     }
 }
 
-fun <T : Any> PipelineContext<T, ApplicationCall>.getNavAnsattAzureId(): UUID {
-    return call.principal<JWTPrincipal>()
-        ?.get("oid")
-        ?.let { UUID.fromString(it) }
-        ?: throw AuthenticationException("NavAnsattAzureId mangler i JWTPrincipal")
-}
+fun <T : Any> PipelineContext<T, ApplicationCall>.getNavAnsattAzureId(): UUID = call
+    .principal<JWTPrincipal>()
+    ?.get("oid")
+    ?.let { UUID.fromString(it) }
+    ?: throw AuthenticationException("NavAnsattAzureId mangler i JWTPrincipal")
 
-fun <T : Any> PipelineContext<T, ApplicationCall>.getNavIdent(): String {
-    return call.principal<JWTPrincipal>()
-        ?.get("NAVident")
-        ?: throw AuthenticationException("NAVident mangler i JWTPrincipal")
-}
+fun ApplicationCall.getNavAnsattAzureId(): UUID = this
+    .principal<JWTPrincipal>()
+    ?.get("oid")
+    ?.let { UUID.fromString(it) }
+    ?: throw AuthenticationException("NavAnsattAzureId mangler i JWTPrincipal")
 
-fun <T : Any> PipelineContext<T, ApplicationCall>.getPersonident(): String {
-    return call.principal<JWTPrincipal>()
-        ?.get("pid")
-        ?: throw AuthenticationException("Pid mangler i JWTPrincipal")
-}
+fun <T : Any> PipelineContext<T, ApplicationCall>.getNavIdent(): String = call
+    .principal<JWTPrincipal>()
+    ?.get("NAVident")
+    ?: throw AuthenticationException("NAVident mangler i JWTPrincipal")
+
+fun ApplicationCall.getNavIdent(): String = this
+    .principal<JWTPrincipal>()
+    ?.get("NAVident")
+    ?: throw AuthenticationException("NAVident mangler i JWTPrincipal")
+
+fun <T : Any> PipelineContext<T, ApplicationCall>.getPersonident(): String = call
+    .principal<JWTPrincipal>()
+    ?.get("pid")
+    ?: throw AuthenticationException("Pid mangler i JWTPrincipal")

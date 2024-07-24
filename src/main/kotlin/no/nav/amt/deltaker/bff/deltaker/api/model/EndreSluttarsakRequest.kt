@@ -8,14 +8,14 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 
 data class EndreSluttarsakRequest(
     val aarsak: DeltakerEndring.Aarsak,
-) {
+) : Endringsrequest {
     private val kanEndreSluttarsak = listOf(DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Type.IKKE_AKTUELL)
 
-    fun valider(opprinneligDeltaker: Deltaker) {
+    override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
-        require(opprinneligDeltaker.status.type in kanEndreSluttarsak) {
+        require(deltaker.status.type in kanEndreSluttarsak) {
             "Kan ikke endre sluttårsak for deltaker som ikke har sluttet eller er ikke aktuell"
         }
-        validerDeltakerKanEndres(opprinneligDeltaker)
+        validerDeltakerKanEndres(deltaker)
     }
 }

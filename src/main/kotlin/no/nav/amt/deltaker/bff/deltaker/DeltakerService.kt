@@ -43,7 +43,7 @@ class DeltakerService(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
-                    bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
+                    endring = endring,
                 )
             }
 
@@ -75,6 +75,8 @@ class DeltakerService(
                     endretAvEnhet = endretAvEnhet,
                     deltakelsesprosent = endring.deltakelsesprosent,
                     dagerPerUke = endring.dagerPerUke,
+                    begrunnelse = endring.begrunnelse,
+                    forslagId = forslagId,
                 )
             }
 

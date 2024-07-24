@@ -87,29 +87,35 @@ class DeltakerApiTest {
         every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
 
         setUpTestApplication()
-        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") {
-            postRequest(bakgrunnsinformasjonRequest)
-        }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe
+            HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/innhold") { postRequest(innholdRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") {
-            postRequest(deltakelsesmengdeRequest)
-        }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.status shouldBe
+            HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/startdato") { postRequest(startdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/deltaker/${UUID.randomUUID()}/sluttdato") { postRequest(sluttdatoRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post(
-            "/deltaker/${UUID.randomUUID()}/ikke-aktuell",
-        ) { postRequest(ikkeAktuellRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post(
-            "/deltaker/${UUID.randomUUID()}/forleng",
-        ) { postRequest(forlengDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post(
-            "/deltaker/${UUID.randomUUID()}/avslutt",
-        ) { postRequest(avsluttDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client
+            .post(
+                "/deltaker/${UUID.randomUUID()}/ikke-aktuell",
+            ) { postRequest(ikkeAktuellRequest) }
+            .status shouldBe HttpStatusCode.Forbidden
+        client
+            .post(
+                "/deltaker/${UUID.randomUUID()}/forleng",
+            ) { postRequest(forlengDeltakelseRequest) }
+            .status shouldBe HttpStatusCode.Forbidden
+        client
+            .post(
+                "/deltaker/${UUID.randomUUID()}/avslutt",
+            ) { postRequest(avsluttDeltakelseRequest) }
+            .status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
-        client.post(
-            "/deltaker/${UUID.randomUUID()}/reaktiver",
-        ) { postRequest(reaktiverDeltakelseRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client
+            .post(
+                "/deltaker/${UUID.randomUUID()}/reaktiver",
+            ) { postRequest(reaktiverDeltakelseRequest) }
+            .status shouldBe HttpStatusCode.Forbidden
         client.post("/forslag/${UUID.randomUUID()}/avvis") { postRequest(avvisForslagRequest) }.status shouldBe HttpStatusCode.Forbidden
     }
 
@@ -140,7 +146,8 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
+            client
+                .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
@@ -158,7 +165,8 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
+            client
+                .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.BadRequest
                 }
@@ -175,14 +183,15 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/innhold") {
-                postRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.innhold[0].innholdskode, null))))
-            }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+            client
+                .post("/deltaker/${deltaker.id}/innhold") {
+                    postRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.innhold[0].innholdskode, null))))
+                }.apply {
+                    status shouldBe HttpStatusCode.OK
+                    bodyAsText() shouldBe objectMapper.writeValueAsString(
+                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                    )
+                }
         }
     }
 
@@ -510,7 +519,8 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
+            client
+                .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
@@ -528,7 +538,8 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
+            client
+                .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.BadRequest
                 }
@@ -542,7 +553,8 @@ class DeltakerApiTest {
         every { forslagService.get(forslag.id) } returns Result.success(forslag)
 
         mockTestApi(deltaker, deltaker, emptyList()) { client, ansatte, enhet ->
-            client.post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
+            client
+                .post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
                 .apply {
                     status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
@@ -585,7 +597,7 @@ class DeltakerApiTest {
 
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
-    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3)
+    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3, "begrunnelse", null)
     private val startdatoRequest = EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2))
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), "begrunnelse", null)
     private val reaktiverDeltakelseRequest = ReaktiverDeltakelseRequest("begrunnelse")

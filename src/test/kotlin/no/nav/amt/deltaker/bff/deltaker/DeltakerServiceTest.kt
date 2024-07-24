@@ -35,7 +35,7 @@ class DeltakerServiceTest {
         val endringer = listOf(
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
-            DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F),
+            DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F, null),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2)),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now()),
             DeltakerEndring.Endring.EndreSluttarsak(

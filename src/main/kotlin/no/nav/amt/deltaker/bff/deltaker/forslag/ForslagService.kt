@@ -22,7 +22,10 @@ class ForslagService(
 
     fun upsert(forslag: Forslag) = forslagRepository.upsert(forslag)
 
-    fun delete(id: UUID) = forslagRepository.delete(id)
+    fun delete(id: UUID) {
+        forslagRepository.delete(id)
+        log.info("Slettet godkjent forslag $id")
+    }
 
     fun kanLagres(deltakerId: UUID) = forslagRepository.kanLagres(deltakerId)
 

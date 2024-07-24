@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -9,12 +10,13 @@ import java.util.UUID
 data class IkkeAktuellRequest(
     val aarsak: DeltakerEndring.Aarsak,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) {
-    fun valider(opprinneligDeltaker: Deltaker) {
+    override val forslagId: UUID?,
+) : EndringsforslagRequest {
+    override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
-        require(opprinneligDeltaker.status.type == DeltakerStatus.Type.VENTER_PA_OPPSTART) {
-            "Kan ikke sette deltaker med status ${opprinneligDeltaker.status.type} til ikke aktuell"
+        require(deltaker.status.type == DeltakerStatus.Type.VENTER_PA_OPPSTART) {
+            "Kan ikke sette deltaker med status ${deltaker.status.type} til ikke aktuell"
         }
+        validerBegrunnelse(begrunnelse)
     }
 }

@@ -16,6 +16,7 @@ const val MIN_DAGER_PER_UKE = 1
 const val MAX_DAGER_PER_UKE = 5
 const val MIN_DELTAKELSESPROSENT = 1
 const val MAX_DELTAKELSESPROSENT = 100
+const val MAX_BEGRUNNELSE_LENGDE = 200
 
 fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
     require(it.length <= MAX_BAKGRUNNSINFORMASJON_LENGDE) {
@@ -74,6 +75,12 @@ fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
 fun validerForslagEllerBegrunnelse(forslagId: UUID?, begrunnelse: String?) {
     require(forslagId != null || !begrunnelse.isNullOrEmpty()) {
         "Må ha begrunnelse hvis ikke det er et godkjent forslag"
+    }
+}
+
+fun validerBegrunnelse(begrunnelse: String?) {
+    require(begrunnelse === null || begrunnelse.length <= MAX_BEGRUNNELSE_LENGDE) {
+        "Begrunnelse kan ikke være lengre enn $MAX_BEGRUNNELSE_LENGDE"
     }
 }
 

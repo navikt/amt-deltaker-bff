@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
@@ -21,6 +22,8 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttarsakRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndringsforslagRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.Endringsrequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
@@ -28,7 +31,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
-import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanReaktiveres
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -56,236 +58,118 @@ fun Routing.registerDeltakerApi(
         return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker, forslag)
     }
 
+    suspend fun handleEndring(
+        call: ApplicationCall,
+        request: Endringsrequest,
+        endring: (deltaker: Deltaker) -> DeltakerEndring.Endring,
+    ) {
+        val navIdent = call.getNavIdent()
+        val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+        val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
+        tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
+
+        request.valider(deltaker)
+
+        val forslag = if (request is EndringsforslagRequest) {
+            request.forslagId?.let { forslagService.get(it).getOrThrow() }
+        } else {
+            null
+        }
+
+        val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
+            deltaker = deltaker,
+            endring = endring(deltaker),
+            endretAv = navIdent,
+            endretAvEnhet = enhetsnummer,
+            forslagId = forslag?.id,
+        )
+
+        forslag?.let { forslagService.delete(it.id) }
+
+        call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+    }
+
     authenticate("VEILEDER") {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
-            val navIdent = getNavIdent()
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
-
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon)
+            }
         }
 
         post("/deltaker/{deltakerId}/innhold") {
-            val navIdent = getNavIdent()
             val request = call.receive<EndreInnholdRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker)),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+            handleEndring(call, request) { deltaker ->
+                DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker))
+            }
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
-            val navIdent = getNavIdent()
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
-
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreDeltakelsesmengde(
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.EndreDeltakelsesmengde(
                     deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                     dagerPerUke = request.dagerPerUke?.toFloat(),
-                ),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+                    begrunnelse = request.begrunnelse,
+                )
+            }
         }
 
         post("/deltaker/{deltakerId}/startdato") {
-            val navIdent = getNavIdent()
             val request = call.receive<EndreStartdatoRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreStartdato(
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.EndreStartdato(
                     startdato = request.startdato,
                     sluttdato = request.sluttdato,
-                ),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+                )
+            }
         }
 
         post("/deltaker/{deltakerId}/sluttdato") {
-            val navIdent = getNavIdent()
             val request = call.receive<EndreSluttdatoRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreSluttdato(request.sluttdato),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.EndreSluttdato(request.sluttdato)
+            }
         }
 
         post("/deltaker/{deltakerId}/sluttarsak") {
-            val navIdent = getNavIdent()
             val request = call.receive<EndreSluttarsakRequest>()
-
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.EndreSluttarsak(request.aarsak),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.EndreSluttarsak(request.aarsak)
+            }
         }
 
         post("/deltaker/{deltakerId}/ikke-aktuell") {
-            val navIdent = getNavIdent()
             val request = call.receive<IkkeAktuellRequest>()
-
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-            request.forslagId?.let { forslagService.get(it).getOrThrow() }
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-                forslagId = request.forslagId,
-            )
-            request.forslagId?.let {
-                forslagService.delete(it)
-                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
             }
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/reaktiver") {
-            val navIdent = getNavIdent()
             val request = call.receive<ReaktiverDeltakelseRequest>()
-
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            validerDeltakerKanReaktiveres(deltaker)
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.ReaktiverDeltakelse(LocalDate.now(), request.begrunnelse),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-            )
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.ReaktiverDeltakelse(LocalDate.now(), request.begrunnelse)
+            }
         }
 
         post("/deltaker/{deltakerId}/avslutt") {
-            val navIdent = getNavIdent()
             val request = call.receive<AvsluttDeltakelseRequest>()
-
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-            request.forslagId?.let { forslagService.get(it).getOrThrow() }
-
-            val oppdatertDeltaker = if (request.harDeltatt() && request.sluttdato != null) {
-                deltakerService.oppdaterDeltaker(
-                    deltaker = deltaker,
-                    endring = DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse),
-                    endretAv = navIdent,
-                    endretAvEnhet = enhetsnummer,
-                    forslagId = request.forslagId,
-                )
-            } else {
-                deltakerService.oppdaterDeltaker(
-                    deltaker = deltaker,
-                    endring = DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse),
-                    endretAv = navIdent,
-                    endretAvEnhet = enhetsnummer,
-                    forslagId = request.forslagId,
-                )
+            handleEndring(call, request) {
+                if (request.harDeltatt() && request.sluttdato != null) {
+                    DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
+                } else {
+                    DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
+                }
             }
-            request.forslagId?.let {
-                forslagService.delete(it)
-                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
-            }
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         post("/deltaker/{deltakerId}/forleng") {
-            val navIdent = getNavIdent()
             val request = call.receive<ForlengDeltakelseRequest>()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-
-            request.valider(deltaker)
-            request.forslagId?.let { forslagService.get(it).getOrThrow() }
-
-            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
-                deltaker = deltaker,
-                endring = DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse),
-                endretAv = navIdent,
-                endretAvEnhet = enhetsnummer,
-                forslagId = request.forslagId,
-            )
-            request.forslagId?.let {
-                forslagService.delete(it)
-                log.info("Slettet godkjent forslag for deltaker ${deltaker.id}")
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse)
             }
-            call.respond(komplettDeltakerResponse(oppdatertDeltaker))
         }
 
         get("/deltaker/{deltakerId}") {

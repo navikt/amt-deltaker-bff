@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -13,11 +14,12 @@ data class AvsluttDeltakelseRequest(
     val sluttdato: LocalDate?,
     val harDeltatt: Boolean? = true,
     val begrunnelse: String?,
-    val forslagId: UUID?,
-) {
-    fun valider(opprinneligDeltaker: Deltaker) {
+    override val forslagId: UUID?,
+) : EndringsforslagRequest {
+    override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
-        require(opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR) {
+        validerBegrunnelse(begrunnelse)
+        require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
             "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR"
         }
         if (harDeltatt()) {
@@ -25,16 +27,16 @@ data class AvsluttDeltakelseRequest(
                 "Må angi sluttdato for deltaker som har deltatt"
             }
         } else {
-            require(statusForMindreEnn15DagerSiden(opprinneligDeltaker)) {
+            require(statusForMindreEnn15DagerSiden(deltaker)) {
                 "Deltaker med deltar-status mer enn 15 dager tilbake i tid må ha deltatt"
             }
         }
-        sluttdato?.let { validerSluttdatoForDeltaker(it, opprinneligDeltaker.startdato, opprinneligDeltaker) }
+        sluttdato?.let { validerSluttdatoForDeltaker(it, deltaker.startdato, deltaker) }
     }
 
     fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
 }
 
-fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean {
-    return opprinneligDeltaker.status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusDays(15))
-}
+fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean = opprinneligDeltaker.status.gyldigFra
+    .toLocalDate()
+    .isAfter(LocalDate.now().minusDays(15))
