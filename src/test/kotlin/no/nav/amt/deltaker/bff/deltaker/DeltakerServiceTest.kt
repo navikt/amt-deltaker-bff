@@ -37,7 +37,7 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F, null),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2)),
-            DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now()),
+            DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now(), null),
             DeltakerEndring.Endring.EndreSluttarsak(
                 aarsak = DeltakerEndring.Aarsak(
                     DeltakerEndring.Aarsak.Type.ANNET,
