@@ -165,7 +165,9 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         sluttdato: LocalDate,
-    ) = postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, sluttdato), SLUTTDATO)
+        begrunnelse: String?,
+        forslagId: UUID?,
+    ) = postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, forslagId, sluttdato, begrunnelse), SLUTTDATO)
 
     suspend fun endreSluttaarsak(
         deltakerId: UUID,

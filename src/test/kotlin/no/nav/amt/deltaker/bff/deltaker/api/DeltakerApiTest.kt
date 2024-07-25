@@ -610,7 +610,7 @@ class DeltakerApiTest {
             "begrunnelse",
             null,
         )
-    private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1))
+    private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1), "begrunnelse", null)
     private val sluttarsakRequest =
         EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT))
     private val avvisForslagRequest = AvvisForslagRequest("Avvist fordi..")

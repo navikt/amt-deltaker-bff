@@ -129,7 +129,7 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/sluttdato") {
             val request = call.receive<EndreSluttdatoRequest>()
             handleEndring(call, request) {
-                DeltakerEndring.Endring.EndreSluttdato(request.sluttdato)
+                DeltakerEndring.Endring.EndreSluttdato(request.sluttdato, request.begrunnelse)
             }
         }
 
