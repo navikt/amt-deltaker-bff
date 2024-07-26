@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
@@ -41,19 +40,7 @@ data class DeltakerEndring(
         )
     }
 
-    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
-    @JsonSubTypes(
-        JsonSubTypes.Type(value = Endring.EndreStartdato::class, name = "EndreStartdato"),
-        JsonSubTypes.Type(value = Endring.EndreSluttdato::class, name = "EndreSluttdato"),
-        JsonSubTypes.Type(value = Endring.EndreDeltakelsesmengde::class, name = "EndreDeltakelsesmengde"),
-        JsonSubTypes.Type(value = Endring.EndreBakgrunnsinformasjon::class, name = "EndreBakgrunnsinformasjon"),
-        JsonSubTypes.Type(value = Endring.EndreInnhold::class, name = "EndreInnhold"),
-        JsonSubTypes.Type(value = Endring.IkkeAktuell::class, name = "IkkeAktuell"),
-        JsonSubTypes.Type(value = Endring.ForlengDeltakelse::class, name = "ForlengDeltakelse"),
-        JsonSubTypes.Type(value = Endring.AvsluttDeltakelse::class, name = "AvsluttDeltakelse"),
-        JsonSubTypes.Type(value = Endring.EndreSluttarsak::class, name = "EndreSluttarsak"),
-        JsonSubTypes.Type(value = Endring.ReaktiverDeltakelse::class, name = "ReaktiverDeltakelse"),
-    )
+    @JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
     sealed class Endring {
         data class EndreBakgrunnsinformasjon(
             val bakgrunnsinformasjon: String?,
@@ -72,6 +59,7 @@ data class DeltakerEndring(
         data class EndreStartdato(
             val startdato: LocalDate?,
             val sluttdato: LocalDate?,
+            val begrunnelse: String?,
         ) : Endring()
 
         data class EndreSluttdato(
@@ -97,6 +85,7 @@ data class DeltakerEndring(
 
         data class EndreSluttarsak(
             val aarsak: Aarsak,
+            val begrunnelse: String?,
         ) : Endring()
 
         data class ReaktiverDeltakelse(

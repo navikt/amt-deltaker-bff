@@ -36,13 +36,14 @@ class DeltakerServiceTest {
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
             DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F, null),
-            DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2)),
+            DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2), null),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now(), null),
             DeltakerEndring.Endring.EndreSluttarsak(
                 aarsak = DeltakerEndring.Aarsak(
                     DeltakerEndring.Aarsak.Type.ANNET,
                     "beskrivelse",
                 ),
+                begrunnelse = null,
             ),
             DeltakerEndring.Endring.ForlengDeltakelse(LocalDate.now(), "begrunnelse"),
             DeltakerEndring.Endring.IkkeAktuell(
