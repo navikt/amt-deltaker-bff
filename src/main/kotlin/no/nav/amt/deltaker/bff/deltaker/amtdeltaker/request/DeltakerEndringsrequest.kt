@@ -38,9 +38,11 @@ data class DeltakelsesmengdeRequest(
 data class StartdatoRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
+    override val forslagId: UUID?,
     val startdato: LocalDate?,
     val sluttdato: LocalDate? = null,
-) : DeltakerEndringsrequest
+    val begrunnelse: String?,
+) : DeltakerEndringMedForslag
 
 data class SluttdatoRequest(
     override val endretAv: String,
@@ -53,8 +55,10 @@ data class SluttdatoRequest(
 data class SluttarsakRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
+    override val forslagId: UUID?,
     val aarsak: DeltakerEndring.Aarsak,
-) : DeltakerEndringsrequest
+    val begrunnelse: String?,
+) : DeltakerEndringMedForslag
 
 data class ForlengDeltakelseRequest(
     override val endretAv: String,

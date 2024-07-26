@@ -86,6 +86,8 @@ class DeltakerService(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
                     aarsak = endring.aarsak,
+                    begrunnelse = endring.begrunnelse,
+                    forslagId = forslagId,
                 )
             }
 
@@ -107,6 +109,8 @@ class DeltakerService(
                     endretAvEnhet = endretAvEnhet,
                     startdato = endring.startdato,
                     sluttdato = endring.sluttdato,
+                    begrunnelse = endring.begrunnelse,
+                    forslagId = forslagId,
                 )
             }
 
