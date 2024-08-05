@@ -271,6 +271,37 @@ class DeltakerRepositoryTest {
         val lagretSistBesokt = TestRepository.getDeltakerSistBesokt(deltaker.id)!!
         lagretSistBesokt shouldBeCloseTo sistBesokt
     }
+
+    @Test
+    fun `upsert - gammel status - skal ikke overskrive nyere status`() {
+        val gammelStatus = TestData.lagDeltakerStatus(
+            type = DeltakerStatus.Type.DELTAR,
+            gyldigFra = LocalDateTime.now().minusMonths(3),
+        )
+
+        val deltaker = TestData.lagDeltaker(status = gammelStatus)
+
+        TestRepository.insert(deltaker)
+
+        val nyStatus = TestData.lagDeltakerStatus(
+            type = DeltakerStatus.Type.HAR_SLUTTET,
+            gyldigFra = LocalDateTime.now().minusMonths(1),
+        )
+
+        repository.upsert(deltaker.copy(status = nyStatus))
+
+        repository
+            .get(deltaker.id)
+            .getOrThrow()
+            .status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
+
+        repository.upsert(deltaker.copy(status = gammelStatus))
+
+        val statuser = repository.getDeltakerStatuser(deltaker.id)
+        statuser.size shouldBe 2
+        statuser.first { it.type == DeltakerStatus.Type.HAR_SLUTTET }.gyldigTil shouldBe null
+        statuser.first { it.type == DeltakerStatus.Type.DELTAR }.gyldigTil shouldNotBe null
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(

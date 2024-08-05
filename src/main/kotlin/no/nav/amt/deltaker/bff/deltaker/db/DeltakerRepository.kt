@@ -375,10 +375,11 @@ class DeltakerRepository {
             set gyldig_til = current_timestamp
             where deltaker_id = :deltaker_id 
               and id != :id 
+              and gyldig_fra < :ny_gyldig_fra
               and gyldig_til is null;
             """.trimIndent()
 
-        return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId))
+        return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
     }
 
     private fun getDeltakerSql(where: String = "") = """
