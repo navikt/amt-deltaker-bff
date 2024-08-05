@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -182,7 +181,7 @@ object TestRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
-            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+            "historikk" to toPGObject(deltaker.historikk),
             "kan_endres" to deltaker.kanEndres,
             "modified_at" to deltaker.sistEndret,
         )

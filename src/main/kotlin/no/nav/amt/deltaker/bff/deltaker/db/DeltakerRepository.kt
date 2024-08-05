@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
@@ -53,7 +54,7 @@ class DeltakerRepository {
             opprettet = row.localDateTime("ds.created_at"),
         ),
         historikk = row.string("d.historikk").let { list ->
-            objectMapper.readValue<List<String>>(list).map { hist -> objectMapper.readValue(hist) }
+            objectMapper.readValue<List<DeltakerHistorikk>>(list.trim())
         },
         kanEndres = row.boolean("d.kan_endres"),
         sistEndret = row.localDateTime("d.modified_at"),
@@ -93,7 +94,7 @@ class DeltakerRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
-            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+            "historikk" to toPGObject(deltaker.historikk),
             "kan_endres" to deltaker.kanEndres,
         )
 
@@ -212,17 +213,17 @@ class DeltakerRepository {
             select * from deltaker_status where deltaker_id = :deltaker_id
             """.trimIndent()
 
-        val query = queryOf(sql, mapOf("deltaker_id" to deltakerId)).map {
-            DeltakerStatus(
-                id = it.uuid("id"),
-                type = it.string("type").let { t -> DeltakerStatus.Type.valueOf(t) },
-                aarsak = it.stringOrNull("aarsak")?.let { aarsak -> objectMapper.readValue(aarsak) },
-                gyldigFra = it.localDateTime("gyldig_fra"),
-                gyldigTil = it.localDateTimeOrNull("gyldig_til"),
-                opprettet = it.localDateTime("created_at"),
-            )
-        }
-            .asList
+        val query = queryOf(sql, mapOf("deltaker_id" to deltakerId))
+            .map {
+                DeltakerStatus(
+                    id = it.uuid("id"),
+                    type = it.string("type").let { t -> DeltakerStatus.Type.valueOf(t) },
+                    aarsak = it.stringOrNull("aarsak")?.let { aarsak -> objectMapper.readValue(aarsak) },
+                    gyldigFra = it.localDateTime("gyldig_fra"),
+                    gyldigTil = it.localDateTimeOrNull("gyldig_til"),
+                    opprettet = it.localDateTime("created_at"),
+                )
+            }.asList
 
         session.run(query)
     }
@@ -309,7 +310,7 @@ class DeltakerRepository {
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.innhold),
-            "historikk" to toPGObject(deltaker.historikk.map { objectMapper.writeValueAsString(it) }),
+            "historikk" to toPGObject(deltaker.historikk),
         )
 
         session.transaction { tx ->
@@ -454,11 +455,12 @@ class DeltakerRepository {
         val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >
             eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
 
-        val kanOppdateres = eksisterendeDeltaker.kanEndres && (
-            oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
-                oppdateringHarNyereStatus ||
-                erUtkast
-        )
+        val kanOppdateres = eksisterendeDeltaker.kanEndres &&
+            (
+                oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
+                    oppdateringHarNyereStatus ||
+                    erUtkast
+            )
 
         if (!kanOppdateres) {
             log.info(

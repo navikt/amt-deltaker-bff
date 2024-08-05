@@ -1,7 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.db
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
@@ -103,6 +106,9 @@ class DeltakerRepositoryTest {
         val deltaker = TestData.leggTilHistorikk(baseDeltaker, 2)
 
         TestRepository.insert(deltaker)
+
+        val json = objectMapper.writePolymorphicListAsString(deltaker.historikk)
+        val historikk = objectMapper.readValue<List<DeltakerHistorikk>>(json)
 
         val vedtak = repository.get(baseDeltaker.id).getOrThrow().fattetVedtak!!
         vedtak.fattet shouldNotBe null

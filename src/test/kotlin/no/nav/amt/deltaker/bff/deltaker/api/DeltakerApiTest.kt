@@ -20,6 +20,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
@@ -341,9 +342,11 @@ class DeltakerApiTest {
             every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
             client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                val res = bodyAsText()
+                val json = objectMapper.writePolymorphicListAsString(
                     historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
                 )
+                res shouldBe json
             }
         }
     }
