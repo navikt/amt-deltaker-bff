@@ -6,7 +6,8 @@ import org.junit.Test
 class DatabaseTest {
     @Test
     fun `toPGObject - value er null - skal skrive null ikke en string`() {
-        val result = toPGObject(null)
+        val value: String? = null
+        val result = toPGObject(value)
         result.isNull shouldBe true
         result.value shouldBe null
     }

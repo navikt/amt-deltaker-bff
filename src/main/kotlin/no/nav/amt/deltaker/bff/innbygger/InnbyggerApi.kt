@@ -1,13 +1,17 @@
 package no.nav.amt.deltaker.bff.innbygger
 
+import io.ktor.http.ContentType
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
@@ -73,7 +77,8 @@ fun Routing.registerInnbyggerApi(
 
             val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
 
-            call.respond(historikk.toResponse(ansatte, arrangornavn, enheter))
+            val json = objectMapper.writePolymorphicListAsString(historikk.toResponse(ansatte, arrangornavn, enheter))
+            call.respondText(json, ContentType.Application.Json)
         }
     }
 }
