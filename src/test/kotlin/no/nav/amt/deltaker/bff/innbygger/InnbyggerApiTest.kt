@@ -206,6 +206,8 @@ class InnbyggerApiTest {
         forslag: List<Forslag> = emptyList(),
         block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
     ) = testApplication {
+        setUpTestApplication()
+
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
@@ -216,7 +218,6 @@ class InnbyggerApiTest {
             mockAnsatteOgEnhetForDeltaker(oppdatertDeltaker)
         }
 
-        setUpTestApplication()
         block(client, ansatte, enhet)
     }
 

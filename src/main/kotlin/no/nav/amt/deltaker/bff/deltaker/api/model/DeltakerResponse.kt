@@ -35,7 +35,7 @@ data class DeltakerResponse(
     val digitalBruker: Boolean,
     val maxVarighet: Long?,
     val softMaxVarighet: Long?,
-    val forslag: List<Forslag>,
+    val forslag: List<ForslagResponse>,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -70,44 +70,42 @@ fun Deltaker.toDeltakerResponse(
     vedtakSistEndretAvEnhet: NavEnhet?,
     digitalBruker: Boolean,
     forslag: List<Forslag>,
-): DeltakerResponse {
-    return DeltakerResponse(
-        deltakerId = id,
-        fornavn = navBruker.fornavn,
-        mellomnavn = navBruker.mellomnavn,
-        etternavn = navBruker.etternavn,
-        deltakerliste = DeltakerResponse.DeltakerlisteDto(
-            deltakerlisteId = deltakerliste.id,
-            deltakerlisteNavn = deltakerliste.navn,
-            tiltakstype = deltakerliste.tiltak.arenaKode,
-            arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
-            oppstartstype = deltakerliste.getOppstartstype(),
-            startdato = deltakerliste.startDato,
-            sluttdato = deltakerliste.sluttDato,
-            status = deltakerliste.status,
-            tilgjengeligInnhold = deltakerliste.tiltak.innhold?.innholdselementerMedAnnet ?: emptyList(),
-        ),
-        status = status,
-        startdato = startdato,
-        sluttdato = sluttdato,
-        dagerPerUke = dagerPerUke,
-        deltakelsesprosent = deltakelsesprosent,
-        bakgrunnsinformasjon = bakgrunnsinformasjon,
-        deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
-            DeltakerResponse.DeltakelsesinnholdDto(
-                ledetekst = it.ledetekst,
-                innhold = fulltInnhold(innhold, it.innholdselementerMedAnnet),
-            )
-        },
-        vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
-        adresseDelesMedArrangor = adresseDelesMedArrangor(),
-        kanEndres = kanEndres,
-        digitalBruker = digitalBruker,
-        maxVarighet = maxVarighet?.toMillis(),
-        softMaxVarighet = softMaxVarighet?.toMillis(),
-        forslag = forslag,
-    )
-}
+): DeltakerResponse = DeltakerResponse(
+    deltakerId = id,
+    fornavn = navBruker.fornavn,
+    mellomnavn = navBruker.mellomnavn,
+    etternavn = navBruker.etternavn,
+    deltakerliste = DeltakerResponse.DeltakerlisteDto(
+        deltakerlisteId = deltakerliste.id,
+        deltakerlisteNavn = deltakerliste.navn,
+        tiltakstype = deltakerliste.tiltak.arenaKode,
+        arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
+        oppstartstype = deltakerliste.getOppstartstype(),
+        startdato = deltakerliste.startDato,
+        sluttdato = deltakerliste.sluttDato,
+        status = deltakerliste.status,
+        tilgjengeligInnhold = deltakerliste.tiltak.innhold?.innholdselementerMedAnnet ?: emptyList(),
+    ),
+    status = status,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = deltakelsesprosent,
+    bakgrunnsinformasjon = bakgrunnsinformasjon,
+    deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
+        DeltakerResponse.DeltakelsesinnholdDto(
+            ledetekst = it.ledetekst,
+            innhold = fulltInnhold(innhold, it.innholdselementerMedAnnet),
+        )
+    },
+    vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
+    adresseDelesMedArrangor = adresseDelesMedArrangor(),
+    kanEndres = kanEndres,
+    digitalBruker = digitalBruker,
+    maxVarighet = maxVarighet?.toMillis(),
+    softMaxVarighet = softMaxVarighet?.toMillis(),
+    forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
+)
 
 fun Deltakerliste.Arrangor.getArrangorNavn(): String {
     val arrangorNavnForDeltakerliste =
@@ -119,15 +117,13 @@ fun Deltakerliste.Arrangor.getArrangorNavn(): String {
     return toTitleCase(arrangorNavnForDeltakerliste)
 }
 
-fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> {
-    return innholdselementer
-        .asSequence()
-        .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
-        .map { it.toInnhold() }
-        .plus(valgtInnhold)
-        .sortedWith(sortertAlfabetiskMedAnnetSist())
-        .toList()
-}
+fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> = innholdselementer
+    .asSequence()
+    .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
+    .map { it.toInnhold() }
+    .plus(valgtInnhold)
+    .sortedWith(sortertAlfabetiskMedAnnetSist())
+    .toList()
 
 private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
     it.tekst == annetInnholdselement.tekst
