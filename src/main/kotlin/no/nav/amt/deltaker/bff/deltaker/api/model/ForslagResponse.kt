@@ -9,7 +9,7 @@ import java.util.UUID
 
 data class ForslagResponse(
     val opprettet: LocalDateTime,
-    val begrunnelseFraArrangor: String?,
+    val begrunnelse: String?,
     val arrangorNavn: String,
     val endring: Forslag.Endring,
     val status: ForslagResponseStatus,
@@ -47,7 +47,7 @@ fun Forslag.toResponse(
     enheter: Map<UUID, NavEnhet>,
 ): ForslagResponse = ForslagResponse(
     opprettet = opprettet,
-    begrunnelseFraArrangor = begrunnelse,
+    begrunnelse = begrunnelse,
     arrangorNavn = arrangornavn,
     endring = endring,
     status = getForslagResponseStatus(ansatte, enheter),
