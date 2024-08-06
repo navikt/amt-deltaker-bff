@@ -25,7 +25,15 @@ data class DeltakerEndringResponse(
     val endretAv: String,
     val endretAvEnhet: String,
     val endret: LocalDateTime,
-) : DeltakerHistorikkResponse
+    val forslag: Forslag?,
+) : DeltakerHistorikkResponse {
+    data class Forslag(
+        val opprettet: LocalDateTime,
+        val begrunnelseFraArrangor: String?,
+        val arrangorNavn: String,
+        val endring: no.nav.amt.lib.models.arrangor.melding.Forslag.Endring,
+    )
+}
 
 data class VedtakResponse(
     val fattet: LocalDateTime?,
@@ -69,17 +77,22 @@ fun List<DeltakerHistorikk>.toResponse(
     enheter: Map<UUID, NavEnhet>,
 ): List<DeltakerHistorikkResponse> = this.map {
     when (it) {
-        is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter)
+        is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn)
         is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
         is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
     }
 }
 
-fun DeltakerEndring.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = DeltakerEndringResponse(
+fun DeltakerEndring.toResponse(
+    ansatte: Map<UUID, NavAnsatt>,
+    enheter: Map<UUID, NavEnhet>,
+    arrangornavn: String,
+) = DeltakerEndringResponse(
     endring = endring,
     endretAv = ansatte[endretAv]!!.navn,
     endretAvEnhet = enheter[endretAvEnhet]!!.navn,
     endret = endret,
+    forslag = forslag?.toDeltakeEndringForslag(arrangornavn),
 )
 
 fun Vedtak.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = VedtakResponse(
@@ -102,6 +115,13 @@ fun Forslag.toResponse(
     arrangorNavn = arrangornavn,
     endring = endring,
     status = getForslagResponseStatus(ansatte, enheter),
+)
+
+private fun Forslag.toDeltakeEndringForslag(arrangornavn: String) = DeltakerEndringResponse.Forslag(
+    opprettet = opprettet,
+    begrunnelseFraArrangor = begrunnelse,
+    arrangorNavn = arrangornavn,
+    endring = endring,
 )
 
 private fun Forslag.getForslagResponseStatus(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>): ForslagResponseStatus =
