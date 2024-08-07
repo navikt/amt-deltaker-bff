@@ -8,7 +8,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
-import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDateTime
 import java.util.UUID
 
