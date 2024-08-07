@@ -167,6 +167,7 @@ class InnbyggerApiTest {
             val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
             every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+            every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
             client.get("/innbygger/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writePolymorphicListAsString(
