@@ -8,6 +8,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 data class ForslagResponse(
+    val id: UUID,
     val opprettet: LocalDateTime,
     val begrunnelse: String?,
     val arrangorNavn: String,
@@ -46,6 +47,7 @@ fun Forslag.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     enheter: Map<UUID, NavEnhet>,
 ): ForslagResponse = ForslagResponse(
+    id = id,
     opprettet = opprettet,
     begrunnelse = begrunnelse,
     arrangorNavn = arrangornavn,
