@@ -340,6 +340,7 @@ class DeltakerApiTest {
             val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
             every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+            every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
             client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
                 val res = bodyAsText()
@@ -625,6 +626,7 @@ class DeltakerApiTest {
         forslag: List<Forslag> = emptyList(),
         block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
     ) = testApplication {
+        setUpTestApplication()
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
@@ -640,7 +642,6 @@ class DeltakerApiTest {
         } else {
             mockAnsatteOgEnhetForDeltaker(deltaker)
         }
-        setUpTestApplication()
         block(client, ansatte, enhet)
     }
 

@@ -167,6 +167,7 @@ class InnbyggerApiTest {
             val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
             every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+            every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
             client.get("/innbygger/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writePolymorphicListAsString(
@@ -206,6 +207,8 @@ class InnbyggerApiTest {
         forslag: List<Forslag> = emptyList(),
         block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
     ) = testApplication {
+        setUpTestApplication()
+
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
@@ -216,7 +219,6 @@ class InnbyggerApiTest {
             mockAnsatteOgEnhetForDeltaker(oppdatertDeltaker)
         }
 
-        setUpTestApplication()
         block(client, ansatte, enhet)
     }
 
