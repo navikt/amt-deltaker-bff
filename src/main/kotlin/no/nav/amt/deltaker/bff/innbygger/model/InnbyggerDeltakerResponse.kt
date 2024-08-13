@@ -1,6 +1,8 @@
 package no.nav.amt.deltaker.bff.innbygger.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
+import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
@@ -26,7 +28,7 @@ data class InnbyggerDeltakerResponse(
     val deltakelsesinnhold: DeltakelsesinnholdDto?,
     val vedtaksinformasjon: VedtaksinformasjonDto?,
     val adresseDelesMedArrangor: Boolean,
-    val forslag: List<Forslag>,
+    val forslag: List<ForslagResponse>,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -84,7 +86,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         },
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         adresseDelesMedArrangor = adresseDelesMedArrangor(),
-        forslag = forslag,
+        forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
     )
 }
 
