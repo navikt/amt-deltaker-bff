@@ -159,7 +159,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `getHistorikk - deltaker finnes, har tilgang - returnerer historikk`() {
-        val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
+        val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
 
         mockTestApi(deltaker, null) { client, _, _ ->
             val historikk = deltaker.getDeltakerHistorikkSortert()
@@ -267,4 +267,5 @@ private val DeltakerHistorikk.id
         is DeltakerHistorikk.Endring -> endring.id
         is DeltakerHistorikk.Vedtak -> vedtak.id
         is DeltakerHistorikk.Forslag -> forslag.id
+        is DeltakerHistorikk.EndringFraArrangor -> endringFraArrangor.id
     }

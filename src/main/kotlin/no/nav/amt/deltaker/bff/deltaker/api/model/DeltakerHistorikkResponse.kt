@@ -8,6 +8,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -16,6 +17,7 @@ import java.util.UUID
     JsonSubTypes.Type(value = DeltakerEndringResponse::class, name = "Endring"),
     JsonSubTypes.Type(value = VedtakResponse::class, name = "Vedtak"),
     JsonSubTypes.Type(value = ForslagResponse::class, name = "Forslag"),
+    JsonSubTypes.Type(value = EndringFraArrangorResponse::class, name = "EndringFraArrangor"),
 )
 sealed interface DeltakerHistorikkResponse
 
@@ -37,6 +39,13 @@ data class VedtakResponse(
     val opprettet: LocalDateTime,
 ) : DeltakerHistorikkResponse
 
+data class EndringFraArrangorResponse(
+    val id: UUID,
+    val opprettet: LocalDateTime,
+    val arrangorNavn: String,
+    val endring: EndringFraArrangor.Endring,
+) : DeltakerHistorikkResponse
+
 fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
@@ -46,6 +55,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn)
         is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
         is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
+        is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
     }
 }
 
@@ -69,4 +79,11 @@ fun Vedtak.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet
     opprettetAv = ansatte[opprettetAv]!!.navn,
     opprettetAvEnhet = enheter[opprettetAvEnhet]!!.navn,
     opprettet = opprettet,
+)
+
+fun EndringFraArrangor.toResponse(arrangornavn: String) = EndringFraArrangorResponse(
+    id = id,
+    opprettet = opprettet,
+    arrangorNavn = arrangornavn,
+    endring = endring,
 )
