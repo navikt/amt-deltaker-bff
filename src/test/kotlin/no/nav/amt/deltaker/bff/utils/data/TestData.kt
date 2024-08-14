@@ -19,6 +19,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -241,6 +242,17 @@ object TestData {
         status: Forslag.Status = Forslag.Status.VenterPaSvar,
     ) = Forslag(id, deltakerId, opprettetAvArrangorAnsattId, opprettet, begrunnelse, endring, status)
 
+    fun lagEndringFraArrangor(
+        id: UUID = UUID.randomUUID(),
+        deltakerId: UUID = UUID.randomUUID(),
+        opprettetAvArrangorAnsattId: UUID = UUID.randomUUID(),
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        endring: EndringFraArrangor.Endring = EndringFraArrangor.LeggTilOppstartsdato(
+            LocalDate.now().plusDays(2),
+            LocalDate.now().plusMonths(3),
+        ),
+    ) = EndringFraArrangor(id, deltakerId, opprettetAvArrangorAnsattId, opprettet, endring)
+
     fun lagNavAnsatt(
         id: UUID = UUID.randomUUID(),
         navIdent: String = randomNavIdent(),
@@ -308,6 +320,7 @@ object TestData {
         deltaker: Deltaker,
         antallVedtak: Int = 1,
         antallEndringer: Int = 1,
+        antallEndringerFraArrangor: Int = 1,
     ): Deltaker {
         val vedtak = (1..antallVedtak).map {
             val fattet = it == antallVedtak
@@ -321,8 +334,11 @@ object TestData {
 
         val endringer = (1..antallEndringer).map { lagDeltakerEndring(deltakerId = deltaker.id) }
 
+        val endringerFraArrangor = (1..antallEndringerFraArrangor).map { lagEndringFraArrangor(deltakerId = deltaker.id) }
+
         return deltaker.copy(
-            historikk = vedtak.map { DeltakerHistorikk.Vedtak(it) } + endringer.map { DeltakerHistorikk.Endring(it) },
+            historikk = vedtak.map { DeltakerHistorikk.Vedtak(it) } + endringer.map { DeltakerHistorikk.Endring(it) } +
+                endringerFraArrangor.map { DeltakerHistorikk.EndringFraArrangor(it) },
         )
     }
 

@@ -332,7 +332,7 @@ class DeltakerApiTest {
 
     @Test
     fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() {
-        val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2) }
+        val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
 
         mockTestApi(deltaker, null) { client, _, _ ->
             val historikk = deltaker.getDeltakerHistorikkSortert()

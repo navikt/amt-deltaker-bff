@@ -10,6 +10,7 @@ sealed class DeltakerHistorikk {
             is Endring -> endring.endret
             is Vedtak -> vedtak.sistEndret
             is Forslag -> forslag.sistEndret
+            is EndringFraArrangor -> endringFraArrangor.opprettet
         }
 
     data class Endring(
@@ -24,16 +25,22 @@ sealed class DeltakerHistorikk {
         val forslag: no.nav.amt.lib.models.arrangor.melding.Forslag,
     ) : DeltakerHistorikk()
 
+    data class EndringFraArrangor(
+        val endringFraArrangor: no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor,
+    ) : DeltakerHistorikk()
+
     fun navAnsatte() = when (this) {
         is Endring -> listOf(this.endring.endretAv)
         is Vedtak -> listOfNotNull(this.vedtak.sistEndretAv, this.vedtak.opprettetAv)
         is Forslag -> listOfNotNull(this.forslag.getNavAnsatt()?.id)
+        is EndringFraArrangor -> emptyList()
     }
 
     fun navEnheter() = when (this) {
         is Endring -> listOf(this.endring.endretAvEnhet)
         is Vedtak -> listOfNotNull(this.vedtak.sistEndretAvEnhet, this.vedtak.opprettetAvEnhet)
         is Forslag -> listOfNotNull(this.forslag.getNavAnsatt()?.enhetId)
+        is EndringFraArrangor -> emptyList()
     }
 }
 

@@ -134,6 +134,15 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.forslag.endring shouldBe b.forslag.endring
             sammenlignForslagStatus(a.forslag.status, b.forslag.status)
         }
+
+        is DeltakerHistorikk.EndringFraArrangor -> {
+            b as DeltakerHistorikk.EndringFraArrangor
+            a.endringFraArrangor.id shouldBe b.endringFraArrangor.id
+            a.endringFraArrangor.deltakerId shouldBe b.endringFraArrangor.deltakerId
+            a.endringFraArrangor.opprettet shouldBeCloseTo b.endringFraArrangor.opprettet
+            a.endringFraArrangor.opprettetAvArrangorAnsattId shouldBe b.endringFraArrangor.opprettetAvArrangorAnsattId
+            a.endringFraArrangor.endring shouldBe b.endringFraArrangor.endring
+        }
     }
 }
 
