@@ -40,6 +40,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.UUID
@@ -51,6 +52,7 @@ fun Routing.registerDeltakerApi(
     navEnhetService: NavEnhetService,
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
+    sporbarhetsloggService: SporbarhetsloggService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -181,7 +183,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
-            log.info("NAV-ident $navIdent har gjort oppslag på deltaker med id ${deltaker.id}")
+            sporbarhetsloggService.sendAuditLog(navIdent = navIdent, deltakerPersonIdent = deltaker.navBruker.personident)
 
             call.respond(komplettDeltakerResponse(deltaker))
         }

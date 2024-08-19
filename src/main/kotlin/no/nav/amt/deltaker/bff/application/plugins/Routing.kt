@@ -26,6 +26,7 @@ import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
@@ -37,6 +38,7 @@ fun Application.configureRouting(
     innbyggerService: InnbyggerService,
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
+    sporbarhetsloggService: SporbarhetsloggService,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -70,6 +72,7 @@ fun Application.configureRouting(
             navEnhetService,
             forslagService,
             amtDistribusjonClient,
+            sporbarhetsloggService,
         )
 
         registerPameldingApi(

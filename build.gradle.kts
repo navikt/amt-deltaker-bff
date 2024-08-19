@@ -26,7 +26,7 @@ val ktlintVersion = "1.2.1"
 val jacksonVersion = "2.17.2"
 val logstashEncoderVersion = "8.0"
 val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
-val poaoTilgangVersion = "2024.06.04_10.37-1840eecf1495"
+val poaoTilgangVersion = "2024.08.16_08.05-cb75bb5cbe10"
 val testcontainersVersion = "1.19.8"
 val kotestVersion = "5.9.1"
 val flywayVersion = "10.17.1"
@@ -63,6 +63,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("net.logstash.logback:logstash-logback-encoder:$logstashEncoderVersion")
     implementation("no.nav.common:log:$commonVersion")
+    implementation("no.nav.common:audit-log:$commonVersion")
 
     implementation("no.nav.poao-tilgang:client:$poaoTilgangVersion")
 
