@@ -47,7 +47,9 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.lib.utils.database.Database
+import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 
@@ -139,6 +141,9 @@ fun Application.module() {
         ),
     )
     val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
+
+    val sporbarhetsloggService = SporbarhetsloggService(AuditLoggerImpl())
+
     val deltakerRepository = DeltakerRepository()
 
     val forslagRepository = ForslagRepository()
@@ -178,6 +183,7 @@ fun Application.module() {
         innbyggerService,
         forslagService,
         amtDistribusjonClient,
+        sporbarhetsloggService,
     )
     configureMonitoring()
 

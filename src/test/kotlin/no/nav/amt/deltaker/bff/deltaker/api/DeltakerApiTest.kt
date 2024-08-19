@@ -12,7 +12,9 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import io.mockk.clearMocks
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
@@ -50,6 +52,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.generateJWT
@@ -72,10 +75,12 @@ class DeltakerApiTest {
     private val navEnhetService = mockk<NavEnhetService>()
     private val forslagService = mockk<ForslagService>(relaxed = true)
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
+    private val sporbarhetsloggService = mockk<SporbarhetsloggService>(relaxed = true)
 
     @Before
     fun setup() {
         configureEnvForAuthentication()
+        clearMocks(sporbarhetsloggService)
     }
 
     @Test
@@ -328,6 +333,7 @@ class DeltakerApiTest {
                 bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
             }
         }
+        coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
 
     @Test
@@ -595,6 +601,7 @@ class DeltakerApiTest {
                 mockk(),
                 forslagService,
                 amtDistribusjonClient,
+                sporbarhetsloggService,
             )
         }
     }
