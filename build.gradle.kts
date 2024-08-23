@@ -4,7 +4,7 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    val kotlinVersion = "2.0.10"
+    val kotlinVersion = "2.0.20"
 
     kotlin("jvm") version kotlinVersion
     id("io.ktor.plugin") version "2.3.12"
@@ -18,7 +18,7 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val kotlinVersion = "2.0.0"
+val kotlinVersion = "2.0.20"
 val ktorVersion = "2.3.12"
 val logbackVersion = "1.5.7"
 val prometeusVersion = "1.13.3"
@@ -29,14 +29,14 @@ val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val poaoTilgangVersion = "2024.08.16_08.05-cb75bb5cbe10"
 val testcontainersVersion = "1.19.8"
 val kotestVersion = "5.9.1"
-val flywayVersion = "10.17.1"
+val flywayVersion = "10.17.2"
 val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
-val postgresVersion = "42.7.3"
+val postgresVersion = "42.7.4"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.12"
 val nimbusVersion = "9.40"
-val amtLibVersion = "1.2024.08.14_04.46-1c0b9d8c1966"
+val amtLibVersion = "1.2024.08.23_05.01-9a9e49162a41"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")

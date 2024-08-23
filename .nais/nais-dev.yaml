@@ -86,6 +86,7 @@ spec:
   gcp:
     sqlInstances:
       - name: amt-deltaker-bff
+        tier: db-f1-micro
         collation: nb_NO.UTF8
         type: POSTGRES_14
         databases:
