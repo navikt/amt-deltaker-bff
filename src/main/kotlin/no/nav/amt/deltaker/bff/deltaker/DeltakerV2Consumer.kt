@@ -77,7 +77,7 @@ data class DeltakerV2Dto(
             dagerPerUke = dagerPerUke,
             deltakelsesprosent = prosentStilling?.toFloat(),
             bakgrunnsinformasjon = bestillingTekst,
-            innhold = innhold?.innhold ?: emptyList(),
+            deltakelsesinnhold = innhold,
             status = DeltakerStatus(
                 id = status.id,
                 type = status.type,

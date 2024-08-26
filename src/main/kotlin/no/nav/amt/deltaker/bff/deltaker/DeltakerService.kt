@@ -4,6 +4,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
@@ -52,7 +53,10 @@ class DeltakerService(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
-                    innhold = endring.innhold,
+                    innhold = Deltakelsesinnhold(
+                        ledetekst = endring.ledetekst,
+                        innhold = endring.innhold,
+                    ),
                 )
             }
 
@@ -160,7 +164,7 @@ class DeltakerService(
         endring: Pamelding,
     ): Deltaker {
         val deltaker = opprinneligDeltaker.copy(
-            innhold = endring.innhold,
+            deltakelsesinnhold = endring.deltakelsesinnhold,
             bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
             deltakelsesprosent = endring.deltakelsesprosent,
             dagerPerUke = endring.dagerPerUke,
@@ -220,7 +224,7 @@ fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
     dagerPerUke = oppdatering.dagerPerUke,
     deltakelsesprosent = oppdatering.deltakelsesprosent,
     bakgrunnsinformasjon = oppdatering.bakgrunnsinformasjon,
-    innhold = oppdatering.innhold,
+    deltakelsesinnhold = oppdatering.deltakelsesinnhold,
     status = oppdatering.status,
     historikk = oppdatering.historikk,
 )

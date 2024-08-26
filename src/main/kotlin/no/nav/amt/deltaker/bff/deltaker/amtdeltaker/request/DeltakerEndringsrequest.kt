@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request
 
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import java.time.LocalDate
 import java.util.UUID
 
@@ -23,7 +23,7 @@ data class BakgrunnsinformasjonRequest(
 data class InnholdRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,
-    val innhold: List<Innhold>,
+    val deltakelsesinnhold: Deltakelsesinnhold,
 ) : DeltakerEndringsrequest
 
 data class DeltakelsesmengdeRequest(

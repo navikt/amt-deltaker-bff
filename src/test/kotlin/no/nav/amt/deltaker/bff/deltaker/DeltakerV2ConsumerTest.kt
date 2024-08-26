@@ -4,7 +4,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
-import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import org.junit.Test
@@ -62,9 +61,6 @@ private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     sluttdato = sluttdato,
     bestillingTekst = bakgrunnsinformasjon,
     kilde = kilde,
-    innhold = Deltakelsesinnhold(
-        deltakerliste.tiltak.innhold!!.ledetekst,
-        innhold,
-    ),
+    innhold = deltakelsesinnhold,
     historikk = historikk,
 )

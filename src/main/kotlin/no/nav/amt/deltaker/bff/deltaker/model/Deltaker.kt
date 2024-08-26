@@ -18,7 +18,7 @@ data class Deltaker(
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
-    val innhold: List<Innhold>,
+    val deltakelsesinnhold: Deltakelsesinnhold?,
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
     val kanEndres: Boolean,
@@ -130,10 +130,3 @@ fun years(n: Long) = Duration.of(n * 365, ChronoUnit.DAYS)
 fun months(n: Long) = Duration.of(n * 30, ChronoUnit.DAYS)
 
 fun weeks(n: Long) = Duration.of(n * 7, ChronoUnit.DAYS)
-
-data class Innhold(
-    val tekst: String,
-    val innholdskode: String,
-    val valgt: Boolean,
-    val beskrivelse: String?,
-)

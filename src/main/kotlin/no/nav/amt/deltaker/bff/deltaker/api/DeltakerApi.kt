@@ -107,7 +107,8 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/innhold") {
             val request = call.receive<EndreInnholdRequest>()
             handleEndring(call, request) { deltaker ->
-                DeltakerEndring.Endring.EndreInnhold(finnValgtInnhold(request.innhold, deltaker))
+                // Ledetekst kan ikke endres(enda) så den settes midlertidig til det samme igjen.
+                DeltakerEndring.Endring.EndreInnhold(deltaker.deltakelsesinnhold?.ledetekst, finnValgtInnhold(request.innhold, deltaker))
             }
         }
 

@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Innhold
@@ -48,7 +49,7 @@ data class DeltakerResponse(
     )
 
     data class DeltakelsesinnholdDto(
-        val ledetekst: String,
+        val ledetekst: String?,
         val innhold: List<Innhold>,
     )
 
@@ -92,12 +93,7 @@ fun Deltaker.toDeltakerResponse(
     dagerPerUke = dagerPerUke,
     deltakelsesprosent = deltakelsesprosent,
     bakgrunnsinformasjon = bakgrunnsinformasjon,
-    deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
-        DeltakerResponse.DeltakelsesinnholdDto(
-            ledetekst = it.ledetekst,
-            innhold = fulltInnhold(innhold, it.innholdselementerMedAnnet),
-        )
-    },
+    deltakelsesinnhold = deltakelsesinnhold?.toDto(deltakerliste.tiltak.innhold?.innholdselementerMedAnnet),
     vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
     adresseDelesMedArrangor = adresseDelesMedArrangor(),
     kanEndres = kanEndres,
@@ -105,6 +101,11 @@ fun Deltaker.toDeltakerResponse(
     maxVarighet = maxVarighet?.toMillis(),
     softMaxVarighet = softMaxVarighet?.toMillis(),
     forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
+)
+
+fun Deltakelsesinnhold.toDto(tiltaksInnhold: List<Innholdselement>?) = DeltakerResponse.DeltakelsesinnholdDto(
+    ledetekst = ledetekst,
+    innhold = fulltInnhold(innhold, tiltaksInnhold ?: emptyList()),
 )
 
 fun Deltakerliste.Arrangor.getArrangorNavn(): String {

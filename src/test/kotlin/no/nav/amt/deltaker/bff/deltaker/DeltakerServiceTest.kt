@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -34,7 +35,7 @@ class DeltakerServiceTest {
 
         val endringer = listOf(
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
-            DeltakerEndring.Endring.EndreInnhold(listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
+            DeltakerEndring.Endring.EndreInnhold("ledetekst", listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
             DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F, null),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2), null),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now(), null),
@@ -86,7 +87,8 @@ class DeltakerServiceTest {
                 }
 
                 is DeltakerEndring.Endring.EndreInnhold -> {
-                    oppdatertDeltaker.innhold shouldBe endring.innhold
+                    oppdatertDeltaker.deltakelsesinnhold!!.innhold shouldBe endring.innhold
+                    oppdatertDeltaker.deltakelsesinnhold!!.ledetekst shouldBe endring.ledetekst
                 }
 
                 is DeltakerEndring.Endring.EndreDeltakelsesmengde -> {
@@ -142,7 +144,7 @@ class DeltakerServiceTest {
             dagerPerUke = null,
             deltakelsesprosent = 100F,
             bakgrunnsinformasjon = "Tekst",
-            innhold = emptyList(),
+            deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
             historikk = emptyList(),
         )
@@ -166,7 +168,7 @@ class DeltakerServiceTest {
             dagerPerUke = null,
             deltakelsesprosent = 100F,
             bakgrunnsinformasjon = "Tekst",
-            innhold = emptyList(),
+            deltakelsesinnhold = Deltakelsesinnhold("ny ledetekst", listOf(Innhold("", "", true, ""))),
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
                 aarsak = DeltakerStatus.Aarsak.Type.ANNET,
@@ -181,6 +183,8 @@ class DeltakerServiceTest {
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.ANNET
         deltakerFraDb.status.aarsak?.beskrivelse shouldBe "Oppdatert"
+        deltakerFraDb.deltakelsesinnhold!!.innhold shouldBe deltakeroppdatering.deltakelsesinnhold!!.innhold
+        deltakerFraDb.deltakelsesinnhold!!.ledetekst shouldBe deltakeroppdatering.deltakelsesinnhold!!.ledetekst
         deltakerFraDb.kanEndres shouldBe true
     }
 
@@ -202,7 +206,7 @@ class DeltakerServiceTest {
             dagerPerUke = null,
             deltakelsesprosent = 100F,
             bakgrunnsinformasjon = "Tekst",
-            innhold = emptyList(),
+            deltakelsesinnhold = Deltakelsesinnhold("ny ledetekst", listOf(Innhold("", "", true, ""))),
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
             historikk = emptyList(),
         )
@@ -238,7 +242,7 @@ class DeltakerServiceTest {
             dagerPerUke = null,
             deltakelsesprosent = 100F,
             bakgrunnsinformasjon = "Tekst",
-            innhold = emptyList(),
+            deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
             historikk = emptyList(),
         )
@@ -263,7 +267,7 @@ class DeltakerServiceTest {
             dagerPerUke = null,
             deltakelsesprosent = null,
             bakgrunnsinformasjon = null,
-            innhold = emptyList(),
+            deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
             historikk = emptyList(),
         )
@@ -286,7 +290,7 @@ class DeltakerServiceTest {
             dagerPerUke = null,
             deltakelsesprosent = null,
             bakgrunnsinformasjon = null,
-            innhold = emptyList(),
+            deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.IKKE_AKTUELL,
                 aarsak = DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,

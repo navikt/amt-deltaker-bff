@@ -311,7 +311,7 @@ private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     dagerPerUke,
     deltakelsesprosent,
     bakgrunnsinformasjon,
-    innhold,
+    deltakelsesinnhold,
     status,
     historikk,
 )
@@ -324,7 +324,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.dagerPerUke shouldBe b.dagerPerUke
     a.deltakelsesprosent shouldBe b.deltakelsesprosent
     a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
-    a.innhold shouldBe b.innhold
+    a.deltakelsesinnhold shouldBe b.deltakelsesinnhold
     a.historikk shouldBe b.historikk
     a.status.id shouldBe b.status.id
     a.status.type shouldBe b.status.type
@@ -343,7 +343,7 @@ private fun Deltaker.toKladdResponse() = KladdResponse(
     dagerPerUke = dagerPerUke,
     deltakelsesprosent = deltakelsesprosent,
     bakgrunnsinformasjon = bakgrunnsinformasjon,
-    innhold = innhold,
+    deltakelsesinnhold = deltakelsesinnhold!!,
     status = status,
 )
 
