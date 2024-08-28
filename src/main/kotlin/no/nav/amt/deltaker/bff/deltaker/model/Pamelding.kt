@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 import java.util.UUID
 
 data class Pamelding(
-    val innhold: List<Innhold>,
+    val deltakelsesinnhold: Deltakelsesinnhold,
     val bakgrunnsinformasjon: String?,
     val deltakelsesprosent: Float?,
     val dagerPerUke: Float?,

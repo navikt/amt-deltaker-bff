@@ -41,7 +41,7 @@ data class InnbyggerDeltakerResponse(
     )
 
     data class DeltakelsesinnholdDto(
-        val ledetekst: String,
+        val ledetekst: String?,
         val innhold: List<Innhold>,
     )
 
@@ -78,12 +78,10 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         dagerPerUke = dagerPerUke,
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
-        deltakelsesinnhold = deltakerliste.tiltak.innhold?.let {
-            InnbyggerDeltakerResponse.DeltakelsesinnholdDto(
-                ledetekst = it.ledetekst,
-                innhold = innhold,
-            )
-        },
+        deltakelsesinnhold = InnbyggerDeltakerResponse.DeltakelsesinnholdDto(
+            ledetekst = deltakelsesinnhold?.ledetekst,
+            innhold = deltakelsesinnhold?.innhold ?: emptyList(),
+        ),
         vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
         adresseDelesMedArrangor = adresseDelesMedArrangor(),
         forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },

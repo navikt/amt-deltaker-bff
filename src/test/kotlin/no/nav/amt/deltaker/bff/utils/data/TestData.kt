@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
@@ -147,7 +148,7 @@ object TestData {
             dagerPerUke,
             deltakelsesprosent,
             bakgrunnsinformasjon,
-            innhold,
+            Deltakelsesinnhold("ledetekst", innhold),
             status,
             emptyList(),
             kanEndres,
@@ -374,7 +375,7 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
             deltakelsesprosent = endring.deltakelsesprosent,
         )
 
-        is DeltakerEndring.Endring.EndreInnhold -> this.copy(innhold = endring.innhold)
+        is DeltakerEndring.Endring.EndreInnhold -> this.copy(deltakelsesinnhold = Deltakelsesinnhold(endring.ledetekst, endring.innhold))
         is DeltakerEndring.Endring.EndreSluttarsak ->
             this.copy(status = this.status.copy(aarsak = endring.aarsak.toStatusAarsak()))
 

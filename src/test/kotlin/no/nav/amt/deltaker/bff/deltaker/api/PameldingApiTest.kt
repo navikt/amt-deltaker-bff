@@ -78,13 +78,13 @@ class PameldingApiTest {
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}") {
-            postRequest(utkastRequest(deltaker.innhold.toInnholdDto()))
+            postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto()))
         }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { postRequest(kladdRequest) }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") {
             postRequest(
                 pameldingUtenGodkjenningRequest(
-                    deltaker.innhold.toInnholdDto(),
+                    deltaker.deltakelsesinnhold!!.innhold.toInnholdDto(),
                 ),
             )
         }.status shouldBe HttpStatusCode.Forbidden
@@ -181,10 +181,12 @@ class PameldingApiTest {
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
-        }
+        client
+            .post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
+            .apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+            }
     }
 
     @Test
@@ -208,10 +210,11 @@ class PameldingApiTest {
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.innhold.toInnholdDto())) }.apply {
-            status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
-        }
+        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
+            .apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+            }
     }
 
     @Test

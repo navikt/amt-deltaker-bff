@@ -25,9 +25,9 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.deltaker.model.Innhold
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import org.slf4j.LoggerFactory
@@ -128,7 +128,7 @@ class AmtDeltakerClient(
         deltakerId: UUID,
         endretAv: String,
         endretAvEnhet: String,
-        innhold: List<Innhold>,
+        innhold: Deltakelsesinnhold,
     ) = postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
 
     suspend fun endreDeltakelsesmengde(
@@ -284,7 +284,7 @@ class AmtDeltakerClient(
 }
 
 private fun Utkast.toRequest() = UtkastRequest(
-    innhold = this.pamelding.innhold,
+    deltakelsesinnhold = this.pamelding.deltakelsesinnhold,
     bakgrunnsinformasjon = this.pamelding.bakgrunnsinformasjon,
     deltakelsesprosent = this.pamelding.deltakelsesprosent,
     dagerPerUke = this.pamelding.dagerPerUke,

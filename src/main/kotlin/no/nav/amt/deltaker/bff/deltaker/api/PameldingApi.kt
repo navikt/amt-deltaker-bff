@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
@@ -82,7 +83,10 @@ fun Routing.registerPameldingApi(
                 kladd = Kladd(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
-                        innhold = finnValgtInnhold(request.innhold, deltaker),
+                        deltakelsesinnhold = Deltakelsesinnhold(
+                            deltaker.deltakelsesinnhold?.ledetekst,
+                            finnValgtInnhold(request.innhold, deltaker),
+                        ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -111,7 +115,10 @@ fun Routing.registerPameldingApi(
                 Utkast(
                     deltakerId = deltaker.id,
                     pamelding = Pamelding(
-                        innhold = finnValgtInnhold(request.innhold, deltaker),
+                        deltakelsesinnhold = Deltakelsesinnhold(
+                            deltaker.deltakelsesinnhold?.ledetekst,
+                            finnValgtInnhold(request.innhold, deltaker),
+                        ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
@@ -158,7 +165,10 @@ fun Routing.registerPameldingApi(
                 Utkast(
                     deltakerId = deltaker.id,
                     pamelding = Pamelding(
-                        innhold = finnValgtInnhold(request.innhold, deltaker),
+                        deltakelsesinnhold = Deltakelsesinnhold(
+                            deltaker.deltakerliste.tiltak.innhold?.ledetekst,
+                            finnValgtInnhold(request.innhold, deltaker),
+                        ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),

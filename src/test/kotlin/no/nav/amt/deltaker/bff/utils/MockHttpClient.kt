@@ -141,7 +141,7 @@ object MockResponseHandler {
                     dagerPerUke = deltaker.dagerPerUke,
                     deltakelsesprosent = deltaker.deltakelsesprosent,
                     bakgrunnsinformasjon = deltaker.bakgrunnsinformasjon,
-                    innhold = deltaker.innhold,
+                    deltakelsesinnhold = deltaker.deltakelsesinnhold!!,
                     status = deltaker.status,
                 ),
             )
@@ -208,7 +208,7 @@ fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     dagerPerUke,
     deltakelsesprosent,
     bakgrunnsinformasjon,
-    innhold,
+    deltakelsesinnhold,
     status,
     historikk,
 )

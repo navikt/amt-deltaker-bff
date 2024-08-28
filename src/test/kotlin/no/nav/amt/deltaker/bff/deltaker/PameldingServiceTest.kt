@@ -82,7 +82,7 @@ class PameldingServiceTest {
             deltaker.dagerPerUke shouldBe null
             deltaker.deltakelsesprosent shouldBe null
             deltaker.bakgrunnsinformasjon shouldBe null
-            deltaker.innhold shouldBe emptyList()
+            deltaker.deltakelsesinnhold!!.innhold shouldBe emptyList()
         }
     }
 
@@ -119,7 +119,7 @@ class PameldingServiceTest {
             eksisterendeDeltaker.dagerPerUke shouldBe deltaker.dagerPerUke
             eksisterendeDeltaker.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
             eksisterendeDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            eksisterendeDeltaker.innhold shouldBe deltaker.innhold
+            eksisterendeDeltaker.deltakelsesinnhold shouldBe deltaker.deltakelsesinnhold
         }
     }
 
@@ -152,7 +152,10 @@ class PameldingServiceTest {
         TestRepository.insert(deltaker)
 
         val forventetDeltaker = deltaker.copy(
-            innhold = listOf(Innhold("nytt innhold", "nytt-innhold", true, null)),
+            deltakelsesinnhold = Deltakelsesinnhold(
+                "Beskrivelse",
+                listOf(Innhold("nytt innhold", "nytt-innhold", true, null)),
+            ),
             bakgrunnsinformasjon = "Noe ny informasjon",
             deltakelsesprosent = 42F,
             dagerPerUke = 3F,
@@ -163,7 +166,7 @@ class PameldingServiceTest {
         val utkast = Utkast(
             deltaker.id,
             Pamelding(
-                forventetDeltaker.innhold,
+                forventetDeltaker.deltakelsesinnhold!!,
                 forventetDeltaker.bakgrunnsinformasjon,
                 forventetDeltaker.deltakelsesprosent,
                 forventetDeltaker.dagerPerUke,
@@ -175,7 +178,7 @@ class PameldingServiceTest {
 
         runBlocking {
             val oppdatertDeltaker = pameldingService.upsertUtkast(utkast)
-            oppdatertDeltaker.innhold shouldBe forventetDeltaker.innhold
+            oppdatertDeltaker.deltakelsesinnhold shouldBe forventetDeltaker.deltakelsesinnhold
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe forventetDeltaker.bakgrunnsinformasjon
             oppdatertDeltaker.deltakelsesprosent shouldBe forventetDeltaker.deltakelsesprosent
             oppdatertDeltaker.dagerPerUke shouldBe forventetDeltaker.dagerPerUke
@@ -206,10 +209,10 @@ fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
     dagerPerUke,
     deltakelsesprosent,
     bakgrunnsinformasjon,
-    deltakerliste.tiltak.innhold?.let {
+    deltakelsesinnhold = deltakelsesinnhold?.let {
         Deltakelsesinnhold(
             ledetekst = it.ledetekst,
-            innhold = fulltInnhold(innhold, it.innholdselementerMedAnnet),
+            innhold = fulltInnhold(it.innhold, deltakerliste.tiltak.innhold?.innholdselementerMedAnnet ?: emptyList()),
         )
     },
     status,

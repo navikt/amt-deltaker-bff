@@ -44,7 +44,7 @@ class DeltakerRepository {
         dagerPerUke = row.floatOrNull("d.dager_per_uke"),
         deltakelsesprosent = row.floatOrNull("d.deltakelsesprosent"),
         bakgrunnsinformasjon = row.stringOrNull("d.bakgrunnsinformasjon"),
-        innhold = objectMapper.readValue(row.string("d.innhold")),
+        deltakelsesinnhold = row.stringOrNull("d.innhold")?.let { objectMapper.readValue(it) },
         status = DeltakerStatus(
             id = row.uuid("ds.id"),
             type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
@@ -93,7 +93,7 @@ class DeltakerRepository {
             "dagerPerUke" to deltaker.dagerPerUke,
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
-            "innhold" to toPGObject(deltaker.innhold),
+            "innhold" to toPGObject(deltaker.deltakelsesinnhold),
             "historikk" to toPGObject(deltaker.historikk),
             "kan_endres" to deltaker.kanEndres,
         )
@@ -273,7 +273,7 @@ class DeltakerRepository {
             "dagerPerUke" to kladd.dagerPerUke,
             "deltakelsesprosent" to kladd.deltakelsesprosent,
             "bakgrunnsinformasjon" to kladd.bakgrunnsinformasjon,
-            "innhold" to toPGObject(kladd.innhold),
+            "innhold" to toPGObject(kladd.deltakelsesinnhold),
         )
 
         it.transaction { tx ->
@@ -309,7 +309,7 @@ class DeltakerRepository {
             "dagerPerUke" to deltaker.dagerPerUke,
             "deltakelsesprosent" to deltaker.deltakelsesprosent,
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
-            "innhold" to toPGObject(deltaker.innhold),
+            "innhold" to toPGObject(deltaker.deltakelsesinnhold),
             "historikk" to toPGObject(deltaker.historikk),
         )
 
