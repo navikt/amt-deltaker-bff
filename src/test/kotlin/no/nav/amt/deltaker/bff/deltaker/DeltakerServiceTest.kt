@@ -16,13 +16,13 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
-import no.nav.amt.lib.testing.SingletonPostgresContainer
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Test
 import java.time.LocalDate
 
 class DeltakerServiceTest {
     init {
-        SingletonPostgresContainer.start()
+        SingletonPostgres16Container
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())

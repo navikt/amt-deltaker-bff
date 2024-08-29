@@ -14,7 +14,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
-import no.nav.amt.lib.testing.SingletonPostgresContainer
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -32,7 +32,7 @@ class DeltakerRepositoryTest {
         @JvmStatic
         @BeforeClass
         fun setup() {
-            SingletonPostgresContainer.start()
+            SingletonPostgres16Container
             repository = DeltakerRepository()
         }
     }

@@ -10,7 +10,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.deltaker.bff.utils.mockHttpClient
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.testing.SingletonPostgresContainer
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDateTime
@@ -24,7 +24,7 @@ class NavAnsattServiceTest {
         @JvmStatic
         @BeforeClass
         fun setup() {
-            SingletonPostgresContainer.start()
+            SingletonPostgres16Container
             repository = NavAnsattRepository()
             service = NavAnsattService(repository, mockk())
         }

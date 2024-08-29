@@ -8,7 +8,7 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingConsumer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.testing.SingletonPostgresContainer
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
@@ -23,7 +23,7 @@ class ArrangorMeldingConsumerTest {
         @JvmStatic
         @BeforeClass
         fun setup() {
-            SingletonPostgresContainer.start()
+            SingletonPostgres16Container
             repository = ForslagRepository()
             service = ForslagService(repository, mockk(), mockk(), mockk())
         }
