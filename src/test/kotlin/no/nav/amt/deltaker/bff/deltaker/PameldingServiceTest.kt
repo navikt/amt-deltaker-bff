@@ -21,7 +21,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
-import no.nav.amt.lib.testing.SingletonPostgresContainer
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.BeforeClass
 import org.junit.Test
@@ -48,7 +48,7 @@ class PameldingServiceTest {
         @JvmStatic
         @BeforeClass
         fun setup() {
-            SingletonPostgresContainer.start()
+            SingletonPostgres16Container
         }
     }
 
@@ -68,8 +68,10 @@ class PameldingServiceTest {
                 personident = kladd.navBruker.personident,
             )
 
-            deltaker.id shouldBe deltakerService.getDeltakelser(kladd.navBruker.personident, deltakerliste.id)
-                .first().id
+            deltaker.id shouldBe deltakerService
+                .getDeltakelser(kladd.navBruker.personident, deltakerliste.id)
+                .first()
+                .id
             deltaker.deltakerliste.id shouldBe deltakerliste.id
             deltaker.deltakerliste.navn shouldBe deltakerliste.navn
             deltaker.deltakerliste.tiltak.arenaKode shouldBe deltakerliste.tiltak.arenaKode

@@ -23,7 +23,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtArrangorClient
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
-import no.nav.amt.lib.testing.SingletonPostgresContainer
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
@@ -40,7 +40,7 @@ class DeltakerlisteConsumerTest {
         @JvmStatic
         @BeforeClass
         fun setup() {
-            SingletonPostgresContainer.start()
+            SingletonPostgres16Container
             repository = DeltakerlisteRepository()
             tiltakstypeRepository = TiltakstypeRepository()
             navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
