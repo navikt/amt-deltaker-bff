@@ -351,8 +351,8 @@ class DeltakerApiTest {
             client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
                 status shouldBe HttpStatusCode.OK
                 val res = bodyAsText()
-                val json = objectMapper.writePolymorphicListAsString(
-                    historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter, deltaker.deltakerliste.tiltak.arenaKode),
+                val json = objectMapper.writePolymorphicListAsString(historikk.toResponse(
+                    ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter, deltaker.deltakerliste.tiltak.arenaKode),
                 )
                 res shouldBe json
             }
