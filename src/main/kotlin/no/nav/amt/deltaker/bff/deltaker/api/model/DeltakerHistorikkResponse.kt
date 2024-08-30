@@ -54,7 +54,7 @@ fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
     enheter: Map<UUID, NavEnhet>,
-    tiltakstype: Tiltakstype.ArenaKode
+    tiltakstype: Tiltakstype.ArenaKode,
 ): List<DeltakerHistorikkResponse> = this.map {
     when (it) {
         is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn)
@@ -79,7 +79,7 @@ fun DeltakerEndring.toResponse(
 fun Vedtak.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     enheter: Map<UUID, NavEnhet>,
-    tiltakstype: Tiltakstype.ArenaKode
+    tiltakstype: Tiltakstype.ArenaKode,
 ) = VedtakResponse(
     fattet = fattet,
     bakgrunnsinformasjon = deltakerVedVedtak.bakgrunnsinformasjon,
