@@ -76,8 +76,9 @@ fun Routing.registerInnbyggerApi(
             val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
             val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
+            val tiltakstype = deltaker.deltakerliste.tiltak.arenaKode
 
-            val json = objectMapper.writePolymorphicListAsString(historikk.toResponse(ansatte, arrangornavn, enheter))
+            val json = objectMapper.writePolymorphicListAsString(historikk.toResponse(ansatte, arrangornavn, enheter, tiltakstype))
             call.respondText(json, ContentType.Application.Json)
         }
     }
