@@ -29,14 +29,14 @@ val commonVersion = "3.2024.05.23_05.46-2b29fa343e8e"
 val poaoTilgangVersion = "2024.08.16_08.05-cb75bb5cbe10"
 val testcontainersVersion = "1.19.8"
 val kotestVersion = "5.9.1"
-val flywayVersion = "10.17.2"
+val flywayVersion = "10.17.3"
 val hikariVersion = "5.1.0"
 val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.7.4"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.12"
 val nimbusVersion = "9.40"
-val amtLibVersion = "1.2024.08.27_13.48-d7e7709c9b43"
+val amtLibVersion = "1.2024.09.03_04.11-d6a31e6853db"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
