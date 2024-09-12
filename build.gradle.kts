@@ -20,8 +20,8 @@ repositories {
 
 val kotlinVersion = "2.0.20"
 val ktorVersion = "2.3.12"
-val logbackVersion = "1.5.7"
-val prometeusVersion = "1.13.3"
+val logbackVersion = "1.5.8"
+val prometeusVersion = "1.13.4"
 val ktlintVersion = "1.2.1"
 val jacksonVersion = "2.17.2"
 val logstashEncoderVersion = "8.0"
@@ -35,8 +35,8 @@ val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.7.4"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.12"
-val nimbusVersion = "9.40"
-val amtLibVersion = "1.2024.09.03_04.11-d6a31e6853db"
+val nimbusVersion = "9.41"
+val amtLibVersion = "1.2024.09.12_08.51-c7ff92055f4b"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
