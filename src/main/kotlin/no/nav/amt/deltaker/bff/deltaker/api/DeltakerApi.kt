@@ -169,7 +169,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(deltakerId)).getOrThrow()
 
-            if (request.personident != deltaker.navBruker.personident){
+            if (request.personident != deltaker.navBruker.personident) {
                 log.warn("$deltakerId ble forsøkt lest med en annen navbruker i kontekst.")
                 call.respond(HttpStatusCode.BadRequest)
             }

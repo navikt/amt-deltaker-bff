@@ -27,22 +27,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
-import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttarsakRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
-import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
-import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
-import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.*
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
@@ -90,7 +75,11 @@ class DeltakerApiTest {
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
-        coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        coEvery {
+            deltakerService.get(
+                any(),
+            )
+        } returns Result.success(TestData.lagDeltaker(navBruker = TestData.lagNavBruker(personident = "1234")))
         every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
 
         setUpTestApplication()
@@ -116,7 +105,9 @@ class DeltakerApiTest {
                 "/deltaker/${UUID.randomUUID()}/avslutt",
             ) { postRequest(avsluttDeltakelseRequest) }
             .status shouldBe HttpStatusCode.Forbidden
-        client.get("/deltaker/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}") {
+            postRequest(deltakerRequest)
+        }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client
             .post(
@@ -138,7 +129,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/forleng") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/avslutt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
-        client.get("/deltaker/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
         client.post("/forslag/${UUID.randomUUID()}/avvis").status shouldBe HttpStatusCode.Unauthorized
     }
@@ -326,15 +317,32 @@ class DeltakerApiTest {
 
     @Test
     fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            navBruker = TestData.lagNavBruker(personident = "1234"),
+        )
 
         mockTestApi(deltaker, null) { client, ansatte, enhet ->
-            client.get("/deltaker/${deltaker.id}") { noBodyRequest() }.apply {
+            client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
             }
         }
         coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
+    }
+
+    @Test
+    fun `getDeltaker - har annen navBruker i kontekst, deltaker finnes - returnerer badRequest`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            navBruker = TestData.lagNavBruker(personident = "4321"),
+        )
+
+        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
+        }
     }
 
     @Test
@@ -607,6 +615,7 @@ class DeltakerApiTest {
         }
     }
 
+    private val deltakerRequest = DeltakerRequest("1234")
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3, "begrunnelse", null)
