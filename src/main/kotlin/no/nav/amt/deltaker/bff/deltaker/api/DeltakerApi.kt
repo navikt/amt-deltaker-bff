@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
@@ -19,6 +20,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
@@ -180,9 +182,17 @@ fun Routing.registerDeltakerApi(
             }
         }
 
-        get("/deltaker/{deltakerId}") {
+        post("/deltaker/{deltakerId}") {
+            val request = call.receive<DeltakerRequest>()
+            val deltakerId = call.parameters["deltakerId"]
             val navIdent = getNavIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerService.get(UUID.fromString(deltakerId)).getOrThrow()
+
+            if (request.personident != deltaker.navBruker.personident) {
+                log.warn("$deltakerId ble forsøkt lest med en annen navbruker i kontekst.")
+                call.respond(HttpStatusCode.BadRequest)
+            }
+
             tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
             sporbarhetsloggService.sendAuditLog(navIdent = navIdent, deltakerPersonIdent = deltaker.navBruker.personident)
 
