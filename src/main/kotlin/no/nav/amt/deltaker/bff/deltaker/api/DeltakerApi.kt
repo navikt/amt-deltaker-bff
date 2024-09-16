@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
@@ -17,7 +18,25 @@ import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
-import no.nav.amt.deltaker.bff.deltaker.api.model.*
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttarsakRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndringsforslagRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.Endringsrequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
+import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
