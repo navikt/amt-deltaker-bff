@@ -25,11 +25,11 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
-import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
-import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.Vedtak
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.ZonedDateTime

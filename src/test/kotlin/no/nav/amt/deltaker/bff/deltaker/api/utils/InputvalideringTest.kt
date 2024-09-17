@@ -3,12 +3,12 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestData.input
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import org.junit.Test
 import java.time.LocalDate
 import java.time.LocalDateTime

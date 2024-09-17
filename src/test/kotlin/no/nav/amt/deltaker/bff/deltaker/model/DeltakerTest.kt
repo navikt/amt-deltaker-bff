@@ -5,6 +5,8 @@ import no.nav.amt.deltaker.bff.deltaker.sammenlignDeltakereVedVedtak
 import no.nav.amt.deltaker.bff.kafka.utils.sammenlignForslagStatus
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Test
 import java.time.LocalDateTime

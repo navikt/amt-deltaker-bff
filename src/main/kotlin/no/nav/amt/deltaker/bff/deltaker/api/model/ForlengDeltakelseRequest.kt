@@ -5,7 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerForslagEllerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.time.LocalDate
 import java.util.UUID
 

@@ -2,9 +2,9 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.time.Duration
 import java.time.LocalDate
 import java.util.UUID

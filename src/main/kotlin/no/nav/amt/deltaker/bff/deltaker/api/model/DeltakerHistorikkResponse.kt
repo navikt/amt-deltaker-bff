@@ -2,13 +2,13 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerEndring
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
-import no.nav.amt.deltaker.bff.deltaker.model.Vedtak
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.Vedtak
 import java.time.LocalDateTime
 import java.util.UUID
 
