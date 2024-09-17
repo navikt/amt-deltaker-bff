@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import java.util.UUID
 
 data class Pamelding(

@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request
 
-import no.nav.amt.deltaker.bff.deltaker.model.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 
 data class UtkastRequest(
     val deltakelsesinnhold: Deltakelsesinnhold,

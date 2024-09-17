@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.navansatt
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import org.slf4j.LoggerFactory
 import java.util.UUID
 

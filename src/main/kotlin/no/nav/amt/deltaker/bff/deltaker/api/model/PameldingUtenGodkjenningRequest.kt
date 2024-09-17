@@ -5,7 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDagerPerUke
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakelsesProsent
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakelsesinnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 
 data class PameldingUtenGodkjenningRequest(
     val innhold: List<InnholdDto>,
