@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.kafka.ManagedKafkaConsumer
 import no.nav.amt.lib.kafka.config.KafkaConfig
@@ -21,6 +23,7 @@ import java.util.UUID
 
 class DeltakerV2Consumer(
     private val deltakerService: DeltakerService,
+    private val deltakerlisteRepository: DeltakerlisteRepository,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -45,6 +48,13 @@ class DeltakerV2Consumer(
 
         if (deltakerV2.kilde != DeltakerV2Dto.Kilde.KOMET) return
 
+        val tiltakstype = deltakerlisteRepository.get(deltakerV2.deltakerlisteId).getOrThrow().tiltak.arenaKode
+
+        if (tiltakstype != Tiltakstype.ArenaKode.ARBFORB) {
+            log.info("Ignorerer deltaker $key som ikke har tiltakstype ARBFORB")
+            return
+        }
+
         deltakerService.oppdaterDeltaker(
             deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
         )
@@ -55,6 +65,7 @@ class DeltakerV2Consumer(
 
 data class DeltakerV2Dto(
     val id: UUID,
+    val deltakerlisteId: UUID,
     val status: DeltakerStatusDto,
     val dagerPerUke: Float?,
     val prosentStilling: Double?,
