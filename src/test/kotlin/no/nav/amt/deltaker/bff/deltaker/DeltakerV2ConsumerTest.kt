@@ -1,20 +1,34 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import org.junit.Before
 import org.junit.Test
 import java.util.UUID
 
 class DeltakerV2ConsumerTest {
     private val deltakerService = mockk<DeltakerService>(relaxUnitFun = true)
+    private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
+
+    @Before
+    fun setup() {
+        every { deltakerlisteRepository.get(any()) } returns Result.success(
+            TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            ),
+        )
+    }
 
     @Test
     fun `consume - kilde er ikke KOMET - konsumerer ikke melding`() = runBlocking {
-        val consumer = DeltakerV2Consumer(deltakerService)
+        val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
         val deltaker = TestData.lagDeltaker()
 
         consumer.consume(
@@ -27,7 +41,7 @@ class DeltakerV2ConsumerTest {
 
     @Test
     fun `consume - kilde er KOMET - konsumerer melding`() = runBlocking {
-        val consumer = DeltakerV2Consumer(deltakerService)
+        val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
         val deltaker = TestData.lagDeltaker()
 
         consumer.consume(
@@ -39,7 +53,7 @@ class DeltakerV2ConsumerTest {
 
     @Test
     fun `consume - tombstone - konsumerer ikke melding`() = runBlocking {
-        val consumer = DeltakerV2Consumer(deltakerService)
+        val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
         consumer.consume(UUID.randomUUID(), null)
         verify(exactly = 0) { deltakerService.oppdaterDeltaker(any()) }
     }
@@ -47,6 +61,7 @@ class DeltakerV2ConsumerTest {
 
 private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     id = id,
+    deltakerlisteId = deltakerliste.id,
     status = DeltakerV2Dto.DeltakerStatusDto(
         id = status.id,
         type = status.type,
