@@ -46,8 +46,6 @@ class DeltakerV2Consumer(
 
         val deltakerV2 = objectMapper.readValue<DeltakerV2Dto>(value)
 
-        if (deltakerV2.kilde != DeltakerV2Dto.Kilde.KOMET) return
-
         val tiltakstype = deltakerlisteRepository.get(deltakerV2.deltakerlisteId).getOrThrow().tiltak.arenaKode
 
         if (tiltakstype != Tiltakstype.ArenaKode.ARBFORB) {
@@ -79,7 +77,6 @@ data class DeltakerV2Dto(
 ) {
     fun toDeltakerOppdatering(): Deltakeroppdatering {
         require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
-        require(historikk != null) { "Kan ikke håndtere deltaker $id uten historikk" }
 
         return Deltakeroppdatering(
             id = id,
@@ -97,7 +94,7 @@ data class DeltakerV2Dto(
                 gyldigTil = null,
                 opprettet = status.opprettetDato,
             ),
-            historikk = historikk,
+            historikk = historikk.orEmpty(),
             forcedUpdate = forcedUpdate,
         )
     }
