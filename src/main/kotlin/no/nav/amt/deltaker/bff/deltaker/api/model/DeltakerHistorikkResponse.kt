@@ -2,18 +2,18 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import java.time.LocalDate
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.amt.lib.models.deltaker.Vedtak
-import java.time.LocalDateTime
-import java.util.UUID
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
+import no.nav.amt.lib.models.deltaker.Vedtak
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.UUID
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes(
@@ -53,12 +53,12 @@ data class EndringFraArrangorResponse(
 ) : DeltakerHistorikkResponse
 
 data class ImportertFraArenaResponse(
-  val importertDato: LocalDateTime,
-  val startdato: LocalDate?,
-  val sluttdato: LocalDate?,
-  val dagerPerUke: Float?,
-  val deltakelsesprosent: Float?,
-  val status: DeltakerStatus,
+    val importertDato: LocalDateTime,
+    val startdato: LocalDate?,
+    val sluttdato: LocalDate?,
+    val dagerPerUke: Float?,
+    val deltakelsesprosent: Float?,
+    val status: DeltakerStatus,
 ) : DeltakerHistorikkResponse
 
 fun List<DeltakerHistorikk>.toResponse(
@@ -107,10 +107,10 @@ fun EndringFraArrangor.toResponse(arrangornavn: String) = EndringFraArrangorResp
 )
 
 fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
-  importertDato = importertDato,
-  startdato = deltakerVedImport.startdato,
-  sluttdato = deltakerVedImport.sluttdato,
-  dagerPerUke = deltakerVedImport.dagerPerUke,
-  deltakelsesprosent = deltakerVedImport.deltakelsesprosent,
-  status = deltakerVedImport.status,
+    importertDato = importertDato,
+    startdato = deltakerVedImport.startdato,
+    sluttdato = deltakerVedImport.sluttdato,
+    dagerPerUke = deltakerVedImport.dagerPerUke,
+    deltakelsesprosent = deltakerVedImport.deltakelsesprosent,
+    status = deltakerVedImport.status,
 )

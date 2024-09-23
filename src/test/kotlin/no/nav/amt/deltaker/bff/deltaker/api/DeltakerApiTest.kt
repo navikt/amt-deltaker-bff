@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -30,6 +31,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
@@ -360,6 +362,27 @@ class DeltakerApiTest {
                 status shouldBe HttpStatusCode.BadRequest
             }
         }
+    }
+
+    @Test
+    fun `getDeltaker - deltaker er importert fra arena - returnerer importertFraArenaDto`() {
+        val innsoktDatoFraArena = LocalDate.now().minusDays(5)
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            navBruker = TestData.lagNavBruker(personident = "1234"),
+            innsoktDatoFraArena = innsoktDatoFraArena,
+        )
+
+        mockTestApi(deltaker, null) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
+                status shouldBe HttpStatusCode.OK
+                val responseText = bodyAsText()
+                val deltakerResponse = objectMapper.readValue<DeltakerResponse>(responseText)
+                deltakerResponse.importertFraArena?.innsoktDato shouldBe innsoktDatoFraArena
+                deltakerResponse.vedtaksinformasjon shouldBe null
+            }
+        }
+        coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
 
     @Test
