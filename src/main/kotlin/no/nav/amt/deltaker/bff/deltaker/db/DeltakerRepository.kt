@@ -438,10 +438,15 @@ class DeltakerRepository {
       """
 
     private fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
-        val eksisterendeDeltaker = get(oppdatering.id).getOrThrow()
+        val eksisterendeDeltaker = get(oppdatering.id).getOrNull()
+
+        if (eksisterendeDeltaker == null) {
+            log.info("Deltakeren finnes ikke fra før, oppdaterer ${oppdatering.id}")
+            return true
+        }
 
         if (oppdatering.forcedUpdate == true) {
-            log.info("Tvungen oppdtaering på deltaker med id ${oppdatering.id}")
+            log.info("Tvungen oppdatering på deltaker med id ${oppdatering.id}")
             return true
         }
 
