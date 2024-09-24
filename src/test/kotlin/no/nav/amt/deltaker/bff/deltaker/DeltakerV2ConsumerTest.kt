@@ -27,7 +27,7 @@ class DeltakerV2ConsumerTest {
     }
 
     @Test
-    fun `consume - kilde er ikke KOMET - konsumerer ikke melding`() = runBlocking {
+    fun `consume - kilde er ARENA - konsumerer melding`() = runBlocking {
         val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
         val deltaker = TestData.lagDeltaker()
 
@@ -36,7 +36,7 @@ class DeltakerV2ConsumerTest {
             objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
         )
 
-        verify(exactly = 0) { deltakerService.oppdaterDeltaker(any()) }
+        verify(exactly = 1) { deltakerService.oppdaterDeltaker(any()) }
     }
 
     @Test
