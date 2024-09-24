@@ -8,7 +8,10 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Vedtak
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -18,6 +21,7 @@ import java.util.UUID
     JsonSubTypes.Type(value = VedtakResponse::class, name = "Vedtak"),
     JsonSubTypes.Type(value = ForslagResponse::class, name = "Forslag"),
     JsonSubTypes.Type(value = EndringFraArrangorResponse::class, name = "EndringFraArrangor"),
+    JsonSubTypes.Type(value = ImportertFraArenaResponse::class, name = "ImportertFraArena"),
 )
 sealed interface DeltakerHistorikkResponse
 
@@ -48,6 +52,15 @@ data class EndringFraArrangorResponse(
     val endring: EndringFraArrangor.Endring,
 ) : DeltakerHistorikkResponse
 
+data class ImportertFraArenaResponse(
+    val importertDato: LocalDateTime,
+    val startdato: LocalDate?,
+    val sluttdato: LocalDate?,
+    val dagerPerUke: Float?,
+    val deltakelsesprosent: Float?,
+    val status: DeltakerStatus,
+) : DeltakerHistorikkResponse
+
 fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
@@ -58,6 +71,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
         is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
         is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
+        is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
     }
 }
 
@@ -90,4 +104,13 @@ fun EndringFraArrangor.toResponse(arrangornavn: String) = EndringFraArrangorResp
     opprettet = opprettet,
     arrangorNavn = arrangornavn,
     endring = endring,
+)
+
+fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
+    importertDato = importertDato,
+    startdato = deltakerVedImport.startdato,
+    sluttdato = deltakerVedImport.sluttdato,
+    dagerPerUke = deltakerVedImport.dagerPerUke,
+    deltakelsesprosent = deltakerVedImport.deltakelsesprosent,
+    status = deltakerVedImport.status,
 )

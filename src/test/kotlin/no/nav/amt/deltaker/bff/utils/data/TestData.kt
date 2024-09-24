@@ -20,6 +20,8 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerVedImport
+import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import java.time.LocalDate
@@ -138,6 +140,7 @@ object TestData {
         historikk: Boolean = true,
         kanEndres: Boolean = true,
         sistEndret: LocalDateTime = LocalDateTime.now(),
+        innsoktDatoFraArena: LocalDate? = null,
     ): Deltaker {
         val deltaker = Deltaker(
             id,
@@ -155,12 +158,33 @@ object TestData {
             sistEndret,
         )
 
-        return if (historikk) {
+        return if (innsoktDatoFraArena != null) {
+            deltaker.copy(historikk = lagArenaDeltakerHistorikk(deltaker, innsoktDatoFraArena))
+        } else if (historikk) {
             deltaker.copy(historikk = lagDeltakerHistorikk(deltaker))
         } else {
             deltaker
         }
     }
+
+    private fun lagArenaDeltakerHistorikk(deltaker: Deltaker, innsoktDatoFraArena: LocalDate): List<DeltakerHistorikk> {
+        val importertFraArena = lagImportertFraArena(deltaker = deltaker, innsoktDato = innsoktDatoFraArena)
+        return listOf(DeltakerHistorikk.ImportertFraArena(importertFraArena))
+    }
+
+    private fun lagImportertFraArena(deltaker: Deltaker, innsoktDato: LocalDate) = ImportertFraArena(
+        deltakerId = deltaker.id,
+        importertDato = LocalDateTime.now(),
+        deltakerVedImport = DeltakerVedImport(
+            deltakerId = deltaker.id,
+            innsoktDato = innsoktDato,
+            startdato = deltaker.startdato,
+            sluttdato = deltaker.sluttdato,
+            dagerPerUke = deltaker.dagerPerUke,
+            deltakelsesprosent = deltaker.deltakelsesprosent,
+            status = deltaker.status,
+        ),
+    )
 
     private fun lagDeltakerHistorikk(deltaker: Deltaker): List<DeltakerHistorikk> {
         val vedtak = lagVedtak(deltakerVedVedtak = deltaker, fattet = LocalDateTime.now())

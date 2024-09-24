@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.toTitleCase
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
@@ -37,6 +38,7 @@ data class DeltakerResponse(
     val maxVarighet: Long?,
     val softMaxVarighet: Long?,
     val forslag: List<ForslagResponse>,
+    val importertFraArena: ImportertFraArenaDto?,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -65,6 +67,10 @@ data class DeltakerResponse(
         val tilgjengeligInnhold: List<Innholdselement>,
     )
 }
+
+data class ImportertFraArenaDto(
+    val innsoktDato: LocalDate,
+)
 
 fun Deltaker.toDeltakerResponse(
     ansatte: Map<UUID, NavAnsatt>,
@@ -101,7 +107,14 @@ fun Deltaker.toDeltakerResponse(
     maxVarighet = maxVarighet?.toMillis(),
     softMaxVarighet = softMaxVarighet?.toMillis(),
     forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
+    importertFraArena = toImporertFraArenaDto(),
 )
+
+fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? {
+    return historikk.filterIsInstance<DeltakerHistorikk.ImportertFraArena>().firstOrNull()?.let {
+        ImportertFraArenaDto(it.importertFraArena.deltakerVedImport.innsoktDato)
+    }
+}
 
 fun Deltakelsesinnhold.toDto(tiltaksInnhold: List<Innholdselement>?) = DeltakerResponse.DeltakelsesinnholdDto(
     ledetekst = ledetekst,

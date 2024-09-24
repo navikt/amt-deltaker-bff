@@ -145,6 +145,17 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.endringFraArrangor.opprettetAvArrangorAnsattId shouldBe b.endringFraArrangor.opprettetAvArrangorAnsattId
             a.endringFraArrangor.endring shouldBe b.endringFraArrangor.endring
         }
+
+        is DeltakerHistorikk.ImportertFraArena -> {
+            b as DeltakerHistorikk.ImportertFraArena
+            a.importertFraArena.deltakerId shouldBe b.importertFraArena.deltakerId
+            a.importertFraArena.importertDato shouldBeCloseTo b.importertFraArena.importertDato
+            a.importertFraArena.deltakerVedImport.innsoktDato shouldBe b.importertFraArena.deltakerVedImport.innsoktDato
+            a.importertFraArena.deltakerVedImport.deltakerId shouldBe b.importertFraArena.deltakerVedImport.deltakerId
+            a.importertFraArena.deltakerVedImport.status.type shouldBe b.importertFraArena.deltakerVedImport.status.type
+            a.importertFraArena.deltakerVedImport.startdato shouldBe b.importertFraArena.deltakerVedImport.startdato
+            a.importertFraArena.deltakerVedImport.sluttdato shouldBe b.importertFraArena.deltakerVedImport.sluttdato
+        }
     }
 }
 
