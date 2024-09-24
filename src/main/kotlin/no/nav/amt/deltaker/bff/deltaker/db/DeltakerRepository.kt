@@ -314,9 +314,9 @@ class DeltakerRepository {
         )
 
         session.transaction { tx ->
+            tx.update(queryOf(sql, params))
             tx.update(insertStatusQuery(deltaker.status, deltaker.id))
             tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
-            tx.update(queryOf(sql, params))
         }
     }
 
