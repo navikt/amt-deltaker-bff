@@ -53,6 +53,11 @@ class DeltakerV2Consumer(
             return
         }
 
+        // egen håndtering for deltaker med kilde arena som ikke finnes fra før?
+        // husk:
+        // - Hvis det finnes tidligere deltakelser på samme tiltak må disse settes til at ikke kan endres
+        // - Hvis det finnes nyere deltakelser på samme tiltak og mottatt deltakelse har avsluttende status må mottatt deltakelse settes til at ikke kan endres
+        // vi må nok inserte navbruker hvis den ikke finnes fra før
         deltakerService.oppdaterDeltaker(
             deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
         )

@@ -1,61 +1,198 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Before
 import org.junit.Test
-import java.util.UUID
+import java.time.LocalDate
 
 class DeltakerV2ConsumerTest {
-    private val deltakerService = mockk<DeltakerService>(relaxUnitFun = true)
-    private val deltakerlisteRepository = mockk<DeltakerlisteRepository>()
+    init {
+        SingletonPostgres16Container
+    }
+
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService)
+    private val deltakerlisteRepository = DeltakerlisteRepository()
+    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
 
     @Before
     fun setup() {
-        every { deltakerlisteRepository.get(any()) } returns Result.success(
-            TestData.lagDeltakerliste(
+        TestRepository.cleanDatabase()
+    }
+
+    @Test
+    fun `consume - kilde er ARENA, deltaker finnes - konsumerer melding, oppdaterer`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
                 tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            ),
-        )
+            )
+            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
+            TestRepository.insert(deltaker)
+
+            val startdato = LocalDate.now().plusDays(1)
+            val sluttdato = LocalDate.now().plusWeeks(3)
+            val mottattDeltaker = deltaker.copy(
+                startdato = startdato,
+                sluttdato = sluttdato,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            )
+
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+            )
+
+            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            oppdatertDeltaker.startdato shouldBe startdato
+            oppdatertDeltaker.sluttdato shouldBe sluttdato
+        }
     }
 
     @Test
-    fun `consume - kilde er ARENA - konsumerer melding`() = runBlocking {
-        val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
-        val deltaker = TestData.lagDeltaker()
+    fun `consume - kilde er ARENA, deltaker finnes ikke, ingen andre deltakelser - konsumerer melding, lagrer`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            TestRepository.insert(deltakerliste)
 
-        consumer.consume(
-            deltaker.id,
-            objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
-        )
+            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
 
-        verify(exactly = 1) { deltakerService.oppdaterDeltaker(any()) }
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+            )
+
+            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            lagretDeltaker.startdato shouldBe deltaker.startdato
+            lagretDeltaker.kanEndres shouldBe true
+        }
     }
 
     @Test
-    fun `consume - kilde er KOMET - konsumerer melding`() = runBlocking {
-        val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
-        val deltaker = TestData.lagDeltaker()
+    fun `consume - kilde ARENA, finnes ikke, en tidligere deltakelse - lagrer, tidligere deltaker kan ikke endres`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            val navbruker = TestData.lagNavBruker()
+            val tidligereDeltakelse = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            )
+            TestRepository.insert(tidligereDeltakelse)
 
-        consumer.consume(
-            deltaker.id,
-            objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.KOMET)),
-        )
-        verify(exactly = 1) { deltakerService.oppdaterDeltaker(any()) }
+            val deltaker = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            )
+
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+            )
+
+            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            lagretDeltaker.startdato shouldBe deltaker.startdato
+            lagretDeltaker.kanEndres shouldBe true
+
+            val lagretTidligereDeltaker = deltakerService.get(tidligereDeltakelse.id).getOrThrow()
+            lagretTidligereDeltaker.kanEndres shouldBe false
+        }
     }
 
     @Test
-    fun `consume - tombstone - konsumerer ikke melding`() = runBlocking {
-        val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
-        consumer.consume(UUID.randomUUID(), null)
-        verify(exactly = 0) { deltakerService.oppdaterDeltaker(any()) }
+    fun `consume - kilde ARENA, finnes ikke, nyere deltakelse - lagrer, kan ikke endres`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            val navbruker = TestData.lagNavBruker()
+            val nyereDeltakelse = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            )
+            TestRepository.insert(nyereDeltakelse)
+
+            val deltaker = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
+            )
+
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+            )
+
+            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            lagretDeltaker.startdato shouldBe deltaker.startdato
+            lagretDeltaker.kanEndres shouldBe false
+
+            val lagretNyereDeltaker = deltakerService.get(nyereDeltakelse.id).getOrThrow()
+            lagretNyereDeltaker.kanEndres shouldBe true
+        }
+    }
+
+    @Test
+    fun `consume - kilde er KOMET, deltaker finnes - konsumerer melding, oppdaterer`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
+            TestRepository.insert(deltaker)
+
+            val startdato = LocalDate.now().plusDays(1)
+            val sluttdato = LocalDate.now().plusWeeks(3)
+            val mottattDeltaker = deltaker.copy(
+                startdato = startdato,
+                sluttdato = sluttdato,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            )
+
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.KOMET)),
+            )
+
+            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            oppdatertDeltaker.startdato shouldBe startdato
+            oppdatertDeltaker.sluttdato shouldBe sluttdato
+        }
+    }
+
+    @Test
+    fun `consume - tombstone - konsumerer ikke melding`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
+            TestRepository.insert(deltaker)
+
+            consumer.consume(deltaker.id, null)
+
+            deltakerService.get(deltaker.id).getOrNull() shouldNotBe null
+        }
     }
 }
 
