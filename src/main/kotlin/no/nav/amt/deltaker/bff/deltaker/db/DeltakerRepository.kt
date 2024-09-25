@@ -175,6 +175,7 @@ class DeltakerRepository {
                      inner join deltaker_status ds on d2.id = ds.deltaker_id
             where d.id = ?
               and ds.gyldig_til is null
+              and d.kan_endres = true
             and ds.type in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
             and d2.id != d.id;
             """.trimMargin()
