@@ -183,7 +183,8 @@ class DeltakerService(
     }
 
     fun opprettArenaDeltaker(deltaker: Deltaker) {
-        val deltakelserPaSammeTiltak = getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        val deltakelserPaSammeTiltak =
+            getDeltakerIdOgStatusForDeltakelserPaTiltak(deltaker.navBruker.personident, deltaker.deltakerliste.id)
         deltakerRepository.upsert(deltaker)
 
         if (deltakelserPaSammeTiltak.isNotEmpty()) {
@@ -254,6 +255,9 @@ class DeltakerService(
         amtDeltakerClient.sistBesokt(deltaker.id, sistBesokt)
         deltakerRepository.oppdaterSistBesokt(deltaker.id, sistBesokt)
     }
+
+    private fun getDeltakerIdOgStatusForDeltakelserPaTiltak(personident: String, deltakerlisteId: UUID) =
+        deltakerRepository.getDeltakerIdOgStatusForDeltakelser(personident, deltakerlisteId)
 }
 
 fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(

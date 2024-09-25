@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerIdOgStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
@@ -267,6 +268,51 @@ class DeltakerRepository {
         it.update(
             queryOf(sql, *ider.toTypedArray()),
         )
+    }
+
+    fun getDeltakerIdOgStatusForDeltakelser(personident: String, deltakerlisteId: UUID) = Database.query { session ->
+        val sql =
+            """
+            SELECT d.id           AS "d.id",
+                   d.kan_endres   AS "d.kan_endres",
+                   ds.id          AS "ds.id",
+                   ds.deltaker_id AS "ds.deltaker_id",
+                   ds.type        AS "ds.type",
+                   ds.aarsak      AS "ds.aarsak",
+                   ds.gyldig_fra  AS "ds.gyldig_fra",
+                   ds.gyldig_til  AS "ds.gyldig_til",
+                   ds.created_at  AS "ds.created_at",
+                   ds.modified_at AS "ds.modified_at"
+            FROM deltaker d
+                     JOIN nav_bruker nb ON d.person_id = nb.person_id
+                     JOIN deltaker_status ds ON d.id = ds.deltaker_id
+                     JOIN deltakerliste dl ON d.deltakerliste_id = dl.id
+            WHERE nb.personident = :personident
+              AND d.deltakerliste_id = :deltakerliste_id
+              AND ds.gyldig_til IS NULL;
+            """.trimMargin()
+
+        val query = queryOf(
+            sql,
+            mapOf(
+                "personident" to personident,
+                "deltakerliste_id" to deltakerlisteId,
+            ),
+        ).map { row ->
+            DeltakerIdOgStatus(
+                id = row.uuid("d.id"),
+                status = DeltakerStatus(
+                    id = row.uuid("ds.id"),
+                    type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
+                    aarsak = row.stringOrNull("ds.aarsak")?.let { objectMapper.readValue(it) },
+                    gyldigFra = row.localDateTime("ds.gyldig_fra"),
+                    gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
+                    opprettet = row.localDateTime("ds.created_at"),
+                ),
+                kanEndres = row.boolean("d.kan_endres"),
+            )
+        }.asList
+        session.run(query)
     }
 
     fun create(kladd: KladdResponse) = Database.query {
