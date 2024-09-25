@@ -25,6 +25,11 @@ class DeltakerService(
 
     fun get(id: UUID) = deltakerRepository.get(id)
 
+    fun deltakerFinnes(deltakerId: UUID): Boolean {
+        deltakerRepository.deltakerFinnes(deltakerId)?.let { return true }
+        return false
+    }
+
     fun getDeltakelser(personident: String, deltakerlisteId: UUID) = deltakerRepository.getMany(personident, deltakerlisteId)
 
     fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
@@ -184,7 +189,8 @@ class DeltakerService(
         if (deltakelserPaSammeTiltak.isNotEmpty()) {
             // Det finnes tidligere deltakelser på samme tiltak
             if (deltaker.status.type in AKTIVE_STATUSER) {
-                val avsluttedeDeltakelserPaSammeTiltak = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltaker.id)
+                val avsluttedeDeltakelserPaSammeTiltak =
+                    deltakelserPaSammeTiltak.filter { it.status.type in AVSLUTTENDE_STATUSER && it.kanEndres }.map { it.id }
                 deltakerRepository.settKanIkkeEndres(avsluttedeDeltakelserPaSammeTiltak)
                 log.info(
                     "Har låst ${avsluttedeDeltakelserPaSammeTiltak.size} " +

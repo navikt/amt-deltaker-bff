@@ -50,12 +50,14 @@ class DeltakerV2Consumer(
             return
         }
 
-        val deltakerFinnes = deltakerService.get(deltakerV2.id).getOrNull() != null
+        val deltakerFinnes = deltakerService.deltakerFinnes(deltakerV2.id)
         if (deltakerFinnes || deltakerV2.kilde == DeltakerV2Dto.Kilde.KOMET) {
+            log.info("Oppdaterer deltaker med id ${deltakerV2.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
             )
         } else {
+            log.info("Inserter ny deltaker med id ${deltakerV2.id}")
             val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()
             val deltaker = deltakerV2.toDeltaker(navBruker, deltakerliste)
             deltakerService.opprettArenaDeltaker(deltaker)
