@@ -4,6 +4,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
+import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
@@ -177,11 +178,33 @@ class DeltakerService(
     }
 
     fun opprettArenaDeltaker(deltaker: Deltaker) {
-        // Vi kan motta gammel avsluttet deltakelse
-        // Hvordan setter vi kanIkkeEndres?
-        val deltakelser = getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id)
-        if (deltakelser.isEmpty()) {
-            deltakerRepository.upsert(deltaker)
+        val deltakelserPaSammeTiltak = getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        deltakerRepository.upsert(deltaker)
+
+        if (deltakelserPaSammeTiltak.isNotEmpty()) {
+            // Det finnes tidligere deltakelser på samme tiltak
+            if (deltaker.status.type in AKTIVE_STATUSER) {
+                val avsluttedeDeltakelserPaSammeTiltak = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltaker.id)
+                deltakerRepository.settKanIkkeEndres(avsluttedeDeltakelserPaSammeTiltak)
+                log.info(
+                    "Har låst ${avsluttedeDeltakelserPaSammeTiltak.size} " +
+                        "deltakere for endringer pga nyere aktiv deltaker fra arena med id ${deltaker.id}",
+                )
+            } else { // deltakelsen er gammel(er avsluttet)
+                val aktiveDeltakelser = deltakelserPaSammeTiltak.filterNot { it.status.type in AVSLUTTENDE_STATUSER }
+                if (aktiveDeltakelser.isNotEmpty()) {
+                    deltakerRepository.settKanIkkeEndres(listOf(deltaker.id))
+                    log.info(
+                        "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere aktive deltakelser",
+                    )
+                }
+            }
+        }
+
+        if (deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
+            deltaker.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+        ) {
+            deltakerRepository.settKanIkkeEndres(listOf(deltaker.id))
         }
     }
 

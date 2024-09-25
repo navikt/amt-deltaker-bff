@@ -50,19 +50,16 @@ class DeltakerV2Consumer(
             return
         }
 
-        if (deltakerService.get(deltakerV2.id).getOrNull() == null && deltakerV2.kilde != DeltakerV2Dto.Kilde.KOMET) {
-            val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()
-            val deltaker = deltakerV2.toDeltaker(navBruker, deltakerliste)
-            deltakerService.opprettArenaDeltaker(deltaker)
-        } else {
+        val deltakerFinnes = deltakerService.get(deltakerV2.id).getOrNull() != null
+        if (deltakerFinnes || deltakerV2.kilde == DeltakerV2Dto.Kilde.KOMET) {
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
             )
+        } else {
+            val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()
+            val deltaker = deltakerV2.toDeltaker(navBruker, deltakerliste)
+            deltakerService.opprettArenaDeltaker(deltaker)
         }
-        // egen håndtering for deltaker med kilde arena som ikke finnes fra før?
-        // husk:
-        // - Hvis det finnes tidligere deltakelser på samme tiltak må disse settes til at ikke kan endres
-        // - Hvis det finnes nyere deltakelser på samme tiltak og mottatt deltakelse har avsluttende status må mottatt deltakelse settes til at ikke kan endres
     }
 
     override fun run() = consumer.run()
