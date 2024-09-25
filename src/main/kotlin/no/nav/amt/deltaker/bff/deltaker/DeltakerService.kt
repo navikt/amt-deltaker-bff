@@ -176,6 +176,15 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
+    fun opprettArenaDeltaker(deltaker: Deltaker) {
+        // Vi kan motta gammel avsluttet deltakelse
+        // Hvordan setter vi kanIkkeEndres?
+        val deltakelser = getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        if (deltakelser.isEmpty()) {
+            deltakerRepository.upsert(deltaker)
+        }
+    }
+
     fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
             val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)

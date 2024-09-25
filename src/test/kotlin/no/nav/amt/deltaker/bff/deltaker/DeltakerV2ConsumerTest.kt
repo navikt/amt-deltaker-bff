@@ -5,6 +5,8 @@ import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Consumer
+import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Dto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -73,9 +75,9 @@ class DeltakerV2ConsumerTest {
                 tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             TestRepository.insert(deltakerliste)
-
-            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
-
+            val navbruker = TestData.lagNavBruker()
+            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, navBruker = navbruker)
+            TestRepository.insert(navbruker)
             consumer.consume(
                 deltaker.id,
                 objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
@@ -219,4 +221,5 @@ private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     kilde = kilde,
     innhold = deltakelsesinnhold,
     historikk = historikk,
+    sistEndret = sistEndret,
 )
