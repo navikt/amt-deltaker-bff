@@ -164,6 +164,23 @@ class DeltakerRepository {
         it.run(query)
     }
 
+    fun deltakerFinnes(deltakerId: UUID): UUID? = Database.query { session ->
+        val sql =
+            """
+            SELECT id FROM deltaker WHERE id = :deltaker_id;
+            """.trimMargin()
+
+        val query = queryOf(
+            sql,
+            mapOf(
+                "deltaker_id" to deltakerId,
+            ),
+        ).map {
+            it.uuidOrNull("id")
+        }.asSingle
+        session.run(query)
+    }
+
     fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID) = Database.query { session ->
         val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
         val sql =
