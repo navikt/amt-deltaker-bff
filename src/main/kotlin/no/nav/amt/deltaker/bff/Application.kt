@@ -22,7 +22,6 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
@@ -33,6 +32,7 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingConsumer
 import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.deltaker.job.SlettUtdatertKladdJob
 import no.nav.amt.deltaker.bff.deltaker.job.leaderelection.LeaderElection
+import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -127,6 +127,7 @@ fun Application.module() {
 
     val navBrukerRepository = NavBrukerRepository()
     val navBrukerService = NavBrukerService(
+        amtPersonServiceClient,
         navBrukerRepository,
     )
 
@@ -168,7 +169,7 @@ fun Application.module() {
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
-        DeltakerV2Consumer(deltakerService, deltakerlisteRepository),
+        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService),
         ArrangorMeldingConsumer(forslagService),
     )
     consumers.forEach { it.run() }

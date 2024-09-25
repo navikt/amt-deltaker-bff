@@ -51,7 +51,7 @@ class DeltakerlisteConsumerTest {
             )
             pameldingService = PameldingService(
                 deltakerService = deltakerService,
-                navBrukerService = NavBrukerService(NavBrukerRepository()),
+                navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository()),
                 amtDeltakerClient = mockAmtDeltakerClient(),
                 navEnhetService = navEnhetService,
             )
