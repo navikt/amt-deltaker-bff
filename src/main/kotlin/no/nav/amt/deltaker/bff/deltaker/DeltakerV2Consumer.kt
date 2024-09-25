@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.kafka.Consumer
@@ -24,6 +25,7 @@ import java.util.UUID
 class DeltakerV2Consumer(
     private val deltakerService: DeltakerService,
     private val deltakerlisteRepository: DeltakerlisteRepository,
+    private val navBrukerService: NavBrukerService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -53,6 +55,9 @@ class DeltakerV2Consumer(
             return
         }
 
+        if (deltakerService.get(deltakerV2.id).getOrNull() == null) {
+            navBrukerService.getOrCreate(deltakerV2.personalia.personident)
+        }
         // egen håndtering for deltaker med kilde arena som ikke finnes fra før?
         // husk:
         // - Hvis det finnes tidligere deltakelser på samme tiltak må disse settes til at ikke kan endres
@@ -69,6 +74,7 @@ class DeltakerV2Consumer(
 data class DeltakerV2Dto(
     val id: UUID,
     val deltakerlisteId: UUID,
+    val personalia: DeltakerPersonaliaDto,
     val status: DeltakerStatusDto,
     val dagerPerUke: Float?,
     val prosentStilling: Double?,
@@ -108,6 +114,10 @@ data class DeltakerV2Dto(
         KOMET,
         ARENA,
     }
+
+    data class DeltakerPersonaliaDto(
+        val personident: String,
+    )
 
     data class DeltakerStatusDto(
         val id: UUID?,

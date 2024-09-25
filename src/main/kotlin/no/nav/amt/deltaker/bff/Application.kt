@@ -127,6 +127,7 @@ fun Application.module() {
 
     val navBrukerRepository = NavBrukerRepository()
     val navBrukerService = NavBrukerService(
+        amtPersonServiceClient,
         navBrukerRepository,
     )
 
@@ -168,7 +169,7 @@ fun Application.module() {
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
-        DeltakerV2Consumer(deltakerService, deltakerlisteRepository),
+        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService),
         ArrangorMeldingConsumer(forslagService),
     )
     consumers.forEach { it.run() }

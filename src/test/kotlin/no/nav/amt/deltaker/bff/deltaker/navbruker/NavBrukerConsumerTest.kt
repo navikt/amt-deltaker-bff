@@ -30,7 +30,7 @@ class NavBrukerConsumerTest {
 
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
-            navBrukerService = NavBrukerService(repository),
+            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), repository),
             amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
         )

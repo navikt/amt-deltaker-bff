@@ -6,6 +6,8 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
+import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
@@ -26,9 +28,10 @@ class DeltakerV2ConsumerTest {
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository())
     private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService)
     private val deltakerlisteRepository = DeltakerlisteRepository()
-    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository)
+    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService)
 
     @Before
     fun setup() {
@@ -199,6 +202,7 @@ class DeltakerV2ConsumerTest {
 private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     id = id,
     deltakerlisteId = deltakerliste.id,
+    personalia = DeltakerV2Dto.DeltakerPersonaliaDto(navBruker.personident),
     status = DeltakerV2Dto.DeltakerStatusDto(
         id = status.id,
         type = status.type,
