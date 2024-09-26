@@ -169,6 +169,78 @@ class DeltakerV2ConsumerTest {
     }
 
     @Test
+    fun `consume - kilde ARENA, finnes ikke, avsluttet, en avsluttet deltakelse - lagrer, tidligere deltaker kan ikke endres`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            val navbruker = TestData.lagNavBruker()
+            val statusdato = LocalDateTime.now().minusMonths(2)
+            val tidligereDeltakelse = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
+            )
+            TestRepository.insert(tidligereDeltakelse)
+
+            val statusdato2 = LocalDateTime.now().minusDays(3)
+            val deltaker = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
+            )
+
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+            )
+
+            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            lagretDeltaker.startdato shouldBe deltaker.startdato
+            lagretDeltaker.kanEndres shouldBe true
+
+            val lagretTidligereDeltaker = deltakerService.get(tidligereDeltakelse.id).getOrThrow()
+            lagretTidligereDeltaker.kanEndres shouldBe false
+        }
+    }
+
+    @Test
+    fun `consume - kilde ARENA, finnes ikke, avsluttet, en nyere avsluttet deltakelse - lagrer, eldste deltaker kan ikke endres`() {
+        runBlocking {
+            val deltakerliste = TestData.lagDeltakerliste(
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            )
+            val navbruker = TestData.lagNavBruker()
+            val statusdato = LocalDateTime.now().minusDays(2)
+            val tidligereDeltakelse = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
+            )
+            TestRepository.insert(tidligereDeltakelse)
+
+            val statusdato2 = LocalDateTime.now().minusMonths(3)
+            val deltaker = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
+            )
+
+            consumer.consume(
+                deltaker.id,
+                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+            )
+
+            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            lagretDeltaker.startdato shouldBe deltaker.startdato
+            lagretDeltaker.kanEndres shouldBe false
+
+            val lagretTidligereDeltaker = deltakerService.get(tidligereDeltakelse.id).getOrThrow()
+            lagretTidligereDeltaker.kanEndres shouldBe true
+        }
+    }
+
+    @Test
     fun `consume - kilde er KOMET, deltaker finnes - konsumerer melding, oppdaterer`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
