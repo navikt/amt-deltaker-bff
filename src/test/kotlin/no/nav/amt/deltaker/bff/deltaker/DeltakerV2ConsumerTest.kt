@@ -20,9 +20,11 @@ import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DeltakerV2ConsumerTest {
     init {
@@ -76,7 +78,14 @@ class DeltakerV2ConsumerTest {
             )
             TestRepository.insert(deltakerliste)
             val navbruker = TestData.lagNavBruker()
-            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, navBruker = navbruker)
+            val sistEndret = LocalDateTime.now().minusDays(1)
+            val statusOpprettet = LocalDateTime.now().minusWeeks(1)
+            val deltaker = TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                navBruker = navbruker,
+                sistEndret = sistEndret,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, opprettet = statusOpprettet),
+            )
             TestRepository.insert(navbruker)
             consumer.consume(
                 deltaker.id,
@@ -86,6 +95,8 @@ class DeltakerV2ConsumerTest {
             val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
+            lagretDeltaker.sistEndret shouldBeCloseTo sistEndret
+            lagretDeltaker.status.opprettet shouldBeCloseTo statusOpprettet
         }
     }
 

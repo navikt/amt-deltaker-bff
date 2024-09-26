@@ -66,11 +66,11 @@ class DeltakerRepository {
             """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, kan_endres
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, kan_endres, modified_at
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :kan_endres
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :kan_endres, :modified_at
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -82,7 +82,7 @@ class DeltakerRepository {
                 innhold              = :innhold,
                 historikk            = :historikk,
                 kan_endres           = :kan_endres,
-                modified_at          = current_timestamp
+                modified_at          = :modified_at
             """.trimIndent()
 
         val parameters = mapOf(
@@ -97,6 +97,7 @@ class DeltakerRepository {
             "innhold" to toPGObject(deltaker.deltakelsesinnhold),
             "historikk" to toPGObject(deltaker.historikk),
             "kan_endres" to deltaker.kanEndres,
+            "modified_at" to deltaker.sistEndret,
         )
 
         session.transaction { tx ->
