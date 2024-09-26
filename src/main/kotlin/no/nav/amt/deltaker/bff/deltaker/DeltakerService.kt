@@ -13,6 +13,7 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
@@ -236,7 +237,7 @@ class DeltakerService(
     }
 
     private fun upsertKladd(deltaker: Deltaker) {
-        deltakerRepository.upsert(deltaker)
+        deltakerRepository.upsert(deltaker.copy(sistEndret = LocalDateTime.now()))
         log.info("Upserter kladd for deltaker med id ${deltaker.id}")
     }
 
