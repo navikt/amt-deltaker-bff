@@ -302,6 +302,31 @@ class DeltakerRepositoryTest {
         statuser.first { it.type == DeltakerStatus.Type.HAR_SLUTTET }.gyldigTil shouldBe null
         statuser.first { it.type == DeltakerStatus.Type.DELTAR }.gyldigTil shouldNotBe null
     }
+
+    @Test
+    fun `get - har fremtidig status - henter deltaker med gjeldende status`() {
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+        )
+        TestRepository.insert(deltaker)
+
+        val harSluttetFraDato = LocalDateTime.now().plusDays(2)
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsak = DeltakerStatus.Aarsak.Type.UTDANNING,
+                gyldigFra = harSluttetFraDato,
+            ),
+        )
+
+        repository.upsert(oppdatertDeltaker)
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
+
+        val statuser = repository.getDeltakerStatuser(deltaker.id)
+        statuser.first { it.id == deltaker.status.id }.gyldigTil shouldBe null
+        statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigTil shouldBe null
+        statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigFra shouldBeCloseTo harSluttetFraDato
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
