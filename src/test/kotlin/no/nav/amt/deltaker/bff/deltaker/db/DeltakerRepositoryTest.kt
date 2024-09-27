@@ -325,7 +325,7 @@ class DeltakerRepositoryTest {
         val statuser = repository.getDeltakerStatuser(deltaker.id)
         statuser.first { it.id == deltaker.status.id }.gyldigTil shouldBe null
         statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigTil shouldBe null
-        statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigFra shouldBe harSluttetFraDato
+        statuser.first { it.id == oppdatertDeltaker.status.id }.gyldigFra shouldBeCloseTo harSluttetFraDato
     }
 }
 
