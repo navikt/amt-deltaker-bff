@@ -190,10 +190,10 @@ class DeltakerService(
 
         if (deltakelserPaSammeTiltak.isNotEmpty()) {
             // Det finnes tidligere deltakelser på samme tiltak
+            val avsluttedeDeltakelserPaSammeTiltak =
+                deltakelserPaSammeTiltak.filter { it.status.type in AVSLUTTENDE_STATUSER && it.kanEndres }
             if (deltaker.status.type in AKTIVE_STATUSER) {
-                val avsluttedeDeltakelserPaSammeTiltak =
-                    deltakelserPaSammeTiltak.filter { it.status.type in AVSLUTTENDE_STATUSER && it.kanEndres }.map { it.id }
-                deltakerRepository.settKanIkkeEndres(avsluttedeDeltakelserPaSammeTiltak)
+                deltakerRepository.settKanIkkeEndres(avsluttedeDeltakelserPaSammeTiltak.map { it.id })
                 log.info(
                     "Har låst ${avsluttedeDeltakelserPaSammeTiltak.size} " +
                         "deltakere for endringer pga nyere aktiv deltaker fra arena med id ${deltaker.id}",
@@ -205,6 +205,29 @@ class DeltakerService(
                     log.info(
                         "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere aktive deltakelser",
                     )
+                } else {
+                    val nyereAvsluttetDeltakelse = avsluttedeDeltakelserPaSammeTiltak.find {
+                        it.status.opprettet.isAfter(
+                            deltaker.status.opprettet,
+                        )
+                    }
+                    if (nyereAvsluttetDeltakelse != null) {
+                        deltakerRepository.settKanIkkeEndres(listOf(deltaker.id))
+                        log.info(
+                            "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere avsluttet deltakelse",
+                        )
+                    } else {
+                        val skalIkkeKunneEndres = avsluttedeDeltakelserPaSammeTiltak.filterNot {
+                            it.status.opprettet.isAfter(
+                                deltaker.status.opprettet,
+                            )
+                        }
+                        deltakerRepository.settKanIkkeEndres(skalIkkeKunneEndres.map { it.id })
+                        log.info(
+                            "Har låst ${skalIkkeKunneEndres.size} " +
+                                "deltakere for endringer pga nyere avsluttet deltaker fra arena med id ${deltaker.id}",
+                        )
+                    }
                 }
             }
         }
