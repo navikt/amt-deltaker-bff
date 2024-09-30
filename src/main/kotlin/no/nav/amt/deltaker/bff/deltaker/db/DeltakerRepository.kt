@@ -19,7 +19,6 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -104,14 +103,12 @@ class DeltakerRepository {
         session.transaction { tx ->
             tx.update(queryOf(sql, parameters))
             tx.update(insertStatusQuery(deltaker.status, deltaker.id))
-            if (!deltaker.status.gyldigFra.toLocalDate().isAfter(LocalDate.now())) {
-                tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
-            }
+            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
         }
     }
 
     fun get(id: UUID) = Database.query {
-        val sql = getDeltakerSql("where d.id = :id and ds.gyldig_til is null and ds.gyldig_fra < CURRENT_TIMESTAMP")
+        val sql = getDeltakerSql("where d.id = :id and ds.gyldig_til is null")
 
         val query = queryOf(sql, mapOf("id" to id)).map(::rowMapper).asSingle
         it.run(query)?.let { d -> Result.success(d) }
@@ -123,7 +120,6 @@ class DeltakerRepository {
             """ where nb.personident = :personident 
                     and d.deltakerliste_id = :deltakerliste_id 
                     and ds.gyldig_til is null
-                    and ds.gyldig_fra < CURRENT_TIMESTAMP
             """.trimMargin(),
         )
 
@@ -141,7 +137,6 @@ class DeltakerRepository {
         val sql = getDeltakerSql(
             """ where nb.personident = :personident
                     and ds.gyldig_til is null
-                    and ds.gyldig_fra < CURRENT_TIMESTAMP
             """.trimMargin(),
         )
 
@@ -199,7 +194,6 @@ class DeltakerRepository {
                      inner join deltaker_status ds on d2.id = ds.deltaker_id
             where d.id = ?
               and ds.gyldig_til is null
-              and ds.gyldig_fra < CURRENT_TIMESTAMP
               and d.kan_endres = true
             and ds.type in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
             and d2.id != d.id;
@@ -296,8 +290,7 @@ class DeltakerRepository {
                      JOIN deltakerliste dl ON d.deltakerliste_id = dl.id
             WHERE nb.personident = :personident
               AND d.deltakerliste_id = :deltakerliste_id
-              AND ds.gyldig_til IS NULL
-              AND ds.gyldig_fra < CURRENT_TIMESTAMP;
+              AND ds.gyldig_til IS NULL;
             """.trimMargin()
 
         val query = queryOf(
@@ -388,9 +381,7 @@ class DeltakerRepository {
         session.transaction { tx ->
             tx.update(queryOf(sql, params))
             tx.update(insertStatusQuery(deltaker.status, deltaker.id))
-            if (!deltaker.status.gyldigFra.toLocalDate().isAfter(LocalDate.now())) {
-                tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
-            }
+            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
         }
     }
 
