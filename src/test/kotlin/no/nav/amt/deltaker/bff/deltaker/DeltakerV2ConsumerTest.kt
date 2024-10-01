@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -33,7 +33,7 @@ class DeltakerV2ConsumerTest {
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository())
-    private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService)
+    private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk(relaxed = true))
     private val deltakerlisteRepository = DeltakerlisteRepository()
     private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService)
 
@@ -269,7 +269,7 @@ class DeltakerV2ConsumerTest {
     }
 
     @Test
-    fun `consume - tombstone - konsumerer ikke melding`() {
+    fun `consume - tombstone - sletter deltaker`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
                 tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
@@ -279,7 +279,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(deltaker.id, null)
 
-            deltakerService.get(deltaker.id).getOrNull() shouldNotBe null
+            deltakerService.get(deltaker.id).getOrNull() shouldBe null
         }
     }
 }

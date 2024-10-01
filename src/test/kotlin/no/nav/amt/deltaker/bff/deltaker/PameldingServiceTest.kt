@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -36,6 +37,7 @@ class PameldingServiceTest {
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
+            forslagService = mockk(),
         )
 
         private var pameldingService = PameldingService(

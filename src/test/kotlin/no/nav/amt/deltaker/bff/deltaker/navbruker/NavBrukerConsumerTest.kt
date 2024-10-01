@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker
 
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -26,6 +27,7 @@ class NavBrukerConsumerTest {
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
+            forslagService = mockk(relaxed = true),
         )
 
         private var pameldingService = PameldingService(

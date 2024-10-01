@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -21,6 +22,7 @@ class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
     private val amtDeltakerClient: AmtDeltakerClient,
     private val navEnhetService: NavEnhetService,
+    private val forslagService: ForslagService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -256,6 +258,7 @@ class DeltakerService(
     }
 
     fun delete(deltakerId: UUID) {
+        forslagService.deleteForDeltaker(deltakerId)
         deltakerRepository.delete(deltakerId)
     }
 

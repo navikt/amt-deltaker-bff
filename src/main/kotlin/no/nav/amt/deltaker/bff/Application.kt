@@ -150,7 +150,7 @@ fun Application.module() {
     val forslagRepository = ForslagRepository()
     val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer())
 
-    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService)
+    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService, forslagService)
 
     val pameldingService = PameldingService(
         deltakerService = deltakerService,
