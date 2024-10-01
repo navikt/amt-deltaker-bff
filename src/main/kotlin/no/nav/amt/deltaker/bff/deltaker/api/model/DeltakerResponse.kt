@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
@@ -64,7 +65,12 @@ data class DeltakerResponse(
         val startdato: LocalDate,
         val sluttdato: LocalDate?,
         val status: Deltakerliste.Status,
-        val tilgjengeligInnhold: List<Innholdselement>,
+        val tilgjengeligInnhold: TilgjengeligInnhold,
+    )
+
+    data class TilgjengeligInnhold(
+        val ledetekst: String?,
+        val innhold: List<Innholdselement>,
     )
 }
 
@@ -91,7 +97,7 @@ fun Deltaker.toDeltakerResponse(
         startdato = deltakerliste.startDato,
         sluttdato = deltakerliste.sluttDato,
         status = deltakerliste.status,
-        tilgjengeligInnhold = deltakerliste.tiltak.innhold?.innholdselementerMedAnnet ?: emptyList(),
+        tilgjengeligInnhold = deltakerliste.tiltak.innhold.toDto(),
     ),
     status = status,
     startdato = startdato,
@@ -110,11 +116,10 @@ fun Deltaker.toDeltakerResponse(
     importertFraArena = toImporertFraArenaDto(),
 )
 
-fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? {
-    return historikk.filterIsInstance<DeltakerHistorikk.ImportertFraArena>().firstOrNull()?.let {
+fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =
+    historikk.filterIsInstance<DeltakerHistorikk.ImportertFraArena>().firstOrNull()?.let {
         ImportertFraArenaDto(it.importertFraArena.deltakerVedImport.innsoktDato)
     }
-}
 
 fun Deltakelsesinnhold.toDto(tiltaksInnhold: List<Innholdselement>?) = DeltakerResponse.DeltakelsesinnholdDto(
     ledetekst = ledetekst,
@@ -153,4 +158,9 @@ private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: N
     sistEndret = sistEndret,
     sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv.toString(),
     sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet.toString(),
+)
+
+private fun DeltakerRegistreringInnhold?.toDto() = DeltakerResponse.TilgjengeligInnhold(
+    ledetekst = this?.ledetekst,
+    innhold = this?.innholdselementerMedAnnet.orEmpty(),
 )
