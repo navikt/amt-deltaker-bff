@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
@@ -48,6 +49,7 @@ class DeltakerlisteConsumerTest {
                 deltakerRepository = DeltakerRepository(),
                 amtDeltakerClient = mockAmtDeltakerClient(),
                 navEnhetService = navEnhetService,
+                forslagService = mockk(relaxed = true),
             )
             pameldingService = PameldingService(
                 deltakerService = deltakerService,

@@ -27,6 +27,10 @@ class ForslagService(
         log.info("Slettet godkjent forslag $id")
     }
 
+    fun deleteForDeltaker(deltakerId: UUID) {
+        forslagRepository.deleteForDeltaker(deltakerId)
+    }
+
     fun kanLagres(deltakerId: UUID) = forslagRepository.kanLagres(deltakerId)
 
     suspend fun avvisForslag(

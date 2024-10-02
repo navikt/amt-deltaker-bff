@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -26,7 +27,7 @@ class DeltakerServiceTest {
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService)
+    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk())
 
     @Test
     fun `oppdaterDeltaker(endring) - kaller client og returnerer deltaker`(): Unit = runBlocking {
