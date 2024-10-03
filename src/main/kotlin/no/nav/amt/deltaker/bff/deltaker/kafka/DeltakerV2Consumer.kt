@@ -43,6 +43,10 @@ class DeltakerV2Consumer(
         }
 
         val deltakerV2 = objectMapper.readValue<DeltakerV2Dto>(value)
+        if (deltakerV2.status.id == null) {
+            log.warn("Deltaker $key mangler statusid, ignorerer deltaker")
+            return
+        }
         val deltakerliste = deltakerlisteRepository.get(deltakerV2.deltakerlisteId).getOrThrow()
         val tiltakstype = deltakerliste.tiltak.arenaKode
 
