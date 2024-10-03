@@ -32,6 +32,7 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingConsumer
 import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.deltaker.job.SlettUtdatertKladdJob
 import no.nav.amt.deltaker.bff.deltaker.job.leaderelection.LeaderElection
+import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -168,7 +169,7 @@ fun Application.module() {
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
-        // DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService),
+        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService),
         ArrangorMeldingConsumer(forslagService),
     )
     consumers.forEach { it.run() }
