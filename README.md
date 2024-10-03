@@ -1,4 +1,5 @@
 # amt-deltaker-bff
+BFF for tiltakssiden for deltaker og veileder. 
 
 ## Utvikling
 **Lint fix:** 
