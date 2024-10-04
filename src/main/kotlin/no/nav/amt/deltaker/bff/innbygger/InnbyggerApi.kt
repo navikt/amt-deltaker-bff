@@ -9,6 +9,7 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import kotlinx.coroutines.launch
+import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
@@ -61,6 +62,8 @@ fun Routing.registerInnbyggerApi(
             }
 
             val oppdatertDeltaker = innbyggerService.fattVedtak(deltaker)
+
+            MetricRegister.GODKJENT_UTKAST.inc()
 
             call.respond(komplettInnbyggerDeltakerResponse(oppdatertDeltaker))
         }

@@ -32,6 +32,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -147,6 +148,8 @@ fun Routing.registerPameldingApi(
                 avbruttAvEnhet = enhetsnummer,
             )
 
+            MetricRegister.AVBRUTT_UTKAST.inc()
+
             call.respond(HttpStatusCode.OK)
         }
 
@@ -179,7 +182,11 @@ fun Routing.registerPameldingApi(
                 ),
             )
 
-            MetricRegister.PAMELDT_UTEN_UTKAST.inc()
+            if (deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
+                MetricRegister.MELDT_PA_DIEKTE_MED_UTKAST.inc()
+            } else {
+                MetricRegister.MELDT_PA_DIEKTE_UTEN_UTKAST.inc()
+            }
 
             call.respond(HttpStatusCode.OK)
         }

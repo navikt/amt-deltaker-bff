@@ -17,9 +17,27 @@ object MetricRegister {
         .withoutExemplars()
         .register()
 
-    val PAMELDT_UTEN_UTKAST: Counter = Counter.builder()
-        .name("${METRICS_NS}_uten_utkast_count")
-        .help("Antall påmeldinger uten utkast")
+    val MELDT_PA_DIEKTE_UTEN_UTKAST: Counter = Counter.builder()
+        .name("${METRICS_NS}_direkte_uten_utkast_count")
+        .help("Antall direkte påmeldinger uten utkast")
+        .withoutExemplars()
+        .register()
+
+    val MELDT_PA_DIEKTE_MED_UTKAST: Counter = Counter.builder()
+        .name("${METRICS_NS}_direkte_med_utkast_count")
+        .help("Antall direkte påmeldinger med utkast")
+        .withoutExemplars()
+        .register()
+
+    val AVBRUTT_UTKAST: Counter = Counter.builder()
+        .name("${METRICS_NS}_avbrutt_utkast_count")
+        .help("Antall avbrutte utkast for påmelding")
+        .withoutExemplars()
+        .register()
+
+    val GODKJENT_UTKAST: Counter = Counter.builder()
+        .name("${METRICS_NS}_godkjent_utkast_count")
+        .help("Antall godkjente utkast for påmelding")
         .withoutExemplars()
         .register()
 }
