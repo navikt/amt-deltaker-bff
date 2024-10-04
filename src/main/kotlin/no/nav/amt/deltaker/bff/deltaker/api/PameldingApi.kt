@@ -183,9 +183,9 @@ fun Routing.registerPameldingApi(
             )
 
             if (deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
-                MetricRegister.MELDT_PA_DIEKTE_MED_UTKAST.inc()
+                MetricRegister.MELDT_PA_DIREKTE_MED_UTKAST.inc()
             } else {
-                MetricRegister.MELDT_PA_DIEKTE_UTEN_UTKAST.inc()
+                MetricRegister.MELDT_PA_DIREKTE_UTEN_UTKAST.inc()
             }
 
             call.respond(HttpStatusCode.OK)

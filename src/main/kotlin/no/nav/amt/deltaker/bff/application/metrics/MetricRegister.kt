@@ -17,13 +17,13 @@ object MetricRegister {
         .withoutExemplars()
         .register()
 
-    val MELDT_PA_DIEKTE_UTEN_UTKAST: Counter = Counter.builder()
+    val MELDT_PA_DIREKTE_UTEN_UTKAST: Counter = Counter.builder()
         .name("${METRICS_NS}_direkte_uten_utkast_count")
         .help("Antall direkte påmeldinger uten utkast")
         .withoutExemplars()
         .register()
 
-    val MELDT_PA_DIEKTE_MED_UTKAST: Counter = Counter.builder()
+    val MELDT_PA_DIREKTE_MED_UTKAST: Counter = Counter.builder()
         .name("${METRICS_NS}_direkte_med_utkast_count")
         .help("Antall direkte påmeldinger med utkast")
         .withoutExemplars()
