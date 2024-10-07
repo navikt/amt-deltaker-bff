@@ -47,6 +47,7 @@ data class DeltakerV2Dto(
                 opprettet = status.opprettetDato,
             ),
             historikk = historikk.orEmpty(),
+            sistEndret = sistEndret ?: LocalDateTime.now(),
             forcedUpdate = forcedUpdate,
         )
     }

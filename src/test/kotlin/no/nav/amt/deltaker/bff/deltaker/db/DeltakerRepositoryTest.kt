@@ -146,7 +146,8 @@ class DeltakerRepositoryTest {
 
     @Test
     fun `update - deltaker er endret - oppdaterer`() {
-        val deltaker = TestData.lagDeltaker()
+        val sistEndret = LocalDateTime.now().minusDays(3)
+        val deltaker = TestData.lagDeltaker(sistEndret = sistEndret)
         TestRepository.insert(deltaker)
         val endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("ny bakgrunn for innsøk")
         val oppdatertDeltaker = deltaker.endre(TestData.lagDeltakerEndring(endring = endring))
@@ -314,6 +315,7 @@ private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     deltakelsesinnhold,
     status,
     historikk,
+    sistEndret,
 )
 
 fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
@@ -326,6 +328,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.bakgrunnsinformasjon shouldBe b.bakgrunnsinformasjon
     a.deltakelsesinnhold shouldBe b.deltakelsesinnhold
     a.historikk shouldBe b.historikk
+    a.sistEndret shouldBeCloseTo b.sistEndret
     a.status.id shouldBe b.status.id
     a.status.type shouldBe b.status.type
     a.status.aarsak shouldBe b.status.aarsak

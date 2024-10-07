@@ -4,6 +4,7 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 data class Deltakeroppdatering(
@@ -16,5 +17,6 @@ data class Deltakeroppdatering(
     val deltakelsesinnhold: Deltakelsesinnhold?,
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
+    val sistEndret: LocalDateTime = LocalDateTime.now(),
     val forcedUpdate: Boolean? = false,
 )

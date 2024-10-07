@@ -363,7 +363,7 @@ class DeltakerRepository {
                 bakgrunnsinformasjon = :bakgrunnsinformasjon,
                 innhold              = :innhold,
                 historikk            = :historikk,
-                modified_at          = current_timestamp
+                modified_at          = :modified_at
             where id = :id
             """.trimIndent()
 
@@ -376,6 +376,7 @@ class DeltakerRepository {
             "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
             "innhold" to toPGObject(deltaker.deltakelsesinnhold),
             "historikk" to toPGObject(deltaker.historikk),
+            "modified_at" to deltaker.sistEndret,
         )
 
         session.transaction { tx ->
