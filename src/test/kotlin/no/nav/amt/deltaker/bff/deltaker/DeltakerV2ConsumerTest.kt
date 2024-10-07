@@ -53,10 +53,12 @@ class DeltakerV2ConsumerTest {
 
             val startdato = LocalDate.now().plusDays(1)
             val sluttdato = LocalDate.now().plusWeeks(3)
+            val sistEndret = LocalDateTime.now().minusDays(2)
             val mottattDeltaker = deltaker.copy(
                 startdato = startdato,
                 sluttdato = sluttdato,
                 status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+                sistEndret = sistEndret,
             )
 
             consumer.consume(
@@ -67,6 +69,7 @@ class DeltakerV2ConsumerTest {
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.startdato shouldBe startdato
             oppdatertDeltaker.sluttdato shouldBe sluttdato
+            oppdatertDeltaker.sistEndret shouldBeCloseTo sistEndret
         }
     }
 
