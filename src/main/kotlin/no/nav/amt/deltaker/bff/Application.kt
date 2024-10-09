@@ -48,6 +48,9 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.lib.kafka.Producer
+import no.nav.amt.lib.kafka.config.KafkaConfigImpl
+import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.utils.database.Database
 import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
@@ -120,6 +123,8 @@ fun Application.module() {
         azureAdTokenClient = azureAdTokenClient,
     )
 
+    val kafkaProducer = Producer<String, String>(if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl())
+
     val arrangorRepository = ArrangorRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattRepository = NavAnsattRepository()
@@ -148,7 +153,7 @@ fun Application.module() {
     val deltakerRepository = DeltakerRepository()
 
     val forslagRepository = ForslagRepository()
-    val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer())
+    val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer(kafkaProducer))
 
     val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService, forslagService)
 
