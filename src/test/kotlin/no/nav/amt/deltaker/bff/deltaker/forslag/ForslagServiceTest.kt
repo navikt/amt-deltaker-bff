@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonKafkaProvider
@@ -25,7 +26,8 @@ class ForslagServiceTest {
         lateinit var service: ForslagService
         val navEnhetService = mockk<NavEnhetService>()
         val navAnsattService = mockk<NavAnsattService>()
-        val arrangorMeldingProducer = ArrangorMeldingProducer(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+        private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+        val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
 
         @JvmStatic
         @BeforeClass
