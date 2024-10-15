@@ -18,12 +18,15 @@ import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
+import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
@@ -39,6 +42,8 @@ fun Application.configureRouting(
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
+    deltakerRepository: DeltakerRepository,
+    amtDeltakerClient: AmtDeltakerClient,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -92,6 +97,11 @@ fun Application.configureRouting(
             navEnhetService,
             innbyggerService,
             forslagService,
+        )
+
+        registerInternalApi(
+            deltakerRepository,
+            amtDeltakerClient,
         )
 
         val catchAllRoute = "{...}"

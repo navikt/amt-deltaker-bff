@@ -190,6 +190,8 @@ fun Application.module() {
         forslagService,
         amtDistribusjonClient,
         sporbarhetsloggService,
+        deltakerRepository,
+        amtDeltakerClient,
     )
     configureMonitoring()
 

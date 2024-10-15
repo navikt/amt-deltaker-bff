@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.amtdeltaker
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -24,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttarsakRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerMedStatusResponse
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -111,6 +113,22 @@ class AmtDeltakerClient(
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
+    }
+
+    suspend fun getDeltaker(deltakerId: UUID): DeltakerMedStatusResponse {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.get("$baseUrl/deltaker/$deltakerId") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Fant ikke deltaker $deltakerId i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+        return response.body()
     }
 
     suspend fun endreBakgrunnsinformasjon(

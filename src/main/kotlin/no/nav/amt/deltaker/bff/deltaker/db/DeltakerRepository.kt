@@ -448,6 +448,39 @@ class DeltakerRepository {
         return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
     }
 
+    fun getDeltakereMedFlereGyldigeStatuser() = Database.query { session ->
+        val sql =
+            """
+            WITH statuser as (SELECT deltaker_id, COUNT(*) AS c
+                  FROM deltaker_status
+                  WHERE deltaker_status.gyldig_til IS NULL
+                  GROUP BY deltaker_id)
+            
+            SELECT * from statuser WHERE c > 1;
+            """.trimMargin()
+
+        val query = queryOf(
+            sql,
+            emptyMap(),
+        ).map {
+            it.uuid("deltaker_id")
+        }.asList
+        session.run(query)
+    }
+
+    fun deaktiverUkritiskTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID): Query {
+        val sql =
+            """
+            update deltaker_status
+            set gyldig_til = current_timestamp
+            where deltaker_id = :deltaker_id 
+              and id != :id
+              and gyldig_til is null;
+            """.trimIndent()
+
+        return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
+    }
+
     private fun getDeltakerSql(where: String = "") = """
             select d.id as "d.id",
                    d.person_id as "d.person_id",

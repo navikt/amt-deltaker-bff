@@ -284,6 +284,8 @@ class PameldingApiTest {
                 forslagService,
                 amtDistribusjonClient,
                 mockk(),
+                mockk(),
+                mockk(),
             )
         }
     }
