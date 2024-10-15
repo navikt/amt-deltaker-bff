@@ -303,6 +303,44 @@ class DeltakerRepositoryTest {
         statuser.first { it.type == DeltakerStatus.Type.HAR_SLUTTET }.gyldigTil shouldBe null
         statuser.first { it.type == DeltakerStatus.Type.DELTAR }.gyldigTil shouldNotBe null
     }
+
+    @Test
+    fun `deaktiverUkritiskTidligereStatuserQuery - skal deaktivere alle andre statuser`() {
+        val gammelStatus1 = TestData.lagDeltakerStatus(
+            type = DeltakerStatus.Type.DELTAR,
+            gyldigFra = LocalDate.of(2024, 7, 14).atStartOfDay(),
+            gyldigTil = LocalDate.of(2024, 10, 9).atStartOfDay(),
+        )
+        val gammelStatus2 = TestData.lagDeltakerStatus(
+            type = DeltakerStatus.Type.HAR_SLUTTET,
+            aarsak = DeltakerStatus.Aarsak.Type.ANNET,
+            gyldigFra = LocalDate.of(2024, 10, 5).atStartOfDay(),
+        )
+
+        val nyStatus = TestData.lagDeltakerStatus(
+            type = DeltakerStatus.Type.HAR_SLUTTET,
+            aarsak = null,
+            gyldigFra = LocalDate.of(2024, 10, 5).atStartOfDay(),
+        )
+
+        val deltaker = TestData.lagDeltaker(status = nyStatus)
+        TestRepository.insert(deltaker)
+
+        TestRepository.insert(gammelStatus1, deltaker.id)
+        TestRepository.insert(gammelStatus2, deltaker.id)
+
+        repository.deaktiverUkritiskTidligereStatuserQuery(nyStatus, deltaker.id)
+
+        repository
+            .get(deltaker.id)
+            .getOrThrow()
+            .status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
+
+        val statuser = repository.getDeltakerStatuser(deltaker.id)
+        statuser.size shouldBe 3
+        statuser.filter { it.gyldigTil == null }.size shouldBe 1
+        statuser.first { it.gyldigTil == null }.id shouldBe nyStatus.id
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
