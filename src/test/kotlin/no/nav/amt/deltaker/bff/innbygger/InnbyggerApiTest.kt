@@ -198,6 +198,8 @@ class InnbyggerApiTest {
                 forslagService,
                 amtDistribusjonClient,
                 mockk(),
+                mockk(),
+                mockk(),
             )
         }
     }

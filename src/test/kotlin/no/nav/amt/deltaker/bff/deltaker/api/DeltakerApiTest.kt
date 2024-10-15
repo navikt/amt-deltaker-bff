@@ -651,6 +651,8 @@ class DeltakerApiTest {
                 forslagService,
                 amtDistribusjonClient,
                 sporbarhetsloggService,
+                mockk(),
+                mockk(),
             )
         }
     }
