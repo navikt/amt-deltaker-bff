@@ -468,7 +468,7 @@ class DeltakerRepository {
         session.run(query)
     }
 
-    fun deaktiverUkritiskTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID): Query {
+    fun deaktiverUkritiskTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID) = Database.query { session ->
         val sql =
             """
             update deltaker_status
@@ -478,7 +478,8 @@ class DeltakerRepository {
               and gyldig_til is null;
             """.trimIndent()
 
-        return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
+        val query = queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
+        session.update(query)
     }
 
     private fun getDeltakerSql(where: String = "") = """
