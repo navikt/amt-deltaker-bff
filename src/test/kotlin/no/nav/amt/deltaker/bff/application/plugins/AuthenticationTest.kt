@@ -115,7 +115,7 @@ class AuthenticationTest {
             authenticate("VEILEDER") {
                 get("/fnr/{fnr}") {
                     val norskIdent = call.parameters["fnr"]!!
-                    tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), norskIdent)
+                    tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), norskIdent)
 
                     call.respondText("Veileder har tilgang!")
                 }
