@@ -188,7 +188,7 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}") {
             val request = call.receive<DeltakerRequest>()
             val deltakerId = call.parameters["deltakerId"]
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(deltakerId)).getOrThrow()
 
             if (request.personident != deltaker.navBruker.personident) {
@@ -196,16 +196,16 @@ fun Routing.registerDeltakerApi(
                 call.respond(HttpStatusCode.BadRequest)
             }
 
-            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
             sporbarhetsloggService.sendAuditLog(navIdent = navIdent, deltakerPersonIdent = deltaker.navBruker.personident)
 
             call.respond(komplettDeltakerResponse(deltaker))
         }
 
         get("/deltaker/{deltakerId}/historikk") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-            tilgangskontrollService.verifiserLesetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
             val historikk = deltaker.getDeltakerHistorikkSortert()
@@ -220,13 +220,13 @@ fun Routing.registerDeltakerApi(
         }
 
         post("/forslag/{forslagId}/avvis") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val request = call.receive<AvvisForslagRequest>()
             val forslag = forslagService.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
             val deltaker = deltakerService.get(forslag.deltakerId).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             forslagService.avvisForslag(
                 opprinneligForslag = forslag,

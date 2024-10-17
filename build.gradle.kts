@@ -7,7 +7,7 @@ plugins {
     val kotlinVersion = "2.0.21"
 
     kotlin("jvm") version kotlinVersion
-    id("io.ktor.plugin") version "2.3.12"
+    id("io.ktor.plugin") version "3.0.0"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -19,7 +19,7 @@ repositories {
 }
 
 val kotlinVersion = "2.0.20"
-val ktorVersion = "2.3.12"
+val ktorVersion = "3.0.0"
 val logbackVersion = "1.5.11"
 val prometeusVersion = "1.13.6"
 val ktlintVersion = "1.2.1"
@@ -36,7 +36,7 @@ val postgresVersion = "42.7.4"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.13"
 val nimbusVersion = "9.41.2"
-val amtLibVersion = "1.2024.10.09_03.54-b6a5fca73662"
+val amtLibVersion = "1.2024.10.17_04.40-9b8969712fac"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -77,7 +77,7 @@ dependencies {
     implementation("no.nav.amt.lib:utils:$amtLibVersion")
     implementation("no.nav.amt.lib:models:$amtLibVersion")
 
-    testImplementation("io.ktor:ktor-server-tests-jvm")
+    testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")

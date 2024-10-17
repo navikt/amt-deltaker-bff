@@ -1,13 +1,14 @@
 package no.nav.amt.deltaker.bff.innbygger
 
 import io.ktor.http.ContentType
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
@@ -34,6 +35,8 @@ fun Routing.registerInnbyggerApi(
     innbyggerService: InnbyggerService,
     forslagService: ForslagService,
 ) {
+    val scope = CoroutineScope(Dispatchers.IO)
+
     fun komplettInnbyggerDeltakerResponse(deltaker: Deltaker): InnbyggerDeltakerResponse {
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
@@ -43,17 +46,17 @@ fun Routing.registerInnbyggerApi(
 
     authenticate("INNBYGGER") {
         get("/innbygger/{id}") {
-            val innbygger = getPersonident()
+            val innbygger = call.getPersonident()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
-            launch { deltakerService.oppdaterSistBesokt(deltaker) }
+            scope.launch { deltakerService.oppdaterSistBesokt(deltaker) }
 
             call.respond(komplettInnbyggerDeltakerResponse(deltaker))
         }
 
         post("/innbygger/{id}/godkjenn-utkast") {
-            val innbygger = getPersonident()
+            val innbygger = call.getPersonident()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
@@ -69,7 +72,7 @@ fun Routing.registerInnbyggerApi(
         }
 
         get("/innbygger/{id}/historikk") {
-            val innbygger = getPersonident()
+            val innbygger = call.getPersonident()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 

@@ -60,7 +60,7 @@ fun Routing.registerPameldingApi(
         post("/pamelding") {
             val request = call.receive<PameldingRequest>()
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), request.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), request.personident)
             val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = request.deltakerlisteId,
                 personident = request.personident,
@@ -70,7 +70,7 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/kladd") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val request = call.receive<KladdRequest>().sanitize()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -78,7 +78,7 @@ fun Routing.registerPameldingApi(
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.upsertKladd(
                 kladd = Kladd(
@@ -101,7 +101,7 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val request = call.receive<UtkastRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -110,7 +110,7 @@ fun Routing.registerPameldingApi(
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             val oppdatertDeltaker = pameldingService.upsertUtkast(
                 Utkast(
@@ -136,11 +136,11 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/avbryt") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.avbrytUtkast(
                 deltakerId = deltaker.id,
@@ -154,7 +154,7 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/utenGodkjenning") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
 
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
@@ -162,7 +162,7 @@ fun Routing.registerPameldingApi(
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.upsertUtkast(
                 Utkast(
@@ -192,11 +192,11 @@ fun Routing.registerPameldingApi(
         }
 
         delete("/pamelding/{deltakerId}") {
-            val navIdent = getNavIdent()
+            val navIdent = call.getNavIdent()
             val deltakerId = UUID.fromString(call.parameters["deltakerId"])
             val deltaker = deltakerService.get(deltakerId).getOrThrow()
 
-            tilgangskontrollService.verifiserSkrivetilgang(getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             if (!pameldingService.slettKladd(deltaker)) {
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke slette deltaker")
