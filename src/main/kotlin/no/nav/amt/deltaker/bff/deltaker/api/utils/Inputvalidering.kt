@@ -52,12 +52,12 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
 }
 
 fun validerDeltakelsesProsentOgDagerPerUke(
-    nyProsnet: Int?,
+    nyProsent: Int?,
     nyDagerPerUke: Int?,
     opprinneligDeltaker: Deltaker,
-) = {
-    var ingenEndring = nyProsnet == opprinneligDeltaker.deltakelsesprosent?.toInt() &&
-        nyDagerPerUke == opprinneligDeltaker.dagerPerUke?.toInt()
+) {
+    val ingenEndring = nyProsent?.toFloat() == opprinneligDeltaker.deltakelsesprosent &&
+        nyDagerPerUke?.toFloat() == opprinneligDeltaker.dagerPerUke
     require(!ingenEndring) {
         "Både deltakelsesprosent og dager per uke kan ikke være det samme som før."
     }
