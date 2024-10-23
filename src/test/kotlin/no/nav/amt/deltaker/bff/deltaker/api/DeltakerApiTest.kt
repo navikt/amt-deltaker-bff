@@ -233,6 +233,32 @@ class DeltakerApiTest {
     }
 
     @Test
+    fun `oppdater deltakelsesmengde - ingen endring - returnerer BadRequest`() = testApplication {
+        val deltaker =
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            dagerPerUke = deltaker.dagerPerUke?.toFloat(),
+            deltakelsesprosent = deltaker.deltakelsesprosent?.toFloat(),
+        )
+
+        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+            client.post("/deltaker/${deltaker.id}/deltakelsesmengde") {
+                postRequest(
+                    EndreDeltakelsesmengdeRequest(
+                        deltakelsesprosent = deltaker.deltakelsesprosent?.toInt(),
+                        dagerPerUke = deltaker.dagerPerUke?.toInt(),
+                        "begrunnelse",
+                        null,
+                    ),
+                )
+            }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
+        }
+    }
+
+    @Test
     fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() {
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))

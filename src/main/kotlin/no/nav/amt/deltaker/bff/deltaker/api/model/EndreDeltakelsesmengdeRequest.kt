@@ -17,7 +17,7 @@ data class EndreDeltakelsesmengdeRequest(
     override fun valider(deltaker: Deltaker) {
         validerDeltakelsesProsent(deltakelsesprosent)
         validerDagerPerUke(dagerPerUke)
-        validerDeltakelsesProsentOgDagerPerUke(nyProsnet = deltakelsesprosent, nyDagerPerUke = dagerPerUke, deltaker)
+        validerDeltakelsesProsentOgDagerPerUke(nyProsent = deltakelsesprosent, nyDagerPerUke = dagerPerUke, deltaker)
         validerDeltakerKanEndres(deltaker)
         validerBegrunnelse(begrunnelse)
     }
