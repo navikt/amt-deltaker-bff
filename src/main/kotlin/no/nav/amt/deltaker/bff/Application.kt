@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff
 
+import io.getunleash.DefaultUnleash
+import io.getunleash.util.UnleashConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -48,6 +50,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
@@ -123,6 +126,16 @@ fun Application.module() {
         azureAdTokenClient = azureAdTokenClient,
     )
 
+    val unleash = DefaultUnleash(
+        UnleashConfig
+            .builder()
+            .appName(environment.appName)
+            .instanceId(environment.appName)
+            .unleashAPI("${environment.unleashUrl}/api")
+            .apiKey(environment.unleashApiToken)
+            .build(),
+    )
+
     val kafkaProducer = Producer<String, String>(if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl())
 
     val arrangorRepository = ArrangorRepository()
@@ -167,14 +180,14 @@ fun Application.module() {
     val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
 
     val tiltakstypeRepository = TiltakstypeRepository()
-
+    val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService),
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
-        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService),
+        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService, unleashToggle),
         ArrangorMeldingConsumer(forslagService),
     )
     consumers.forEach { it.run() }

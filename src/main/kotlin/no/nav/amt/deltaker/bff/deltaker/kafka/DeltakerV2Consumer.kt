@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.deltaker.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.kafka.ManagedKafkaConsumer
 import no.nav.amt.lib.kafka.config.KafkaConfig
@@ -21,6 +22,7 @@ class DeltakerV2Consumer(
     private val deltakerService: DeltakerService,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val navBrukerService: NavBrukerService,
+    private val unleashToggle: UnleashToggle,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -45,6 +47,10 @@ class DeltakerV2Consumer(
         val deltakerV2 = objectMapper.readValue<DeltakerV2Dto>(value)
         val deltakerliste = deltakerlisteRepository.get(deltakerV2.deltakerlisteId).getOrThrow()
         val tiltakstype = deltakerliste.tiltak.arenaKode
+
+        if (unleashToggle.skalLeseArenaDeltakereForTiltakstype(tiltakstype)) {
+            log.info("toggle funker")
+        }
 
         if (tiltakstype != Tiltakstype.ArenaKode.ARBFORB) {
             log.info("Ignorerer deltaker $key som ikke har tiltakstype ARBFORB")

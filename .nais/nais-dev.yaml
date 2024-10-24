@@ -35,6 +35,8 @@ spec:
     requests:
       cpu: 500m
       memory: 512Mi
+  envFrom:
+    - secret: amt-deltaker-bff-unleash-api-token
   azure:
     application:
       enabled: true
@@ -61,6 +63,8 @@ spec:
         - application: amt-distribusjon
         - application: poao-tilgang
           namespace: poao
+      external:
+        - host: amt-unleash-api.nav.cloud.nais.io
   env:
     - name: AMT_ARRANGOR_SCOPE
       value: api://dev-gcp.amt.amt-arrangor/.default

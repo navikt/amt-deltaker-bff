@@ -37,6 +37,7 @@ val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.13"
 val nimbusVersion = "9.41.2"
 val amtLibVersion = "1.2024.10.17_04.40-9b8969712fac"
+val unleashVersion = "9.2.4"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
@@ -72,6 +73,7 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation("io.getunleash:unleash-client-java:$unleashVersion")
 
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
     implementation("no.nav.amt.lib:utils:$amtLibVersion")

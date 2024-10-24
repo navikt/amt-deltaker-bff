@@ -24,6 +24,9 @@ data class Environment(
     val electorPath: String = getEnvVar(ELECTOR_PATH),
     val amtDistribusjonUrl: String = getEnvVar(AMT_DISTRIBUSJON_URL_KEY),
     val amtDistribusjonScope: String = getEnvVar(AMT_DISTRIBUSJON_SCOPE_KEY),
+    val unleashUrl: String = getEnvVar(UNLEASH_SERVER_API_URL),
+    val unleashApiToken: String = getEnvVar(UNLEASH_SERVER_API_TOKEN),
+    val appName: String = "amt-deltaker-bff",
 ) {
     companion object {
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
@@ -60,6 +63,8 @@ data class Environment(
 
         const val POAO_TILGANG_URL_KEY = "POAO_TILGANG_URL"
         const val POAO_TILGANG_SCOPE_KEY = "POAO_TILGANG_SCOPE"
+        const val UNLEASH_SERVER_API_URL = "UNLEASH_SERVER_API_URL"
+        const val UNLEASH_SERVER_API_TOKEN = "UNLEASH_SERVER_API_TOKEN"
 
         const val ELECTOR_PATH = "ELECTOR_PATH"
 
