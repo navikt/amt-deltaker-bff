@@ -16,17 +16,22 @@ data class AvsluttDeltakelseRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
+    private val kanEndreAvslutteDeltakelse = listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET)
+
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         validerBegrunnelse(begrunnelse)
-        require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
-            "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR"
+        require(deltaker.status.type in kanEndreAvslutteDeltakelse) {
+            "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR eller HAR_SLUTTET"
         }
         if (harDeltatt()) {
             require(sluttdato != null) {
                 "Må angi sluttdato for deltaker som har deltatt"
             }
         } else {
+            require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
+                "Deltaker som ikke har status DELTAR må ha deltatt"
+            }
             require(statusForMindreEnn15DagerSiden(deltaker)) {
                 "Deltaker med deltar-status mer enn 15 dager tilbake i tid må ha deltatt"
             }
