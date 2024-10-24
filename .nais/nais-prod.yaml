@@ -63,6 +63,8 @@ spec:
         - application: amt-distribusjon
         - application: poao-tilgang
           namespace: poao
+      external:
+        - host: amt-unleash-api.nav.cloud.nais.io
   env:
     - name: AMT_ARRANGOR_SCOPE
       value: api://prod-gcp.amt.amt-arrangor/.default
