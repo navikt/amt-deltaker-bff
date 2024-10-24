@@ -24,4 +24,12 @@ class NavBrukerService(
         val bruker = repository.get(navBruker.personId).getOrNull()
         if (navBruker != bruker) repository.upsert(navBruker)
     }
+
+    suspend fun update(personident: String) {
+        val lagretBruker = repository.get(personident).getOrNull()
+        val bruker = amtPersonServiceClient.hentNavBruker(personident)
+
+        log.info("Oppdaterte nav-bruker ${bruker.personId} med data fra amt-person-service")
+        if (lagretBruker != bruker) repository.upsert(bruker)
+    }
 }

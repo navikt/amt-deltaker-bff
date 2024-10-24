@@ -57,12 +57,19 @@ class DeltakerV2Consumer(
             return
         }
 
-        val deltakerFinnes = deltakerService.deltakerFinnes(deltakerV2.id)
+        val lagretDeltaker = deltakerService.get(deltakerV2.id).getOrNull()
+        val deltakerFinnes = lagretDeltaker != null
         if (deltakerFinnes || deltakerV2.kilde == DeltakerV2Dto.Kilde.KOMET) {
             log.info("Oppdaterer deltaker med id ${deltakerV2.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
             )
+            lagretDeltaker?.navBruker?.let {
+                if (it.adresse == null) {
+                    log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerV2.id}")
+                    navBrukerService.update(it.personident)
+                }
+            }
         } else {
             log.info("Inserter ny deltaker med id ${deltakerV2.id}")
             val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()

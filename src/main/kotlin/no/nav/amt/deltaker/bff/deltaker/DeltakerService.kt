@@ -28,11 +28,6 @@ class DeltakerService(
 
     fun get(id: UUID) = deltakerRepository.get(id)
 
-    fun deltakerFinnes(deltakerId: UUID): Boolean {
-        deltakerRepository.deltakerFinnes(deltakerId)?.let { return true }
-        return false
-    }
-
     fun getDeltakelser(personident: String, deltakerlisteId: UUID) = deltakerRepository.getMany(personident, deltakerlisteId)
 
     fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
