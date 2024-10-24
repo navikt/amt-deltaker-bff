@@ -12,8 +12,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerIdOgStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
-import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -38,6 +38,7 @@ class DeltakerRepository {
             adressebeskyttelse = row.stringOrNull("nb.adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
             oppfolgingsperioder = row.stringOrNull("nb.oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
             innsatsgruppe = row.stringOrNull("nb.innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
+            adresse = row.stringOrNull("nb.adresse")?.let { objectMapper.readValue(it) },
         ),
         deltakerliste = DeltakerlisteRepository.rowMapper(row),
         startdato = row.localDateOrNull("d.startdato"),
@@ -164,23 +165,6 @@ class DeltakerRepository {
             ),
         ).map(::rowMapper).asList
         it.run(query)
-    }
-
-    fun deltakerFinnes(deltakerId: UUID): UUID? = Database.query { session ->
-        val sql =
-            """
-            SELECT id FROM deltaker WHERE id = :deltaker_id;
-            """.trimMargin()
-
-        val query = queryOf(
-            sql,
-            mapOf(
-                "deltaker_id" to deltakerId,
-            ),
-        ).map {
-            it.uuidOrNull("id")
-        }.asSingle
-        session.run(query)
     }
 
     fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID) = Database.query { session ->
@@ -502,6 +486,7 @@ class DeltakerRepository {
                    nb.adressebeskyttelse as "nb.adressebeskyttelse",
                    nb.oppfolgingsperioder as "nb.oppfolgingsperioder",
                    nb.innsatsgruppe as "nb.innsatsgruppe",
+                   nb.adresse as "nb.adresse",
                    ds.id as "ds.id",
                    ds.deltaker_id as "ds.deltaker_id",
                    ds.type as "ds.type",

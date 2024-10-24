@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.deltaker.navbruker
+package no.nav.amt.deltaker.bff.deltaker.navbruker.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import java.util.UUID
@@ -12,6 +12,7 @@ data class NavBruker(
     val adressebeskyttelse: Adressebeskyttelse?,
     val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
     val innsatsgruppe: Innsatsgruppe?,
+    val adresse: Adresse?,
 )
 
 enum class Adressebeskyttelse {

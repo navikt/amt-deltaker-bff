@@ -3,9 +3,14 @@ package no.nav.amt.deltaker.bff.utils.data
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
-import no.nav.amt.deltaker.bff.deltaker.navbruker.Adressebeskyttelse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
-import no.nav.amt.deltaker.bff.deltaker.navbruker.Oppfolgingsperiode
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adresse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Bostedsadresse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Kontaktadresse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Matrikkeladresse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Oppfolgingsperiode
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Vegadresse
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
@@ -305,7 +310,33 @@ object TestData {
         adressebeskyttelse: Adressebeskyttelse? = null,
         oppfolgingsperioder: List<Oppfolgingsperiode> = listOf(lagOppfolgingsperiode()),
         innsatsgruppe: Innsatsgruppe? = Innsatsgruppe.STANDARD_INNSATS,
-    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe)
+        adresse: Adresse? = lagAdresse(),
+    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse)
+
+    fun lagAdresse(): Adresse = Adresse(
+        bostedsadresse = Bostedsadresse(
+            coAdressenavn = "C/O Gutterommet",
+            vegadresse = null,
+            matrikkeladresse = Matrikkeladresse(
+                tilleggsnavn = "Gården",
+                postnummer = "0484",
+                poststed = "OSLO",
+            ),
+        ),
+        oppholdsadresse = null,
+        kontaktadresse = Kontaktadresse(
+            coAdressenavn = null,
+            vegadresse = Vegadresse(
+                husnummer = "1",
+                husbokstav = null,
+                adressenavn = "Gate",
+                tilleggsnavn = null,
+                postnummer = "1234",
+                poststed = "MOSS",
+            ),
+            postboksadresse = null,
+        ),
+    )
 
     fun lagOppfolgingsperiode(
         id: UUID = UUID.randomUUID(),

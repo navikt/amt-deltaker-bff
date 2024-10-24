@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.deltaker.navbruker
+package no.nav.amt.deltaker.bff.deltaker.navbruker.model
 
 import java.time.LocalDateTime
 import java.util.UUID
