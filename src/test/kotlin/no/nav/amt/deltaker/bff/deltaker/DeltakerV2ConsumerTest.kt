@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
@@ -18,6 +19,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
@@ -35,11 +37,13 @@ class DeltakerV2ConsumerTest {
     private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository())
     private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk(relaxed = true))
     private val deltakerlisteRepository = DeltakerlisteRepository()
-    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService)
+    private val unleashToggle = mockk<UnleashToggle>()
+    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService, unleashToggle)
 
     @Before
     fun setup() {
         TestRepository.cleanDatabase()
+        every { unleashToggle.skalLeseArenaDeltakereForTiltakstype(any()) } returns false
     }
 
     @Test
