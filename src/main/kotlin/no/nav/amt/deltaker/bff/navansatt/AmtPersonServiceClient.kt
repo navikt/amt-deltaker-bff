@@ -13,7 +13,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
-import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

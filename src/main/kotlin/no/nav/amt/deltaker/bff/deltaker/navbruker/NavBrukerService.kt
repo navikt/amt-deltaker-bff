@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker
 
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import org.slf4j.LoggerFactory
 

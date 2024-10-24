@@ -40,6 +40,7 @@ data class DeltakerResponse(
     val softMaxVarighet: Long?,
     val forslag: List<ForslagResponse>,
     val importertFraArena: ImportertFraArenaDto?,
+    val harAdresse: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -114,6 +115,7 @@ fun Deltaker.toDeltakerResponse(
     softMaxVarighet = softMaxVarighet?.toMillis(),
     forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
     importertFraArena = toImporertFraArenaDto(),
+    harAdresse = navBruker.adresse != null,
 )
 
 fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =

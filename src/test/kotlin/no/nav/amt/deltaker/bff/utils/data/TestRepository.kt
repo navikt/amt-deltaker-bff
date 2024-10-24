@@ -4,7 +4,7 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
@@ -313,8 +313,8 @@ object TestRepository {
     fun insert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe, :adresse)
             """.trimIndent()
 
         val params = mapOf(
@@ -326,6 +326,7 @@ object TestRepository {
             "adressebeskyttelse" to bruker.adressebeskyttelse?.name,
             "oppfolgingsperioder" to toPGObject(bruker.oppfolgingsperioder),
             "innsatsgruppe" to bruker.innsatsgruppe?.name,
+            "adresse" to toPGObject(bruker.adresse),
         )
 
         it.update(queryOf(sql, params))
