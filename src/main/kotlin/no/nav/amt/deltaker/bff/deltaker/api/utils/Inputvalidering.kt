@@ -51,6 +51,18 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
+fun validerDeltakelsesProsentOgDagerPerUke(
+    nyProsent: Int?,
+    nyDagerPerUke: Int?,
+    opprinneligDeltaker: Deltaker,
+) {
+    val ingenEndring = nyProsent?.toFloat() == opprinneligDeltaker.deltakelsesprosent &&
+        nyDagerPerUke?.toFloat() == opprinneligDeltaker.dagerPerUke
+    require(!ingenEndring) {
+        "Både deltakelsesprosent og dager per uke kan ikke være det samme som før."
+    }
+}
+
 fun validerDeltakerKanReaktiveres(opprinneligDeltaker: Deltaker) {
     require(opprinneligDeltaker.status.type == DeltakerStatus.Type.IKKE_AKTUELL) {
         "Kan ikke reaktivere deltaker som har annen status enn ikke aktuell"

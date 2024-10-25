@@ -54,6 +54,24 @@ class InputvalideringTest {
     }
 
     @Test
+    fun testValiderDeltakelsesProsentOgDagerPerUke() {
+        shouldThrow<IllegalArgumentException> {
+            validerDeltakelsesProsentOgDagerPerUke(
+                10,
+                2,
+                TestData.lagDeltaker(deltakelsesprosent = 10F, dagerPerUke = 2F),
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesProsentOgDagerPerUke(
+                10,
+                2,
+                TestData.lagDeltaker(deltakelsesprosent = 10F, dagerPerUke = 1F),
+            )
+        }
+    }
+
+    @Test
     fun testValiderDagerPerUke() {
         shouldThrow<IllegalArgumentException> {
             validerDagerPerUke(MIN_DAGER_PER_UKE - 1)
