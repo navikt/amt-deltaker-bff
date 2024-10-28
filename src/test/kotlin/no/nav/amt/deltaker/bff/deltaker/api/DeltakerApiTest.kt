@@ -50,6 +50,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerStatusAarsak
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
@@ -58,6 +59,7 @@ import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.generateJWT
+import no.nav.amt.deltaker.unleash.UnleashToggle
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
@@ -81,6 +83,7 @@ class DeltakerApiTest {
     private val forslagService = mockk<ForslagService>(relaxed = true)
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
     private val sporbarhetsloggService = mockk<SporbarhetsloggService>(relaxed = true)
+    private val unleashToggle = mockk<UnleashToggle>()
 
     @Before
     fun setup() {
@@ -100,7 +103,7 @@ class DeltakerApiTest {
             )
         } returns Result.success(TestData.lagDeltaker(navBruker = TestData.lagNavBruker(personident = "1234")))
         every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
-
+        every { unleashToggle.erKometMasterForTiltakstype(Tiltakstype.ArenaKode.ARBFORB) } returns true
         setUpTestApplication()
         client.post("/deltaker/${UUID.randomUUID()}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }.status shouldBe
             HttpStatusCode.Forbidden
@@ -238,8 +241,8 @@ class DeltakerApiTest {
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            dagerPerUke = deltaker.dagerPerUke?.toFloat(),
-            deltakelsesprosent = deltaker.deltakelsesprosent?.toFloat(),
+            dagerPerUke = deltaker.dagerPerUke,
+            deltakelsesprosent = deltaker.deltakelsesprosent,
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
@@ -679,6 +682,7 @@ class DeltakerApiTest {
                 sporbarhetsloggService,
                 mockk(),
                 mockk(),
+                unleashToggle,
             )
         }
     }
@@ -717,6 +721,7 @@ class DeltakerApiTest {
         every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
+        every { unleashToggle.erKometMasterForTiltakstype(Tiltakstype.ArenaKode.ARBFORB) } returns true
 
         val (ansatte, enhet) = if (oppdatertDeltaker != null) {
             coEvery {

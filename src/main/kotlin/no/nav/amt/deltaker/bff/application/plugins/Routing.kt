@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.application.plugins
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.httpMethod
@@ -30,6 +29,7 @@ import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
@@ -44,6 +44,7 @@ fun Application.configureRouting(
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
     amtDeltakerClient: AmtDeltakerClient,
+    unleashToggle: UnleashToggle,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -78,6 +79,7 @@ fun Application.configureRouting(
             forslagService,
             amtDistribusjonClient,
             sporbarhetsloggService,
+            unleashToggle,
         )
 
         registerPameldingApi(

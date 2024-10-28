@@ -44,6 +44,7 @@ class DeltakerV2ConsumerTest {
     fun setup() {
         TestRepository.cleanDatabase()
         every { unleashToggle.skalLeseArenaDeltakereForTiltakstype(any()) } returns false
+        every { unleashToggle.erKometMasterForTiltakstype(Tiltakstype.ArenaKode.ARBFORB) } returns true
     }
 
     @Test
