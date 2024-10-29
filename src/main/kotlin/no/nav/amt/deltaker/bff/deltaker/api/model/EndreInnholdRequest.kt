@@ -10,5 +10,12 @@ data class EndreInnholdRequest(
     override fun valider(deltaker: Deltaker) {
         validerDeltakelsesinnhold(innhold, deltaker.deltakerliste.tiltak.innhold)
         validerDeltakerKanEndres(deltaker)
+        require(deltakerErEndret(deltaker)) {
+            "Innholdet er ikke endret"
+        }
+    }
+
+    private fun deltakerErEndret(deltaker: Deltaker): Boolean {
+        return deltaker.deltakelsesinnhold?.innhold != finnValgtInnhold(innhold, deltaker)
     }
 }

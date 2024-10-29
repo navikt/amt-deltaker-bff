@@ -22,6 +22,9 @@ data class ForlengDeltakelseRequest(
         require(deltakerDeltarEllerHarSluttet(deltaker)) {
             "Kan ikke forlenge deltakelse for deltaker med status ${deltaker.status.type}"
         }
+        require(deltaker.sluttdato != sluttdato) {
+            "Ny sluttdato kan ikke være lik som forrige sluttdato"
+        }
         validerDeltakerKanEndres(deltaker)
         validerForslagEllerBegrunnelse(forslagId, begrunnelse)
         validerBegrunnelse(begrunnelse)

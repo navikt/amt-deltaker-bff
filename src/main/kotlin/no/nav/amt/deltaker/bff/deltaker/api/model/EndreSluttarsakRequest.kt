@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.utils.harEndretSluttaarsak
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
@@ -22,5 +23,8 @@ data class EndreSluttarsakRequest(
         }
         validerDeltakerKanEndres(deltaker)
         validerBegrunnelse(begrunnelse)
+        require(harEndretSluttaarsak(deltaker.status.aarsak, aarsak)) {
+            "Sluttårsak må være noe annet enn før"
+        }
     }
 }
