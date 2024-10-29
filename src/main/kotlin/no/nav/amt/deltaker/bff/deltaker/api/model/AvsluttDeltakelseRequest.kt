@@ -1,7 +1,9 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.api.utils.harEndretSluttaarsak
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
+import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerSluttdatoForDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
@@ -16,12 +18,13 @@ data class AvsluttDeltakelseRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    private val kanEndreAvslutteDeltakelse = listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET)
+    private val kanAvslutteDeltakelse = listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET)
 
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         validerBegrunnelse(begrunnelse)
-        require(deltaker.status.type in kanEndreAvslutteDeltakelse) {
+        validerDeltakerKanEndres(deltaker)
+        require(deltaker.status.type in kanAvslutteDeltakelse) {
             "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR eller HAR_SLUTTET"
         }
         if (harDeltatt()) {
@@ -37,9 +40,19 @@ data class AvsluttDeltakelseRequest(
             }
         }
         sluttdato?.let { validerSluttdatoForDeltaker(it, deltaker.startdato, deltaker) }
+
+        require(deltakerErEndret(deltaker)) {
+            "Kan ikke avslutte deltakelse med uendret sluttdato og årsak"
+        }
     }
 
     fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
+
+    private fun deltakerErEndret(deltaker: Deltaker): Boolean {
+        return deltaker.status.type != DeltakerStatus.Type.HAR_SLUTTET ||
+            deltaker.sluttdato != sluttdato ||
+            harEndretSluttaarsak(deltaker.status.aarsak, aarsak)
+    }
 }
 
 fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean = opprinneligDeltaker.status.gyldigFra

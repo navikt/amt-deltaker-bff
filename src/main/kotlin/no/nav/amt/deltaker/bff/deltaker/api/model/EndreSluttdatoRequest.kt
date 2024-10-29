@@ -20,6 +20,9 @@ data class EndreSluttdatoRequest(
         require(deltaker.status.type in kanEndreSluttdato) {
             "Kan ikke endre sluttdato for deltaker som ikke har sluttet"
         }
+        require(sluttdato != deltaker.sluttdato) {
+            "Sluttdato kan ikke være lik som før"
+        }
         validerSluttdatoForDeltaker(sluttdato, deltaker.startdato, deltaker)
         validerBegrunnelse(begrunnelse)
     }

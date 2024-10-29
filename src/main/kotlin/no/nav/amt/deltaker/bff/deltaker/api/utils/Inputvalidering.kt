@@ -4,6 +4,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.time.Duration
 import java.time.LocalDate
@@ -128,6 +129,15 @@ fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: Deltake
         }
     }
 }
+
+fun harEndretSluttaarsak(opprinneligDeltakerStatusAarsak: DeltakerStatus.Aarsak?, nyDeltakerStatusAarsak: DeltakerEndring.Aarsak): Boolean {
+    return nyDeltakerStatusAarsak.toDeltakerStatusAarsak() != opprinneligDeltakerStatusAarsak
+}
+
+private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(
+    DeltakerStatus.Aarsak.Type.valueOf(type.name),
+    beskrivelse,
+)
 
 fun validerKladdInnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
     validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->

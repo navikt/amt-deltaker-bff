@@ -10,5 +10,8 @@ data class EndreBakgrunnsinformasjonRequest(
     override fun valider(deltaker: Deltaker) {
         validerBakgrunnsinformasjon(bakgrunnsinformasjon)
         validerDeltakerKanEndres(deltaker)
+        require(bakgrunnsinformasjon != deltaker.bakgrunnsinformasjon) {
+            "Ingen endring i bakgrunnsinformasjon"
+        }
     }
 }
