@@ -20,7 +20,7 @@ repositories {
 
 val kotlinVersion = "2.0.20"
 val ktorVersion = "3.0.0"
-val logbackVersion = "1.5.11"
+val logbackVersion = "1.5.12"
 val prometeusVersion = "1.13.6"
 val ktlintVersion = "1.2.1"
 val jacksonVersion = "2.18.0"
@@ -35,7 +35,7 @@ val kotliqueryVersion = "1.9.0"
 val postgresVersion = "42.7.4"
 val caffeineVersion = "3.1.8"
 val mockkVersion = "1.13.13"
-val nimbusVersion = "9.41.2"
+val nimbusVersion = "9.42"
 val amtLibVersion = "1.2024.10.17_04.40-9b8969712fac"
 val unleashVersion = "9.2.4"
 
