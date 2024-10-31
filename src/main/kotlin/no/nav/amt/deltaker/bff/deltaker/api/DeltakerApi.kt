@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.deltaker.api
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -15,6 +14,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
+import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
@@ -42,6 +42,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -55,6 +56,7 @@ fun Routing.registerDeltakerApi(
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
+    unleashToggle: UnleashToggle,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -74,6 +76,10 @@ fun Routing.registerDeltakerApi(
         val navIdent = call.getNavIdent()
         val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
         val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+
+        if (!unleashToggle.erKometMasterForTiltakstype(deltaker.deltakerliste.tiltak.arenaKode)) {
+            throw AuthorizationException("Kan ikke utføre endring på deltaker ${deltaker.id}")
+        }
 
         tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 

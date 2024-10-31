@@ -6,7 +6,6 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.kafka.ManagedKafkaConsumer
@@ -48,12 +47,8 @@ class DeltakerV2Consumer(
         val deltakerliste = deltakerlisteRepository.get(deltakerV2.deltakerlisteId).getOrThrow()
         val tiltakstype = deltakerliste.tiltak.arenaKode
 
-        if (unleashToggle.skalLeseArenaDeltakereForTiltakstype(tiltakstype)) {
-            log.info("toggle funker")
-        }
-
-        if (tiltakstype != Tiltakstype.ArenaKode.ARBFORB) {
-            log.info("Ignorerer deltaker $key som ikke har tiltakstype ARBFORB")
+        if (!unleashToggle.erKometMasterForTiltakstype(tiltakstype) && !unleashToggle.skalLeseArenaDeltakereForTiltakstype(tiltakstype)) {
+            log.info("Ignorerer deltaker $key på tiltakstype $tiltakstype som ikke er støttet enda")
             return
         }
 
@@ -71,7 +66,7 @@ class DeltakerV2Consumer(
                 }
             }
         } else {
-            log.info("Inserter ny deltaker med id ${deltakerV2.id}")
+            log.info("Inserter ny $tiltakstype deltaker med id ${deltakerV2.id}")
             val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()
             val deltaker = deltakerV2.toDeltaker(navBruker, deltakerliste)
             deltakerService.opprettArenaDeltaker(deltaker)
