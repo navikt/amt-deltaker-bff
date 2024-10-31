@@ -682,7 +682,7 @@ class DeltakerApiTest {
                 sporbarhetsloggService,
                 mockk(),
                 mockk(),
-                unleashToggle,
+                mockk(),
             )
         }
     }

@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.application.plugins
 
+import io.getunleash.Unleash
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
@@ -29,6 +30,7 @@ import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import no.nav.amt.deltaker.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 
@@ -44,7 +46,7 @@ fun Application.configureRouting(
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
     amtDeltakerClient: AmtDeltakerClient,
-    unleashToggle: UnleashToggle,
+    unleash: Unleash,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -79,7 +81,7 @@ fun Application.configureRouting(
             forslagService,
             amtDistribusjonClient,
             sporbarhetsloggService,
-            unleashToggle,
+            UnleashToggle(unleash),
         )
 
         registerPameldingApi(
@@ -104,6 +106,10 @@ fun Application.configureRouting(
         registerInternalApi(
             deltakerRepository,
             amtDeltakerClient,
+        )
+
+        registerUnleashApi(
+            unleash,
         )
 
         val catchAllRoute = "{...}"

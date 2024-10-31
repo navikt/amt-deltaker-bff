@@ -205,7 +205,7 @@ fun Application.module() {
         sporbarhetsloggService,
         deltakerRepository,
         amtDeltakerClient,
-        unleashToggle,
+        unleash,
     )
     configureMonitoring()
 
