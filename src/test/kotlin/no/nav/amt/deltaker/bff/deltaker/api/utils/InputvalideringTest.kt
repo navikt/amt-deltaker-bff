@@ -292,7 +292,7 @@ class InputvalideringTest {
         shouldNotThrow<IllegalArgumentException> {
             validerSluttdatoForDeltaker(
                 startdato = LocalDate.now(),
-                sluttdato = LocalDate.now().plusWeeks(8),
+                sluttdato = LocalDate.now().plusWeeks(12),
                 opprinneligDeltaker = deltaker,
             )
         }
@@ -300,7 +300,7 @@ class InputvalideringTest {
         shouldThrow<IllegalArgumentException> {
             validerSluttdatoForDeltaker(
                 startdato = LocalDate.now(),
-                sluttdato = LocalDate.now().plusWeeks(8).plusDays(1),
+                sluttdato = LocalDate.now().plusWeeks(12).plusDays(1),
                 opprinneligDeltaker = deltaker,
             )
         }

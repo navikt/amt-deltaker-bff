@@ -28,9 +28,9 @@ class DeltakerTest {
 
                 Tiltakstype.Tiltakskode.AVKLARING,
                 Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-                -> it.maxVarighet shouldBe weeks(12)
+                -> it.maxVarighet shouldBe weeks(16)
 
-                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(8)
+                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(12)
                 Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> it.maxVarighet shouldBe years(4)
 
                 Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
@@ -128,12 +128,14 @@ class DeltakerTest {
                 }
 
                 Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+                -> it.softMaxVarighet shouldBe weeks(8)
+                Tiltakstype.Tiltakskode.AVKLARING,
+                Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+                -> it.softMaxVarighet shouldBe weeks(12)
                 Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
                 Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
                 Tiltakstype.Tiltakskode.JOBBKLUBB,
                 Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-                Tiltakstype.Tiltakskode.AVKLARING,
-                Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
                 -> it.softMaxVarighet shouldBe null
             }
         }
