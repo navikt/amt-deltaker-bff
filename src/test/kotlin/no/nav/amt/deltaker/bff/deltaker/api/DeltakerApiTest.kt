@@ -127,9 +127,10 @@ class DeltakerApiTest {
                 "/deltaker/${UUID.randomUUID()}/avslutt",
             ) { postRequest(avsluttDeltakelseRequest) }
             .status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}") {
-            postRequest(deltakerRequest)
-        }.status shouldBe HttpStatusCode.Forbidden
+        client
+            .post("/deltaker/${UUID.randomUUID()}") {
+                postRequest(deltakerRequest)
+            }.status shouldBe HttpStatusCode.Forbidden
         client.get("/deltaker/${UUID.randomUUID()}/historikk") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client
             .post(
@@ -246,18 +247,20 @@ class DeltakerApiTest {
         )
 
         mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/deltakelsesmengde") {
-                postRequest(
-                    EndreDeltakelsesmengdeRequest(
-                        deltakelsesprosent = deltaker.deltakelsesprosent?.toInt(),
-                        dagerPerUke = deltaker.dagerPerUke?.toInt(),
-                        "begrunnelse",
-                        null,
-                    ),
-                )
-            }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+            client
+                .post("/deltaker/${deltaker.id}/deltakelsesmengde") {
+                    postRequest(
+                        EndreDeltakelsesmengdeRequest(
+                            deltakelsesprosent = deltaker.deltakelsesprosent?.toInt(),
+                            dagerPerUke = deltaker.dagerPerUke?.toInt(),
+                            begrunnelse = "begrunnelse",
+                            gyldigFra = LocalDate.now(),
+                            forslagId = null,
+                        ),
+                    )
+                }.apply {
+                    status shouldBe HttpStatusCode.BadRequest
+                }
         }
     }
 
@@ -690,7 +693,13 @@ class DeltakerApiTest {
     private val deltakerRequest = DeltakerRequest("1234")
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
     private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
-    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(deltakelsesprosent = 50, dagerPerUke = 3, "begrunnelse", null)
+    private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(
+        deltakelsesprosent = 50,
+        dagerPerUke = 3,
+        begrunnelse = "begrunnelse",
+        gyldigFra = LocalDate.now(),
+        forslagId = null,
+    )
     private val startdatoRequest =
         EndreStartdatoRequest(LocalDate.now().plusWeeks(1), sluttdato = LocalDate.now().plusMonths(2), "begrunnelse", null)
     private val ikkeAktuellRequest = IkkeAktuellRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB), "begrunnelse", null)

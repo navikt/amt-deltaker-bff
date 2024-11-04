@@ -155,6 +155,7 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         deltakelsesprosent: Float?,
         dagerPerUke: Float?,
+        gyldigFra: LocalDate?,
         begrunnelse: String?,
         forslagId: UUID?,
     ) = postEndring(
@@ -165,6 +166,7 @@ class AmtDeltakerClient(
             forslagId = forslagId,
             deltakelsesprosent = deltakelsesprosent?.toInt(),
             dagerPerUke = dagerPerUke?.toInt(),
+            gyldigFra = gyldigFra,
             begrunnelse = begrunnelse,
         ),
         DELTAKELSESMENGDE,

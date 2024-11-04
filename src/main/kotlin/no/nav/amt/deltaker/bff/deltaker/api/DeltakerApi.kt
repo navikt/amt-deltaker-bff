@@ -130,6 +130,7 @@ fun Routing.registerDeltakerApi(
                     deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                     dagerPerUke = request.dagerPerUke?.toFloat(),
                     begrunnelse = request.begrunnelse,
+                    gyldigFra = request.gyldigFra,
                 )
             }
         }

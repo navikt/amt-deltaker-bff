@@ -37,7 +37,7 @@ class DeltakerServiceTest {
         val endringer = listOf(
             DeltakerEndring.Endring.EndreBakgrunnsinformasjon("foo"),
             DeltakerEndring.Endring.EndreInnhold("ledetekst", listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse"))),
-            DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F, null),
+            DeltakerEndring.Endring.EndreDeltakelsesmengde(deltakelsesprosent = 50F, dagerPerUke = 2F, gyldigFra = LocalDate.now(), null),
             DeltakerEndring.Endring.EndreStartdato(startdato = LocalDate.now(), sluttdato = LocalDate.now().plusWeeks(2), null),
             DeltakerEndring.Endring.EndreSluttdato(sluttdato = LocalDate.now(), null),
             DeltakerEndring.Endring.EndreSluttarsak(
@@ -309,6 +309,7 @@ class DeltakerServiceTest {
 }
 
 fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak(
-    no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak.Type.valueOf(type.name),
+    no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak.Type
+        .valueOf(type.name),
     beskrivelse,
 )

@@ -6,12 +6,14 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakelsesProsent
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakelsesProsentOgDagerPerUke
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import java.time.LocalDate
 import java.util.UUID
 
 data class EndreDeltakelsesmengdeRequest(
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
     val begrunnelse: String?,
+    val gyldigFra: LocalDate?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
     override fun valider(deltaker: Deltaker) {

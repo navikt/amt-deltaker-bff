@@ -84,6 +84,7 @@ class DeltakerService(
                     deltakelsesprosent = endring.deltakelsesprosent,
                     dagerPerUke = endring.dagerPerUke,
                     begrunnelse = endring.begrunnelse,
+                    gyldigFra = endring.gyldigFra,
                     forslagId = forslagId,
                 )
             }
