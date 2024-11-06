@@ -80,10 +80,11 @@ data class Deltaker(
                 null,
                 -> null
             }
-
             Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
             Tiltakstype.Tiltakskode.AVKLARING,
-            Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+            -> weeks(12)
+            Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
+
             Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
             Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
             Tiltakstype.Tiltakskode.JOBBKLUBB,
@@ -107,9 +108,9 @@ data class Deltaker(
 
             Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
             Tiltakstype.Tiltakskode.AVKLARING,
-            -> weeks(12)
+            -> weeks(12 + FERIETILLEGG)
 
-            Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
+            Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8 + FERIETILLEGG)
             Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> years(4)
 
             Tiltakstype.Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
@@ -127,6 +128,8 @@ data class Deltaker(
             -> null
         }
 }
+
+const val FERIETILLEGG = 4L
 
 fun years(n: Long) = Duration.of(n * 365, ChronoUnit.DAYS)
 
