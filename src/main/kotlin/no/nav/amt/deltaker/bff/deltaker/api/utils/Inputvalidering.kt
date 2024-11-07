@@ -6,8 +6,10 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInn
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.UUID
 
 const val MAX_BAKGRUNNSINFORMASJON_LENGDE = 1000
@@ -52,15 +54,23 @@ fun validerDeltakelsesProsent(n: Int?) = n?.let {
     }
 }
 
-fun validerDeltakelsesProsentOgDagerPerUke(
+fun validerDeltakelsesmengde(
     nyProsent: Int?,
     nyDagerPerUke: Int?,
-    opprinneligDeltaker: Deltaker,
+    gyldigFra: LocalDate,
+    deltaker: Deltaker,
 ) {
-    val ingenEndring = nyProsent?.toFloat() == opprinneligDeltaker.deltakelsesprosent &&
-        nyDagerPerUke?.toFloat() == opprinneligDeltaker.dagerPerUke
-    require(!ingenEndring) {
-        "Både deltakelsesprosent og dager per uke kan ikke være det samme som før."
+    require(
+        deltaker.deltakelsesmengder.validerNyDeltakelsesmengde(
+            Deltakelsesmengde(
+                deltakelsesprosent = nyProsent?.toFloat() ?: 100F,
+                dagerPerUke = nyDagerPerUke?.toFloat(),
+                gyldigFra = gyldigFra,
+                opprettet = LocalDateTime.now(),
+            ),
+        ),
+    ) {
+        "Deltakelsesmengdeendringen er ikke en reel endring"
     }
 }
 
@@ -134,9 +144,8 @@ fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: Deltake
     }
 }
 
-fun harEndretSluttaarsak(opprinneligDeltakerStatusAarsak: DeltakerStatus.Aarsak?, nyDeltakerStatusAarsak: DeltakerEndring.Aarsak): Boolean {
-    return nyDeltakerStatusAarsak.toDeltakerStatusAarsak() != opprinneligDeltakerStatusAarsak
-}
+fun harEndretSluttaarsak(opprinneligDeltakerStatusAarsak: DeltakerStatus.Aarsak?, nyDeltakerStatusAarsak: DeltakerEndring.Aarsak): Boolean =
+    nyDeltakerStatusAarsak.toDeltakerStatusAarsak() != opprinneligDeltakerStatusAarsak
 
 private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(
     DeltakerStatus.Aarsak.Type.valueOf(type.name),

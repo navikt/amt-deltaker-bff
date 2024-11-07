@@ -219,9 +219,12 @@ class DeltakerApiTest {
     @Test
     fun `oppdater deltakelsesmengde - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+            TestData.lagDeltaker(
+                sluttdato = LocalDate.now().plusMonths(3),
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            )
+
         val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             dagerPerUke = deltakelsesmengdeRequest.dagerPerUke?.toFloat(),
             deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent?.toFloat(),
         )
@@ -239,14 +242,12 @@ class DeltakerApiTest {
     @Test
     fun `oppdater deltakelsesmengde - ingen endring - returnerer BadRequest`() = testApplication {
         val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
-        val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            dagerPerUke = deltaker.dagerPerUke,
-            deltakelsesprosent = deltaker.deltakelsesprosent,
-        )
+            TestData.lagDeltaker(
+                sluttdato = LocalDate.now().plusMonths(3),
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            )
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
+        mockTestApi(deltaker, null) { client, ansatte, enhet ->
             client
                 .post("/deltaker/${deltaker.id}/deltakelsesmengde") {
                     postRequest(

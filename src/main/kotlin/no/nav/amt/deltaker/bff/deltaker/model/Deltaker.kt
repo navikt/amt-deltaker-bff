@@ -6,6 +6,8 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -27,15 +29,19 @@ data class Deltaker(
     val kanEndres: Boolean,
     val sistEndret: LocalDateTime,
 ) {
+    val deltakelsesmengder: Deltakelsesmengder get() = historikk.toDeltakelsesmengder()
+
     val fattetVedtak
-        get() = historikk.firstOrNull {
-            it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
-        }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
+        get() = historikk
+            .firstOrNull {
+                it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
+            }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
 
     val ikkeFattetVedtak
-        get() = historikk.firstOrNull {
-            it is DeltakerHistorikk.Vedtak && it.vedtak.fattet == null
-        }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
+        get() = historikk
+            .firstOrNull {
+                it is DeltakerHistorikk.Vedtak && it.vedtak.fattet == null
+            }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
 
     val vedtaksinformasjon
         get() = if (this.fattetVedtak != null) {
@@ -46,13 +52,9 @@ data class Deltaker(
 
     fun getDeltakerHistorikkSortert() = historikk.sortedByDescending { it.sistEndret }
 
-    fun harSluttet(): Boolean {
-        return status.type in AVSLUTTENDE_STATUSER
-    }
+    fun harSluttet(): Boolean = status.type in AVSLUTTENDE_STATUSER
 
-    fun harSluttetForMindreEnnToMndSiden(): Boolean {
-        return harSluttet() && status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
-    }
+    fun harSluttetForMindreEnnToMndSiden(): Boolean = harSluttet() && status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
 
     fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
         this.deltakerliste.deltakerAdresseDeles()
