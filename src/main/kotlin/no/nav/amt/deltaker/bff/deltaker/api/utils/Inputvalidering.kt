@@ -85,6 +85,10 @@ fun validerDeltakerKanEndres(opprinneligDeltaker: Deltaker) {
     }
 }
 
+fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean = opprinneligDeltaker.status.gyldigFra
+    .toLocalDate()
+    .isAfter(LocalDate.now().minusDays(15))
+
 fun validerForslagEllerBegrunnelse(forslagId: UUID?, begrunnelse: String?) {
     require(forslagId != null || !begrunnelse.isNullOrEmpty()) {
         "Må ha begrunnelse hvis ikke det er et godkjent forslag"

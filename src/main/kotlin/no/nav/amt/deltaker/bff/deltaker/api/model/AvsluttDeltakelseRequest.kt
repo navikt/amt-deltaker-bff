@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.harEndretSluttaarsak
+import no.nav.amt.deltaker.bff.deltaker.api.utils.statusForMindreEnn15DagerSiden
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
@@ -54,7 +55,3 @@ data class AvsluttDeltakelseRequest(
             harEndretSluttaarsak(deltaker.status.aarsak, aarsak)
     }
 }
-
-fun statusForMindreEnn15DagerSiden(opprinneligDeltaker: Deltaker): Boolean = opprinneligDeltaker.status.gyldigFra
-    .toLocalDate()
-    .isAfter(LocalDate.now().minusDays(15))

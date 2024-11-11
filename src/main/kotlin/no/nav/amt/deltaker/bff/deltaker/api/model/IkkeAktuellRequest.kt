@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.harEndretSluttaarsak
+import no.nav.amt.deltaker.bff.deltaker.api.utils.statusForMindreEnn15DagerSiden
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
@@ -14,12 +15,24 @@ data class IkkeAktuellRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    private val kanBliIkkeAktuell = listOf(DeltakerStatus.Type.VENTER_PA_OPPSTART, DeltakerStatus.Type.IKKE_AKTUELL)
+    private val kanBliIkkeAktuell = listOf(
+        DeltakerStatus.Type.VENTER_PA_OPPSTART,
+        DeltakerStatus.Type.DELTAR,
+        DeltakerStatus.Type.IKKE_AKTUELL,
+    )
 
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak.beskrivelse)
         require(deltaker.status.type in kanBliIkkeAktuell) {
             "Kan ikke sette deltaker med status ${deltaker.status.type} til ikke aktuell"
+        }
+        if (deltaker.status.type == DeltakerStatus.Type.DELTAR) {
+            require(statusForMindreEnn15DagerSiden(deltaker)) {
+                "Deltaker med deltar-status mer enn 15 dager tilbake i tid kan ikke settes til ikke aktuell"
+            }
+            require(forslagId != null) {
+                "Kan bare sette deltaker som deltar til ikke aktuell hvis det foreligger et forslag"
+            }
         }
         validerDeltakerKanEndres(deltaker)
         validerBegrunnelse(begrunnelse)
