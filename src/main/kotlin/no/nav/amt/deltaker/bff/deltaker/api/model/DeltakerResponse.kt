@@ -42,7 +42,7 @@ data class DeltakerResponse(
     val forslag: List<ForslagResponse>,
     val importertFraArena: ImportertFraArenaDto?,
     val harAdresse: Boolean,
-    val deltakelsesmengder: DeltakelsesmengderDto?,
+    val deltakelsesmengder: DeltakelsesmengderDto,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
