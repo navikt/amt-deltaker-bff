@@ -647,7 +647,7 @@ class DeltakerApiTest {
             client
                 .post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
                 .apply {
-                    status shouldBe HttpStatusCode.BadRequest
+                    status shouldBe HttpStatusCode.OK
                     bodyAsText() shouldBe objectMapper.writeValueAsString(
                         deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
                     )
