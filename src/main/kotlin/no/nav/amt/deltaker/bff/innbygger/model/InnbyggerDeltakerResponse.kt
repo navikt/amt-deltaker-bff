@@ -14,6 +14,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -32,6 +33,7 @@ data class InnbyggerDeltakerResponse(
     val adresseDelesMedArrangor: Boolean,
     val forslag: List<ForslagResponse>,
     val importertFraArena: ImportertFraArenaDto?,
+    val deltakelsesmengder: DeltakelsesmengderDto,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -57,40 +59,53 @@ data class InnbyggerDeltakerResponse(
         val startdato: LocalDate,
         val sluttdato: LocalDate?,
     )
+
+    data class DeltakelsesmengderDto(
+        val nesteDeltakelsesmengde: DeltakelsesmengdeDto?,
+        val sisteDeltakelsesmengde: DeltakelsesmengdeDto?,
+    )
+
+    data class DeltakelsesmengdeDto(
+        val deltakelsesprosent: Float,
+        val dagerPerUke: Float?,
+        val gyldigFra: LocalDate,
+    )
 }
 
 fun Deltaker.toInnbyggerDeltakerResponse(
     ansatte: Map<UUID, NavAnsatt>,
     vedtakSistEndretAvEnhet: NavEnhet?,
     forslag: List<Forslag>,
-): InnbyggerDeltakerResponse {
-    return InnbyggerDeltakerResponse(
-        deltakerId = id,
-        deltakerliste = InnbyggerDeltakerResponse.DeltakerlisteDto(
-            deltakerlisteId = deltakerliste.id,
-            deltakerlisteNavn = deltakerliste.navn,
-            tiltakstype = deltakerliste.tiltak.arenaKode,
-            arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
-            oppstartstype = deltakerliste.getOppstartstype(),
-            startdato = deltakerliste.startDato,
-            sluttdato = deltakerliste.sluttDato,
-        ),
-        status = status,
-        startdato = startdato,
-        sluttdato = sluttdato,
-        dagerPerUke = dagerPerUke,
-        deltakelsesprosent = deltakelsesprosent,
-        bakgrunnsinformasjon = bakgrunnsinformasjon,
-        deltakelsesinnhold = InnbyggerDeltakerResponse.DeltakelsesinnholdDto(
-            ledetekst = deltakelsesinnhold?.ledetekst,
-            innhold = deltakelsesinnhold?.innhold ?: emptyList(),
-        ),
-        vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
-        adresseDelesMedArrangor = adresseDelesMedArrangor(),
-        forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
-        importertFraArena = toImporertFraArenaDto(),
-    )
-}
+): InnbyggerDeltakerResponse = InnbyggerDeltakerResponse(
+    deltakerId = id,
+    deltakerliste = InnbyggerDeltakerResponse.DeltakerlisteDto(
+        deltakerlisteId = deltakerliste.id,
+        deltakerlisteNavn = deltakerliste.navn,
+        tiltakstype = deltakerliste.tiltak.arenaKode,
+        arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
+        oppstartstype = deltakerliste.getOppstartstype(),
+        startdato = deltakerliste.startDato,
+        sluttdato = deltakerliste.sluttDato,
+    ),
+    status = status,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = deltakelsesprosent,
+    bakgrunnsinformasjon = bakgrunnsinformasjon,
+    deltakelsesinnhold = InnbyggerDeltakerResponse.DeltakelsesinnholdDto(
+        ledetekst = deltakelsesinnhold?.ledetekst,
+        innhold = deltakelsesinnhold?.innhold ?: emptyList(),
+    ),
+    vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
+    adresseDelesMedArrangor = adresseDelesMedArrangor(),
+    forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
+    importertFraArena = toImporertFraArenaDto(),
+    deltakelsesmengder = InnbyggerDeltakerResponse.DeltakelsesmengderDto(
+        nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
+        sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
+    ),
+)
 
 private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = InnbyggerDeltakerResponse.VedtaksinformasjonDto(
     fattet = fattet,
@@ -100,4 +115,10 @@ private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: N
     sistEndret = sistEndret,
     sistEndretAv = ansatte[sistEndretAv]?.navn ?: sistEndretAv.toString(),
     sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet.toString(),
+)
+
+private fun Deltakelsesmengde.toDto() = InnbyggerDeltakerResponse.DeltakelsesmengdeDto(
+    deltakelsesprosent,
+    dagerPerUke,
+    gyldigFra,
 )
