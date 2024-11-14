@@ -15,6 +15,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -41,6 +42,7 @@ data class DeltakerResponse(
     val forslag: List<ForslagResponse>,
     val importertFraArena: ImportertFraArenaDto?,
     val harAdresse: Boolean,
+    val deltakelsesmengder: DeltakelsesmengderDto,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -72,6 +74,17 @@ data class DeltakerResponse(
     data class TilgjengeligInnhold(
         val ledetekst: String?,
         val innhold: List<Innholdselement>,
+    )
+
+    data class DeltakelsesmengderDto(
+        val nesteDeltakelsesmengde: DeltakelsesmengdeDto?,
+        val sisteDeltakelsesmengde: DeltakelsesmengdeDto?,
+    )
+
+    data class DeltakelsesmengdeDto(
+        val deltakelsesprosent: Float,
+        val dagerPerUke: Float?,
+        val gyldigFra: LocalDate,
     )
 }
 
@@ -116,6 +129,10 @@ fun Deltaker.toDeltakerResponse(
     forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
     importertFraArena = toImporertFraArenaDto(),
     harAdresse = navBruker.adresse != null,
+    deltakelsesmengder = DeltakerResponse.DeltakelsesmengderDto(
+        nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
+        sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
+    ),
 )
 
 fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =
@@ -165,4 +182,10 @@ private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: N
 private fun DeltakerRegistreringInnhold?.toDto() = DeltakerResponse.TilgjengeligInnhold(
     ledetekst = this?.ledetekst,
     innhold = this?.innholdselementerMedAnnet.orEmpty(),
+)
+
+private fun Deltakelsesmengde.toDto() = DeltakerResponse.DeltakelsesmengdeDto(
+    deltakelsesprosent,
+    dagerPerUke,
+    gyldigFra,
 )
