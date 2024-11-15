@@ -13,7 +13,9 @@ data class NavBruker(
     val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
     val innsatsgruppe: Innsatsgruppe?,
     val adresse: Adresse?,
-)
+) {
+    fun harAktivOppfolgingsperiode(): Boolean = oppfolgingsperioder.find { it.erAktiv() } != null
+}
 
 enum class Adressebeskyttelse {
     STRENGT_FORTROLIG,
