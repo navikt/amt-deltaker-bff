@@ -297,8 +297,9 @@ object TestData {
         navn: String = "NAV Testheim",
     ): NavEnhet {
         val enhet = navEnhetCache[enhetsnummer] ?: NavEnhet(id, enhetsnummer, navn)
-        navEnhetCache[enhetsnummer] = enhet
-        return enhet
+        val nyEnhet = enhet.copy(id = id, navn = navn)
+        navEnhetCache[enhetsnummer] = nyEnhet
+        return nyEnhet
     }
 
     fun lagNavBruker(
