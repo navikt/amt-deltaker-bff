@@ -91,6 +91,11 @@ fun Routing.registerDeltakerApi(
             null
         }
 
+        if (!deltaker.navBruker.harAktivOppfolgingsperiode()) {
+            log.warn("Kan ikke endre deltaker med id ${deltaker.id} som ikke har aktiv oppfølgingsperiode")
+            throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
+        }
+
         val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
             deltaker = deltaker,
             endring = endring(deltaker),

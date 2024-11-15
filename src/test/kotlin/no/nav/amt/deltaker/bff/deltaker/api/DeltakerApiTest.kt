@@ -487,6 +487,28 @@ class DeltakerApiTest {
     }
 
     @Test
+    fun `forleng - har tilgang, ikke under oppfolging - feiler`() = testApplication {
+        setUpTestApplication()
+        val deltaker = TestData.lagDeltaker(
+            navBruker = TestData.lagNavBruker(
+                oppfolgingsperioder = listOf(
+                    TestData.lagOppfolgingsperiode(
+                        startdato = LocalDateTime.now().minusMonths(2),
+                        sluttdato = LocalDateTime.now().minusDays(2),
+                    ),
+                ),
+            ),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            sluttdato = forlengDeltakelseRequest.sluttdato.minusDays(3),
+        )
+        setupMocks(deltaker, null)
+
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
+        }
+    }
+
+    @Test
     fun `avslutt - har tilgang, har deltatt - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
