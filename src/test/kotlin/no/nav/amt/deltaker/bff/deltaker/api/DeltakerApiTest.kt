@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.deltaker.api
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
-import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -158,66 +157,67 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() {
+    fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             bakgrunnsinformasjon = bakgrunnsinformasjonRequest.bakgrunnsinformasjon,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client
-                .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
-                .apply {
-                    status shouldBe HttpStatusCode.OK
-                    bodyAsText() shouldBe objectMapper.writeValueAsString(
-                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                    )
-                }
-        }
+        client
+            .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
+            .apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                )
+            }
     }
 
     @Test
-    fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() {
+    fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
             sluttdato = LocalDate.now().minusMonths(1),
         )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            client
-                .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
-                .apply {
-                    status shouldBe HttpStatusCode.BadRequest
-                }
-        }
+        client
+            .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
+            .apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
     }
 
     @Test
-    fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() {
+    fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             deltakelsesinnhold = Deltakelsesinnhold("ledetekst", finnValgtInnhold(innholdRequest.innhold, deltaker)),
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client
-                .post("/deltaker/${deltaker.id}/innhold") {
-                    postRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.deltakelsesinnhold!!.innhold[0].innholdskode, null))))
-                }.apply {
-                    status shouldBe HttpStatusCode.OK
-                    bodyAsText() shouldBe objectMapper.writeValueAsString(
-                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                    )
-                }
-        }
+        client
+            .post("/deltaker/${deltaker.id}/innhold") {
+                postRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.deltakelsesinnhold!!.innhold[0].innholdskode, null))))
+            }.apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                )
+            }
     }
 
     @Test
     fun `oppdater deltakelsesmengde - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker =
             TestData.lagDeltaker(
                 sluttdato = LocalDate.now().plusMonths(3),
@@ -228,45 +228,45 @@ class DeltakerApiTest {
             dagerPerUke = deltakelsesmengdeRequest.dagerPerUke?.toFloat(),
             deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent?.toFloat(),
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
     fun `oppdater deltakelsesmengde - ingen endring - returnerer BadRequest`() = testApplication {
+        setUpTestApplication()
         val deltaker =
             TestData.lagDeltaker(
                 sluttdato = LocalDate.now().plusMonths(3),
                 status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
             )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, ansatte, enhet ->
-            client
-                .post("/deltaker/${deltaker.id}/deltakelsesmengde") {
-                    postRequest(
-                        EndreDeltakelsesmengdeRequest(
-                            deltakelsesprosent = deltaker.deltakelsesprosent?.toInt(),
-                            dagerPerUke = deltaker.dagerPerUke?.toInt(),
-                            begrunnelse = "begrunnelse",
-                            gyldigFra = LocalDate.now(),
-                            forslagId = null,
-                        ),
-                    )
-                }.apply {
-                    status shouldBe HttpStatusCode.BadRequest
-                }
-        }
+        client
+            .post("/deltaker/${deltaker.id}/deltakelsesmengde") {
+                postRequest(
+                    EndreDeltakelsesmengdeRequest(
+                        deltakelsesprosent = deltaker.deltakelsesprosent?.toInt(),
+                        dagerPerUke = deltaker.dagerPerUke?.toInt(),
+                        begrunnelse = "begrunnelse",
+                        gyldigFra = LocalDate.now(),
+                        forslagId = null,
+                    ),
+                )
+            }.apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
     }
 
     @Test
-    fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() {
+    fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
@@ -274,19 +274,19 @@ class DeltakerApiTest {
             startdato = startdatoRequest.startdato,
             sluttdato = sluttdatoRequest.sluttdato,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
-    fun `endre sluttdato - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() {
+    fun `endre sluttdato - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
             sluttdato = LocalDate.now().minusDays(3),
@@ -294,33 +294,33 @@ class DeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             sluttdato = sluttdatoRequest.sluttdato,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
-    fun `endre sluttdato - har tilgang, deltaker har status IKKE AKTUELL - feiler`() {
+    fun `endre sluttdato - har tilgang, deltaker har status IKKE AKTUELL - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
             sluttdato = LocalDate.now().minusDays(3),
         )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `ikke aktuell - har tilgang - returnerer oppdatert deltaker`() {
+    fun `ikke aktuell - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
@@ -328,19 +328,19 @@ class DeltakerApiTest {
                 ikkeAktuellRequest.aarsak.toDeltakerStatusAarsak(),
             ),
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
-    fun `endre sluttarsak - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() {
+    fun `endre sluttarsak - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, aarsak = null),
         )
@@ -351,97 +351,98 @@ class DeltakerApiTest {
                 aarsak = sluttarsakRequest.aarsak.toDeltakerStatusAarsak(),
             ),
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/sluttarsak") { postRequest(sluttarsakRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(
-                        ansatte,
-                        enhet,
-                        true,
-                        emptyList(),
-                    ),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/sluttarsak") { postRequest(sluttarsakRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(
+                    ansatte,
+                    enhet,
+                    true,
+                    emptyList(),
+                ),
+            )
         }
     }
 
     @Test
-    fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() {
+    fun `getDeltaker - har tilgang, deltaker finnes - returnerer deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             navBruker = TestData.lagNavBruker(personident = "1234"),
         )
+        val (ansatte, enhet) = setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
-            }
+        client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
         }
         coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
 
     @Test
-    fun `getDeltaker - har annen navBruker i kontekst, deltaker finnes - returnerer badRequest`() {
+    fun `getDeltaker - har annen navBruker i kontekst, deltaker finnes - returnerer badRequest`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             navBruker = TestData.lagNavBruker(personident = "4321"),
         )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `getDeltaker - deltaker er importert fra arena - returnerer importertFraArenaDto`() {
+    fun `getDeltaker - deltaker er importert fra arena - returnerer importertFraArenaDto`() = testApplication {
+        setUpTestApplication()
         val innsoktDatoFraArena = LocalDate.now().minusDays(5)
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             navBruker = TestData.lagNavBruker(personident = "1234"),
             innsoktDatoFraArena = innsoktDatoFraArena,
         )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                val responseText = bodyAsText()
-                val deltakerResponse = objectMapper.readValue<DeltakerResponse>(responseText)
-                deltakerResponse.importertFraArena?.innsoktDato shouldBe innsoktDatoFraArena
-                deltakerResponse.vedtaksinformasjon shouldBe null
-            }
+        client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            val responseText = bodyAsText()
+            val deltakerResponse = objectMapper.readValue<DeltakerResponse>(responseText)
+            deltakerResponse.importertFraArena?.innsoktDato shouldBe innsoktDatoFraArena
+            deltakerResponse.vedtaksinformasjon shouldBe null
         }
         coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
 
     @Test
-    fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() {
+    fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            val historikk = deltaker.getDeltakerHistorikkSortert()
-            val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
-            val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
+        val historikk = deltaker.getDeltakerHistorikkSortert()
+        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
+        val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
-            every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
-            every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
-            client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
-                status shouldBe HttpStatusCode.OK
-                val res = bodyAsText()
-                val json = objectMapper.writePolymorphicListAsString(
-                    historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
-                )
-                res shouldBe json
-            }
+        every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+        every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
+        client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
+            status shouldBe HttpStatusCode.OK
+            val res = bodyAsText()
+            val json = objectMapper.writePolymorphicListAsString(
+                historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
+            )
+            res shouldBe json
         }
     }
 
     @Test
-    fun `forleng - har tilgang - returnerer oppdatert deltaker`() {
+    fun `forleng - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             sluttdato = forlengDeltakelseRequest.sluttdato.minusDays(3),
@@ -450,44 +451,44 @@ class DeltakerApiTest {
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             sluttdato = forlengDeltakelseRequest.sluttdato,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
-    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - feiler`() {
+    fun `forleng - har tilgang, ny dato tidligere enn forrige dato - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(sluttdato = forlengDeltakelseRequest.sluttdato.plusDays(5))
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `forleng - har tilgang, har sluttet for mer enn to mnd siden - feiler`() {
+    fun `forleng - har tilgang, har sluttet for mer enn to mnd siden - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
             sluttdato = forlengDeltakelseRequest.sluttdato.minusMonths(3),
         )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `avslutt - har tilgang, har deltatt - returnerer oppdatert deltaker`() {
+    fun `avslutt - har tilgang, har deltatt - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
@@ -496,19 +497,19 @@ class DeltakerApiTest {
             ),
             sluttdato = avsluttDeltakelseRequest.sluttdato,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
-    fun `avslutt - har tilgang, har deltatt, mangler sluttdato - feiler`() {
+    fun `avslutt - har tilgang, har deltatt, mangler sluttdato - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
@@ -524,16 +525,16 @@ class DeltakerApiTest {
             begrunnelse = null,
             forslagId = null,
         )
+        setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestUtenSluttdato) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestUtenSluttdato) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `avslutt - har tilgang, har ikke deltatt - returnerer oppdatert deltaker`() {
+    fun `avslutt - har tilgang, har ikke deltatt - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
@@ -550,19 +551,19 @@ class DeltakerApiTest {
             begrunnelse = "begrunnelse",
             forslagId = null,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
-            }
+        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 
     @Test
-    fun `avslutt - har tilgang, har ikke deltatt, mer enn 15 dager siden - feiler`() {
+    fun `avslutt - har tilgang, har ikke deltatt, mer enn 15 dager siden - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, gyldigFra = LocalDateTime.now().minusDays(20)),
         )
@@ -581,27 +582,27 @@ class DeltakerApiTest {
             begrunnelse = null,
             forslagId = null,
         )
+        setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `avslutt - har tilgang, status VENTER PA OPPSTART - feiler`() {
+    fun `avslutt - har tilgang, status VENTER PA OPPSTART - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
-                status shouldBe HttpStatusCode.BadRequest
-            }
+        client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
+            status shouldBe HttpStatusCode.BadRequest
         }
     }
 
     @Test
-    fun `reaktiver - har tilgang - returnerer oppdatert deltaker`() {
+    fun `reaktiver - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL))
         val oppdatertDeltaker = deltaker.copy(
@@ -609,51 +610,50 @@ class DeltakerApiTest {
             startdato = null,
             sluttdato = null,
         )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
-        mockTestApi(deltaker, oppdatertDeltaker) { client, ansatte, enhet ->
-            client
-                .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
-                .apply {
-                    status shouldBe HttpStatusCode.OK
-                    bodyAsText() shouldBe objectMapper.writeValueAsString(
-                        oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                    )
-                }
-        }
+        client
+            .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
+            .apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                )
+            }
     }
 
     @Test
-    fun `reaktiver - deltaker har sluttet - returnerer bad request`() {
+    fun `reaktiver - deltaker har sluttet - returnerer bad request`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
             sluttdato = LocalDate.now().minusMonths(1),
         )
+        setupMocks(deltaker, null)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            client
-                .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
-                .apply {
-                    status shouldBe HttpStatusCode.BadRequest
-                }
-        }
+        client
+            .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
+            .apply {
+                status shouldBe HttpStatusCode.BadRequest
+            }
     }
 
     @Test
-    fun `avvis forslag - har tilgang - returnerer oppdatert deltaker`() {
+    fun `avvis forslag - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker()
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
         every { forslagService.get(forslag.id) } returns Result.success(forslag)
 
-        mockTestApi(deltaker, deltaker, emptyList()) { client, ansatte, enhet ->
-            client
-                .post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
-                .apply {
-                    status shouldBe HttpStatusCode.OK
-                    bodyAsText() shouldBe objectMapper.writeValueAsString(
-                        deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                    )
-                }
-        }
+        val (ansatte, enhet) = setupMocks(deltaker, null)
+        client
+            .post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
+            .apply {
+                status shouldBe HttpStatusCode.OK
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+                )
+            }
     }
 
     private fun HttpRequestBuilder.noBodyRequest() {
@@ -719,13 +719,11 @@ class DeltakerApiTest {
         EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT), "begrunnelse", null)
     private val avvisForslagRequest = AvvisForslagRequest("Avvist fordi..")
 
-    private fun mockTestApi(
+    private fun setupMocks(
         deltaker: Deltaker,
         oppdatertDeltaker: Deltaker?,
         forslag: List<Forslag> = emptyList(),
-        block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
-    ) = testApplication {
-        setUpTestApplication()
+    ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
@@ -733,7 +731,7 @@ class DeltakerApiTest {
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
         every { unleashToggle.erKometMasterForTiltakstype(Tiltakstype.ArenaKode.ARBFORB) } returns true
 
-        val (ansatte, enhet) = if (oppdatertDeltaker != null) {
+        return if (oppdatertDeltaker != null) {
             coEvery {
                 deltakerService.oppdaterDeltaker(deltaker, any(), any(), any())
             } returns oppdatertDeltaker
@@ -742,7 +740,6 @@ class DeltakerApiTest {
         } else {
             mockAnsatteOgEnhetForDeltaker(deltaker)
         }
-        block(client, ansatte, enhet)
     }
 
     private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {

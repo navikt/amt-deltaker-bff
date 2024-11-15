@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.innbygger
 
 import io.kotest.matchers.shouldBe
-import io.ktor.client.HttpClient
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -88,92 +87,89 @@ class InnbyggerApiTest {
     }
 
     @Test
-    fun `get id - innbygger har tilgang - returnerer 200 og deltaker`() {
+    fun `get id - innbygger har tilgang - returnerer 200 og deltaker`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker()
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
+        val (ansatte, enhet) = setupMocks(deltaker, forslag = listOf(forslag))
 
-        mockTestApi(deltaker, forslag = listOf(forslag)) { client, ansatte, enhet ->
-            val res = client.get("/innbygger/${deltaker.id}") { noBodyRequest() }
-            res.status shouldBe HttpStatusCode.OK
-            res.bodyAsText() shouldBe objectMapper.writeValueAsString(
-                deltaker.toInnbyggerDeltakerResponse(
-                    ansatte,
-                    enhet,
-                    listOf(forslag),
-                ),
-            )
-        }
+        val res = client.get("/innbygger/${deltaker.id}") { noBodyRequest() }
+        res.status shouldBe HttpStatusCode.OK
+        res.bodyAsText() shouldBe objectMapper.writeValueAsString(
+            deltaker.toInnbyggerDeltakerResponse(
+                ansatte,
+                enhet,
+                listOf(forslag),
+            ),
+        )
     }
 
     @Test
-    fun `get id - deltaker finnes ikke - returnerer 404`() {
+    fun `get id - deltaker finnes ikke - returnerer 404`() = testApplication {
         coEvery { deltakerService.get(any()) } returns Result.failure(NoSuchElementException())
 
-        testApplication {
-            setUpTestApplication()
-            val res = client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }
-            res.status shouldBe HttpStatusCode.NotFound
-        }
+        setUpTestApplication()
+        val res = client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }
+        res.status shouldBe HttpStatusCode.NotFound
     }
 
     @Test
-    fun `godkjenn-utkast - deltaker har feil status - feiler`() {
+    fun `godkjenn-utkast - deltaker har feil status - feiler`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
+        setupMocks(deltaker)
 
-        mockTestApi(deltaker) { client, _, _ ->
-            val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
-            res.status shouldBe HttpStatusCode.BadRequest
-        }
+        val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
+        res.status shouldBe HttpStatusCode.BadRequest
     }
 
     @Test
-    fun `godkjenn-utkast - deltaker finnes ikke - returnerer 404`() {
+    fun `godkjenn-utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
         coEvery { deltakerService.get(any()) } returns Result.failure(NoSuchElementException())
 
-        testApplication {
-            setUpTestApplication()
-            val res = client.get("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }
-            res.status shouldBe HttpStatusCode.NotFound
-        }
+        setUpTestApplication()
+        val res = client.get("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }
+        res.status shouldBe HttpStatusCode.NotFound
     }
 
     @Test
-    fun `godkjenn-utkast - deltaker har tilgang - fatter vedtak`() {
+    fun `godkjenn-utkast - deltaker har tilgang - fatter vedtak`() = testApplication {
+        setUpTestApplication()
         val deltaker = deltakerMedIkkeFattetVedtak()
         val deltakerMedFattetVedak = deltaker.fattVedtak()
 
         coEvery { innbyggerService.fattVedtak(deltaker) } returns deltakerMedFattetVedak
+        val (ansatte, enhet) = setupMocks(deltaker, deltakerMedFattetVedak)
 
-        mockTestApi(deltaker, deltakerMedFattetVedak) { client, ansatte, enhet ->
-            val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
-            res.status shouldBe HttpStatusCode.OK
-            res.bodyAsText() shouldBe objectMapper.writeValueAsString(
-                deltakerMedFattetVedak.toInnbyggerDeltakerResponse(
-                    ansatte,
-                    enhet,
-                    emptyList(),
-                ),
-            )
-        }
+        val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
+        res.status shouldBe HttpStatusCode.OK
+        res.bodyAsText() shouldBe objectMapper.writeValueAsString(
+            deltakerMedFattetVedak.toInnbyggerDeltakerResponse(
+                ansatte,
+                enhet,
+                emptyList(),
+            ),
+        )
     }
 
     @Test
-    fun `getHistorikk - deltaker finnes, har tilgang - returnerer historikk`() {
+    fun `getHistorikk - deltaker finnes, har tilgang - returnerer historikk`() = testApplication {
+        setUpTestApplication()
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
+        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        mockTestApi(deltaker, null) { client, _, _ ->
-            val historikk = deltaker.getDeltakerHistorikkSortert()
-            val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
-            val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
+        val historikk = deltaker.getDeltakerHistorikkSortert()
+        val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
+        val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
-            every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
-            every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
-            client.get("/innbygger/${deltaker.id}/historikk") { noBodyRequest() }.apply {
-                status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writePolymorphicListAsString(
-                    historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
-                )
-            }
+        every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
+        every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
+        client.get("/innbygger/${deltaker.id}/historikk") { noBodyRequest() }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writePolymorphicListAsString(
+                historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
+            )
         }
     }
 
@@ -205,25 +201,20 @@ class InnbyggerApiTest {
         }
     }
 
-    private fun mockTestApi(
+    private fun setupMocks(
         deltaker: Deltaker,
         oppdatertDeltaker: Deltaker? = null,
         forslag: List<Forslag> = emptyList(),
-        block: suspend (client: HttpClient, ansatte: Map<UUID, NavAnsatt>, enhet: NavEnhet?) -> Unit,
-    ) = testApplication {
-        setUpTestApplication()
-
+    ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
 
-        val (ansatte, enhet) = if (oppdatertDeltaker == null) {
+        return if (oppdatertDeltaker == null) {
             mockAnsatteOgEnhetForDeltaker(deltaker)
         } else {
             mockAnsatteOgEnhetForDeltaker(oppdatertDeltaker)
         }
-
-        block(client, ansatte, enhet)
     }
 
     private fun mockAnsatteOgEnhetForDeltaker(deltaker: Deltaker): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {

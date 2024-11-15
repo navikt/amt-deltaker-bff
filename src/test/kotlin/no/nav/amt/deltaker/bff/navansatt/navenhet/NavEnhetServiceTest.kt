@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.utils.mockHttpClient
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.time.LocalDateTime
@@ -28,6 +29,11 @@ class NavEnhetServiceTest {
             SingletonPostgres16Container
             repository = NavEnhetRepository()
         }
+    }
+
+    @Before
+    fun cleanDatabase() {
+        TestRepository.cleanDatabase()
     }
 
     @Test
