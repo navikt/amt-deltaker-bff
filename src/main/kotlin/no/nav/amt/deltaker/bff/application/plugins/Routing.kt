@@ -30,8 +30,8 @@ import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
-import no.nav.amt.deltaker.unleash.UnleashToggle
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
