@@ -93,11 +93,7 @@ fun Routing.registerDeltakerApi(
 
         if (!deltaker.navBruker.harAktivOppfolgingsperiode()) {
             log.warn("Kan ikke endre deltaker med id ${deltaker.id} som ikke har aktiv oppfølgingsperiode")
-            if (deltaker.id != UUID.fromString("6805c89b-2d6d-4fec-926c-87a504190af3")) {
-                throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
-            } else {
-                log.warn("Ignorerer at deltaker med id ${deltaker.id} ikke er under oppfølging")
-            }
+            throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
         }
 
         val oppdatertDeltaker = deltakerService.oppdaterDeltaker(

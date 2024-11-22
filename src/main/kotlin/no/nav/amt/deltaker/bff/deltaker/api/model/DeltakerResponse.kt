@@ -134,11 +134,7 @@ fun Deltaker.toDeltakerResponse(
         nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
-    erUnderOppfolging = if (id == UUID.fromString("6805c89b-2d6d-4fec-926c-87a504190af3")) {
-        true
-    } else {
-        navBruker.harAktivOppfolgingsperiode()
-    },
+    erUnderOppfolging = navBruker.harAktivOppfolgingsperiode(),
 )
 
 fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =
