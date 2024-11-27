@@ -6,7 +6,7 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    val kotlinVersion = "2.0.21"
+    val kotlinVersion = "2.1.0"
 
     kotlin("jvm") version kotlinVersion
     id("io.ktor.plugin") version "3.0.1"
