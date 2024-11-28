@@ -91,7 +91,7 @@ fun Routing.registerDeltakerApi(
             null
         }
 
-        if (!deltaker.navBruker.harAktivOppfolgingsperiode()) {
+        if (!deltaker.navBruker.harAktivOppfolgingsperiode() && !request.tillattEndringUtenAktivOppfolgingsperiode()) {
             log.warn("Kan ikke endre deltaker med id ${deltaker.id} som ikke har aktiv oppfølgingsperiode")
             throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
         }
