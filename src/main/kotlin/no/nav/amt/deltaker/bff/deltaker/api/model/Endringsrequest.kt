@@ -5,6 +5,22 @@ import java.util.UUID
 
 sealed interface Endringsrequest {
     fun valider(deltaker: Deltaker)
+
+    fun tillattEndringUtenAktivOppfolgingsperiode() = when (this) {
+        is EndreBakgrunnsinformasjonRequest,
+        is EndreDeltakelsesmengdeRequest,
+        is EndreInnholdRequest,
+        is EndreStartdatoRequest,
+        is ForlengDeltakelseRequest,
+        is ReaktiverDeltakelseRequest,
+        -> false
+
+        is AvsluttDeltakelseRequest,
+        is EndreSluttarsakRequest,
+        is EndreSluttdatoRequest,
+        is IkkeAktuellRequest,
+        -> true
+    }
 }
 
 sealed interface EndringsforslagRequest : Endringsrequest {
