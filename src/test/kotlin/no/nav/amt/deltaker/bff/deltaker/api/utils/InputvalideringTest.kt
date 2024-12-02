@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
@@ -132,6 +133,12 @@ class InputvalideringTest {
                 tiltaksinnhold,
             )
         }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for tiltak uten innholdselementer")),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+            )
+        }
     }
 
     @Test
@@ -180,6 +187,12 @@ class InputvalideringTest {
             validerKladdInnhold(
                 listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")),
                 tiltaksinnhold,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for tiltak uten innholdselementer")),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
             )
         }
     }
