@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -131,7 +132,9 @@ fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: Deltake
         require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
 
         innhold.forEach {
-            require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
+            require(it.innholdskode in innholdskoder || it.innholdskode == annetInnholdselement.innholdskode) {
+                "Ugyldig innholdskode: ${it.innholdskode}"
+            }
 
             if (it.innholdskode == annetInnholdselement.innholdskode) {
                 validerAnnetInnhold(it.beskrivelse)
@@ -155,7 +158,9 @@ private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aar
 fun validerKladdInnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
     validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->
         innhold.forEach {
-            require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
+            require(it.innholdskode in innholdskoder || it.innholdskode == annetInnholdselement.innholdskode) {
+                "Ugyldig innholdskode: ${it.innholdskode}"
+            }
 
             if (it.innholdskode != annetInnholdselement.innholdskode) {
                 require(it.beskrivelse == null) {
@@ -186,7 +191,8 @@ private fun validerInnhold(
     valider: (innholdskoder: List<String>) -> Unit,
 ) {
     val innholdskoder = tiltaksinnhold
-        ?.innholdselementerMedAnnet
+        ?.innholdselementer
+        ?.getInnholdskoder()
         ?.map { it.innholdskode }
 
     if (innholdskoder.isNullOrEmpty()) {
@@ -194,4 +200,8 @@ private fun validerInnhold(
     } else {
         valider(innholdskoder)
     }
+}
+
+private fun List<Innholdselement>.getInnholdskoder(): List<Innholdselement> = this.ifEmpty {
+    this.plus(annetInnholdselement)
 }
