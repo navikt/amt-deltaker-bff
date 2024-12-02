@@ -129,8 +129,9 @@ fun validerSluttdatoForDeltaker(
 
 fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
     validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->
-        require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
-
+        if (!tiltaksinnhold?.innholdselementer.isNullOrEmpty()) {
+            require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
+        }
         innhold.forEach {
             require(it.innholdskode in innholdskoder || it.innholdskode == annetInnholdselement.innholdskode) {
                 "Ugyldig innholdskode: ${it.innholdskode}"

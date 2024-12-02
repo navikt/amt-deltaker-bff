@@ -139,6 +139,12 @@ class InputvalideringTest {
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
             )
         }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                emptyList(),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+            )
+        }
     }
 
     @Test
@@ -192,6 +198,12 @@ class InputvalideringTest {
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for tiltak uten innholdselementer")),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                emptyList(),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
             )
         }
