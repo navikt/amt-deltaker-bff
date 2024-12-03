@@ -8,7 +8,7 @@ data class EndreInnholdRequest(
     val innhold: List<InnholdDto>,
 ) : Endringsrequest {
     override fun valider(deltaker: Deltaker) {
-        validerDeltakelsesinnhold(innhold, deltaker.deltakerliste.tiltak.innhold)
+        validerDeltakelsesinnhold(innhold, deltaker.deltakerliste.tiltak.innhold, deltaker.deltakerliste.tiltak.tiltakskode)
         validerDeltakerKanEndres(deltaker)
         require(deltakerErEndret(deltaker)) {
             "Innholdet er ikke endret"

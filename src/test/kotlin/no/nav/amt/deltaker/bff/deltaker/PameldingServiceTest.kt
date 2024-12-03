@@ -216,7 +216,10 @@ fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
     deltakelsesinnhold = deltakelsesinnhold?.let {
         Deltakelsesinnhold(
             ledetekst = it.ledetekst,
-            innhold = fulltInnhold(it.innhold, deltakerliste.tiltak.innhold?.innholdselementerMedAnnet ?: emptyList()),
+            innhold = fulltInnhold(
+                it.innhold,
+                deltakerliste.tiltak.innhold?.getInnholdselementerMedAnnet(deltakerliste.tiltak.tiltakskode) ?: emptyList(),
+            ),
         )
     },
     status,

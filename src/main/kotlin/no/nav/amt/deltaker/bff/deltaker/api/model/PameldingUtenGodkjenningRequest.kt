@@ -22,6 +22,6 @@ data class PameldingUtenGodkjenningRequest(
         validerBakgrunnsinformasjon(bakgrunnsinformasjon)
         validerDeltakelsesProsent(deltakelsesprosent)
         validerDagerPerUke(dagerPerUke)
-        validerDeltakelsesinnhold(innhold, deltaker.deltakerliste.tiltak.innhold)
+        validerDeltakelsesinnhold(innhold, deltaker.deltakerliste.tiltak.innhold, deltaker.deltakerliste.tiltak.tiltakskode)
     }
 }

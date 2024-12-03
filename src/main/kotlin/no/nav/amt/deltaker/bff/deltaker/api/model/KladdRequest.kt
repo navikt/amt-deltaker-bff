@@ -30,7 +30,8 @@ data class KladdRequest(
         dagerPerUke = dagerPerUke?.clamp(MIN_DAGER_PER_UKE, MAX_DAGER_PER_UKE),
     )
 
-    fun valider(deltaker: Deltaker) = validerKladdInnhold(this.innhold, deltaker.deltakerliste.tiltak.innhold)
+    fun valider(deltaker: Deltaker) =
+        validerKladdInnhold(this.innhold, deltaker.deltakerliste.tiltak.innhold, deltaker.deltakerliste.tiltak.tiltakskode)
 }
 
 private fun String.sanitize(): String {
