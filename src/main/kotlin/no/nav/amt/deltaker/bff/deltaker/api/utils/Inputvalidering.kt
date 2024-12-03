@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.utils
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -27,12 +28,16 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
     }
 }
 
-fun validerAnnetInnhold(tekst: String?) {
-    require(tekst != null && tekst != "") {
-        "Innhold med innholdskode: ${annetInnholdselement.innholdskode} må ha en beskrivelse"
+fun validerAnnetInnhold(tekst: String?, tiltakstype: Tiltakstype.Tiltakskode) {
+    if (tiltakstype != Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
+        require(tekst != null && tekst != "") {
+            "Innhold med innholdskode: ${annetInnholdselement.innholdskode} må ha en beskrivelse"
+        }
     }
-    require(tekst.length <= MAX_ANNET_INNHOLD_LENGDE) {
-        "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
+    tekst?.let {
+        require(it.length <= MAX_ANNET_INNHOLD_LENGDE) {
+            "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
+        }
     }
 }
 
@@ -126,15 +131,20 @@ fun validerSluttdatoForDeltaker(
     startdato?.let { validerVarighet(it, sluttdato, opprinneligDeltaker.maxVarighet) }
 }
 
-fun validerDeltakelsesinnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
-    validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->
-        require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
-
+fun validerDeltakelsesinnhold(
+    innhold: List<InnholdDto>,
+    tiltaksinnhold: DeltakerRegistreringInnhold?,
+    tiltakstype: Tiltakstype.Tiltakskode,
+) {
+    validerInnhold(tiltakstype, innhold, tiltaksinnhold) { innholdskoder ->
+        if (tiltakstype != Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
+            require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
+        }
         innhold.forEach {
-            require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
+            require(it.innholdskode in innholdskoder) { "Ugyldig innholdskode: ${it.innholdskode}" }
 
             if (it.innholdskode == annetInnholdselement.innholdskode) {
-                validerAnnetInnhold(it.beskrivelse)
+                validerAnnetInnhold(it.beskrivelse, tiltakstype)
             } else {
                 require(it.beskrivelse == null) {
                     "Innhold med innholdskode: ${it.innholdskode} kan ikke ha en beskrivelse"
@@ -152,10 +162,14 @@ private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aar
     beskrivelse,
 )
 
-fun validerKladdInnhold(innhold: List<InnholdDto>, tiltaksinnhold: DeltakerRegistreringInnhold?) {
-    validerInnhold(innhold, tiltaksinnhold) { innholdskoder ->
+fun validerKladdInnhold(
+    innhold: List<InnholdDto>,
+    tiltaksinnhold: DeltakerRegistreringInnhold?,
+    tiltakstype: Tiltakstype.Tiltakskode,
+) {
+    validerInnhold(tiltakstype, innhold, tiltaksinnhold) { innholdskoder ->
         innhold.forEach {
-            require(it.innholdskode in innholdskoder) { "Ugyldig innholds kode: ${it.innholdskode}" }
+            require(it.innholdskode in innholdskoder) { "Ugyldig innholdskode: ${it.innholdskode}" }
 
             if (it.innholdskode != annetInnholdselement.innholdskode) {
                 require(it.beskrivelse == null) {
@@ -181,12 +195,13 @@ private fun validerVarighet(
 }
 
 private fun validerInnhold(
+    tiltakstype: Tiltakstype.Tiltakskode,
     innhold: List<InnholdDto>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     valider: (innholdskoder: List<String>) -> Unit,
 ) {
     val innholdskoder = tiltaksinnhold
-        ?.innholdselementerMedAnnet
+        ?.getInnholdselementerMedAnnet(tiltakstype)
         ?.map { it.innholdskode }
 
     if (innholdskoder.isNullOrEmpty()) {

@@ -34,10 +34,16 @@ class InputvalideringTest {
         val ok = input(MAX_ANNET_INNHOLD_LENGDE - 1)
 
         shouldThrow<IllegalArgumentException> {
-            validerAnnetInnhold(forLang)
+            validerAnnetInnhold(forLang, Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerAnnetInnhold(ok)
+            validerAnnetInnhold(ok, Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
+        }
+        shouldThrow<IllegalArgumentException> {
+            validerAnnetInnhold(null, Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerAnnetInnhold(null, Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET)
         }
     }
 
@@ -93,50 +99,69 @@ class InputvalideringTest {
                 Innholdselement("Type", "type"),
             ),
         )
+        val tiltakstype = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
 
         shouldThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), null)
+            validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), null, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 listOf(InnholdDto("type", null)),
                 TestData.lagDeltakerRegistreringInnhold(innholdselementer = emptyList()),
+                tiltakstype,
             )
         }
         shouldThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(emptyList(), tiltaksinnhold)
+            validerDeltakelsesinnhold(emptyList(), tiltaksinnhold, tiltakstype)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(emptyList(), null)
+            validerDeltakelsesinnhold(emptyList(), null, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold)
+            validerDeltakelsesinnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
+            validerDeltakelsesinnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, "")), tiltaksinnhold)
+            validerDeltakelsesinnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, "")), tiltaksinnhold, tiltakstype)
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet innhold må ha beskrivelse")),
                 tiltaksinnhold,
+                tiltakstype,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
+            validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), tiltaksinnhold, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")),
                 tiltaksinnhold,
+                tiltakstype,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
-                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for tiltak uten innholdselementer")),
+                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for VTA")),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                emptyList(),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                emptyList(),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
             )
         }
     }
@@ -149,50 +174,69 @@ class InputvalideringTest {
                 annetInnholdselement,
             ),
         )
+        val tiltakstype = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
 
         shouldThrow<IllegalArgumentException> {
-            validerKladdInnhold(listOf(InnholdDto("type", null)), null)
+            validerKladdInnhold(listOf(InnholdDto("type", null)), null, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
             validerKladdInnhold(
                 listOf(InnholdDto("type", null)),
                 TestData.lagDeltakerRegistreringInnhold(innholdselementer = emptyList()),
+                tiltakstype,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerKladdInnhold(emptyList(), tiltaksinnhold)
+            validerKladdInnhold(emptyList(), tiltaksinnhold, tiltakstype)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerKladdInnhold(emptyList(), null)
+            validerKladdInnhold(emptyList(), null, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
-            validerKladdInnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold)
+            validerKladdInnhold(listOf(InnholdDto("foo", null)), tiltaksinnhold, tiltakstype)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerKladdInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold)
+            validerKladdInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, null)), tiltaksinnhold, tiltakstype)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerKladdInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, "")), tiltaksinnhold)
+            validerKladdInnhold(listOf(InnholdDto(annetInnholdselement.innholdskode, "")), tiltaksinnhold, tiltakstype)
         }
         shouldNotThrow<IllegalArgumentException> {
             validerKladdInnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet innhold må ha beskrivelse")),
                 tiltaksinnhold,
+                tiltakstype,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerKladdInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold)
+            validerKladdInnhold(listOf(InnholdDto("type", null)), tiltaksinnhold, tiltakstype)
         }
         shouldThrow<IllegalArgumentException> {
             validerKladdInnhold(
                 listOf(InnholdDto("type", "andre typer enn annet skal ikke ha beskrivelse")),
                 tiltaksinnhold,
+                tiltakstype,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
-                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for tiltak uten innholdselementer")),
+                listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for VTA")),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                emptyList(),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            )
+        }
+        shouldNotThrow<IllegalArgumentException> {
+            validerDeltakelsesinnhold(
+                emptyList(),
+                DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
+                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
             )
         }
     }

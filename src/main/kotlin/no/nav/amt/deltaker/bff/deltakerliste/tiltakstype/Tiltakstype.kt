@@ -41,8 +41,10 @@ data class DeltakerRegistreringInnhold(
     val innholdselementer: List<Innholdselement>,
     val ledetekst: String,
 ) {
-    val innholdselementerMedAnnet: List<Innholdselement> get() =
-        innholdselementer.plus(annetInnholdselement)
+    fun getInnholdselementerMedAnnet(tiltakstype: Tiltakstype.Tiltakskode): List<Innholdselement> {
+        if (innholdselementer.isEmpty() && tiltakstype != Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) return emptyList()
+        return innholdselementer.plus(annetInnholdselement)
+    }
 }
 
 data class Innholdselement(

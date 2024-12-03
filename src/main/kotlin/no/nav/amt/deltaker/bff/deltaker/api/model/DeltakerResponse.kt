@@ -112,7 +112,7 @@ fun Deltaker.toDeltakerResponse(
         startdato = deltakerliste.startDato,
         sluttdato = deltakerliste.sluttDato,
         status = deltakerliste.status,
-        tilgjengeligInnhold = deltakerliste.tiltak.innhold.toDto(),
+        tilgjengeligInnhold = deltakerliste.tiltak.innhold.toDto(deltakerliste.tiltak.tiltakskode),
     ),
     status = status,
     startdato = startdato,
@@ -120,7 +120,9 @@ fun Deltaker.toDeltakerResponse(
     dagerPerUke = dagerPerUke,
     deltakelsesprosent = deltakelsesprosent,
     bakgrunnsinformasjon = bakgrunnsinformasjon,
-    deltakelsesinnhold = deltakelsesinnhold?.toDto(deltakerliste.tiltak.innhold?.innholdselementerMedAnnet),
+    deltakelsesinnhold = deltakelsesinnhold?.toDto(
+        deltakerliste.tiltak.innhold?.getInnholdselementerMedAnnet(deltakerliste.tiltak.tiltakskode),
+    ),
     vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
     adresseDelesMedArrangor = adresseDelesMedArrangor(),
     kanEndres = kanEndres,
@@ -181,9 +183,9 @@ private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: N
     sistEndretAvEnhet = vedtakSistEndretEnhet?.navn ?: sistEndretAvEnhet.toString(),
 )
 
-private fun DeltakerRegistreringInnhold?.toDto() = DeltakerResponse.TilgjengeligInnhold(
+private fun DeltakerRegistreringInnhold?.toDto(tiltakstype: Tiltakstype.Tiltakskode) = DeltakerResponse.TilgjengeligInnhold(
     ledetekst = this?.ledetekst,
-    innhold = this?.innholdselementerMedAnnet.orEmpty(),
+    innhold = this?.getInnholdselementerMedAnnet(tiltakstype).orEmpty(),
 )
 
 private fun Deltakelsesmengde.toDto() = DeltakerResponse.DeltakelsesmengdeDto(
