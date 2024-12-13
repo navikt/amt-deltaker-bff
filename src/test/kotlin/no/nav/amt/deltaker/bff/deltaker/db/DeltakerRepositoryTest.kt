@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -24,6 +25,7 @@ import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.util.UUID
 
 class DeltakerRepositoryTest {
     companion object {
@@ -186,6 +188,38 @@ class DeltakerRepositoryTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
         )
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
+    }
+
+    @Test
+    fun `update - deltaker kan ikke endres - oppdaterer ikke`() {
+        val sistEndret = LocalDateTime.now().minusDays(3)
+        val deltaker = TestData.lagDeltaker(sistEndret = sistEndret, kanEndres = false)
+        TestRepository.insert(deltaker)
+        val endring = DeltakerEndring.Endring.EndreBakgrunnsinformasjon("ny bakgrunn for innsøk")
+        val oppdatertDeltaker = deltaker.endre(TestData.lagDeltakerEndring(endring = endring))
+
+        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
+        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
+    }
+
+    @Test
+    fun `update - deltaker kan ikke endres, kun oppdatert historikk - oppdaterer historikk`() {
+        val sistEndret = LocalDateTime.now().minusDays(3)
+        val deltaker = TestData.lagDeltaker(sistEndret = sistEndret, kanEndres = false)
+        TestRepository.insert(deltaker)
+        val avvistForslag = TestData.lagForslag(
+            deltakerId = deltaker.id,
+            status = Forslag.Status.Avvist(
+                avvistAv = Forslag.NavAnsatt(id = UUID.randomUUID(), enhetId = UUID.randomUUID()),
+                avvist = LocalDateTime.now(),
+                begrunnelseFraNav = "begrunnelse",
+            ),
+        )
+        val historikk = deltaker.historikk + listOf(DeltakerHistorikk.Forslag(avvistForslag))
+        val oppdatertDeltaker = deltaker.copy(historikk = historikk, sistEndret = LocalDateTime.now())
+
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }

@@ -333,10 +333,16 @@ class DeltakerRepository {
     }
 
     fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
-        if (!skalOppdateres(deltaker)) {
+        val eksisterendeDeltaker = get(deltaker.id).getOrNull()
+        if (!skalOppdateres(eksisterendeDeltaker, deltaker)) {
+            if (eksisterendeDeltaker != null && skalOppdatereHistorikkForLaastDeltaker(eksisterendeDeltaker, deltaker)) {
+                log.info("Oppdaterer historikk for deltaker som ikke kan endres")
+                session.transaction { tx ->
+                    tx.update(oppdaterHistorikk(deltaker))
+                }
+            }
             return@query
         }
-
         val sql =
             """
             update deltaker set 
@@ -522,9 +528,7 @@ class DeltakerRepository {
                 $where
       """
 
-    private fun skalOppdateres(oppdatering: Deltakeroppdatering): Boolean {
-        val eksisterendeDeltaker = get(oppdatering.id).getOrNull()
-
+    private fun skalOppdateres(eksisterendeDeltaker: Deltaker?, oppdatering: Deltakeroppdatering): Boolean {
         if (eksisterendeDeltaker == null) {
             log.info("Deltakeren finnes ikke fra før, oppdaterer ${oppdatering.id}")
             return true
@@ -569,6 +573,22 @@ class DeltakerRepository {
         return kanOppdateres
     }
 
+    private fun skalOppdatereHistorikkForLaastDeltaker(eksisterendeDeltaker: Deltaker, oppdatering: Deltakeroppdatering): Boolean =
+        eksisterendeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT &&
+            !eksisterendeDeltaker.kanEndres && kunHistorikkErEndret(eksisterendeDeltaker, oppdatering)
+
+    private fun kunHistorikkErEndret(eksisterendeDeltaker: Deltaker, oppdatering: Deltakeroppdatering): Boolean =
+        oppdatering.startdato == eksisterendeDeltaker.startdato &&
+            oppdatering.sluttdato == eksisterendeDeltaker.sluttdato &&
+            oppdatering.dagerPerUke == eksisterendeDeltaker.dagerPerUke &&
+            oppdatering.deltakelsesprosent == eksisterendeDeltaker.deltakelsesprosent &&
+            oppdatering.bakgrunnsinformasjon == eksisterendeDeltaker.bakgrunnsinformasjon &&
+            oppdatering.deltakelsesinnhold == eksisterendeDeltaker.deltakelsesinnhold &&
+            oppdatering.status.id == eksisterendeDeltaker.status.id &&
+            oppdatering.status.type == eksisterendeDeltaker.status.type &&
+            oppdatering.status.aarsak == eksisterendeDeltaker.status.aarsak &&
+            eksisterendeDeltaker.historikk.size < oppdatering.historikk.size
+
     fun oppdaterSistBesokt(id: UUID, sistBesokt: ZonedDateTime) = Database.query {
         val sql =
             """
@@ -583,5 +603,23 @@ class DeltakerRepository {
         )
 
         it.update(queryOf(sql, params))
+    }
+
+    private fun oppdaterHistorikk(deltaker: Deltakeroppdatering): Query {
+        val sql =
+            """
+            update deltaker set 
+                historikk            = :historikk,
+                modified_at          = :modified_at
+            where id = :id
+            """.trimIndent()
+
+        val params = mapOf(
+            "historikk" to toPGObject(deltaker.historikk),
+            "modified_at" to deltaker.sistEndret,
+            "id" to deltaker.id,
+        )
+
+        return queryOf(sql, params)
     }
 }
