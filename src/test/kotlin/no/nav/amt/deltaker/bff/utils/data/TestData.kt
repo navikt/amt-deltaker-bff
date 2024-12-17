@@ -451,6 +451,8 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
             startdato = null,
             sluttdato = null,
         )
+
+        is DeltakerEndring.Endring.FjernOppstartsdato -> this.copy(startdato = null, sluttdato = null)
     }
     return deltaker.copy(historikk = this.historikk.plus(DeltakerHistorikk.Endring(deltakerEndring)))
 }

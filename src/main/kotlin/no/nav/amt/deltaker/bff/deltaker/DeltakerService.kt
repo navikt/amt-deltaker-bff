@@ -153,6 +153,16 @@ class DeltakerService(
                     begrunnelse = endring.begrunnelse,
                 )
             }
+
+            is DeltakerEndring.Endring.FjernOppstartsdato -> endreDeltaker(deltaker) {
+                amtDeltakerClient.fjernOppstartsdato(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    begrunnelse = endring.begrunnelse,
+                    forslagId = forslagId,
+                )
+            }
         }
         return oppdatertDeltaker
     }
