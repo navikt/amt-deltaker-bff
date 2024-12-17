@@ -13,6 +13,7 @@ sealed interface Endringsrequest {
         is EndreStartdatoRequest,
         is ForlengDeltakelseRequest,
         is ReaktiverDeltakelseRequest,
+        is FjernOppstartsdatoRequest,
         -> false
 
         is AvsluttDeltakelseRequest,

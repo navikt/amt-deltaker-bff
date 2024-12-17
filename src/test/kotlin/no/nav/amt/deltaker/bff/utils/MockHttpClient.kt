@@ -181,6 +181,7 @@ object MockResponseHandler {
             is DeltakerEndring.Endring.ForlengDeltakelse -> AmtDeltakerClient.FORLENG_DELTAKELSE
             is DeltakerEndring.Endring.IkkeAktuell -> AmtDeltakerClient.IKKE_AKTUELL
             is DeltakerEndring.Endring.ReaktiverDeltakelse -> AmtDeltakerClient.REAKTIVER
+            is DeltakerEndring.Endring.FjernOppstartsdato -> AmtDeltakerClient.FJERN_OPPSTARTSDATO
         }
 
         addResponse(

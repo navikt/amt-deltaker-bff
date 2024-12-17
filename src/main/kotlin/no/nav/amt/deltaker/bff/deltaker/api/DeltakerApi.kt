@@ -30,6 +30,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndringsforslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.Endringsrequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
@@ -194,6 +195,13 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<ForlengDeltakelseRequest>()
             handleEndring(call, request) {
                 DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse)
+            }
+        }
+
+        post("/deltaker/{deltakerId}/fjern-oppstartsdato") {
+            val request = call.receive<FjernOppstartsdatoRequest>()
+            handleEndring(call, request) {
+                DeltakerEndring.Endring.FjernOppstartsdato(request.begrunnelse)
             }
         }
 

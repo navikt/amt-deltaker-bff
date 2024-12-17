@@ -37,6 +37,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttarsakRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
+import no.nav.amt.deltaker.bff.deltaker.api.model.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
@@ -137,6 +138,9 @@ class DeltakerApiTest {
             ) { postRequest(reaktiverDeltakelseRequest) }
             .status shouldBe HttpStatusCode.Forbidden
         client.post("/forslag/${UUID.randomUUID()}/avvis") { postRequest(avvisForslagRequest) }.status shouldBe HttpStatusCode.Forbidden
+        client.post("/deltaker/${UUID.randomUUID()}/fjern-oppstartsdato") {
+            postRequest(fjernOppstartsdatoRequest)
+        }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test
@@ -151,6 +155,7 @@ class DeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/forleng") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/avslutt") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}/reaktiver") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/fjern-oppstartsdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
         client.post("/forslag/${UUID.randomUUID()}/avvis").status shouldBe HttpStatusCode.Unauthorized
@@ -661,6 +666,29 @@ class DeltakerApiTest {
     }
 
     @Test
+    fun `fjern oppstartsdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            startdato = LocalDate.now().plusWeeks(1),
+            sluttdato = LocalDate.now().plusMonths(3),
+        )
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            startdato = null,
+            sluttdato = null,
+        )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        client.post("/deltaker/${deltaker.id}/fjern-oppstartsdato") { postRequest(fjernOppstartsdatoRequest) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
+        }
+    }
+
+    @Test
     fun `avvis forslag - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker()
@@ -740,6 +768,7 @@ class DeltakerApiTest {
     private val sluttarsakRequest =
         EndreSluttarsakRequest(DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.IKKE_MOTT), "begrunnelse", null)
     private val avvisForslagRequest = AvvisForslagRequest("Avvist fordi..")
+    private val fjernOppstartsdatoRequest = FjernOppstartsdatoRequest("begrunnelse", null)
 
     private fun setupMocks(
         deltaker: Deltaker,

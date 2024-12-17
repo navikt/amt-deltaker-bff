@@ -91,3 +91,10 @@ data class ReaktiverDeltakelseRequest(
     override val endretAvEnhet: String,
     val begrunnelse: String,
 ) : DeltakerEndringsrequest
+
+data class FjernOppstartsdatoRequest(
+    override val endretAv: String,
+    override val endretAvEnhet: String,
+    override val forslagId: UUID?,
+    val begrunnelse: String?,
+) : DeltakerEndringMedForslag

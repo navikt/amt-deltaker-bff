@@ -67,6 +67,9 @@ class DeltakerServiceTest {
                 reaktivertDato = LocalDate.now(),
                 begrunnelse = "begrunnelse",
             ),
+            DeltakerEndring.Endring.FjernOppstartsdato(
+                begrunnelse = "begrunnelse",
+            ),
         )
 
         endringer.forEach { endring ->
@@ -127,6 +130,11 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.ReaktiverDeltakelse -> {
                     oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
+                    oppdatertDeltaker.startdato shouldBe null
+                    oppdatertDeltaker.sluttdato shouldBe null
+                }
+
+                is DeltakerEndring.Endring.FjernOppstartsdato -> {
                     oppdatertDeltaker.startdato shouldBe null
                     oppdatertDeltaker.sluttdato shouldBe null
                 }

@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.InnholdRequest
@@ -239,6 +240,18 @@ class AmtDeltakerClient(
         AVSLUTT_DELTAKELSE,
     )
 
+    suspend fun fjernOppstartsdato(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        begrunnelse: String?,
+        forslagId: UUID?,
+    ) = postEndring(
+        deltakerId,
+        FjernOppstartsdatoRequest(endretAv, endretAvEnhet, forslagId, begrunnelse),
+        FJERN_OPPSTARTSDATO,
+    )
+
     suspend fun fattVedtak(vedtak: Vedtak): Deltakeroppdatering {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/deltaker/${vedtak.deltakerId}/vedtak/${vedtak.id}/fatt") {
@@ -300,6 +313,7 @@ class AmtDeltakerClient(
         const val AVSLUTT_DELTAKELSE = "avslutt"
         const val SIST_BESOKT = "sist-besokt"
         const val REAKTIVER = "reaktiver"
+        const val FJERN_OPPSTARTSDATO = "fjern-oppstartsdato"
     }
 }
 
