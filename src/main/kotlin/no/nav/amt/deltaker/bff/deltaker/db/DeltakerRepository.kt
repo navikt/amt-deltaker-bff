@@ -540,7 +540,7 @@ class DeltakerRepository {
         }
 
         if (eksisterendeDeltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
-            log.warn("Har mottatt oppdatering på feilregistrert deltaker, ignorerer, ${oppdatering.id}")
+            log.info("Har mottatt oppdatering på feilregistrert deltaker, ignorerer, ${oppdatering.id}")
             return false
         }
 
