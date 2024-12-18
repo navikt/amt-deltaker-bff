@@ -29,7 +29,9 @@ data class Deltaker(
     val kanEndres: Boolean,
     val sistEndret: LocalDateTime,
 ) {
-    val deltakelsesmengder: Deltakelsesmengder get() = historikk.toDeltakelsesmengder()
+    val deltakelsesmengder: Deltakelsesmengder
+        get() = startdato?.let { historikk.toDeltakelsesmengder().periode(it, sluttdato) } ?: historikk.toDeltakelsesmengder()
+
 
     val fattetVedtak
         get() = historikk
@@ -57,18 +59,17 @@ data class Deltaker(
     fun harSluttetForMindreEnnToMndSiden(): Boolean = harSluttet() && status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
 
     fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
-        this.deltakerliste.deltakerAdresseDeles()
+            this.deltakerliste.deltakerAdresseDeles()
 
     /**
-     Noen tiltak har en max varighet som kan overgås ved visse omstendigheter,
-     softMaxVarighet er den ordinære varigheten for disse tiltakene,
-     mens maxVarighet er det absolutte max for alle tiltak.
+    Noen tiltak har en max varighet som kan overgås ved visse omstendigheter,
+    softMaxVarighet er den ordinære varigheten for disse tiltakene,
+    mens maxVarighet er det absolutte max for alle tiltak.
 
-     https://confluence.adeo.no/pages/viewpage.action?pageId=583122378
-     https://lovdata.no/forskrift/2015-12-11-1598
+    https://confluence.adeo.no/pages/viewpage.action?pageId=583122378
+    https://lovdata.no/forskrift/2015-12-11-1598
      */
     val softMaxVarighet: Duration?
-
         get() = when (deltakerliste.tiltak.tiltakskode) {
             Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
             Tiltakstype.Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
@@ -82,9 +83,11 @@ data class Deltaker(
                 null,
                 -> null
             }
+
             Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
             Tiltakstype.Tiltakskode.AVKLARING,
             -> weeks(12)
+
             Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
 
             Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
@@ -95,12 +98,12 @@ data class Deltaker(
         }
 
     /**
-     Noen tiltak har en max varighet som kan overgås ved visse omstendigheter,
-     softMaxVarighet er den ordinære varigheten for disse tiltakene,
-     mens maxVarighet er det absolutte max for alle tiltak.
+    Noen tiltak har en max varighet som kan overgås ved visse omstendigheter,
+    softMaxVarighet er den ordinære varigheten for disse tiltakene,
+    mens maxVarighet er det absolutte max for alle tiltak.
 
-     https://confluence.adeo.no/pages/viewpage.action?pageId=583122378
-     https://lovdata.no/forskrift/2015-12-11-1598
+    https://confluence.adeo.no/pages/viewpage.action?pageId=583122378
+    https://lovdata.no/forskrift/2015-12-11-1598
      */
     val maxVarighet: Duration?
         get() = when (deltakerliste.tiltak.tiltakskode) {
