@@ -29,7 +29,8 @@ data class Deltaker(
     val kanEndres: Boolean,
     val sistEndret: LocalDateTime,
 ) {
-    val deltakelsesmengder: Deltakelsesmengder get() = historikk.toDeltakelsesmengder()
+    val deltakelsesmengder: Deltakelsesmengder
+        get() = startdato?.let { historikk.toDeltakelsesmengder().periode(it, sluttdato) } ?: historikk.toDeltakelsesmengder()
 
     val fattetVedtak
         get() = historikk
@@ -68,7 +69,6 @@ data class Deltaker(
      https://lovdata.no/forskrift/2015-12-11-1598
      */
     val softMaxVarighet: Duration?
-
         get() = when (deltakerliste.tiltak.tiltakskode) {
             Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
             Tiltakstype.Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
@@ -82,9 +82,11 @@ data class Deltaker(
                 null,
                 -> null
             }
+
             Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
             Tiltakstype.Tiltakskode.AVKLARING,
             -> weeks(12)
+
             Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
 
             Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
