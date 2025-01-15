@@ -8,7 +8,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -128,7 +127,7 @@ fun validerSluttdatoForDeltaker(
         "Sluttdato må være etter startdato"
     }
 
-    startdato?.let { validerVarighet(it, sluttdato, opprinneligDeltaker.maxVarighet) }
+    startdato?.let { validerVarighet(it, sluttdato, opprinneligDeltaker) }
 }
 
 fun validerDeltakelsesinnhold(
@@ -183,14 +182,18 @@ fun validerKladdInnhold(
 private fun validerVarighet(
     startdato: LocalDate,
     sluttdato: LocalDate,
-    maxVarighet: Duration?,
+    deltaker: Deltaker,
 ) {
-    if (maxVarighet == null) return
+    val maxVarighet = deltaker.maxVarighet ?: return
 
     val senesteSluttdato = startdato.plusDays(maxVarighet.toDays())
 
-    require(!sluttdato.isAfter(senesteSluttdato)) {
-        "Sluttdato $sluttdato er etter seneste mulige sluttdato $senesteSluttdato"
+    if (senesteSluttdato.isBefore(deltaker.sluttdato)) {
+        require(!sluttdato.isAfter(deltaker.sluttdato))
+    } else {
+        require(!sluttdato.isAfter(senesteSluttdato)) {
+            "Sluttdato $sluttdato er etter seneste mulige sluttdato $senesteSluttdato"
+        }
     }
 }
 
