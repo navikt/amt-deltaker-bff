@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.harEndretSluttaarsak
-import no.nav.amt.deltaker.bff.deltaker.api.utils.statusForMindreEnn15DagerSiden
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
