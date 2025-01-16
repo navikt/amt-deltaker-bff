@@ -36,9 +36,6 @@ data class AvsluttDeltakelseRequest(
             require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
                 "Deltaker som ikke har status DELTAR må ha deltatt"
             }
-            require(statusForMindreEnn15DagerSiden(deltaker)) {
-                "Deltaker med deltar-status mer enn 15 dager tilbake i tid må ha deltatt"
-            }
         }
         sluttdato?.let { validerSluttdatoForDeltaker(it, deltaker.startdato, deltaker) }
 
