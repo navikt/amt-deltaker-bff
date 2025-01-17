@@ -589,7 +589,7 @@ class DeltakerApiTest {
     }
 
     @Test
-    fun `avslutt - har tilgang, har ikke deltatt, mer enn 15 dager siden - feiler`() = testApplication {
+    fun `avslutt - har tilgang, har ikke deltatt, mer enn 15 dager siden - feiler ikke`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, gyldigFra = LocalDateTime.now().minusDays(20)),
@@ -609,10 +609,14 @@ class DeltakerApiTest {
             begrunnelse = null,
             forslagId = null,
         )
-        setupMocks(deltaker, oppdatertDeltaker)
+
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
 
         client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
-            status shouldBe HttpStatusCode.BadRequest
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
         }
     }
 

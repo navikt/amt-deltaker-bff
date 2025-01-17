@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.api.utils.harEndretSluttaarsak
-import no.nav.amt.deltaker.bff.deltaker.api.utils.statusForMindreEnn15DagerSiden
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerAarsaksBeskrivelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerBegrunnelse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
@@ -35,9 +34,6 @@ data class AvsluttDeltakelseRequest(
         } else {
             require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
                 "Deltaker som ikke har status DELTAR må ha deltatt"
-            }
-            require(statusForMindreEnn15DagerSiden(deltaker)) {
-                "Deltaker med deltar-status mer enn 15 dager tilbake i tid må ha deltatt"
             }
         }
         sluttdato?.let { validerSluttdatoForDeltaker(it, deltaker.startdato, deltaker) }
