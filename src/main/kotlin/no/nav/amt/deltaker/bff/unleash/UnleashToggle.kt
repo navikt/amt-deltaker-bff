@@ -15,11 +15,19 @@ class UnleashToggle(
         Tiltakstype.ArenaKode.VASV,
     )
 
-    // her kan vi legge inn de neste tiltakstypene vi skal ta over
-    private val tiltakstyperKometKanskjeErMasterFor = emptyList<Tiltakstype.ArenaKode>()
+    private val tiltakstyperKometSkalLese = listOf(
+        Tiltakstype.ArenaKode.GRUPPEAMO,
+        Tiltakstype.ArenaKode.JOBBK,
+        Tiltakstype.ArenaKode.GRUFAGYRKE,
+    )
+
+    private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometSkalLese
 
     fun erKometMasterForTiltakstype(tiltakstype: Tiltakstype.ArenaKode): Boolean {
         return tiltakstype in tiltakstyperKometErMasterFor ||
             (unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
     }
+
+    fun skalLeseArenaDeltakereForTiltakstype(tiltakstype: Tiltakstype.ArenaKode): Boolean =
+        unleashClient.isEnabled("amt.les-arena-deltakere") && tiltakstype in tiltakstyperKometSkalLese
 }
