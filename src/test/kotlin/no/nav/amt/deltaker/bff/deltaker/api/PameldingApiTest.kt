@@ -287,6 +287,7 @@ class PameldingApiTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                mockk(),
             )
         }
     }

@@ -24,12 +24,14 @@ import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
 import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.registerTiltakskoordinatorApi
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import org.slf4j.LoggerFactory
@@ -46,6 +48,7 @@ fun Application.configureRouting(
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
     amtDeltakerClient: AmtDeltakerClient,
+    deltakerlisteRepository: DeltakerlisteRepository,
     unleash: Unleash,
 ) {
     install(StatusPages) {
@@ -111,6 +114,8 @@ fun Application.configureRouting(
         registerUnleashApi(
             unleash,
         )
+
+        registerTiltakskoordinatorApi(deltakerService, deltakerlisteRepository)
 
         val catchAllRoute = "{...}"
         route(catchAllRoute) {
