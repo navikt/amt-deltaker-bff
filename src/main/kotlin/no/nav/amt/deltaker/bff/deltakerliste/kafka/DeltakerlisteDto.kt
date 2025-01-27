@@ -15,6 +15,8 @@ data class DeltakerlisteDto(
     val status: String,
     val virksomhetsnummer: String,
     val oppstart: Deltakerliste.Oppstartstype?,
+    val apentForPamelding: Boolean = false,
+    val antallPlasser: Int?,
 ) {
     data class TiltakstypeDto(
         val navn: String,
@@ -45,5 +47,7 @@ data class DeltakerlisteDto(
             arrangor = arrangor,
             overordnetArrangorNavn = null,
         ),
+        apentForPamelding = this.apentForPamelding,
+        antallPlasser = this.antallPlasser,
     )
 }

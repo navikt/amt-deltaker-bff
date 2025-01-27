@@ -507,6 +507,8 @@ class DeltakerRepository {
                    dl.start_dato as "dl.start_dato",
                    dl.slutt_dato as "dl.slutt_dato",
                    dl.oppstart as "dl.oppstart",
+                   dl.apent_for_pamelding as "dl.apent_for_pamelding",
+                   dl.antall_plasser as "dl.antall_plasser",
                    a.id as "a.id",
                    a.navn as "a.navn",
                    a.organisasjonsnummer as "a.organisasjonsnummer",

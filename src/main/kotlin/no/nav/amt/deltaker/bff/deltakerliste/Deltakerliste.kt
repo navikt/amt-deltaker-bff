@@ -13,6 +13,8 @@ data class Deltakerliste(
     val sluttDato: LocalDate? = null,
     val oppstart: Oppstartstype?,
     val arrangor: Arrangor,
+    val apentForPamelding: Boolean = false,
+    val antallPlasser: Int?,
 ) {
     data class Arrangor(
         val arrangor: no.nav.amt.deltaker.bff.arrangor.Arrangor,

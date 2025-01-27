@@ -35,6 +35,8 @@ class DeltakerlisteRepository {
                         row.string("oa.navn")
                     },
                 ),
+                antallPlasser = row.intOrNull(col("antall_plasser")),
+                apentForPamelding = row.boolean(col("apent_for_pamelding")),
             )
         }
     }
@@ -50,7 +52,9 @@ class DeltakerlisteRepository {
                 tiltakstype_id, 
                 start_dato, 
                 slutt_dato, 
-                oppstart)
+                oppstart,
+                apent_for_pamelding,
+                antall_plasser)
             VALUES (:id,
             		:navn,
             		:status,
@@ -58,7 +62,9 @@ class DeltakerlisteRepository {
             		:tiltakstype_id,
             		:start_dato,
             		:slutt_dato,
-                    :oppstart)
+                    :oppstart,
+                    :apent_for_pamelding,
+                    :antall_plasser)
             ON CONFLICT (id) DO UPDATE SET
             		navn     				= :navn,
             		status					= :status,
@@ -67,7 +73,9 @@ class DeltakerlisteRepository {
             		start_dato				= :start_dato,
             		slutt_dato				= :slutt_dato,
                     oppstart                = :oppstart,
-                    modified_at             = current_timestamp
+                    modified_at             = current_timestamp,
+                    apent_for_pamelding     = :apent_for_pamelding,
+                    antall_plasser          = :antall_plasser
             """.trimIndent()
 
         it.update(
@@ -82,6 +90,8 @@ class DeltakerlisteRepository {
                     "start_dato" to deltakerliste.startDato,
                     "slutt_dato" to deltakerliste.sluttDato,
                     "oppstart" to deltakerliste.oppstart?.name,
+                    "apent_for_pamelding" to deltakerliste.apentForPamelding,
+                    "antall_plasser" to deltakerliste.antallPlasser,
                 ),
             ),
         )
@@ -109,6 +119,8 @@ class DeltakerlisteRepository {
                    dl.start_dato as "dl.start_dato",
                    dl.slutt_dato as "dl.slutt_dato",
                    dl.oppstart as "dl.oppstart",
+                   dl.apent_for_pamelding as "dl.apent_for_pamelding",
+                   dl.antall_plasser as "dl.antall_plasser",
                    a.id as "a.id",
                    a.navn as "a.navn",
                    a.organisasjonsnummer as "a.organisasjonsnummer",
