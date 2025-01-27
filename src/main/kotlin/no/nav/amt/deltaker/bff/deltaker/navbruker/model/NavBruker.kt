@@ -17,7 +17,6 @@ data class NavBruker(
     val erAdressebeskyttet get() = adressebeskyttelse != null
 
     fun harAktivOppfolgingsperiode(): Boolean = oppfolgingsperioder.find { it.erAktiv() } != null
-
 }
 
 enum class Adressebeskyttelse {

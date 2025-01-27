@@ -21,7 +21,7 @@ const val ID_PORTEN_LOA_HIGH = "idporten-loa-high"
 enum class AuthLevel {
     INNBYGGER,
     VEILEDER,
-    TILTAKSKOORDINATOR
+    TILTAKSKOORDINATOR,
 }
 
 fun Application.configureAuthentication(environment: Environment) {

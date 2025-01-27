@@ -629,5 +629,4 @@ class DeltakerRepository {
 
         return queryOf(sql, params)
     }
-
 }
