@@ -61,6 +61,8 @@ spec:
         - application: amt-person-service
         - application: amt-deltaker
         - application: amt-distribusjon
+        - application: mr-admin-flate
+          namespace: team-mulighetsrommet
         - application: poao-tilgang
           namespace: poao
       external:
