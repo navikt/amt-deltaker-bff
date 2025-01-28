@@ -6,7 +6,7 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    val kotlinVersion = "2.1.0"
+    val kotlinVersion = "2.1.10"
 
     kotlin("jvm") version kotlinVersion
     id("io.ktor.plugin") version "3.0.3"
@@ -20,7 +20,7 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val kotlinVersion = "2.1.0"
+val kotlinVersion = "2.1.10"
 val ktorVersion = "3.0.3"
 val logbackVersion = "1.5.16"
 val prometeusVersion = "1.14.3"

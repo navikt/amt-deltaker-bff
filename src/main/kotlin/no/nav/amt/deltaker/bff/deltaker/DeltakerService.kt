@@ -291,6 +291,8 @@ class DeltakerService(
 
     private fun getDeltakerIdOgStatusForDeltakelserPaTiltak(personident: String, deltakerlisteId: UUID) =
         deltakerRepository.getDeltakerIdOgStatusForDeltakelser(personident, deltakerlisteId)
+
+    fun getForDeltakerliste(deltakerlisteId: UUID) = deltakerRepository.getForDeltakerliste(deltakerlisteId)
 }
 
 fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(

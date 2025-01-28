@@ -18,6 +18,12 @@ import java.util.concurrent.TimeUnit
 const val ID_PORTEN_LEVEL4 = "Level4"
 const val ID_PORTEN_LOA_HIGH = "idporten-loa-high"
 
+enum class AuthLevel {
+    INNBYGGER,
+    VEILEDER,
+    TILTAKSKOORDINATOR,
+}
+
 fun Application.configureAuthentication(environment: Environment) {
     val azureJwkProvider = JwkProviderBuilder(URI(environment.azureJwkKeysUrl).toURL())
         .cached(5, 12, TimeUnit.HOURS)
@@ -28,7 +34,7 @@ fun Application.configureAuthentication(environment: Environment) {
         .build()
 
     install(Authentication) {
-        jwt("INNBYGGER") {
+        jwt(AuthLevel.INNBYGGER.name) {
             verifier(tokenXJwkProvider, environment.tokenXJwtIssuer) {
                 withAudience(environment.tokenXClientId)
             }
@@ -45,7 +51,7 @@ fun Application.configureAuthentication(environment: Environment) {
             }
         }
 
-        jwt("VEILEDER") {
+        jwt(AuthLevel.VEILEDER.name) {
             verifier(azureJwkProvider, environment.azureJwtIssuer) {
                 withAudience(environment.azureClientId)
             }
@@ -55,6 +61,21 @@ fun Application.configureAuthentication(environment: Environment) {
                     application.log.warn("Ikke tilgang. Mangler claim 'NAVident'.")
                     return@validate null
                 }
+                JWTPrincipal(credentials.payload)
+            }
+        }
+        jwt(AuthLevel.TILTAKSKOORDINATOR.name) {
+            verifier(azureJwkProvider, environment.azureJwtIssuer) {
+                withAudience(environment.azureClientId)
+            }
+
+            validate { credentials ->
+                credentials["NAVident"] ?: run {
+                    application.log.warn("Ikke tilgang. Mangler claim 'NAVident'.")
+                    return@validate null
+                }
+                // Sjekk ad-gruppe...
+
                 JWTPrincipal(credentials.payload)
             }
         }

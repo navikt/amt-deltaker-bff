@@ -375,6 +375,28 @@ class DeltakerRepositoryTest {
         statuser.filter { it.gyldigTil == null }.size shouldBe 1
         statuser.first { it.gyldigTil == null }.id shouldBe nyStatus.id
     }
+
+    @Test
+    fun `getForDeltakerliste - flere deltakere på samme liste - returnerer liste med deltakere`() {
+        val deltakerliste = TestData.lagDeltakerliste()
+        val deltakere = (0..10).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
+        deltakere.forEach { TestRepository.insert(it) }
+
+        val deltakereFraDb = repository.getForDeltakerliste(deltakerliste.id)
+
+        deltakereFraDb.size shouldBe deltakere.size
+        deltakere
+            .sortedBy { it.id }
+            .zip(deltakereFraDb.sortedBy { it.id })
+            .forEach { sammenlignDeltakere(it.first, it.second) }
+    }
+
+    @Test
+    fun `getForDeltakerliste - deltakerliste finnes ikke - returnerer tom liste`() {
+        val deltakereFraDb = repository.getForDeltakerliste(UUID.randomUUID())
+
+        deltakereFraDb shouldBe emptyList()
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(

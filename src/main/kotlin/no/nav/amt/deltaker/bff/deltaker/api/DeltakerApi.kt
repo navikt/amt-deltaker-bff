@@ -10,6 +10,7 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
@@ -110,7 +111,7 @@ fun Routing.registerDeltakerApi(
         call.respond(komplettDeltakerResponse(oppdatertDeltaker))
     }
 
-    authenticate("VEILEDER") {
+    authenticate(AuthLevel.VEILEDER.name) {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
             handleEndring(call, request) {

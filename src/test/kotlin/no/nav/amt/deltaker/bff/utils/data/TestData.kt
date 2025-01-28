@@ -61,6 +61,8 @@ object TestData {
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
         oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.arenaKode),
+        apentForPamelding: Boolean = true,
+        antallPlasser: Int? = 42,
     ) = Deltakerliste(
         id,
         tiltak,
@@ -70,6 +72,8 @@ object TestData {
         sluttDato,
         oppstart,
         Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
+        apentForPamelding,
+        antallPlasser,
     )
 
     private val tiltakstypeCache = mutableMapOf<Tiltakstype.Tiltakskode, Tiltakstype>()
@@ -107,6 +111,8 @@ object TestData {
             status = deltakerliste.status.name,
             virksomhetsnummer = arrangor.organisasjonsnummer,
             oppstart = deltakerliste.oppstart,
+            apentForPamelding = deltakerliste.apentForPamelding,
+            antallPlasser = deltakerliste.antallPlasser,
         )
 
     fun lagDeltakerKladd(

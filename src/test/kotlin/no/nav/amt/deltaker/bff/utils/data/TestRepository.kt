@@ -126,7 +126,8 @@ object TestRepository {
             val sql =
                 """
                 INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltakstype_id, start_dato, slutt_dato, oppstart)
-                VALUES (:id, :navn, :status, :arrangor_id, :tiltakstype_id, :start_dato, :slutt_dato, :oppstart) 
+                VALUES (:id, :navn, :status, :arrangor_id, :tiltakstype_id, :start_dato, :slutt_dato, :oppstart)
+                ON CONFLICT DO NOTHING
                 """.trimIndent()
 
             it.update(
@@ -141,6 +142,8 @@ object TestRepository {
                         "start_dato" to deltakerliste.startDato,
                         "slutt_dato" to deltakerliste.sluttDato,
                         "oppstart" to deltakerliste.oppstart?.name,
+                        "antall_plasser" to deltakerliste.antallPlasser,
+                        "apent_for_pamelding" to deltakerliste.apentForPamelding,
                     ),
                 ),
             )

@@ -14,6 +14,8 @@ data class NavBruker(
     val innsatsgruppe: Innsatsgruppe?,
     val adresse: Adresse?,
 ) {
+    val erAdressebeskyttet get() = adressebeskyttelse != null
+
     fun harAktivOppfolgingsperiode(): Boolean = oppfolgingsperioder.find { it.erAktiv() } != null
 }
 

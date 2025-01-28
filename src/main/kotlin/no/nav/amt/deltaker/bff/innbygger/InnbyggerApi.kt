@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
+import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
@@ -44,7 +45,7 @@ fun Routing.registerInnbyggerApi(
         return deltaker.toInnbyggerDeltakerResponse(ansatte, enhet, forslag)
     }
 
-    authenticate("INNBYGGER") {
+    authenticate(AuthLevel.INNBYGGER.name) {
         get("/innbygger/{id}") {
             val innbygger = call.getPersonident()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
