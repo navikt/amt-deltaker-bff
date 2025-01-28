@@ -62,7 +62,7 @@ object TestData {
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
         oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.arenaKode),
         apentForPamelding: Boolean = true,
-        antallPlasser: Int? = 42,
+        antallPlasser: Int = 42,
     ) = Deltakerliste(
         id,
         tiltak,

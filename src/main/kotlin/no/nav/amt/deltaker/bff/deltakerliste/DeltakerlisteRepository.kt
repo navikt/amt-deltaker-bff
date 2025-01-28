@@ -35,7 +35,7 @@ class DeltakerlisteRepository {
                         row.string("oa.navn")
                     },
                 ),
-                antallPlasser = row.intOrNull(col("antall_plasser")),
+                antallPlasser = row.int(col("antall_plasser")),
                 apentForPamelding = row.boolean(col("apent_for_pamelding")),
             )
         }

@@ -16,7 +16,7 @@ data class DeltakerlisteDto(
     val virksomhetsnummer: String,
     val oppstart: Deltakerliste.Oppstartstype?,
     val apentForPamelding: Boolean = false,
-    val antallPlasser: Int?,
+    val antallPlasser: Int,
 ) {
     data class TiltakstypeDto(
         val navn: String,
