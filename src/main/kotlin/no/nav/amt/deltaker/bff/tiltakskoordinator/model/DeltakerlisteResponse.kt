@@ -6,5 +6,5 @@ data class DeltakerlisteResponse(
     val startdato: LocalDate,
     val sluttdato: LocalDate?,
     val apentForPamelding: Boolean,
-    val antallPlasser: Int?,
+    val antallPlasser: Int,
 )
