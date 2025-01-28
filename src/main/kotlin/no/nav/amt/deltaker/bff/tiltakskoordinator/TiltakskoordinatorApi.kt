@@ -35,6 +35,7 @@ fun Routing.registerTiltakskoordinatorApi(deltakerService: DeltakerService, delt
 }
 
 fun Deltaker.toDeltakerResponse() = DeltakerResponse(
+    id = this.id,
     fornavn = if (navBruker.erAdressebeskyttet) "" else this.navBruker.fornavn,
     mellomnavn = if (navBruker.erAdressebeskyttet) null else this.navBruker.mellomnavn,
     etternavn = if (navBruker.erAdressebeskyttet) "" else this.navBruker.etternavn,
@@ -49,6 +50,7 @@ fun Deltaker.toDeltakerResponse() = DeltakerResponse(
 )
 
 fun Deltakerliste.toResponse() = DeltakerlisteResponse(
+    this.id,
     this.startDato,
     this.sluttDato,
     this.apentForPamelding,
