@@ -1,8 +1,10 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.model
 
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import java.util.UUID
 
 data class DeltakerResponse(
+    val id: UUID,
     val fornavn: String,
     val mellomnavn: String?,
     val etternavn: String,
