@@ -31,6 +31,7 @@ object TestRepository {
             "nav_bruker",
             "deltakerliste",
             "arrangor",
+            "tiltakskoordinator_deltakerliste_tilgang",
         )
         tables.forEach {
             val query = queryOf(

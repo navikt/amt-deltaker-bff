@@ -39,14 +39,15 @@ fun Routing.registerTiltakskoordinatorApi(
                 val deltakerlisteId = getDeltakerlisteId()
                 val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
 
+                tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
+
                 call.respond(deltakere.map { it.toDeltakerResponse() })
             }
 
             post("$apiPath/tilgang/legg-til") {
                 val deltakerlisteId = getDeltakerlisteId()
-                val koordinatorNavident = call.getNavIdent()
 
-                tilgangskontrollService.leggTilTiltakskoordinatorTilgang(koordinatorNavident, deltakerlisteId).getOrThrow()
+                tilgangskontrollService.leggTilTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId).getOrThrow()
 
                 call.respond(HttpStatusCode.OK)
             }

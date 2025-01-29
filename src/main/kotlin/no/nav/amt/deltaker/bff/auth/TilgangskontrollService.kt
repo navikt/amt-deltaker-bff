@@ -61,9 +61,9 @@ class TilgangskontrollService(
 
     suspend fun leggTilTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
         val koordinator = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
-        val eksisterendeTilgang = tiltakskoordinatorTilgangRepository.hentAktivTilgang(koordinator.id, deltakerlisteId)
+        val aktivTilgang = tiltakskoordinatorTilgangRepository.hentAktivTilgang(koordinator.id, deltakerlisteId)
 
-        if (eksisterendeTilgang.isSuccess) {
+        if (aktivTilgang.isSuccess) {
             log.error(
                 "Kan ikke legge til tilgang til deltakerliste $deltakerlisteId " +
                     "fordi nav-ansatt ${koordinator.id} har allerede tilgang fra før.",
@@ -80,5 +80,14 @@ class TilgangskontrollService(
         )
 
         return tiltakskoordinatorTilgangRepository.upsert(tilgang)
+    }
+
+    suspend fun verifiserTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID) {
+        val koordinator = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
+        val aktivTilgang = tiltakskoordinatorTilgangRepository.hentAktivTilgang(koordinator.id, deltakerlisteId)
+
+        if (aktivTilgang.isFailure) {
+            throw AuthorizationException("Ansatt ${koordinator.id} har ikke tilgang til deltakerliste $deltakerlisteId")
+        }
     }
 }

@@ -11,6 +11,7 @@ import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Test
+import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
@@ -62,7 +63,7 @@ class TilgangskontrollServiceTest {
     }
 
     @Test
-    fun `leggTilTiltakskoordinatorTilgang - har ikke tilgang fra før - returnerer sucess`(): Unit = runBlocking {
+    fun `leggTilTiltakskoordinatorTilgang - har ikke tilgang fra før - returnerer success`(): Unit = runBlocking {
         with(TiltakskoordinatorTilgangContext()) {
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
@@ -70,7 +71,7 @@ class TilgangskontrollServiceTest {
     }
 
     @Test
-    fun `leggTilTiltakskoordinatorTilgang - med inaktiv tilgang fra før - returnerer sucess`(): Unit = runBlocking {
+    fun `leggTilTiltakskoordinatorTilgang - med inaktiv tilgang fra før - returnerer success`(): Unit = runBlocking {
         with(TiltakskoordinatorTilgangContext()) {
             medInaktivTilgang()
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
@@ -84,6 +85,33 @@ class TilgangskontrollServiceTest {
             medAktivTilgang()
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isFailure shouldBe true
+        }
+    }
+
+    @Test
+    fun `verifiserTiltakskoordinatorTilgang - har tilgang - kaster ikke exception`(): Unit = runBlocking {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
+        }
+    }
+
+    @Test
+    fun `verifiserTiltakskoordinatorTilgang - har ingen tilgang - kaster exception`(): Unit = runBlocking {
+        with(TiltakskoordinatorTilgangContext()) {
+            assertThrows<AuthorizationException> {
+                tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
+            }
+        }
+    }
+
+    @Test
+    fun `verifiserTiltakskoordinatorTilgang - har inaktiv tilgang - kaster exception`(): Unit = runBlocking {
+        with(TiltakskoordinatorTilgangContext()) {
+            medInaktivTilgang()
+            assertThrows<AuthorizationException> {
+                tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
+            }
         }
     }
 }
