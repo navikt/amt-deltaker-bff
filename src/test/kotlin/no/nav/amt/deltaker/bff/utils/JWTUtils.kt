@@ -28,6 +28,7 @@ fun generateJWT(
     expiry: LocalDateTime? = LocalDateTime.now().plusHours(1),
     subject: String = "subject",
     issuer: String = "issuer",
+    groups: List<String> = emptyList(),
 ): String? {
     val now = Date()
     val key = getDefaultRSAKey()
@@ -48,6 +49,7 @@ fun generateJWT(
         .withClaim("NAVident", navIdent)
         .withClaim("iat", now)
         .withClaim("exp", Date.from(expiry?.atZone(ZoneId.systemDefault())?.toInstant()))
+        .withClaim("groups", groups)
         .sign(alg)
 }
 

@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.utils
 
 import no.nav.amt.deltaker.bff.Environment
 import java.nio.file.Paths
+import java.util.UUID
 
 fun configureEnvForAuthentication() {
     val path = "src/test/resources/jwkset.json"
@@ -12,4 +13,5 @@ fun configureEnvForAuthentication() {
     System.setProperty(Environment.TOKEN_X_JWKS_URI_KEY, uri)
     System.setProperty(Environment.TOKEN_X_ISSUER_KEY, "issuer")
     System.setProperty(Environment.TOKEN_X_CLIENT_ID_KEY, "deltaker-bff")
+    System.setProperty(Environment.AD_ROLLE_TILTAKSKOORDINATOR, UUID(0L, 0L).toString())
 }

@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
+import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -40,10 +41,22 @@ class TiltakskoordinatorApiTest {
     }
 
     @Test
+    fun `skal teste autentisering - mangler AD rolle - returnerer 401`() = testApplication {
+        setUpTestApplication()
+        val deltakerliste = TestData.lagDeltakerliste()
+        every { deltakerlisteRepository.get(deltakerliste.id) } returns Result.success(deltakerliste)
+        client
+            .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+    }
+
+    @Test
     fun `get deltakerliste - liste finnes ikke - returnerer 404`() = testApplication {
         setUpTestApplication()
         every { deltakerlisteRepository.get(any()) } returns Result.failure(NoSuchElementException())
-        client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.NotFound
+        client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}") { noBodyTiltakskoordinatorRequest() }.status shouldBe HttpStatusCode.NotFound
     }
 
     @Test
@@ -52,7 +65,7 @@ class TiltakskoordinatorApiTest {
         val deltakerliste = TestData.lagDeltakerliste()
         every { deltakerlisteRepository.get(deltakerliste.id) } returns Result.success(deltakerliste)
         client
-            .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyRequest() }
+            .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(deltakerliste.toResponse())
@@ -64,7 +77,7 @@ class TiltakskoordinatorApiTest {
         setUpTestApplication()
         every { deltakerService.getForDeltakerliste(any()) } returns emptyList()
         client
-            .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyRequest() }
+            .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(listOf<DeltakerResponse>())
@@ -78,7 +91,7 @@ class TiltakskoordinatorApiTest {
         val deltakere = (0..5).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
         every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
         client
-            .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere") { noBodyRequest() }
+            .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(deltakere.map { it.toDeltakerResponse() })

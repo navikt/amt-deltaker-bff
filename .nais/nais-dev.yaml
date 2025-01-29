@@ -41,6 +41,11 @@ spec:
     application:
       enabled: true
       allowAllUsers: true
+    sidecar:
+      enabled: true
+    claims:
+      groups:
+        - id: {{ad_gruppe_tiltakskoordinator}}
   secureLogs:
     enabled: true
   leaderElection: true

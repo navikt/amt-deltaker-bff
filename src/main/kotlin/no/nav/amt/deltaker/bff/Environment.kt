@@ -10,6 +10,7 @@ data class Environment(
     val azureClientSecret: String = getEnvVar(AZURE_APP_CLIENT_SECRET_KEY),
     val azureJwkKeysUrl: String = getEnvVar(AZURE_OPENID_CONFIG_JWKS_URI_KEY),
     val azureJwtIssuer: String = getEnvVar(AZURE_OPENID_CONFIG_ISSUER_KEY),
+    val adRolleTiltakskoordinator: String = getEnvVar(AD_ROLLE_TILTAKSKOORDINATOR),
     val amtArrangorUrl: String = getEnvVar(AMT_ARRANGOR_URL_KEY),
     val amtArrangorScope: String = getEnvVar(AMT_ARRANGOR_SCOPE_KEY),
     val poaoTilgangUrl: String = getEnvVar(POAO_TILGANG_URL_KEY),
@@ -56,6 +57,8 @@ data class Environment(
         const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
         const val AZURE_OPENID_CONFIG_JWKS_URI_KEY = "AZURE_OPENID_CONFIG_JWKS_URI"
         const val AZURE_OPENID_CONFIG_ISSUER_KEY = "AZURE_OPENID_CONFIG_ISSUER"
+
+        const val AD_ROLLE_TILTAKSKOORDINATOR = "AD_ROLLE_TILTAKSKOORDINATOR"
 
         const val TOKEN_X_CLIENT_ID_KEY = "TOKEN_X_CLIENT_ID"
         const val TOKEN_X_ISSUER_KEY = "TOKEN_X_ISSUER"
