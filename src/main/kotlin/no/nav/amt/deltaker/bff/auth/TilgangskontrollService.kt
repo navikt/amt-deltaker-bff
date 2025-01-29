@@ -65,8 +65,8 @@ class TilgangskontrollService(
 
         if (eksisterendeTilgang.isSuccess) {
             log.error(
-                "Kan ikke legge til tilgang til deltakerliste $deltakerlisteId" +
-                    " fordi nav-ansatt ${koordinator.id} har allerede tilgang fra før.",
+                "Kan ikke legge til tilgang til deltakerliste $deltakerlisteId " +
+                    "fordi nav-ansatt ${koordinator.id} har allerede tilgang fra før.",
             )
             return Result.failure(IllegalStateException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
         }
