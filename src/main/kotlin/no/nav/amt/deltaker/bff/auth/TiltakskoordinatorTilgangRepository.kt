@@ -3,20 +3,17 @@ package no.nav.amt.deltaker.bff.auth
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
-import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.utils.database.Database
 import java.util.UUID
 
 class TiltakskoordinatorTilgangRepository {
-    private fun rowmapper(row: Row, alias: String = "tdt"): TiltakskoordinatorDeltakerlisteTilgang {
-        val col = prefixColumn(alias)
-
+    private fun rowmapper(row: Row): TiltakskoordinatorDeltakerlisteTilgang {
         return TiltakskoordinatorDeltakerlisteTilgang(
-            id = row.uuid(col("id")),
-            navAnsattId = row.uuid(col("nav_ansatt_id")),
-            deltakerlisteId = row.uuid(col("deltakerliste_id")),
-            gyldigFra = row.localDateTime(col("gyldig_fra")),
-            gyldigTil = row.localDateTimeOrNull(col("gyldig_til")),
+            id = row.uuid("id"),
+            navAnsattId = row.uuid("nav_ansatt_id"),
+            deltakerlisteId = row.uuid("deltakerliste_id"),
+            gyldigFra = row.localDateTime("gyldig_fra"),
+            gyldigTil = row.localDateTimeOrNull("gyldig_til"),
         )
     }
 
@@ -26,7 +23,7 @@ class TiltakskoordinatorTilgangRepository {
             insert into tiltakskoordinator_deltakerliste_tilgang 
                 (id, nav_ansatt_id, deltakerliste_id, gyldig_fra, gyldig_til)
             values (:id, :nav_ansatt_id, :deltakerliste_id, :gyldig_fra, :gyldig_til)
-            on conflict do update set id               = :id,
+            on conflict (id) do update set id               = :id,
                                       nav_ansatt_id    = :nav_ansatt_id,
                                       deltakerliste_id = :deltakerliste_id,
                                       gyldig_fra       = :gyldig_fra,

@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.utils.data
 
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
@@ -332,6 +333,29 @@ object TestRepository {
             "adresse" to toPGObject(bruker.adresse),
         )
 
+        it.update(queryOf(sql, params))
+    }
+
+    fun insert(tilgang: TiltakskoordinatorDeltakerlisteTilgang) = Database.query {
+        val sql =
+            """
+            insert into tiltakskoordinator_deltakerliste_tilgang 
+                (id, nav_ansatt_id, deltakerliste_id, gyldig_fra, gyldig_til)
+            values (:id, :nav_ansatt_id, :deltakerliste_id, :gyldig_fra, :gyldig_til)
+            on conflict (id) do update set id               = :id,
+                                      nav_ansatt_id    = :nav_ansatt_id,
+                                      deltakerliste_id = :deltakerliste_id,
+                                      gyldig_fra       = :gyldig_fra,
+                                      gyldig_til       = :gyldig_til,
+                                      modified_at      = current_timestamp
+            """.trimIndent()
+        val params = mapOf(
+            "id" to tilgang.id,
+            "nav_ansatt_id" to tilgang.navAnsattId,
+            "deltakerliste_id" to tilgang.deltakerlisteId,
+            "gyldig_fra" to tilgang.gyldigFra,
+            "gyldig_til" to tilgang.gyldigTil,
+        )
         it.update(queryOf(sql, params))
     }
 
