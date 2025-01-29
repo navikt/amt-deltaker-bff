@@ -29,7 +29,6 @@ fun Routing.registerTiltakskoordinatorApi(deltakerService: DeltakerService, delt
             call.respond(deltakere.map { it.toDeltakerResponse() })
         }
     }
-
 }
 
 fun Deltaker.toDeltakerResponse() = DeltakerResponse(

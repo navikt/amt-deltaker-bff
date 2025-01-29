@@ -40,7 +40,6 @@ internal fun HttpRequestBuilder.noBodyRequest() {
     header("aktiv-enhet", "0101")
 }
 
-
 internal fun HttpRequestBuilder.noBodyTiltakskoordinatorRequest() {
     header(
         HttpHeaders.Authorization,
@@ -50,7 +49,6 @@ internal fun HttpRequestBuilder.noBodyTiltakskoordinatorRequest() {
                 navAnsattAzureId = UUID.randomUUID().toString(),
                 audience = "deltaker-bff",
                 groups = listOf(UUID(0L, 0L).toString()),
-                
             )
         }",
     )

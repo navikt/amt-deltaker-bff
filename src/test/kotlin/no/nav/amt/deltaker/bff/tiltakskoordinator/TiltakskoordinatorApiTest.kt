@@ -56,7 +56,9 @@ class TiltakskoordinatorApiTest {
     fun `get deltakerliste - liste finnes ikke - returnerer 404`() = testApplication {
         setUpTestApplication()
         every { deltakerlisteRepository.get(any()) } returns Result.failure(NoSuchElementException())
-        client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}") { noBodyTiltakskoordinatorRequest() }.status shouldBe HttpStatusCode.NotFound
+        client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}") {
+            noBodyTiltakskoordinatorRequest()
+        }.status shouldBe HttpStatusCode.NotFound
     }
 
     @Test
