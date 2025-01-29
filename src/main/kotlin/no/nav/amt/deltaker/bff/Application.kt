@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
@@ -159,7 +160,14 @@ fun Application.module() {
             tokenProvider = { runBlocking { azureAdTokenClient.getMachineToMachineTokenWithoutType(environment.poaoTilgangScope) } },
         ),
     )
-    val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
+
+    val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
+
+    val tilgangskontrollService = TilgangskontrollService(
+        poaoTilgangCachedClient,
+        navAnsattService,
+        tiltakskoordinatorTilgangRepository,
+    )
 
     val sporbarhetsloggService = SporbarhetsloggService(AuditLoggerImpl())
 

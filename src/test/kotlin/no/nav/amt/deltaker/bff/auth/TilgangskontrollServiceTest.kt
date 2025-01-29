@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.auth
 
 import io.mockk.every
 import io.mockk.mockk
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
@@ -11,7 +12,13 @@ import kotlin.test.assertFailsWith
 
 class TilgangskontrollServiceTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
-    private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
+    private val navAnsattService = mockk<NavAnsattService>()
+    private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
+    private val tilgangskontrollService = TilgangskontrollService(
+        poaoTilgangCachedClient,
+        navAnsattService,
+        tiltakskoordinatorTilgangRepository,
+    )
 
     @Test
     fun `verifiserSkrivetilgang - har tilgang - kaster ingen feil`() {

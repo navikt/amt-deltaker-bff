@@ -1,11 +1,16 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator
 
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
+import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
+import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
+import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -14,23 +19,48 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
 import java.util.UUID
 
-fun Routing.registerTiltakskoordinatorApi(deltakerService: DeltakerService, deltakerlisteRepository: DeltakerlisteRepository) {
+fun Routing.registerTiltakskoordinatorApi(
+    deltakerService: DeltakerService,
+    deltakerlisteRepository: DeltakerlisteRepository,
+    tilgangskontrollService: TilgangskontrollService,
+) {
+    val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
+
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
         if (!Environment.isProd()) {
-            get("/tiltakskoordinator/deltakerliste/{id}") {
-                val deltakerlisteId = UUID.fromString(call.parameters["id"])
+            get(apiPath) {
+                val deltakerlisteId = getDeltakerlisteId()
                 val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
 
                 call.respond(deltakerliste.toResponse())
             }
 
-            get("/tiltakskoordinator/deltakerliste/{id}/deltakere") {
-                val deltakerlisteId = UUID.fromString(call.parameters["id"])
+            get("$apiPath/deltakere") {
+                val deltakerlisteId = getDeltakerlisteId()
                 val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
 
                 call.respond(deltakere.map { it.toDeltakerResponse() })
             }
+
+            post("$apiPath/tilgang/legg-til") {
+                val deltakerlisteId = getDeltakerlisteId()
+                val koordinatorNavident = call.getNavIdent()
+
+                tilgangskontrollService.leggTilTiltakskoordinatorTilgang(koordinatorNavident, deltakerlisteId).getOrThrow()
+
+                call.respond(HttpStatusCode.OK)
+            }
         }
+    }
+}
+
+private fun RoutingContext.getDeltakerlisteId(): UUID {
+    val id = call.parameters["id"] ?: throw IllegalArgumentException("Påkrevd URL parameter 'deltakerlisteId' mangler.")
+
+    return try {
+        UUID.fromString(id)
+    } catch (e: IllegalArgumentException) {
+        throw IllegalArgumentException("URL parameter 'deltakerlisteId' er ikke formattert riktig.")
     }
 }
 
