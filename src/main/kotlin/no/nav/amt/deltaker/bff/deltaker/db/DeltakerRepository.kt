@@ -460,7 +460,7 @@ class DeltakerRepository {
 
     fun getForDeltakerliste(deltakerlisteId: UUID) = Database.query { session ->
         val params = mapOf("deltakerliste_id" to deltakerlisteId)
-        session.run(queryOf(getDeltakerSql("where dl.id = :deltakerliste_id"), params).map(::rowMapper).asList)
+        session.run(queryOf(getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"), params).map(::rowMapper).asList)
     }
 
     fun deaktiverUkritiskTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID) = Database.query { session ->

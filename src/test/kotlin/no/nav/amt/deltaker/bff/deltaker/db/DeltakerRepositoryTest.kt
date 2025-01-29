@@ -379,8 +379,23 @@ class DeltakerRepositoryTest {
     @Test
     fun `getForDeltakerliste - flere deltakere på samme liste - returnerer liste med deltakere`() {
         val deltakerliste = TestData.lagDeltakerliste()
-        val deltakere = (0..10).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
+        val deltakere = (0..10).map {
+            TestData.lagDeltaker(
+                deltakerliste = deltakerliste,
+                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            )
+        }
         deltakere.forEach { TestRepository.insert(it) }
+        deltakere.forEach {
+            TestRepository.insert(
+                TestData.lagDeltakerStatus(
+                    type = DeltakerStatus.Type.VENTER_PA_OPPSTART,
+                    gyldigFra = it.status.gyldigFra.minusMonths(1),
+                    gyldigTil = it.status.gyldigFra,
+                ),
+                it.id,
+            )
+        }
 
         val deltakereFraDb = repository.getForDeltakerliste(deltakerliste.id)
 
