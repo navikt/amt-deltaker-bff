@@ -23,6 +23,7 @@ object TestRepository {
 
     fun cleanDatabase() = Database.query { session ->
         val tables = listOf(
+            "tiltakskoordinator_deltakerliste_tilgang",
             "forslag",
             "deltaker_status",
             "nav_ansatt",
@@ -31,7 +32,6 @@ object TestRepository {
             "nav_bruker",
             "deltakerliste",
             "arrangor",
-            "tiltakskoordinator_deltakerliste_tilgang",
         )
         tables.forEach {
             val query = queryOf(
