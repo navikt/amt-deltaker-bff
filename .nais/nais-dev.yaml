@@ -43,7 +43,7 @@ spec:
       allowAllUsers: true
       claims:
         groups:
-          - id: {{ad_rolle_tiltak_ansvarlig}}
+          - id: {{ad_rolle_tiltak_koordinator}}
     sidecar:
       enabled: true
   secureLogs:
@@ -95,7 +95,7 @@ spec:
     - name: AMT_DISTRIBUSJON_URL
       value: http://amt-distribusjon
     - name: AD_ROLLE_TILTAKSKOORDINATOR
-      value: {{ad_rolle_tiltak_ansvarlig}}
+      value: {{ad_rolle_tiltak_koordinator}}
 
   gcp:
     sqlInstances:
