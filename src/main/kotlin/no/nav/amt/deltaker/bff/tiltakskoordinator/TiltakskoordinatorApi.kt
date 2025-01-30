@@ -4,6 +4,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
+import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -15,18 +16,20 @@ import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(deltakerService: DeltakerService, deltakerlisteRepository: DeltakerlisteRepository) {
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
-        get("/tiltakskoordinator/deltakerliste/{id}") {
-            val deltakerlisteId = UUID.fromString(call.parameters["id"])
-            val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
+        if (!Environment.isProd()) {
+            get("/tiltakskoordinator/deltakerliste/{id}") {
+                val deltakerlisteId = UUID.fromString(call.parameters["id"])
+                val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
 
-            call.respond(deltakerliste.toResponse())
-        }
+                call.respond(deltakerliste.toResponse())
+            }
 
-        get("/tiltakskoordinator/deltakerliste/{id}/deltakere") {
-            val deltakerlisteId = UUID.fromString(call.parameters["id"])
-            val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
+            get("/tiltakskoordinator/deltakerliste/{id}/deltakere") {
+                val deltakerlisteId = UUID.fromString(call.parameters["id"])
+                val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
 
-            call.respond(deltakere.map { it.toDeltakerResponse() })
+                call.respond(deltakere.map { it.toDeltakerResponse() })
+            }
         }
     }
 }
