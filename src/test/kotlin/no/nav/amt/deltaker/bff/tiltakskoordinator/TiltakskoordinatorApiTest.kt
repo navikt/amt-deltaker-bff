@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
@@ -42,6 +43,7 @@ class TiltakskoordinatorApiTest {
         setUpTestApplication()
         client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/tilgang/legg-til").status shouldBe HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -49,8 +51,19 @@ class TiltakskoordinatorApiTest {
         setUpTestApplication()
         val deltakerliste = TestData.lagDeltakerliste()
         every { deltakerlisteRepository.get(deltakerliste.id) } returns Result.success(deltakerliste)
+
         client
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        client
+            .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere") { noBodyRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        client
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/tilgang/legg-til") { noBodyRequest() }
             .apply {
                 status shouldBe HttpStatusCode.Unauthorized
             }
@@ -59,7 +72,6 @@ class TiltakskoordinatorApiTest {
     @Test
     fun `get deltakerliste - liste finnes ikke - returnerer 404`() = testApplication {
         setUpTestApplication()
-        mockTilgangTilDeltakerliste()
         every { deltakerlisteRepository.get(any()) } returns Result.failure(NoSuchElementException())
 
         client
@@ -71,7 +83,6 @@ class TiltakskoordinatorApiTest {
     @Test
     fun `get deltakerliste - liste finnes - returnerer 200 og liste`() = testApplication {
         setUpTestApplication()
-        mockTilgangTilDeltakerliste()
         val deltakerliste = TestData.lagDeltakerliste()
         every { deltakerlisteRepository.get(deltakerliste.id) } returns Result.success(deltakerliste)
         client
@@ -98,6 +109,7 @@ class TiltakskoordinatorApiTest {
     @Test
     fun `get deltakere - deltakerliste finnes ikke - returnerer tom liste`() = testApplication {
         setUpTestApplication()
+        mockTilgangTilDeltakerliste()
         every { deltakerService.getForDeltakerliste(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
@@ -110,6 +122,7 @@ class TiltakskoordinatorApiTest {
     @Test
     fun `get deltakere - deltakerliste finnes - returnerer liste med deltakere`() = testApplication {
         setUpTestApplication()
+        mockTilgangTilDeltakerliste()
         val deltakerliste = TestData.lagDeltakerliste()
         val deltakere = (0..5).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
         every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
@@ -119,6 +132,37 @@ class TiltakskoordinatorApiTest {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(deltakere.map { it.toDeltakerResponse() })
             }
+    }
+
+    @Test
+    fun `legg til tilgang - har ikke tilgang fra før - returnerer 200`() = testApplication {
+        setUpTestApplication()
+        val deltakerliste = TestData.lagDeltakerliste()
+        coEvery {
+            tilgangskontrollService.leggTilTiltakskoordinatorTilgang(
+                any(),
+                deltakerliste.id,
+            )
+        } returns Result.success(TestData.lagTiltakskoordinatorTilgang())
+
+        client
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/tilgang/legg-til") { noBodyTiltakskoordinatorRequest() }
+            .status shouldBe HttpStatusCode.OK
+    }
+
+    @Test
+    fun `legg til tilgang - har tilgang fra før - returnerer 400`() = testApplication {
+        setUpTestApplication()
+        coEvery {
+            tilgangskontrollService.leggTilTiltakskoordinatorTilgang(
+                any(),
+                any(),
+            )
+        } returns Result.failure(IllegalArgumentException())
+
+        client
+            .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/tilgang/legg-til") { noBodyTiltakskoordinatorRequest() }
+            .status shouldBe HttpStatusCode.BadRequest
     }
 
     private fun mockTilgangTilDeltakerliste() {
@@ -131,6 +175,28 @@ class TiltakskoordinatorApiTest {
             configureAuthentication(Environment())
             configureRouting(
                 tilgangskontrollService,
+                deltakerService,
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                mockk(),
+                deltakerlisteRepository,
+                mockk(),
+            )
+        }
+    }
+
+    private fun ApplicationTestBuilder.setUpTestApplication2(tilgangskontrollService2: TilgangskontrollService) {
+        application {
+            configureSerialization()
+            configureAuthentication(Environment())
+            configureRouting(
+                tilgangskontrollService2,
                 deltakerService,
                 mockk(),
                 mockk(),

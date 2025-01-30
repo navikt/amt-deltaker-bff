@@ -68,7 +68,7 @@ class TilgangskontrollService(
                 "Kan ikke legge til tilgang til deltakerliste $deltakerlisteId " +
                     "fordi nav-ansatt ${koordinator.id} har allerede tilgang fra før.",
             )
-            return Result.failure(IllegalStateException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
+            return Result.failure(IllegalArgumentException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
         }
 
         val tilgang = TiltakskoordinatorDeltakerlisteTilgang(
