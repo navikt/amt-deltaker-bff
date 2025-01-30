@@ -190,26 +190,4 @@ class TiltakskoordinatorApiTest {
             )
         }
     }
-
-    private fun ApplicationTestBuilder.setUpTestApplication2(tilgangskontrollService2: TilgangskontrollService) {
-        application {
-            configureSerialization()
-            configureAuthentication(Environment())
-            configureRouting(
-                tilgangskontrollService2,
-                deltakerService,
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                deltakerlisteRepository,
-                mockk(),
-            )
-        }
-    }
 }
