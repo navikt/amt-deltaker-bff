@@ -6,6 +6,7 @@ import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.application.log
 import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.jwt.JWTCredential
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.principal
@@ -32,6 +33,12 @@ fun Application.configureAuthentication(environment: Environment) {
     val tokenXJwkProvider = JwkProviderBuilder(URI(environment.tokenXJwksUrl).toURL())
         .cached(5, 12, TimeUnit.HOURS)
         .build()
+
+    fun JWTCredential.harRolle(rolle: UUID): Boolean {
+        val navAnsattGroups = getListClaim("groups", UUID::class)
+        return navAnsattGroups.contains(rolle)
+    }
+    val adRolleTiltakskoordinator = UUID.fromString(environment.adRolleTiltakskoordinator)
 
     install(Authentication) {
         jwt(AuthLevel.INNBYGGER.name) {
@@ -74,7 +81,11 @@ fun Application.configureAuthentication(environment: Environment) {
                     application.log.warn("Ikke tilgang. Mangler claim 'NAVident'.")
                     return@validate null
                 }
-                // Sjekk ad-gruppe...
+
+                if (!credentials.harRolle(adRolleTiltakskoordinator)) {
+                    application.log.warn("Ikke tilgang. Mangler rolle 0000-GA-TILTAK-DELTAKERE.")
+                    return@validate null
+                }
 
                 JWTPrincipal(credentials.payload)
             }
