@@ -38,10 +38,7 @@ fun Routing.registerTiltakskoordinatorApi(
             get("$apiPath/deltakere") {
                 val deltakerlisteId = getDeltakerlisteId()
 
-                if (!Environment.isDev()) {
-                    // Skru av tilgangskontrol midlertidig i dev til det er mulig å gi seg selv tilganger
-                    tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
-                }
+                tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
 
                 val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
 
