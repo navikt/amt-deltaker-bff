@@ -17,6 +17,8 @@ import io.mockk.mockk
 import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.generateJWT
 import no.nav.poao_tilgang.client.Decision
@@ -28,7 +30,13 @@ import java.util.UUID
 
 class AuthenticationTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
-    private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
+    private val navAnsattService = mockk<NavAnsattService>()
+    private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
+    private val tilgangskontrollService = TilgangskontrollService(
+        poaoTilgangCachedClient,
+        navAnsattService,
+        tiltakskoordinatorTilgangRepository,
+    )
 
     @Before
     fun setup() {
@@ -39,15 +47,16 @@ class AuthenticationTest {
     fun `testAuthentication - gyldig token, ansatt har tilgang - returnerer 200`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         setUpTestApplication()
-        client.get("/fnr/12345678910") {
-            header(
-                HttpHeaders.Authorization,
-                "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
-            )
-        }.apply {
-            TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals("Veileder har tilgang!", bodyAsText())
-        }
+        client
+            .get("/fnr/12345678910") {
+                header(
+                    HttpHeaders.Authorization,
+                    "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
+                )
+            }.apply {
+                TestCase.assertEquals(HttpStatusCode.OK, status)
+                TestCase.assertEquals("Veileder har tilgang!", bodyAsText())
+            }
     }
 
     @Test
@@ -57,35 +66,37 @@ class AuthenticationTest {
             Decision.Deny("Ikke tilgang", ""),
         )
         setUpTestApplication()
-        client.get("/fnr/12345678910") {
-            header(
-                HttpHeaders.Authorization,
-                "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
-            )
-        }.apply {
-            TestCase.assertEquals(HttpStatusCode.Forbidden, status)
-        }
+        client
+            .get("/fnr/12345678910") {
+                header(
+                    HttpHeaders.Authorization,
+                    "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
+                )
+            }.apply {
+                TestCase.assertEquals(HttpStatusCode.Forbidden, status)
+            }
     }
 
     @Test
     fun `testAuthentication - ugyldig tokenissuer - returnerer 401`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         setUpTestApplication()
-        client.get("/fnr/12345678910") {
-            header(
-                HttpHeaders.Authorization,
-                "Bearer ${
-                    generateJWT(
-                        "frontend-clientid",
-                        UUID.randomUUID().toString(),
-                        "deltaker-bff",
-                        issuer = "annenIssuer",
-                    )
-                }",
-            )
-        }.apply {
-            TestCase.assertEquals(HttpStatusCode.Unauthorized, status)
-        }
+        client
+            .get("/fnr/12345678910") {
+                header(
+                    HttpHeaders.Authorization,
+                    "Bearer ${
+                        generateJWT(
+                            "frontend-clientid",
+                            UUID.randomUUID().toString(),
+                            "deltaker-bff",
+                            issuer = "annenIssuer",
+                        )
+                    }",
+                )
+            }.apply {
+                TestCase.assertEquals(HttpStatusCode.Unauthorized, status)
+            }
     }
 
     private fun ApplicationTestBuilder.setUpTestApplication() {

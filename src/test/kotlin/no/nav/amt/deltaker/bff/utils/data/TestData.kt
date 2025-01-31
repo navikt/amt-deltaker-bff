@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adresse
@@ -415,6 +416,20 @@ object TestData {
             .plus(vedtak.map { DeltakerHistorikk.Vedtak(it) })
             .plus(endringer.map { DeltakerHistorikk.Endring(it) })
             .plus(forslag.map { DeltakerHistorikk.Forslag(it) }),
+    )
+
+    fun lagTiltakskoordinatorTilgang(
+        id: UUID = UUID.randomUUID(),
+        deltakerliste: Deltakerliste = lagDeltakerliste(),
+        navAnsatt: NavAnsatt = lagNavAnsatt(),
+        gyldigFra: LocalDateTime = LocalDateTime.now(),
+        gyldigTil: LocalDateTime? = null,
+    ) = TiltakskoordinatorDeltakerlisteTilgang(
+        id = id,
+        navAnsattId = navAnsatt.id,
+        deltakerlisteId = deltakerliste.id,
+        gyldigFra = gyldigFra,
+        gyldigTil = gyldigTil,
     )
 }
 

@@ -115,7 +115,11 @@ fun Application.configureRouting(
             unleash,
         )
 
-        registerTiltakskoordinatorApi(deltakerService, deltakerlisteRepository)
+        registerTiltakskoordinatorApi(
+            deltakerService,
+            deltakerlisteRepository,
+            tilgangskontrollService,
+        )
 
         val catchAllRoute = "{...}"
         route(catchAllRoute) {

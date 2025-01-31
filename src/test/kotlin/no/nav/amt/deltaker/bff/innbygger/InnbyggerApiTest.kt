@@ -20,6 +20,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
@@ -48,7 +49,6 @@ import java.util.UUID
 
 class InnbyggerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
-    private val tilgangskontrollService = TilgangskontrollService(poaoTilgangCachedClient)
     private val deltakerService = mockk<DeltakerService>(relaxUnitFun = true)
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
@@ -56,6 +56,12 @@ class InnbyggerApiTest {
     private val forslagService = mockk<ForslagService>()
     private val innbyggerService = mockk<InnbyggerService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
+    private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
+    private val tilgangskontrollService = TilgangskontrollService(
+        poaoTilgangCachedClient,
+        navAnsattService,
+        tiltakskoordinatorTilgangRepository,
+    )
 
     @Before
     fun setup() {
