@@ -87,7 +87,6 @@ fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
             },
         ),
     )
-
 }
 
 fun Deltakerliste.toResponse() = DeltakerlisteResponse(
