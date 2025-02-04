@@ -4,10 +4,12 @@ import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
+import no.nav.poao_tilgang.client.NavAnsattBehandleSkjermedePersonerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleStrengtFortroligBrukerePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
@@ -64,13 +66,20 @@ class TilgangskontrollService(
         }
     }
 
-    fun koordinatorTilgangTilDeltaker(navAnsattAzureId: UUID, deltaker: Deltaker): TiltakskoordinatorDeltakerTilgang {
-        val tilgangTilGradering = tilgangTilAdressebeskyttede(deltaker.navBruker.adressebeskyttelse, navAnsattAzureId)
+    fun vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId: UUID, deltaker: Deltaker): TiltakskoordinatorDeltakerTilgang {
+        val tilgangTilAdressebeskyttelse = vurderAdressebeskyttelseTilgang(deltaker.navBruker.adressebeskyttelse, navAnsattAzureId)
+        val tilgangTilSkjerming = vurderSkjermingTilgang(deltaker.navBruker, navAnsattAzureId)
 
-        return TiltakskoordinatorDeltakerTilgang(deltaker, tilgangTilGradering.isPermit)
+        return TiltakskoordinatorDeltakerTilgang(deltaker, tilgangTilAdressebeskyttelse.isPermit && tilgangTilSkjerming.isPermit)
     }
 
-    private fun tilgangTilAdressebeskyttede(adressebeskyttelse: Adressebeskyttelse?, navAnsattAzureId: UUID): Decision =
+    private fun vurderSkjermingTilgang(navBruker: NavBruker, navAnsattAzureId: UUID): Decision = if (navBruker.erSkjermet) {
+        poaoTilgangCachedClient.evaluatePolicy(NavAnsattBehandleSkjermedePersonerPolicyInput(navAnsattAzureId)).getOrThrow()
+    } else {
+        Decision.Permit
+    }
+
+    private fun vurderAdressebeskyttelseTilgang(adressebeskyttelse: Adressebeskyttelse?, navAnsattAzureId: UUID): Decision =
         when (adressebeskyttelse) {
             Adressebeskyttelse.FORTROLIG ->
                 poaoTilgangCachedClient.evaluatePolicy(NavAnsattBehandleFortroligBrukerePolicyInput(navAnsattAzureId)).getOrThrow()

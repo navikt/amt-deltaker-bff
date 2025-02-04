@@ -129,7 +129,7 @@ class TiltakskoordinatorApiTest {
         val deltakere = (0..5).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
         every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
         deltakere.forEach {
-            every { tilgangskontrollService.koordinatorTilgangTilDeltaker(any(), it) } returns it.toDeltakerTilgang()
+            every { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(any(), it) } returns it.toDeltakerTilgang()
         }
 
         client
