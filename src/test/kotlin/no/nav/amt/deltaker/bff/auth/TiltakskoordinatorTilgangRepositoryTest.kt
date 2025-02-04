@@ -2,6 +2,9 @@ package no.nav.amt.deltaker.bff.auth
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -11,6 +14,7 @@ import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
+import java.util.UUID
 
 class TiltakskoordinatorTilgangRepositoryTest {
     @Before
@@ -83,10 +87,15 @@ data class TiltakskoordinatorTilgangContext(
         deltakerliste = deltakerliste,
         navAnsatt = navAnsatt,
     ),
+    var deltaker: Deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste),
 ) {
+    val deltakerRepository = DeltakerRepository()
+    val navAnsattAzureId = UUID.randomUUID()
+
     init {
         TestRepository.insert(navAnsatt)
         TestRepository.insert(deltakerliste)
+        TestRepository.insert(deltaker)
     }
 
     fun medAktivTilgang() {
@@ -96,5 +105,14 @@ data class TiltakskoordinatorTilgangContext(
     fun medInaktivTilgang() {
         tilgang = tilgang.copy(gyldigTil = LocalDateTime.now())
         TestRepository.insert(tilgang)
+    }
+
+    fun medFortroligDeltaker() = adressebeskyttetDeltaker(Adressebeskyttelse.FORTROLIG)
+
+    fun medStrengtFortroligDeltaker() = adressebeskyttetDeltaker(Adressebeskyttelse.STRENGT_FORTROLIG)
+
+    private fun adressebeskyttetDeltaker(adressebeskyttelse: Adressebeskyttelse?) {
+        deltaker = deltaker.copy(navBruker = deltaker.navBruker.copy(adressebeskyttelse = adressebeskyttelse))
+        deltakerRepository.upsert(deltaker)
     }
 }

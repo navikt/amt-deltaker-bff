@@ -1,9 +1,14 @@
 package no.nav.amt.deltaker.bff.auth
 
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
+import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
+import no.nav.poao_tilgang.client.NavAnsattBehandleStrengtFortroligBrukerePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.TilgangType
@@ -58,6 +63,23 @@ class TilgangskontrollService(
             throw AuthorizationException("Innbygger har ikke tilgang til deltaker")
         }
     }
+
+    fun koordinatorTilgangTilDeltaker(navAnsattAzureId: UUID, deltaker: Deltaker): TiltakskoordinatorDeltakerTilgang {
+        val tilgangTilGradering = tilgangTilAdressebeskyttede(deltaker.navBruker.adressebeskyttelse, navAnsattAzureId)
+
+        return TiltakskoordinatorDeltakerTilgang(deltaker, tilgangTilGradering.isPermit)
+    }
+
+    private fun tilgangTilAdressebeskyttede(adressebeskyttelse: Adressebeskyttelse?, navAnsattAzureId: UUID): Decision =
+        when (adressebeskyttelse) {
+            Adressebeskyttelse.FORTROLIG ->
+                poaoTilgangCachedClient.evaluatePolicy(NavAnsattBehandleFortroligBrukerePolicyInput(navAnsattAzureId)).getOrThrow()
+
+            Adressebeskyttelse.STRENGT_FORTROLIG, Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND ->
+                poaoTilgangCachedClient.evaluatePolicy(NavAnsattBehandleStrengtFortroligBrukerePolicyInput(navAnsattAzureId)).getOrThrow()
+
+            else -> Decision.Permit
+        }
 
     suspend fun leggTilTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
         val koordinator = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
