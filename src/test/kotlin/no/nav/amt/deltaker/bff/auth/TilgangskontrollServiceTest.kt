@@ -8,7 +8,10 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.poao_tilgang.client.Decision
+import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
+import no.nav.poao_tilgang.client.NavAnsattBehandleStrengtFortroligBrukerePolicyInput
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
+import no.nav.poao_tilgang.client.PolicyInput
 import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
@@ -32,14 +35,14 @@ class TilgangskontrollServiceTest {
 
     @Test
     fun `verifiserSkrivetilgang - har tilgang - kaster ingen feil`() {
-        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        mockPoaotilgangPermit()
 
         tilgangskontrollService.verifiserSkrivetilgang(UUID.randomUUID(), "12345")
     }
 
     @Test
     fun `verifiserSkrivetilgang - har ikke tilgang - kaster AuthorizationException`() {
-        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Deny("Ikke tilgang", ""))
+        mockPoaoTilgangDeny()
 
         assertFailsWith<AuthorizationException> {
             tilgangskontrollService.verifiserSkrivetilgang(UUID.randomUUID(), "12345")
@@ -48,14 +51,14 @@ class TilgangskontrollServiceTest {
 
     @Test
     fun `verifiserLesetilgang - har tilgang - kaster ingen feil`() {
-        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        mockPoaotilgangPermit()
 
         tilgangskontrollService.verifiserLesetilgang(UUID.randomUUID(), "12345")
     }
 
     @Test
     fun `verifiserLesetilgang - har ikke tilgang - kaster AuthorizationException`() {
-        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Deny("Ikke tilgang", ""))
+        mockPoaoTilgangDeny()
 
         assertFailsWith<AuthorizationException> {
             tilgangskontrollService.verifiserLesetilgang(UUID.randomUUID(), "12345")
@@ -113,5 +116,61 @@ class TilgangskontrollServiceTest {
                 tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             }
         }
+    }
+
+    @Test
+    fun `koordinatorTilgangTilDeltaker - mangler tilgang - deltaker er kode 7 - tilgang er false`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medFortroligDeltaker()
+            mockPoaoTilgangDeny(NavAnsattBehandleFortroligBrukerePolicyInput(navAnsattAzureId))
+            val tilgangTilDeltaker = tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker.tilgang shouldBe false
+        }
+    }
+
+    @Test
+    fun `koordinatorTilgangTilDeltaker - mangler tilgang - deltaker er kode 6 - tilgang er false`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medStrengtFortroligDeltaker()
+            mockPoaoTilgangDeny(NavAnsattBehandleStrengtFortroligBrukerePolicyInput(navAnsattAzureId))
+            val tilgangTilDeltaker = tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker.tilgang shouldBe false
+        }
+    }
+
+    @Test
+    fun `koordinatorTilgangTilDeltaker - har tilgang - deltaker er kode 7 - tilgang er true`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medFortroligDeltaker()
+            mockPoaotilgangPermit(NavAnsattBehandleFortroligBrukerePolicyInput(navAnsattAzureId))
+            val tilgangTilDeltaker = tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker.tilgang shouldBe true
+        }
+    }
+
+    @Test
+    fun `koordinatorTilgangTilDeltaker - har tilgang - deltaker er kode 6 - tilgang er true`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medStrengtFortroligDeltaker()
+            mockPoaotilgangPermit(NavAnsattBehandleStrengtFortroligBrukerePolicyInput(navAnsattAzureId))
+            val tilgangTilDeltaker = tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker.tilgang shouldBe true
+        }
+    }
+
+    @Test
+    fun `koordinatorTilgangTilDeltaker - deltaker er ikke adressebeskyttet - tilgang er true`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            val tilgangTilDeltaker = tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker.tilgang shouldBe true
+        }
+    }
+
+    private fun mockPoaoTilgangDeny(policyInput: PolicyInput? = null) {
+        every { poaoTilgangCachedClient.evaluatePolicy(policyInput ?: any()) } returns ApiResult(null, Decision.Deny("Ikke tilgang", ""))
+    }
+
+    private fun mockPoaotilgangPermit(policyInput: PolicyInput? = null) {
+        every { poaoTilgangCachedClient.evaluatePolicy(policyInput ?: any()) } returns ApiResult(null, Decision.Permit)
     }
 }

@@ -9,10 +9,11 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
+import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
@@ -40,7 +41,10 @@ fun Routing.registerTiltakskoordinatorApi(
 
                 tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
 
+                val navAnsattAzureId = call.getNavAnsattAzureId()
+
                 val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
+                    .map { tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
 
                 call.respond(deltakere.map { it.toDeltakerResponse() })
             }
@@ -66,20 +70,24 @@ private fun RoutingContext.getDeltakerlisteId(): UUID {
     }
 }
 
-fun Deltaker.toDeltakerResponse() = DeltakerResponse(
-    id = this.id,
-    fornavn = if (navBruker.erAdressebeskyttet) "" else this.navBruker.fornavn,
-    mellomnavn = if (navBruker.erAdressebeskyttet) null else this.navBruker.mellomnavn,
-    etternavn = if (navBruker.erAdressebeskyttet) "" else this.navBruker.etternavn,
-    DeltakerResponse.DeltakerStatusResponse(
-        type = this.status.type,
-        aarsak = this.status.aarsak?.let {
-            DeltakerResponse.DeltakerStatusAarsakResponse(
-                it.type,
-            )
-        },
-    ),
-)
+fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
+    val (fornavn, mellomnavn, etternavn) = visningsnavn()
+
+    return DeltakerResponse(
+        id = deltaker.id,
+        fornavn = fornavn,
+        mellomnavn = mellomnavn,
+        etternavn = etternavn,
+        DeltakerResponse.DeltakerStatusResponse(
+            type = deltaker.status.type,
+            aarsak = deltaker.status.aarsak?.let {
+                DeltakerResponse.DeltakerStatusAarsakResponse(
+                    it.type,
+                )
+            },
+        ),
+    )
+}
 
 fun Deltakerliste.toResponse() = DeltakerlisteResponse(
     this.id,
