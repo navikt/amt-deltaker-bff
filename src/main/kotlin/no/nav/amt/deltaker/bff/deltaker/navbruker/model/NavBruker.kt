@@ -13,6 +13,7 @@ data class NavBruker(
     val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
     val innsatsgruppe: Innsatsgruppe?,
     val adresse: Adresse?,
+    val erSkjermet: Boolean = false,
 ) {
     val erAdressebeskyttet get() = adressebeskyttelse != null
 
