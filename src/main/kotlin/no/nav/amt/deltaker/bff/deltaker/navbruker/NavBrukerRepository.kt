@@ -22,13 +22,14 @@ class NavBrukerRepository {
         oppfolgingsperioder = row.stringOrNull("oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
         innsatsgruppe = row.stringOrNull("innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
         adresse = row.stringOrNull("adresse")?.let { objectMapper.readValue(it) },
+        erSkjermet = row.boolean("er_skjermet"),
     )
 
     fun upsert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe, :adresse)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse, er_skjermet) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe, :adresse, :er_skjermet)
             on conflict (person_id) do update set
                 personident = :personident,
                 fornavn = :fornavn,
@@ -38,6 +39,7 @@ class NavBrukerRepository {
                 oppfolgingsperioder = :oppfolgingsperioder,
                 innsatsgruppe = :innsatsgruppe,
                 adresse = :adresse,
+                er_skjermet = :er_skjermet,
                 modified_at = current_timestamp
             returning *
             """.trimIndent()
@@ -52,6 +54,7 @@ class NavBrukerRepository {
             "oppfolgingsperioder" to toPGObject(bruker.oppfolgingsperioder),
             "innsatsgruppe" to bruker.innsatsgruppe?.name,
             "adresse" to toPGObject(bruker.adresse),
+            "er_skjermet" to bruker.erSkjermet,
         )
 
         it.run(queryOf(sql, params).map(::rowMapper).asSingle)
