@@ -93,6 +93,7 @@ data class TiltakskoordinatorTilgangContext(
     val navAnsattAzureId = UUID.randomUUID()
 
     init {
+        SingletonPostgres16Container
         TestRepository.insert(navAnsatt)
         TestRepository.insert(deltakerliste)
         TestRepository.insert(deltaker)

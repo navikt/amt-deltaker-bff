@@ -17,9 +17,11 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -126,11 +128,15 @@ class TiltakskoordinatorApiTest {
         val deltakerliste = TestData.lagDeltakerliste()
         val deltakere = (0..5).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
         every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
+        deltakere.forEach {
+            every { tilgangskontrollService.koordinatorTilgangTilDeltaker(any(), it) } returns it.toDeltakerTilgang()
+        }
+
         client
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakere.map { it.toDeltakerResponse() })
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakere.map { it.toDeltakerTilgang().toDeltakerResponse() })
             }
     }
 
@@ -190,4 +196,6 @@ class TiltakskoordinatorApiTest {
             )
         }
     }
+
+    private fun Deltaker.toDeltakerTilgang(tilgang: Boolean = true) = TiltakskoordinatorDeltakerTilgang(this, tilgang)
 }
