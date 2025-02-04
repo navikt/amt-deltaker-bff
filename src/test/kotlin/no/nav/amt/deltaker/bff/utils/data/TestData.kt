@@ -319,7 +319,19 @@ object TestData {
         oppfolgingsperioder: List<Oppfolgingsperiode> = listOf(lagOppfolgingsperiode()),
         innsatsgruppe: Innsatsgruppe? = Innsatsgruppe.STANDARD_INNSATS,
         adresse: Adresse? = lagAdresse(),
-    ) = NavBruker(personId, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse)
+        erSkjermet: Boolean = false,
+    ) = NavBruker(
+        personId,
+        personident,
+        fornavn,
+        mellomnavn,
+        etternavn,
+        adressebeskyttelse,
+        oppfolgingsperioder,
+        innsatsgruppe,
+        adresse,
+        erSkjermet,
+    )
 
     fun lagAdresse(): Adresse = Adresse(
         bostedsadresse = Bostedsadresse(
