@@ -9,6 +9,7 @@ data class DeltakerResponse(
     val mellomnavn: String?,
     val etternavn: String,
     val status: DeltakerStatusResponse,
+    val beskyttelsesmarkering: List<Beskyttelsesmarkering>,
 ) {
     data class DeltakerStatusResponse(
         val type: DeltakerStatus.Type,
@@ -18,4 +19,11 @@ data class DeltakerResponse(
     data class DeltakerStatusAarsakResponse(
         val type: DeltakerStatus.Aarsak.Type,
     )
+
+    enum class Beskyttelsesmarkering {
+        FORTROLIG,
+        STRENGT_FORTROLIG,
+        STRENGT_FORTROLIG_UTLAND,
+        SKJERMET,
+    }
 }
