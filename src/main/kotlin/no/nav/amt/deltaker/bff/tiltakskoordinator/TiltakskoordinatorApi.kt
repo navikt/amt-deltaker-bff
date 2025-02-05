@@ -43,8 +43,9 @@ fun Routing.registerTiltakskoordinatorApi(
 
                 val navAnsattAzureId = call.getNavAnsattAzureId()
 
-                val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
-                    .map { tilgangskontrollService.koordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
+                val deltakere = deltakerService
+                    .getForDeltakerliste(deltakerlisteId)
+                    .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
 
                 call.respond(deltakere.map { it.toDeltakerResponse() })
             }

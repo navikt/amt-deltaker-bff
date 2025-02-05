@@ -108,6 +108,11 @@ data class TiltakskoordinatorTilgangContext(
         TestRepository.insert(tilgang)
     }
 
+    fun medSkjermetDeltaker() {
+        deltaker = deltaker.copy(navBruker = deltaker.navBruker.copy(erSkjermet = true))
+        deltakerRepository.upsert(deltaker)
+    }
+
     fun medFortroligDeltaker() = adressebeskyttetDeltaker(Adressebeskyttelse.FORTROLIG)
 
     fun medStrengtFortroligDeltaker() = adressebeskyttetDeltaker(Adressebeskyttelse.STRENGT_FORTROLIG)
