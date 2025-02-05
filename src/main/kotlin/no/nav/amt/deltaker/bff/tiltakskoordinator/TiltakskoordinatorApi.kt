@@ -87,6 +87,7 @@ fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
                 )
             },
         ),
+        beskyttelsesmarkering = beskyttelsesmarkering(),
     )
 }
 
