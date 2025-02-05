@@ -34,7 +34,20 @@ data class Tiltakstype(
         JOBBKLUBB,
         OPPFOLGING,
         VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+        ;
+
+        fun erKurs() = this in kursTiltak
     }
+
+    companion object {
+        val kursTiltak = setOf(
+            Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+            Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.JOBBKLUBB,
+        )
+    }
+
+    fun erKurs() = this.tiltakskode.erKurs()
 }
 
 data class DeltakerRegistreringInnhold(

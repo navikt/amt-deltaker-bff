@@ -40,6 +40,7 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka.TiltakstypeConsumer
@@ -153,6 +154,7 @@ fun Application.module() {
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
     val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
     val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
+    val deltakerlisteService = DeltakerlisteService(deltakerlisteRepository)
 
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
@@ -213,7 +215,7 @@ fun Application.module() {
         sporbarhetsloggService,
         deltakerRepository,
         amtDeltakerClient,
-        deltakerlisteRepository,
+        deltakerlisteService,
         unleash,
     )
     configureMonitoring()

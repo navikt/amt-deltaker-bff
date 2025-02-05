@@ -24,7 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
 import no.nav.amt.deltaker.bff.internal.registerInternalApi
@@ -48,7 +48,7 @@ fun Application.configureRouting(
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
     amtDeltakerClient: AmtDeltakerClient,
-    deltakerlisteRepository: DeltakerlisteRepository,
+    deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
 ) {
     install(StatusPages) {
@@ -117,7 +117,7 @@ fun Application.configureRouting(
 
         registerTiltakskoordinatorApi(
             deltakerService,
-            deltakerlisteRepository,
+            deltakerlisteService,
             tilgangskontrollService,
         )
 
