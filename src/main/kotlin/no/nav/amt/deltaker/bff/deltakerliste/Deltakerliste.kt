@@ -57,18 +57,12 @@ data class Deltakerliste(
         return if (oppstart != null) {
             oppstart == Oppstartstype.FELLES
         } else {
-            kursTiltak.contains(tiltak.arenaKode)
+            tiltak.erKurs()
         }
     }
 
     fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.arenaKode)
 }
-
-private val kursTiltak = setOf(
-    Tiltakstype.ArenaKode.JOBBK,
-    Tiltakstype.ArenaKode.GRUPPEAMO,
-    Tiltakstype.ArenaKode.GRUFAGYRKE,
-)
 
 private val tiltakUtenDeltakerAdresset = setOf(
     Tiltakstype.ArenaKode.DIGIOPPARB,

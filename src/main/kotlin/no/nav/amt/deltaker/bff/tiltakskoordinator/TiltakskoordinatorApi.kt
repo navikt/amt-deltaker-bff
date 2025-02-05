@@ -15,14 +15,14 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(
     deltakerService: DeltakerService,
-    deltakerlisteRepository: DeltakerlisteRepository,
+    deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
@@ -31,7 +31,7 @@ fun Routing.registerTiltakskoordinatorApi(
         if (!Environment.isProd()) {
             get(apiPath) {
                 val deltakerlisteId = getDeltakerlisteId()
-                val deltakerliste = deltakerlisteRepository.get(deltakerlisteId).getOrThrow()
+                val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
 
                 call.respond(deltakerliste.toResponse())
             }
@@ -39,6 +39,7 @@ fun Routing.registerTiltakskoordinatorApi(
             get("$apiPath/deltakere") {
                 val deltakerlisteId = getDeltakerlisteId()
 
+                deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(deltakerlisteId)
                 tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
 
                 val navAnsattAzureId = call.getNavAnsattAzureId()
