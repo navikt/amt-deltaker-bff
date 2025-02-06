@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
 import no.nav.amt.deltaker.bff.internal.registerInternalApi
@@ -67,6 +68,10 @@ fun Application.configureRouting(
         exception<NoSuchElementException> { call, cause ->
             StatusPageLogger.log(HttpStatusCode.NotFound, call, cause)
             call.respondText(text = "404: ${cause.message}", status = HttpStatusCode.NotFound)
+        }
+        exception<DeltakerlisteStengtException> { call, cause ->
+            StatusPageLogger.log(HttpStatusCode.Gone, call, cause)
+            call.respondText(text = "410: ${cause.message}", status = HttpStatusCode.Gone)
         }
         exception<Throwable> { call, cause ->
             StatusPageLogger.log(HttpStatusCode.InternalServerError, call, cause)

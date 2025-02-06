@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import org.junit.Before
@@ -98,7 +99,7 @@ class TiltakskoordinatorApiTest {
     fun `get deltakere - mangler tilgang til deltakerliste - returnerer 403`() = testApplication {
         setUpTestApplication()
         val deltakerliste = TestData.lagDeltakerliste()
-        every { deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(deltakerliste.id) } returns deltakerliste
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
         coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } throws AuthorizationException("")
         client
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere") { noBodyTiltakskoordinatorRequest() }
@@ -111,7 +112,7 @@ class TiltakskoordinatorApiTest {
     fun `get deltakere - deltakerliste finnes ikke - returnerer 404`() = testApplication {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
-        every { deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(any()) } throws NoSuchElementException()
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
         every { deltakerService.getForDeltakerliste(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
@@ -121,12 +122,24 @@ class TiltakskoordinatorApiTest {
     }
 
     @Test
+    fun `get deltakere - deltakerliste er stengt - returnerer 410`() = testApplication {
+        setUpTestApplication()
+        mockTilgangTilDeltakerliste()
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws DeltakerlisteStengtException()
+        client
+            .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Gone
+            }
+    }
+
+    @Test
     fun `get deltakere - deltakerliste finnes - returnerer liste med deltakere`() = testApplication {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
         val deltakerliste = TestData.lagDeltakerliste()
         val deltakere = (0..5).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
-        every { deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(deltakerliste.id) } returns deltakerliste
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
         every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
         deltakere.forEach {
             every { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(any(), it) } returns it.toDeltakerTilgang()
