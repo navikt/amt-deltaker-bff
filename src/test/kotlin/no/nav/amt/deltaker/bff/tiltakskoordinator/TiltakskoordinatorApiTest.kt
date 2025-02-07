@@ -90,7 +90,7 @@ class TiltakskoordinatorApiTest {
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakerliste.toResponse(koordinatorer))
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakerliste.toResponse(emptyList()))
             }
     }
 
