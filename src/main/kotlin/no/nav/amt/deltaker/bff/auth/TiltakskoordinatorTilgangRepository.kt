@@ -70,7 +70,7 @@ class TiltakskoordinatorTilgangRepository {
             """
             select *
             from tiltakskoordinator_deltakerliste_tilgang t
-              join nav_ansatt a on a.nav_ansatt_id = t.nav_ansatt_id
+              join nav_ansatt a on a.id = t.nav_ansatt_id
             where t.deltakerliste_id = :deltakerliste_id
               and t.gyldig_til is null
             """.trimIndent()
