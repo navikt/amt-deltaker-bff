@@ -14,10 +14,12 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(
@@ -46,6 +48,7 @@ fun Routing.registerTiltakskoordinatorApi(
 
                 val deltakere = deltakerService
                     .getForDeltakerliste(deltakerlisteId)
+                    .filterNot { deltaker -> deltaker.skalSkjules() }
                     .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
 
                 call.respond(deltakere.map { it.toDeltakerResponse() })
@@ -98,4 +101,12 @@ fun Deltakerliste.toResponse() = DeltakerlisteResponse(
     this.sluttDato,
     this.apentForPamelding,
     this.antallPlasser,
+)
+
+fun Deltaker.skalSkjules () = status.type in listOf(
+    DeltakerStatus.Type.KLADD,
+    DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+    DeltakerStatus.Type.AVBRUTT_UTKAST,
+    DeltakerStatus.Type.FEILREGISTRERT,
+    DeltakerStatus.Type.PABEGYNT_REGISTRERING
 )
