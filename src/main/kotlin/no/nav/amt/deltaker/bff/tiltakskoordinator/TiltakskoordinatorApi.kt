@@ -7,7 +7,6 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
@@ -30,37 +29,35 @@ fun Routing.registerTiltakskoordinatorApi(
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
-        if (!Environment.isProd()) {
-            get(apiPath) {
-                val deltakerlisteId = getDeltakerlisteId()
-                val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
+        get(apiPath) {
+            val deltakerlisteId = getDeltakerlisteId()
+            val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
 
-                call.respond(deltakerliste.toResponse())
-            }
+            call.respond(deltakerliste.toResponse())
+        }
 
-            get("$apiPath/deltakere") {
-                val deltakerlisteId = getDeltakerlisteId()
+        get("$apiPath/deltakere") {
+            val deltakerlisteId = getDeltakerlisteId()
 
-                deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
-                tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
 
-                val navAnsattAzureId = call.getNavAnsattAzureId()
+            val navAnsattAzureId = call.getNavAnsattAzureId()
 
-                val deltakere = deltakerService
-                    .getForDeltakerliste(deltakerlisteId)
-                    .filterNot { deltaker -> deltaker.skalSkjules() }
-                    .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
+            val deltakere = deltakerService
+                .getForDeltakerliste(deltakerlisteId)
+                .filterNot { deltaker -> deltaker.skalSkjules() }
+                .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
 
-                call.respond(deltakere.map { it.toDeltakerResponse() })
-            }
+            call.respond(deltakere.map { it.toDeltakerResponse() })
+        }
 
-            post("$apiPath/tilgang/legg-til") {
-                val deltakerlisteId = getDeltakerlisteId()
+        post("$apiPath/tilgang/legg-til") {
+            val deltakerlisteId = getDeltakerlisteId()
 
-                tilgangskontrollService.leggTilTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId).getOrThrow()
+            tilgangskontrollService.leggTilTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId).getOrThrow()
 
-                call.respond(HttpStatusCode.OK)
-            }
+            call.respond(HttpStatusCode.OK)
         }
     }
 }
