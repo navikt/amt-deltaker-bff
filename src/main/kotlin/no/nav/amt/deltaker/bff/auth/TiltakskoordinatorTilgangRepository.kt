@@ -79,12 +79,12 @@ class TiltakskoordinatorTilgangRepository {
         )
 
         val query = queryOf(sql, params).map {
-                NavAnsatt(
-                    id = it.uuid("id"),
-                    navIdent = it.string("nav_ident"),
-                    navn = it.string("navn"),
-                )
-            }.asList
+            NavAnsatt(
+                id = it.uuid("id"),
+                navIdent = it.string("nav_ident"),
+                navn = it.string("navn"),
+            )
+        }.asList
         session.run(query)
     }
 }

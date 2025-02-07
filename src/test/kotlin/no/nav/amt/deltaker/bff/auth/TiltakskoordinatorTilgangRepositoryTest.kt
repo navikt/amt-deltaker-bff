@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData
+
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
@@ -17,7 +18,6 @@ import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
 import java.util.UUID
-import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
 
 class TiltakskoordinatorTilgangRepositoryTest {
     @Before
@@ -76,22 +76,21 @@ class TiltakskoordinatorTilgangRepositoryTest {
 
     @Test
     fun `hentKoordinatorer - deltakerliste har ikke koordinatorer - returnerer tom liste`() {
-      with(TiltakskoordinatorTilgangContext()) {
-        medAktivTilgang()
-         repository.hentKoordinatorer(UUID.randomUUID()) shouldBe emptyList()
-      }
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            repository.hentKoordinatorer(UUID.randomUUID()) shouldBe emptyList()
+        }
     }
 
-  @Test
-  fun `hentKoordinatorer - deltakerliste har koordinatorer - returnerer nav ansatte`() {
-    with(TiltakskoordinatorTilgangContext()) {
-      medAktivTilgang()
-      val navAnsatte = repository.hentKoordinatorer(deltakerliste.id)
-      navAnsatte shouldHaveSize 1
-      navAnsatte.first().navn shouldBeEqual "Veileder Veiledersen"
-
+    @Test
+    fun `hentKoordinatorer - deltakerliste har koordinatorer - returnerer nav ansatte`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            val navAnsatte = repository.hentKoordinatorer(deltakerliste.id)
+            navAnsatte shouldHaveSize 1
+            navAnsatte.first().navn shouldBeEqual "Veileder Veiledersen"
+        }
     }
-  }
 }
 
 fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgang2: TiltakskoordinatorDeltakerlisteTilgang) {
