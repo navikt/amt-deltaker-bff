@@ -60,7 +60,6 @@ fun Routing.registerTiltakskoordinatorApi(
             call.respond(HttpStatusCode.OK)
         }
     }
-
 }
 
 private fun RoutingContext.getDeltakerlisteId(): UUID {
