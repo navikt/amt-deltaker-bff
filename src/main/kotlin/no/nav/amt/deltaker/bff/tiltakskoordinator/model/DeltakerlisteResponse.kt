@@ -9,4 +9,5 @@ data class DeltakerlisteResponse(
     val sluttdato: LocalDate?,
     val apentForPamelding: Boolean,
     val antallPlasser: Int,
+    val koordinatorer: List<KoordinatorResponse>
 )

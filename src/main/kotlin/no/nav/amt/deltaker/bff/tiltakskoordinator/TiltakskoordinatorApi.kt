@@ -16,8 +16,10 @@ import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.KoordinatorResponse
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(
@@ -32,8 +34,9 @@ fun Routing.registerTiltakskoordinatorApi(
             get(apiPath) {
                 val deltakerlisteId = getDeltakerlisteId()
                 val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
+                val koordinatorer = tilgangskontrollService.hentKoordinatorer(deltakerlisteId)
 
-                call.respond(deltakerliste.toResponse())
+                call.respond(deltakerliste.toResponse(koordinatorer))
             }
 
             get("$apiPath/deltakere") {
@@ -92,10 +95,11 @@ fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
     )
 }
 
-fun Deltakerliste.toResponse() = DeltakerlisteResponse(
+fun Deltakerliste.toResponse(koordinatorer: List<NavAnsatt>) = DeltakerlisteResponse(
     this.id,
     this.startDato,
     this.sluttDato,
     this.apentForPamelding,
     this.antallPlasser,
+    koordinatorer.map { KoordinatorResponse(id = it.id, navn = it.navn) },
 )
