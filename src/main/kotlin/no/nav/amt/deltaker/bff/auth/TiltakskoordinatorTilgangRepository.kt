@@ -65,12 +65,12 @@ class TiltakskoordinatorTilgangRepository {
         )
     }
 
-    fun hentKoordinatorer(deltakerlisteId: UUID) = Database.query {
+    fun hentKoordinatorer(deltakerlisteId: UUID) = Database.query { session ->
         val sql =
             """
             select *
             from tiltakskoordinator_deltakerliste_tilgang t
-              join nav_ansatt a on a.id = t.nav_ansatt_id
+              left join nav_ansatt a on a.id = t.nav_ansatt_id
             where t.deltakerliste_id = :deltakerliste_id
               and t.gyldig_til is null
             """.trimIndent()
@@ -78,14 +78,13 @@ class TiltakskoordinatorTilgangRepository {
             "deltakerliste_id" to deltakerlisteId,
         )
 
-        it.run(
-            queryOf(sql, params).map { row ->
+        val query = queryOf(sql, params).map {
                 NavAnsatt(
-                    id = row.uuid("a.id"),
-                    navIdent = row.string("a.nav_ident"),
-                    navn = row.string("a.navn"),
+                    id = it.uuid("a.id"),
+                    navIdent = it.string("a.nav_ident"),
+                    navn = it.string("a.navn"),
                 )
-            }.asList,
-        )
+            }.asList
+        session.run(query)
     }
 }

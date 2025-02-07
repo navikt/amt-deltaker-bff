@@ -38,7 +38,6 @@ fun Routing.registerTiltakskoordinatorApi(
             val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
             val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
-
             call.respond(deltakerliste.toResponse(koordinatorer))
         }
 

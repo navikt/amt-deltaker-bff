@@ -70,6 +70,14 @@ class TiltakskoordinatorTilgangRepositoryTest {
             sammenlignTilganger(resultat.getOrThrow(), tilgang)
         }
     }
+
+    @Test
+    fun `hentKoordinatorer - deltakerliste har ikke koordinatorer - returnerer tom liste`() {
+      with(TiltakskoordinatorTilgangContext()) {
+        medAktivTilgang()
+         repository.hentKoordinatorer(deltakerliste.id) shouldBe emptyList()
+      }
+    }
 }
 
 fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgang2: TiltakskoordinatorDeltakerlisteTilgang) {
