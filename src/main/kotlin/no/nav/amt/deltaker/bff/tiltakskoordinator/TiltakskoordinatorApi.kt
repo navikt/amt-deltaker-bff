@@ -103,10 +103,10 @@ fun Deltakerliste.toResponse() = DeltakerlisteResponse(
     this.antallPlasser,
 )
 
-fun Deltaker.skalSkjules () = status.type in listOf(
+fun Deltaker.skalSkjules() = status.type in listOf(
     DeltakerStatus.Type.KLADD,
     DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
     DeltakerStatus.Type.AVBRUTT_UTKAST,
     DeltakerStatus.Type.FEILREGISTRERT,
-    DeltakerStatus.Type.PABEGYNT_REGISTRERING
+    DeltakerStatus.Type.PABEGYNT_REGISTRERING,
 )
