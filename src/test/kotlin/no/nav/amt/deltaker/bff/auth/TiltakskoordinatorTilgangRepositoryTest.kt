@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData
-
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
