@@ -20,18 +20,16 @@ data class TiltakskoordinatorDeltakerTilgang(
     }
 
     fun beskyttelsesmarkering(): List<DeltakerResponse.Beskyttelsesmarkering> {
-        val adressebeskyttelse = if (tilgang) {
+        if (!tilgang) return emptyList()
+        val adressebeskyttelse =
             when (deltaker.navBruker.adressebeskyttelse) {
                 null -> null
                 Adressebeskyttelse.FORTROLIG -> DeltakerResponse.Beskyttelsesmarkering.FORTROLIG
                 Adressebeskyttelse.STRENGT_FORTROLIG -> DeltakerResponse.Beskyttelsesmarkering.STRENGT_FORTROLIG
                 Adressebeskyttelse.STRENGT_FORTROLIG_UTLAND -> DeltakerResponse.Beskyttelsesmarkering.STRENGT_FORTROLIG_UTLAND
             }
-        } else {
-            null
-        }
 
-        val skjermet = if (tilgang && deltaker.navBruker.erSkjermet) {
+        val skjermet = if (deltaker.navBruker.erSkjermet) {
             DeltakerResponse.Beskyttelsesmarkering.SKJERMET
         } else {
             null

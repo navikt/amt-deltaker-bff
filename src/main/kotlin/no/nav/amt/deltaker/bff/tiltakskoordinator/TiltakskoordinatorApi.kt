@@ -7,7 +7,6 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.RoutingContext
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
@@ -15,12 +14,14 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.KoordinatorResponse
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(
@@ -32,37 +33,37 @@ fun Routing.registerTiltakskoordinatorApi(
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
-        if (!Environment.isProd()) {
-            get(apiPath) {
-                val deltakerlisteId = getDeltakerlisteId()
-                val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
-                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
+        get(apiPath) {
+            val deltakerlisteId = getDeltakerlisteId()
+            val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
+            val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
-                call.respond(deltakerliste.toResponse(koordinatorer))
-            }
 
-            get("$apiPath/deltakere") {
-                val deltakerlisteId = getDeltakerlisteId()
+            call.respond(deltakerliste.toResponse(koordinatorer))
+        }
 
-                deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(deltakerlisteId)
-                tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
+        get("$apiPath/deltakere") {
+            val deltakerlisteId = getDeltakerlisteId()
 
-                val navAnsattAzureId = call.getNavAnsattAzureId()
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
 
-                val deltakere = deltakerService
-                    .getForDeltakerliste(deltakerlisteId)
-                    .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
+            val navAnsattAzureId = call.getNavAnsattAzureId()
 
-                call.respond(deltakere.map { it.toDeltakerResponse() })
-            }
+            val deltakere = deltakerService
+                .getForDeltakerliste(deltakerlisteId)
+                .filterNot { deltaker -> deltaker.skalSkjules() }
+                .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
 
-            post("$apiPath/tilgang/legg-til") {
-                val deltakerlisteId = getDeltakerlisteId()
+            call.respond(deltakere.map { it.toDeltakerResponse() })
+        }
 
-                tilgangskontrollService.leggTilTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId).getOrThrow()
+        post("$apiPath/tilgang/legg-til") {
+            val deltakerlisteId = getDeltakerlisteId()
 
-                call.respond(HttpStatusCode.OK)
-            }
+            tilgangskontrollService.leggTilTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId).getOrThrow()
+
+            call.respond(HttpStatusCode.OK)
         }
     }
 }
@@ -104,4 +105,12 @@ fun Deltakerliste.toResponse(koordinatorer: List<NavAnsatt>) = DeltakerlisteResp
     this.apentForPamelding,
     this.antallPlasser,
     koordinatorer.map { KoordinatorResponse(id = it.id, navn = it.navn) },
+)
+
+fun Deltaker.skalSkjules() = status.type in listOf(
+    DeltakerStatus.Type.KLADD,
+    DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+    DeltakerStatus.Type.AVBRUTT_UTKAST,
+    DeltakerStatus.Type.FEILREGISTRERT,
+    DeltakerStatus.Type.PABEGYNT_REGISTRERING,
 )

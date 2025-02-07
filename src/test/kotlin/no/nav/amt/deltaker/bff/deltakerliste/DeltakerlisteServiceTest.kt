@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDate
 
 class DeltakerlisteServiceTest {
     private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
@@ -29,25 +30,42 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `verifiserDeltakerlisteHarFellesOppstart - deltakerliste har felles oppstart - kaster ikke exception`() {
+    fun `verifiserTilgjengeligDeltakerliste - deltakerliste har felles oppstart - kaster ikke exception`() {
         with(DeltakerlisteContext()) {
-            deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(deltakerliste.id)
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
         }
     }
 
     @Test
-    fun `verifiserDeltakerlisteHarFellesOppstart - deltakerliste har lopende oppstart - kaster exception`() {
+    fun `verifiserTilgjengeligDeltakerliste - deltakerliste har lopende oppstart - kaster exception`() {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
             assertThrows<NoSuchElementException> {
-                deltakerlisteService.verifiserDeltakerlisteHarFellesOppstart(deltakerliste.id)
+                deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
             }
+        }
+    }
+
+    @Test
+    fun `verifiserTilgjengeligDeltakerliste - deltakerlistes sluttdato og graceperiode er passert - kaster exception`() {
+        with(DeltakerlisteContext()) {
+            medAvsluttetDeltakerliste()
+            assertThrows<DeltakerlisteStengtException> {
+                deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
+            }
+        }
+    }
+
+    @Test
+    fun `verifiserTilgjengeligDeltakerliste - deltakerlistes sluttdato er ikke passert - kaster ikke exception`() {
+        with(DeltakerlisteContext()) {
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
         }
     }
 }
 
 data class DeltakerlisteContext(
     val tiltak: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-    val deltakerliste: Deltakerliste = TestData.lagDeltakerliste(
+    var deltakerliste: Deltakerliste = TestData.lagDeltakerliste(
         tiltak = TestData.lagTiltakstype(tiltakskode = tiltak),
         oppstart = if (tiltak.erKurs()) {
             Deltakerliste.Oppstartstype.FELLES
@@ -56,8 +74,20 @@ data class DeltakerlisteContext(
         },
     ),
 ) {
+    val repository = DeltakerlisteRepository()
+
     init {
         SingletonPostgres16Container
         TestRepository.insert(deltakerliste)
+    }
+
+    fun medAvsluttetDeltakerliste() {
+        deltakerliste = deltakerliste.copy(
+            status = Deltakerliste.Status.AVSLUTTET,
+            startDato = LocalDate.now().minusMonths(3),
+            sluttDato = LocalDate.now().minus(DeltakerlisteService.tiltakskoordinatorGraceperiode).minusDays(1),
+        )
+
+        repository.upsert(deltakerliste)
     }
 }
