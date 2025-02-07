@@ -5,7 +5,6 @@ import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
@@ -121,9 +120,5 @@ class TilgangskontrollService(
         if (aktivTilgang.isFailure) {
             throw AuthorizationException("Ansatt ${koordinator.id} har ikke tilgang til deltakerliste $deltakerlisteId")
         }
-    }
-
-    fun hentKoordinatorer(deltakerlisteId: UUID): List<NavAnsatt> {
-        return tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
     }
 }

@@ -12,6 +12,7 @@ import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -26,6 +27,7 @@ fun Routing.registerTiltakskoordinatorApi(
     deltakerService: DeltakerService,
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
+    tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
@@ -34,7 +36,7 @@ fun Routing.registerTiltakskoordinatorApi(
             get(apiPath) {
                 val deltakerlisteId = getDeltakerlisteId()
                 val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
-                val koordinatorer = tilgangskontrollService.hentKoordinatorer(deltakerlisteId)
+                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
                 call.respond(deltakerliste.toResponse(koordinatorer))
             }
