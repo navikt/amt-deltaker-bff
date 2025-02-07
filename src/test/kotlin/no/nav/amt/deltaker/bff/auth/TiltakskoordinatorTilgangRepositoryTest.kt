@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff.auth
 
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -15,6 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
 import java.util.UUID
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
 
 class TiltakskoordinatorTilgangRepositoryTest {
     @Before
@@ -75,9 +78,20 @@ class TiltakskoordinatorTilgangRepositoryTest {
     fun `hentKoordinatorer - deltakerliste har ikke koordinatorer - returnerer tom liste`() {
       with(TiltakskoordinatorTilgangContext()) {
         medAktivTilgang()
-         repository.hentKoordinatorer(deltakerliste.id) shouldBe emptyList()
+         repository.hentKoordinatorer(UUID.randomUUID()) shouldBe emptyList()
       }
     }
+
+  @Test
+  fun `hentKoordinatorer - deltakerliste har koordinatorer - returnerer nav ansatte`() {
+    with(TiltakskoordinatorTilgangContext()) {
+      medAktivTilgang()
+      val navAnsatte = repository.hentKoordinatorer(deltakerliste.id)
+      navAnsatte shouldHaveSize 1
+      navAnsatte.first().navn shouldBeEqual "Veileder Veiledersen"
+
+    }
+  }
 }
 
 fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgang2: TiltakskoordinatorDeltakerlisteTilgang) {
