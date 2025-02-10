@@ -17,6 +17,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
@@ -34,6 +35,7 @@ class TiltakskoordinatorApiTest {
     private val deltakerService = mockk<DeltakerService>()
     private val tilgangskontrollService = mockk<TilgangskontrollService>()
     private val deltakerlisteService = mockk<DeltakerlisteService>()
+    private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
 
     @Before
     fun setup() {
@@ -87,11 +89,12 @@ class TiltakskoordinatorApiTest {
         setUpTestApplication()
         val deltakerliste = TestData.lagDeltakerliste()
         every { deltakerlisteService.hentMedFellesOppstart(deltakerliste.id) } returns Result.success(deltakerliste)
+        every { tiltakskoordinatorTilgangRepository.hentKoordinatorer(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakerliste.toResponse())
+                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakerliste.toResponse(emptyList()))
             }
     }
 
@@ -206,6 +209,7 @@ class TiltakskoordinatorApiTest {
                 mockk(),
                 deltakerlisteService,
                 mockk(),
+                tiltakskoordinatorTilgangRepository,
             )
         }
     }

@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.auth
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.lib.utils.database.Database
 import java.util.UUID
 
@@ -62,5 +63,28 @@ class TiltakskoordinatorTilgangRepository {
         } ?: Result.failure(
             NoSuchElementException("Fant ikke aktiv tilgang for nav-ansatt: $navAnsattId og deltakerliste: $deltakerlisteId"),
         )
+    }
+
+    fun hentKoordinatorer(deltakerlisteId: UUID) = Database.query { session ->
+        val sql =
+            """
+            select a.id, a.navn, a.nav_ident
+            from tiltakskoordinator_deltakerliste_tilgang t
+              left join nav_ansatt a on a.id = t.nav_ansatt_id
+            where t.deltakerliste_id = :deltakerliste_id
+              and t.gyldig_til is null
+            """.trimIndent()
+        val params = mapOf(
+            "deltakerliste_id" to deltakerlisteId,
+        )
+
+        val query = queryOf(sql, params).map {
+            NavAnsatt(
+                id = it.uuid("id"),
+                navIdent = it.string("nav_ident"),
+                navn = it.string("navn"),
+            )
+        }.asList
+        session.run(query)
     }
 }

@@ -217,6 +217,7 @@ fun Application.module() {
         amtDeltakerClient,
         deltakerlisteService,
         unleash,
+        tiltakskoordinatorTilgangRepository,
     )
     configureMonitoring()
 
