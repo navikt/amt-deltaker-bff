@@ -60,6 +60,8 @@ spec:
         - application: amt-deltaker-innbyggers-flate
         - application: veilarbpersonflate
           namespace: poao
+        - application: mr-admin-flate
+          namespace: team-mulighetsrommet
     outbound:
       rules:
         - application: amt-arrangor
