@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.unleash
 
 import io.getunleash.Unleash
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 
 class UnleashToggle(
     private val unleashClient: Unleash,

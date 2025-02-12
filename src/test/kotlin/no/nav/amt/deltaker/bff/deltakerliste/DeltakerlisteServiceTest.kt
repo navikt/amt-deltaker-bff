@@ -1,9 +1,9 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows

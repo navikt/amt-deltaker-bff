@@ -2,10 +2,9 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementerMedAnnet
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.toTitleCase
@@ -16,6 +15,9 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID

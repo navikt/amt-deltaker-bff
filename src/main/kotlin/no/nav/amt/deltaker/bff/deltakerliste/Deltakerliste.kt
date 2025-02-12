@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
 
