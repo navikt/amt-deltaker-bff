@@ -1,12 +1,12 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltaker.model.months
 import no.nav.amt.deltaker.bff.deltaker.model.weeks
 import no.nav.amt.deltaker.bff.deltaker.model.years
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import org.junit.Test
 import java.time.LocalDate
 

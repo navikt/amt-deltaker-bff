@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker.model
 
-import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
+import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import java.util.UUID
 
 data class NavBruker(

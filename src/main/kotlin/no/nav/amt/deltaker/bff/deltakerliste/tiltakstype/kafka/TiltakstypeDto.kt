@@ -1,8 +1,8 @@
 package no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka
 
-import no.nav.amt.deltaker.bff.deltaker.model.Innsatsgruppe
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import java.util.UUID
 
 data class TiltakstypeDto(
