@@ -9,6 +9,7 @@ import no.nav.amt.lib.kafka.ManagedKafkaConsumer
 import no.nav.amt.lib.kafka.config.KafkaConfig
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.kafka.TiltakstypeDto
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.UUIDDeserializer
 import org.slf4j.LoggerFactory
@@ -37,12 +38,6 @@ class TiltakstypeConsumer(
     private val log = LoggerFactory.getLogger(javaClass)
 
     private fun handterTiltakstype(tiltakstype: TiltakstypeDto) {
-        val arenaKode = tiltakstype.arenaKode
-        if (arenaKode == null) {
-            log.warn("Mottok tiltak ${tiltakstype.tiltakskode} uten arenakode på siste-tiltakstyper-v2")
-            return
-        }
-
-        repository.upsert(tiltakstype.toModel(arenaKode))
+        repository.upsert(tiltakstype.toModel())
     }
 }
