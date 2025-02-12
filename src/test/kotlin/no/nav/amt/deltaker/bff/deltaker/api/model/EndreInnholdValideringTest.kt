@@ -2,10 +2,10 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.Innhold
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import org.junit.Test
 
 class EndreInnholdValideringTest {

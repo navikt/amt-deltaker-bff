@@ -2,6 +2,8 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementerMedAnnet
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 
 data class InnholdDto(
     val innholdskode: String,
