@@ -39,6 +39,8 @@ import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Consumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerConsumer
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingRepository
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteConsumer
@@ -178,6 +180,8 @@ fun Application.module() {
     val forslagRepository = ForslagRepository()
     val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer(kafkaProducer))
 
+    val vurderingRepository = VurderingRepository()
+    val vurderingService = VurderingService(vurderingRepository)
     val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService, forslagService)
 
     val pameldingService = PameldingService(
@@ -197,7 +201,7 @@ fun Application.module() {
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerRepository, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
-        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService, unleashToggle),
+        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle),
         ArrangorMeldingConsumer(forslagService),
     )
     consumers.forEach { it.run() }

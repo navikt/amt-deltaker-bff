@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Consumer
@@ -20,6 +21,7 @@ import java.util.UUID
 class DeltakerV2Consumer(
     private val deltakerService: DeltakerService,
     private val deltakerlisteRepository: DeltakerlisteRepository,
+    private val vurderingService: VurderingService,
     private val navBrukerService: NavBrukerService,
     private val unleashToggle: UnleashToggle,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
@@ -59,6 +61,7 @@ class DeltakerV2Consumer(
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
             )
+            vurderingService.upsert(deltakerV2.vurderingerFraArrangor.orEmpty())
             lagretDeltaker?.navBruker?.let {
                 if (it.adresse == null) {
                     log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerV2.id}")

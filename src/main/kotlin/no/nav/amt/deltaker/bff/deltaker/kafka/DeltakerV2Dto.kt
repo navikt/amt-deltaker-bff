@@ -4,6 +4,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -24,6 +25,7 @@ data class DeltakerV2Dto(
     val kilde: Kilde?,
     val innhold: Deltakelsesinnhold?,
     val historikk: List<DeltakerHistorikk>?,
+    val vurderingerFraArrangor: List<Vurdering>?,
     val forcedUpdate: Boolean? = false,
     val sistEndret: LocalDateTime?,
 ) {
