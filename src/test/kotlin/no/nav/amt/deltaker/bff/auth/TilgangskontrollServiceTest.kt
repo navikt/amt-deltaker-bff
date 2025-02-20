@@ -124,8 +124,8 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             medFortroligDeltaker()
             mockPoaoTilgangDeny(NavAnsattBehandleFortroligBrukerePolicyInput(navAnsattAzureId))
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe false
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe false
         }
     }
 
@@ -134,8 +134,8 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             medStrengtFortroligDeltaker()
             mockPoaoTilgangDeny(NavAnsattBehandleStrengtFortroligBrukerePolicyInput(navAnsattAzureId))
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe false
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe false
         }
     }
 
@@ -144,8 +144,8 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             medFortroligDeltaker()
             mockPoaoTilgangPermit(NavAnsattBehandleFortroligBrukerePolicyInput(navAnsattAzureId))
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe true
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe true
         }
     }
 
@@ -154,8 +154,8 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             medStrengtFortroligDeltaker()
             mockPoaoTilgangPermit(NavAnsattBehandleStrengtFortroligBrukerePolicyInput(navAnsattAzureId))
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe true
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe true
         }
     }
 
@@ -164,8 +164,8 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             medSkjermetDeltaker()
             mockPoaoTilgangPermit(NavAnsattBehandleSkjermedePersonerPolicyInput(navAnsattAzureId))
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe true
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe true
         }
     }
 
@@ -174,16 +174,16 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             medSkjermetDeltaker()
             mockPoaoTilgangDeny(NavAnsattBehandleSkjermedePersonerPolicyInput(navAnsattAzureId))
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe false
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe false
         }
     }
 
     @Test
     fun `koordinatorTilgangTilDeltaker - deltaker er ikke adressebeskyttet eller skjermet - tilgang er true`() {
         with(TiltakskoordinatorTilgangContext()) {
-            val tilgangTilDeltaker = tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
-            tilgangTilDeltaker.tilgang shouldBe true
+            val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+            tilgangTilDeltaker shouldBe true
         }
     }
 

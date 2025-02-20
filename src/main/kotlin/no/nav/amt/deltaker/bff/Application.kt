@@ -215,6 +215,7 @@ fun Application.module() {
         navEnhetService,
         innbyggerService,
         forslagService,
+        vurderingService,
         amtDistribusjonClient,
         sporbarhetsloggService,
         deltakerRepository,

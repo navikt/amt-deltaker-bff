@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.model
 
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.util.UUID
 
@@ -10,6 +11,7 @@ data class DeltakerResponse(
     val etternavn: String,
     val status: DeltakerStatusResponse,
     val beskyttelsesmarkering: List<Beskyttelsesmarkering>,
+    val vurdering: Vurderingstype?,
 ) {
     data class DeltakerStatusResponse(
         val type: DeltakerStatus.Type,

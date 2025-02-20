@@ -12,9 +12,10 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
@@ -26,11 +27,18 @@ import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(
     deltakerService: DeltakerService,
+    vurderingService: VurderingService,
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
     tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
+
+    fun lagTiltakskoordinatorsDeltaker(deltaker: Deltaker, navAnsattAzureId: UUID): TiltakskoordinatorsDeltaker {
+        val harTilgang = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
+        val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
+        return TiltakskoordinatorsDeltaker(deltaker, harTilgang, sisteVurdering)
+    }
 
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
         get(apiPath) {
@@ -52,7 +60,7 @@ fun Routing.registerTiltakskoordinatorApi(
             val deltakere = deltakerService
                 .getForDeltakerliste(deltakerlisteId)
                 .filterNot { deltaker -> deltaker.skalSkjules() }
-                .map { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId, it) }
+                .map { lagTiltakskoordinatorsDeltaker(it, navAnsattAzureId) }
 
             call.respond(deltakere.map { it.toDeltakerResponse() })
         }
@@ -77,7 +85,7 @@ private fun RoutingContext.getDeltakerlisteId(): UUID {
     }
 }
 
-fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
+fun TiltakskoordinatorsDeltaker.toDeltakerResponse(): DeltakerResponse {
     val (fornavn, mellomnavn, etternavn) = visningsnavn()
 
     return DeltakerResponse(
@@ -85,7 +93,7 @@ fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
         fornavn = fornavn,
         mellomnavn = mellomnavn,
         etternavn = etternavn,
-        DeltakerResponse.DeltakerStatusResponse(
+        status = DeltakerResponse.DeltakerStatusResponse(
             type = deltaker.status.type,
             aarsak = deltaker.status.aarsak?.let {
                 DeltakerResponse.DeltakerStatusAarsakResponse(
@@ -93,6 +101,7 @@ fun TiltakskoordinatorDeltakerTilgang.toDeltakerResponse(): DeltakerResponse {
                 )
             },
         ),
+        vurdering = vurdering?.vurderingstype,
         beskyttelsesmarkering = beskyttelsesmarkering(),
     )
 }
