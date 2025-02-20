@@ -6,7 +6,7 @@ import java.util.UUID
 class VurderingService(
     private val vurderingRepository: VurderingRepository,
 ) {
-    fun getSisteVurderingForDeltaker(deltakerId: UUID) = getForDeltaker(deltakerId).maxBy { it.opprettet }
+    fun getSisteVurderingForDeltaker(deltakerId: UUID) = getForDeltaker(deltakerId).maxByOrNull { it.opprettet }
 
     fun getForDeltaker(deltakerId: UUID) = vurderingRepository.getForDeltaker(deltakerId)
 
