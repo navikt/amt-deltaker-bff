@@ -3,10 +3,12 @@ package no.nav.amt.deltaker.bff.auth.model
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 
-data class TiltakskoordinatorDeltakerTilgang(
+data class TiltakskoordinatorsDeltaker(
     val deltaker: Deltaker,
     val tilgang: Boolean,
+    val vurdering: Vurdering?,
 ) {
     fun visningsnavn(): Triple<String, String?, String> = with(deltaker) {
         if (navBruker.erAdressebeskyttet && !tilgang) {
