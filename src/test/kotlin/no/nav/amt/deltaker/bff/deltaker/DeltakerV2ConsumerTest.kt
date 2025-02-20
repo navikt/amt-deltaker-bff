@@ -11,6 +11,8 @@ import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Dto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingRepository
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -19,6 +21,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.testing.SingletonPostgres16Container
@@ -37,8 +40,9 @@ class DeltakerV2ConsumerTest {
     private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository())
     private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk(relaxed = true))
     private val deltakerlisteRepository = DeltakerlisteRepository()
+    private val vurderingService = VurderingService(VurderingRepository())
     private val unleashToggle = mockk<UnleashToggle>()
-    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, navBrukerService, unleashToggle)
+    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle)
 
     @Before
     fun setup() {
@@ -54,7 +58,7 @@ class DeltakerV2ConsumerTest {
             )
             val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
             TestRepository.insert(deltaker)
-
+            val vurdering = TestData.lagVurdering(deltakerId = deltaker.id)
             val startdato = LocalDate.now().plusDays(1)
             val sluttdato = LocalDate.now().plusWeeks(3)
             val sistEndret = LocalDateTime.now().minusDays(2)
@@ -67,13 +71,16 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+                objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.ARENA, listOf(vurdering))),
             )
 
             val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.startdato shouldBe startdato
             oppdatertDeltaker.sluttdato shouldBe sluttdato
             oppdatertDeltaker.sistEndret shouldBeCloseTo sistEndret
+
+            val lagretVurdering = vurderingService.getForDeltaker(deltaker.id)
+            lagretVurdering.size shouldBe 1
         }
     }
 
@@ -291,7 +298,7 @@ class DeltakerV2ConsumerTest {
     }
 }
 
-private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
+private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde, vurderinger: List<Vurdering> = emptyList()) = DeltakerV2Dto(
     id = id,
     deltakerlisteId = deltakerliste.id,
     personalia = DeltakerV2Dto.DeltakerPersonaliaDto(navBruker.personident),
@@ -311,5 +318,6 @@ private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde) = DeltakerV2Dto(
     kilde = kilde,
     innhold = deltakelsesinnhold,
     historikk = historikk,
+    vurderingerFraArrangor = vurderinger,
     sistEndret = sistEndret,
 )

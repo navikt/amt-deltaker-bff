@@ -19,6 +19,8 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
@@ -179,6 +181,22 @@ object TestData {
             deltaker
         }
     }
+
+    fun lagVurdering(
+        id: UUID = UUID.randomUUID(),
+        deltakerId: UUID = UUID.randomUUID(),
+        opprettetAvArrangorAnsattId: UUID = UUID.randomUUID(),
+        opprettet: LocalDateTime = LocalDateTime.now().minusMonths(1),
+        vurderingstype: Vurderingstype = Vurderingstype.OPPFYLLER_IKKE_KRAVENE,
+        begrunnelse: String? = "Begrunnelse på vurdering",
+    ) = Vurdering(
+        id = id,
+        deltakerId = deltakerId,
+        opprettetAvArrangorAnsattId = opprettetAvArrangorAnsattId,
+        opprettet = opprettet,
+        vurderingstype = vurderingstype,
+        begrunnelse = begrunnelse,
+    )
 
     private fun lagArenaDeltakerHistorikk(deltaker: Deltaker, innsoktDatoFraArena: LocalDate): List<DeltakerHistorikk> {
         val importertFraArena = lagImportertFraArena(deltaker = deltaker, innsoktDato = innsoktDatoFraArena)

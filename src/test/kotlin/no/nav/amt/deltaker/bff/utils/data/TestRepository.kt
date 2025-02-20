@@ -25,6 +25,7 @@ object TestRepository {
         val tables = listOf(
             "tiltakskoordinator_deltakerliste_tilgang",
             "forslag",
+            "vurdering",
             "deltaker_status",
             "nav_ansatt",
             "nav_enhet",
