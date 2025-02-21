@@ -108,6 +108,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(): DeltakerResponse {
 
 fun Deltakerliste.toResponse(koordinatorer: List<NavAnsatt>) = DeltakerlisteResponse(
     this.id,
+    this.tiltak.tiltakskode,
     this.startDato,
     this.sluttDato,
     this.apentForPamelding,
