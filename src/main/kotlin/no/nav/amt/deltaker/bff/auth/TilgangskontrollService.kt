@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.auth
 
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
@@ -66,11 +65,11 @@ class TilgangskontrollService(
         }
     }
 
-    fun vurderKoordinatorTilgangTilDeltaker(navAnsattAzureId: UUID, deltaker: Deltaker): TiltakskoordinatorDeltakerTilgang {
+    fun harKoordinatorTilgangTilDeltaker(navAnsattAzureId: UUID, deltaker: Deltaker): Boolean {
         val tilgangTilAdressebeskyttelse = vurderAdressebeskyttelseTilgang(deltaker.navBruker.adressebeskyttelse, navAnsattAzureId)
         val tilgangTilSkjerming = vurderSkjermingTilgang(deltaker.navBruker, navAnsattAzureId)
 
-        return TiltakskoordinatorDeltakerTilgang(deltaker, tilgangTilAdressebeskyttelse.isPermit && tilgangTilSkjerming.isPermit)
+        return tilgangTilAdressebeskyttelse.isPermit && tilgangTilSkjerming.isPermit
     }
 
     private fun vurderSkjermingTilgang(navBruker: NavBruker, navAnsattAzureId: UUID): Decision = if (navBruker.erSkjermet) {

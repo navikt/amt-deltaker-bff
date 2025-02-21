@@ -4,15 +4,15 @@ import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangContext
 import org.junit.Test
 
-class TiltakskoordinatorDeltakerTilgangTest {
+class TiltakskoordinatorsDeltakerTest {
     @Test
     fun `visningsnavn - adressebeskyttet og ikke tilgang - sensurerer navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medFortroligDeltaker()
-        val tilgang = TiltakskoordinatorDeltakerTilgang(deltaker, false)
+        val tilgang = TiltakskoordinatorsDeltaker(deltaker, false, null)
 
         val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
 
-        fornavn shouldBe TiltakskoordinatorDeltakerTilgang.ADRESSEBESKYTTET_PLACEHOLDER_NAVN
+        fornavn shouldBe TiltakskoordinatorsDeltaker.ADRESSEBESKYTTET_PLACEHOLDER_NAVN
         mellomnavn shouldBe null
         etternavn shouldBe ""
     }
@@ -20,7 +20,7 @@ class TiltakskoordinatorDeltakerTilgangTest {
     @Test
     fun `visningsnavn - adressebeskyttet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medFortroligDeltaker()
-        val tilgang = TiltakskoordinatorDeltakerTilgang(deltaker, true)
+        val tilgang = TiltakskoordinatorsDeltaker(deltaker, true, null)
 
         val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
 
@@ -31,7 +31,7 @@ class TiltakskoordinatorDeltakerTilgangTest {
 
     @Test
     fun `visningsnavn - ikke adressebeskyttet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
-        val tilgang = TiltakskoordinatorDeltakerTilgang(deltaker, true)
+        val tilgang = TiltakskoordinatorsDeltaker(deltaker, true, null)
 
         val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
 
@@ -43,11 +43,11 @@ class TiltakskoordinatorDeltakerTilgangTest {
     @Test
     fun `visningsnavn - skjermet og ikke tilgang - sensurerer navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medSkjermetDeltaker()
-        val tilgang = TiltakskoordinatorDeltakerTilgang(deltaker, false)
+        val tilgang = TiltakskoordinatorsDeltaker(deltaker, false, null)
 
         val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
 
-        fornavn shouldBe TiltakskoordinatorDeltakerTilgang.SKJERMET_PERSON_PLACEHOLDER_NAVN
+        fornavn shouldBe TiltakskoordinatorsDeltaker.SKJERMET_PERSON_PLACEHOLDER_NAVN
         mellomnavn shouldBe null
         etternavn shouldBe ""
     }
@@ -55,7 +55,7 @@ class TiltakskoordinatorDeltakerTilgangTest {
     @Test
     fun `visningsnavn - skjermet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medSkjermetDeltaker()
-        val tilgang = TiltakskoordinatorDeltakerTilgang(deltaker, true)
+        val tilgang = TiltakskoordinatorsDeltaker(deltaker, true, null)
 
         val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
 
@@ -66,7 +66,7 @@ class TiltakskoordinatorDeltakerTilgangTest {
 
     @Test
     fun `visningsnavn - ikke skjermet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
-        val tilgang = TiltakskoordinatorDeltakerTilgang(deltaker, true)
+        val tilgang = TiltakskoordinatorsDeltaker(deltaker, true, null)
 
         val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
 

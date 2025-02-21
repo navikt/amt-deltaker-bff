@@ -18,15 +18,18 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerTilgang
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagVurdering
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import org.junit.Before
 import org.junit.Test
 import java.util.UUID
@@ -36,6 +39,7 @@ class TiltakskoordinatorApiTest {
     private val tilgangskontrollService = mockk<TilgangskontrollService>()
     private val deltakerlisteService = mockk<DeltakerlisteService>()
     private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
+    private val vurderingService = mockk<VurderingService>()
 
     @Before
     fun setup() {
@@ -142,17 +146,24 @@ class TiltakskoordinatorApiTest {
         mockTilgangTilDeltakerliste()
         val deltakerliste = TestData.lagDeltakerliste()
         val deltakere = (0..5).map { TestData.lagDeltaker(deltakerliste = deltakerliste) }
+        val vurdering = lagVurdering()
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
         every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
         deltakere.forEach {
-            every { tilgangskontrollService.vurderKoordinatorTilgangTilDeltaker(any(), it) } returns it.toDeltakerTilgang()
+            every { tilgangskontrollService.harKoordinatorTilgangTilDeltaker(any(), it) } returns true
+            every { vurderingService.getSisteVurderingForDeltaker(it.id) } returns vurdering
         }
 
         client
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltakere.map { it.toDeltakerTilgang().toDeltakerResponse() })
+                bodyAsText() shouldBe objectMapper.writeValueAsString(
+                    deltakere.map {
+                            deltaker ->
+                        deltaker.toDeltakerTilgang(vurdering = vurdering).toDeltakerResponse()
+                    },
+                )
             }
     }
 
@@ -203,6 +214,7 @@ class TiltakskoordinatorApiTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                vurderingService,
                 mockk(),
                 mockk(),
                 mockk(),
@@ -214,5 +226,6 @@ class TiltakskoordinatorApiTest {
         }
     }
 
-    private fun Deltaker.toDeltakerTilgang(tilgang: Boolean = true) = TiltakskoordinatorDeltakerTilgang(this, tilgang)
+    private fun Deltaker.toDeltakerTilgang(tilgang: Boolean = true, vurdering: Vurdering) =
+        TiltakskoordinatorsDeltaker(this, tilgang, vurdering)
 }

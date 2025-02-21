@@ -16,7 +16,7 @@ class VurderingRepository {
                 opprettetAvArrangorAnsattId = row.uuid("opprettet_av_arrangor_ansatt_id"),
                 opprettet = row.localDateTime("opprettet"),
                 vurderingstype = Vurderingstype.valueOf(row.string("vurderingstype")),
-                begrunnelse = row.string("begrunnelse"),
+                begrunnelse = row.stringOrNull("begrunnelse"),
             )
         }
     }

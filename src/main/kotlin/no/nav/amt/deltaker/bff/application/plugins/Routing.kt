@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
@@ -46,6 +47,7 @@ fun Application.configureRouting(
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
     forslagService: ForslagService,
+    vurderingService: VurderingService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
@@ -124,6 +126,7 @@ fun Application.configureRouting(
 
         registerTiltakskoordinatorApi(
             deltakerService,
+            vurderingService,
             deltakerlisteService,
             tilgangskontrollService,
             tiltakskoordinatorTilgangRepository,
