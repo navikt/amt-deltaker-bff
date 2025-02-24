@@ -27,10 +27,10 @@ object TestRepository {
             "forslag",
             "vurdering",
             "deltaker_status",
-            "nav_ansatt",
-            "nav_enhet",
             "deltaker",
             "nav_bruker",
+            "nav_ansatt",
+            "nav_enhet",
             "deltakerliste",
             "arrangor",
         )
@@ -317,10 +317,26 @@ object TestRepository {
     }
 
     fun insert(bruker: NavBruker) = Database.query {
+        try {
+            if (bruker.navVeilederId != null) {
+                val navVeileder = TestData.lagNavAnsatt(bruker.navVeilederId!!)
+                insert(navVeileder)
+            }
+        } catch (e: Exception) {
+            log.warn("NavAnsatt med id ${bruker.navVeilederId} er allerede opprettet", e)
+        }
+        try {
+            if (bruker.navEnhetId != null) {
+                val enhet = TestData.lagNavEnhet(bruker.navEnhetId!!)
+                insert(enhet)
+            }
+        } catch (e: Exception) {
+            log.warn("NavEnhet med id ${bruker.navEnhetId} er allerede opprettet", e)
+        }
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse, er_skjermet) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe, :adresse, :er_skjermet)
+            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse, er_skjermet, nav_enhet_id, nav_veileder_id) 
+            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe, :adresse, :er_skjermet, :nav_enhet_id, :nav_veileder_id)
             """.trimIndent()
 
         val params = mapOf(
@@ -334,6 +350,8 @@ object TestRepository {
             "innsatsgruppe" to bruker.innsatsgruppe?.name,
             "adresse" to toPGObject(bruker.adresse),
             "er_skjermet" to bruker.erSkjermet,
+            "nav_enhet_id" to bruker.navEnhetId,
+            "nav_veileder_id" to bruker.navVeilederId,
         )
 
         it.update(queryOf(sql, params))

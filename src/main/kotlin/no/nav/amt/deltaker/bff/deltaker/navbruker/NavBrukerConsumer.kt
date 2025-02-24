@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
+import no.nav.amt.deltaker.bff.navansatt.NavBrukerDto
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.kafka.ManagedKafkaConsumer
 import no.nav.amt.lib.kafka.config.KafkaConfig
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class NavBrukerConsumer(
-    private val repository: NavBrukerRepository,
+    private val navBrukerService: NavBrukerService,
     private val pameldingService: PameldingService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl("earliest"),
 ) : Consumer<UUID, String?> {
@@ -37,8 +37,8 @@ class NavBrukerConsumer(
             log.warn("Mottok tombstone for nav-bruker: $key, skal ikke skje.")
             return
         }
-        val navBruker = objectMapper.readValue<NavBruker>(value)
-        repository.upsert(navBruker)
+        val navBruker = objectMapper.readValue<NavBrukerDto>(value).toModel()
+        navBrukerService.upsert(navBruker)
         if (navBruker.innsatsgruppe == null) {
             val kladder = pameldingService.getKladder(navBruker.personident)
             kladder.forEach {

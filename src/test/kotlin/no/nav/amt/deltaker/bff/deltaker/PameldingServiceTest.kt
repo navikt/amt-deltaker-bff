@@ -12,6 +12,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementerMedAnnet
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
@@ -33,6 +35,7 @@ import kotlin.test.assertFailsWith
 
 class PameldingServiceTest {
     companion object {
+        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
         private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
@@ -43,7 +46,7 @@ class PameldingServiceTest {
 
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
-            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository()),
+            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
             amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
         )
@@ -61,9 +64,13 @@ class PameldingServiceTest {
         val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
         val kladd = TestData.lagDeltakerKladd(deltakerliste = deltakerliste)
+        val navVeileder = TestData.lagNavAnsatt(id = kladd.navBruker.navVeilederId!!)
+        val navEnhet = TestData.lagNavEnhet(id = kladd.navBruker.navEnhetId!!)
         TestRepository.insert(deltakerliste, overordnetArrangor)
 
         MockResponseHandler.addOpprettKladdResponse(kladd)
+        MockResponseHandler.addNavAnsattResponse(navVeileder)
+        MockResponseHandler.addNavEnhetGetResponse(navEnhet)
 
         runBlocking {
             val deltaker = pameldingService.opprettKladd(
@@ -137,7 +144,11 @@ class PameldingServiceTest {
         TestRepository.insert(deltaker)
 
         val kladd = TestData.lagDeltakerKladd(deltakerliste = deltaker.deltakerliste)
+        val navVeileder = TestData.lagNavAnsatt(kladd.navBruker.navVeilederId!!)
+        val navEnhet = TestData.lagNavEnhet(kladd.navBruker.navEnhetId!!)
         MockResponseHandler.addOpprettKladdResponse(kladd)
+        MockResponseHandler.addNavAnsattResponse(navVeileder)
+        MockResponseHandler.addNavEnhetGetResponse(navEnhet)
 
         runBlocking {
             val nyDeltaker =
@@ -154,6 +165,8 @@ class PameldingServiceTest {
     @Test
     fun `upsertUtkast - oppdaterer og returnerer deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+        val navEnhet = TestData.lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
+        TestRepository.insert(navEnhet)
         TestRepository.insert(deltaker)
 
         val forventetDeltaker = deltaker.copy(
@@ -176,7 +189,7 @@ class PameldingServiceTest {
                 forventetDeltaker.deltakelsesprosent,
                 forventetDeltaker.dagerPerUke,
                 endretAv = "Veileder",
-                endretAvEnhet = "Naverstad",
+                endretAvEnhet = navEnhet.enhetsnummer,
             ),
             false,
         )

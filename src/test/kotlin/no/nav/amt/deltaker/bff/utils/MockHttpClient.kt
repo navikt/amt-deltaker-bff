@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -36,7 +37,7 @@ fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
     val mockEngine = MockEngine {
         val api = Pair(it.url.toString(), it.method)
         if (defaultResponse != null) MockResponseHandler.addResponse(it.url.toString(), it.method, defaultResponse)
-        val response = MockResponseHandler.responses[api]!!
+        val response = MockResponseHandler.responses[api] ?: throw NoSuchElementException("Ingen response mocket for api $api")
 
         respond(
             content = ByteReadChannel(response.content),
@@ -73,19 +74,12 @@ fun mockAmtDeltakerClient() = AmtDeltakerClient(
     azureAdTokenClient = mockAzureAdClient(),
 )
 
-fun mockAmtPersonServiceClient(navEnhet: NavEnhet = TestData.lagNavEnhet()): AmtPersonServiceClient {
-    val navEnhetDto = NavEnhetDto(
-        id = navEnhet.id,
-        navn = navEnhet.navn,
-        enhetId = navEnhet.enhetsnummer,
-    )
-    return AmtPersonServiceClient(
-        baseUrl = AMT_PERSON_SERVICE_URL,
-        scope = "amt.personservice.scope",
-        httpClient = mockHttpClient(objectMapper.writeValueAsString(navEnhetDto)),
-        azureAdTokenClient = mockAzureAdClient(),
-    )
-}
+fun mockAmtPersonServiceClient(): AmtPersonServiceClient = AmtPersonServiceClient(
+    baseUrl = AMT_PERSON_SERVICE_URL,
+    scope = "amt.personservice.scope",
+    httpClient = mockHttpClient(),
+    azureAdTokenClient = mockAzureAdClient(),
+)
 
 fun mockAzureAdClient() = AzureAdTokenClient(
     azureAdTokenUrl = "http://azure",
@@ -200,7 +194,28 @@ object MockResponseHandler {
         val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/vedtak/${vedtak.id}/fatt"
         addResponse(url, HttpMethod.Post, deltaker.toDeltakeroppdatering(), status)
     }
+
+    fun addNavAnsattResponse(navAnsatt: NavAnsatt, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_PERSON_SERVICE_URL/api/nav-ansatt/${navAnsatt.id}"
+        addResponse(url, HttpMethod.Get, navAnsatt, status)
+    }
+
+    fun addNavEnhetGetResponse(navEnhet: NavEnhet, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_PERSON_SERVICE_URL/api/nav-enhet/${navEnhet.id}"
+        addResponse(url, HttpMethod.Get, navEnhet.toDto(), status)
+    }
+
+    fun addNavEnhetPostResponse(navEnhet: NavEnhet, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_PERSON_SERVICE_URL/api/nav-enhet"
+        addResponse(url, HttpMethod.Post, navEnhet.toDto(), status)
+    }
 }
+
+fun NavEnhet.toDto() = NavEnhetDto(
+    id,
+    enhetsnummer,
+    navn,
+)
 
 fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     id,

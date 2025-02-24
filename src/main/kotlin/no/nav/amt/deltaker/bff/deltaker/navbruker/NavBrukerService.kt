@@ -2,13 +2,20 @@ package no.nav.amt.deltaker.bff.deltaker.navbruker
 
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 class NavBrukerService(
     private val amtPersonServiceClient: AmtPersonServiceClient,
     private val repository: NavBrukerRepository,
+    private val navAnsattService: NavAnsattService,
+    private val navEnhetService: NavEnhetService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    fun get(id: UUID) = repository.get(id)
 
     suspend fun getOrCreate(personident: String): Result<NavBruker> {
         val brukerResult = repository.get(personident)
@@ -17,12 +24,12 @@ class NavBrukerService(
         val bruker = amtPersonServiceClient.hentNavBruker(personident)
 
         log.info("Oppretter nav-bruker ${bruker.personId}")
-        return repository.upsert(bruker)
+        return upsertNavBruker(bruker)
     }
 
-    fun upsert(navBruker: NavBruker) {
+    suspend fun upsert(navBruker: NavBruker) {
         val bruker = repository.get(navBruker.personId).getOrNull()
-        if (navBruker != bruker) repository.upsert(navBruker)
+        if (navBruker != bruker) upsertNavBruker(navBruker)
     }
 
     suspend fun update(personident: String) {
@@ -31,5 +38,12 @@ class NavBrukerService(
 
         log.info("Oppdaterte nav-bruker ${bruker.personId} med data fra amt-person-service")
         if (lagretBruker != bruker) repository.upsert(bruker)
+    }
+
+    private suspend fun upsertNavBruker(navBruker: NavBruker): Result<NavBruker> {
+        navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
+        navBruker.navEnhetId?.let { navEnhetService.hentEllerOpprettEnhet(it) }
+
+        return repository.upsert(navBruker)
     }
 }

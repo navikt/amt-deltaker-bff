@@ -339,6 +339,8 @@ object TestData {
         innsatsgruppe: Innsatsgruppe? = Innsatsgruppe.STANDARD_INNSATS,
         adresse: Adresse? = lagAdresse(),
         erSkjermet: Boolean = false,
+        navVeilederId: UUID = UUID.randomUUID(),
+        navEnhetId: UUID = UUID.randomUUID(),
     ) = NavBruker(
         personId,
         personident,
@@ -350,6 +352,8 @@ object TestData {
         innsatsgruppe,
         adresse,
         erSkjermet,
+        navEnhetId,
+        navVeilederId,
     )
 
     fun lagAdresse(): Adresse = Adresse(

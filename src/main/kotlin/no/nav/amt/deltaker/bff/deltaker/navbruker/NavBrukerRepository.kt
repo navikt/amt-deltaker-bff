@@ -23,24 +23,49 @@ class NavBrukerRepository {
         innsatsgruppe = row.stringOrNull("innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
         adresse = row.stringOrNull("adresse")?.let { objectMapper.readValue(it) },
         erSkjermet = row.boolean("er_skjermet"),
+        navEnhetId = row.uuidOrNull("nav_enhet_id"),
+        navVeilederId = row.uuidOrNull("nav_veileder_id"),
     )
 
     fun upsert(bruker: NavBruker) = Database.query {
         val sql =
             """
-            insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse, er_skjermet) 
-            values (:person_id, :personident, :fornavn, :mellomnavn, :etternavn, :adressebeskyttelse, :oppfolgingsperioder, :innsatsgruppe, :adresse, :er_skjermet)
-            on conflict (person_id) do update set
-                personident = :personident,
-                fornavn = :fornavn,
-                mellomnavn = :mellomnavn,
-                etternavn = :etternavn,
-                adressebeskyttelse = :adressebeskyttelse,
-                oppfolgingsperioder = :oppfolgingsperioder,
-                innsatsgruppe = :innsatsgruppe,
-                adresse = :adresse,
-                er_skjermet = :er_skjermet,
-                modified_at = current_timestamp
+            insert into nav_bruker(person_id,
+                                   personident,
+                                   fornavn,
+                                   mellomnavn,
+                                   etternavn,
+                                   adressebeskyttelse,
+                                   oppfolgingsperioder,
+                                   innsatsgruppe,
+                                   adresse,
+                                   er_skjermet,
+                                   nav_veileder_id,
+                                   nav_enhet_id)
+            values (:person_id,
+                    :personident,
+                    :fornavn,
+                    :mellomnavn,
+                    :etternavn,
+                    :adressebeskyttelse,
+                    :oppfolgingsperioder,
+                    :innsatsgruppe,
+                    :adresse,
+                    :er_skjermet,
+                    :nav_veileder_id,
+                    :nav_enhet_id)
+            on conflict (person_id) do update set personident         = :personident,
+                                                  fornavn             = :fornavn,
+                                                  mellomnavn          = :mellomnavn,
+                                                  etternavn           = :etternavn,
+                                                  adressebeskyttelse  = :adressebeskyttelse,
+                                                  oppfolgingsperioder = :oppfolgingsperioder,
+                                                  innsatsgruppe       = :innsatsgruppe,
+                                                  adresse             = :adresse,
+                                                  er_skjermet         = :er_skjermet,
+                                                  nav_veileder_id     = :nav_veileder_id,
+                                                  nav_enhet_id        = :nav_enhet_id,
+                                                  modified_at         = current_timestamp
             returning *
             """.trimIndent()
 
@@ -55,9 +80,12 @@ class NavBrukerRepository {
             "innsatsgruppe" to bruker.innsatsgruppe?.name,
             "adresse" to toPGObject(bruker.adresse),
             "er_skjermet" to bruker.erSkjermet,
+            "nav_enhet_id" to bruker.navEnhetId,
+            "nav_veileder_id" to bruker.navVeilederId,
         )
 
-        it.run(queryOf(sql, params).map(::rowMapper).asSingle)
+        it
+            .run(queryOf(sql, params).map(::rowMapper).asSingle)
             ?.let { b -> Result.success(b) }
             ?: Result.failure(NoSuchElementException("Noe gikk galt med upsert av bruker ${bruker.personId}"))
     }
@@ -68,7 +96,8 @@ class NavBrukerRepository {
             paramMap = mapOf("person_id" to personId),
         )
 
-        it.run(query.map(::rowMapper).asSingle)
+        it
+            .run(query.map(::rowMapper).asSingle)
             ?.let { b -> Result.success(b) }
             ?: Result.failure(NoSuchElementException("Fant ikke bruker $personId"))
     }
@@ -79,7 +108,8 @@ class NavBrukerRepository {
             paramMap = mapOf("personident" to personident),
         )
 
-        it.run(query.map(::rowMapper).asSingle)
+        it
+            .run(query.map(::rowMapper).asSingle)
             ?.let { b -> Result.success(b) }
             ?: Result.failure(NoSuchElementException("Fant ikke bruker med personident"))
     }
