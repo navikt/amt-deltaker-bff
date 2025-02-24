@@ -130,6 +130,7 @@ fun Application.configureRouting(
             deltakerlisteService,
             tilgangskontrollService,
             tiltakskoordinatorTilgangRepository,
+            navEnhetService,
         )
 
         val catchAllRoute = "{...}"

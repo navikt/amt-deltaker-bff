@@ -12,6 +12,7 @@ data class DeltakerResponse(
     val status: DeltakerStatusResponse,
     val beskyttelsesmarkering: List<Beskyttelsesmarkering>,
     val vurdering: Vurderingstype?,
+    val navEnhet: String?,
 ) {
     data class DeltakerStatusResponse(
         val type: DeltakerStatus.Type,
