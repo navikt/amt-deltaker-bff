@@ -37,5 +37,5 @@ class NavEnhetService(
         return hentEnheter(ider)
     }
 
-    private fun hentEnheter(enhetIder: List<UUID>) = repository.getMany(enhetIder).map { it.toNavEnhet() }.associateBy { it.id }
+    fun hentEnheter(enhetIder: List<UUID>) = repository.getMany(enhetIder).map { it.toNavEnhet() }.associateBy { it.id }
 }

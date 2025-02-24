@@ -19,6 +19,8 @@ import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.KoordinatorResponse
@@ -31,6 +33,7 @@ fun Routing.registerTiltakskoordinatorApi(
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
     tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
+    navEnhetService: NavEnhetService,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
@@ -62,7 +65,9 @@ fun Routing.registerTiltakskoordinatorApi(
                 .filterNot { deltaker -> deltaker.skalSkjules() }
                 .map { lagTiltakskoordinatorsDeltaker(it, navAnsattAzureId) }
 
-            call.respond(deltakere.map { it.toDeltakerResponse() })
+            val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.deltaker.navBruker.navEnhetId })
+
+            call.respond(deltakere.map { it.toDeltakerResponse(navEnheter[it.deltaker.navBruker.navEnhetId]) })
         }
 
         post("$apiPath/tilgang/legg-til") {
@@ -85,7 +90,7 @@ private fun RoutingContext.getDeltakerlisteId(): UUID {
     }
 }
 
-fun TiltakskoordinatorsDeltaker.toDeltakerResponse(): DeltakerResponse {
+fun TiltakskoordinatorsDeltaker.toDeltakerResponse(navEnhet: NavEnhet?): DeltakerResponse {
     val (fornavn, mellomnavn, etternavn) = visningsnavn()
 
     return DeltakerResponse(
@@ -103,6 +108,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(): DeltakerResponse {
         ),
         vurdering = vurdering?.vurderingstype,
         beskyttelsesmarkering = beskyttelsesmarkering(),
+        navEnhet = navEnhet?.navn,
     )
 }
 
