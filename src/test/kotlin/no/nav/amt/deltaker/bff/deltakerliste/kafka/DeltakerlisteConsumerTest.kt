@@ -15,6 +15,8 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
@@ -37,6 +39,7 @@ class DeltakerlisteConsumerTest {
         lateinit var navEnhetService: NavEnhetService
         lateinit var deltakerService: DeltakerService
         lateinit var pameldingService: PameldingService
+        lateinit var navAnsattService: NavAnsattService
 
         @JvmStatic
         @BeforeClass
@@ -44,6 +47,7 @@ class DeltakerlisteConsumerTest {
             SingletonPostgres16Container
             repository = DeltakerlisteRepository()
             tiltakstypeRepository = TiltakstypeRepository()
+            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
             navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
             deltakerService = DeltakerService(
                 deltakerRepository = DeltakerRepository(),
@@ -53,7 +57,7 @@ class DeltakerlisteConsumerTest {
             )
             pameldingService = PameldingService(
                 deltakerService = deltakerService,
-                navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository()),
+                navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
                 amtDeltakerClient = mockAmtDeltakerClient(),
                 navEnhetService = navEnhetService,
             )

@@ -146,16 +146,18 @@ fun Application.module() {
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattRepository = NavAnsattRepository()
     val navEnhetRepository = NavEnhetRepository()
+    val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
+    val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
 
     val navBrukerRepository = NavBrukerRepository()
     val navBrukerService = NavBrukerService(
         amtPersonServiceClient,
         navBrukerRepository,
+        navAnsattService,
+        navEnhetService,
     )
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
-    val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
-    val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
     val deltakerlisteService = DeltakerlisteService(deltakerlisteRepository)
 
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
@@ -199,7 +201,7 @@ fun Application.module() {
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService),
         NavAnsattConsumer(navAnsattService),
-        NavBrukerConsumer(navBrukerRepository, pameldingService),
+        NavBrukerConsumer(navBrukerService, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
         DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle),
         ArrangorMeldingConsumer(forslagService),

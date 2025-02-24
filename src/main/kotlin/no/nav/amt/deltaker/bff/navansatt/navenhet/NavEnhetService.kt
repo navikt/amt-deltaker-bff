@@ -23,6 +23,13 @@ class NavEnhetService(
         return repository.upsert(navEnhet).toNavEnhet()
     }
 
+    suspend fun hentEllerOpprettEnhet(id: UUID): NavEnhet? {
+        repository.get(id)?.let { return it.toNavEnhet() }
+
+        val navEnhet = amtPersonServiceClient.hentNavEnhet(id)
+        return repository.upsert(navEnhet).toNavEnhet()
+    }
+
     fun hentEnhet(id: UUID) = repository.get(id)?.toNavEnhet()
 
     fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {

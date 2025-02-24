@@ -13,8 +13,12 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adresse
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
+import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Oppfolgingsperiode
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -77,6 +81,22 @@ class AmtPersonServiceClient(
         return response.body<NavEnhetDto>().tilNavEnhet()
     }
 
+    suspend fun hentNavEnhet(id: UUID): NavEnhet {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.get("$baseUrl/api/nav-enhet/$id") {
+            header(HttpHeaders.Authorization, token)
+            contentType(ContentType.Application.Json)
+        }
+        if (!response.status.isSuccess()) {
+            log.error(
+                "Kunne ikke hente nav-enhet med id $id fra amt-person-service. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+            throw RuntimeException("Kunne ikke hente NAV-enhet fra amt-person-service")
+        }
+        return response.body<NavEnhetDto>().tilNavEnhet()
+    }
+
     suspend fun hentNavBruker(personident: String): NavBruker {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/api/nav-bruker") {
@@ -87,7 +107,10 @@ class AmtPersonServiceClient(
         if (!response.status.isSuccess()) {
             error("Kunne ikke hente nav-bruker fra amt-person-service")
         }
-        return response.body()
+
+        val dto: NavBrukerDto = response.body()
+
+        return dto.toModel()
     }
 }
 
@@ -103,16 +126,44 @@ data class NavEnhetRequest(
     val enhetId: String,
 )
 
+data class NavBrukerDto(
+    val personId: UUID,
+    val personident: String,
+    val fornavn: String,
+    val mellomnavn: String?,
+    val etternavn: String,
+    val adressebeskyttelse: Adressebeskyttelse?,
+    val oppfolgingsperioder: List<Oppfolgingsperiode> = emptyList(),
+    val innsatsgruppe: Innsatsgruppe?,
+    val adresse: Adresse?,
+    val erSkjermet: Boolean,
+    val navEnhet: NavEnhetDto?,
+    val navVeilederId: UUID?,
+) {
+    fun toModel() = NavBruker(
+        personId,
+        personident,
+        fornavn,
+        mellomnavn,
+        etternavn,
+        adressebeskyttelse,
+        oppfolgingsperioder,
+        innsatsgruppe,
+        adresse,
+        erSkjermet,
+        navEnhet?.id,
+        navVeilederId,
+    )
+}
+
 data class NavEnhetDto(
     val id: UUID,
     val enhetId: String,
     val navn: String,
 ) {
-    fun tilNavEnhet(): NavEnhet {
-        return NavEnhet(
-            id = id,
-            enhetsnummer = enhetId,
-            navn = navn,
-        )
-    }
+    fun tilNavEnhet(): NavEnhet = NavEnhet(
+        id = id,
+        enhetsnummer = enhetId,
+        navn = navn,
+    )
 }

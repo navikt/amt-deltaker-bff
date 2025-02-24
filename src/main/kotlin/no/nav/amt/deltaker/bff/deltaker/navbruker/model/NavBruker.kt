@@ -14,6 +14,8 @@ data class NavBruker(
     val innsatsgruppe: Innsatsgruppe?,
     val adresse: Adresse?,
     val erSkjermet: Boolean,
+    val navEnhetId: UUID?,
+    val navVeilederId: UUID?,
 ) {
     val erAdressebeskyttet get() = adressebeskyttelse != null
 

@@ -72,6 +72,8 @@ class DeltakerServiceTest {
             ),
         )
 
+        val navEnhet = navEnhetService.hentEnhet(deltaker.navBruker.navEnhetId!!)!!
+
         endringer.forEach { endring ->
             MockResponseHandler.addEndringsresponse(
                 deltaker.endre(TestData.lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
@@ -82,7 +84,7 @@ class DeltakerServiceTest {
                 deltaker,
                 endring,
                 "navIdent",
-                "enhetsnummer",
+                navEnhet.enhetsnummer,
             )
 
             when (endring) {
