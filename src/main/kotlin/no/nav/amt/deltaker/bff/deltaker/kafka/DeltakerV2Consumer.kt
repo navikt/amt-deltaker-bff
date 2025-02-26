@@ -73,6 +73,7 @@ class DeltakerV2Consumer(
             val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()
             val deltaker = deltakerV2.toDeltaker(navBruker, deltakerliste)
             deltakerService.opprettArenaDeltaker(deltaker)
+            vurderingService.upsert(deltakerV2.vurderingerFraArrangor.orEmpty())
         }
     }
 

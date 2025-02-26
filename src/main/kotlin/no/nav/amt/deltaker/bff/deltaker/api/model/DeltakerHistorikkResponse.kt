@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
+import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -61,6 +63,13 @@ data class ImportertFraArenaResponse(
     val status: DeltakerStatus,
 ) : DeltakerHistorikkResponse
 
+data class VurderingFraArrangorResponse(
+    val vurderingstype: Vurderingstype,
+    val begrunnelse: String?,
+    val opprettetDato: LocalDateTime,
+    val endretAv: String,
+) : DeltakerHistorikkResponse
+
 fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
@@ -72,6 +81,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
         is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
         is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
+        is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse()
     }
 }
 
@@ -113,4 +123,11 @@ fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
     dagerPerUke = deltakerVedImport.dagerPerUke,
     deltakelsesprosent = deltakerVedImport.deltakelsesprosent,
     status = deltakerVedImport.status,
+)
+
+fun VurderingFraArrangorData.toResponse() = VurderingFraArrangorResponse(
+    vurderingstype = vurderingstype,
+    begrunnelse = begrunnelse,
+    opprettetDato = opprettet,
+    endretAv = "Nav", // Det er ikke bestemt enda om vi kan vise navnet på arrangør
 )

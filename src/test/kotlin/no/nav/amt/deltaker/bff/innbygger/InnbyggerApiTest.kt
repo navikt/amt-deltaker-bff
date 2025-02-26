@@ -273,4 +273,5 @@ private val DeltakerHistorikk.id
         is DeltakerHistorikk.Forslag -> forslag.id
         is DeltakerHistorikk.EndringFraArrangor -> endringFraArrangor.id
         is DeltakerHistorikk.ImportertFraArena -> importertFraArena.deltakerId
+        is DeltakerHistorikk.VurderingFraArrangor -> data.id
     }
