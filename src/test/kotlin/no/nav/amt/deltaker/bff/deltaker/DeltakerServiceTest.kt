@@ -293,7 +293,10 @@ class DeltakerServiceTest {
     @Test
     fun `oppdaterDeltaker(deltakerOppdatering) - avlyst gjennomforing - setter kan ikke endres`() {
         val navBruker = TestData.lagNavBruker()
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART), navBruker = navBruker)
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            navBruker = navBruker,
+        )
         TestRepository.insert(navBruker)
         TestRepository.insert(deltaker)
         val deltakeroppdatering = Deltakeroppdatering(
