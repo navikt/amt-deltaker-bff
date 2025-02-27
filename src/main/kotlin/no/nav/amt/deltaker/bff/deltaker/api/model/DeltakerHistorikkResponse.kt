@@ -81,7 +81,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
         is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
         is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
-        is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse()
+        is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
     }
 }
 
@@ -125,9 +125,9 @@ fun ImportertFraArena.toResponse() = ImportertFraArenaResponse(
     status = deltakerVedImport.status,
 )
 
-fun VurderingFraArrangorData.toResponse() = VurderingFraArrangorResponse(
+fun VurderingFraArrangorData.toResponse(arrangornavn: String) = VurderingFraArrangorResponse(
     vurderingstype = vurderingstype,
     begrunnelse = begrunnelse,
     opprettetDato = opprettet,
-    endretAv = "Nav", // Det er ikke bestemt enda om vi kan vise navnet på arrangør
+    endretAv = arrangornavn,
 )
