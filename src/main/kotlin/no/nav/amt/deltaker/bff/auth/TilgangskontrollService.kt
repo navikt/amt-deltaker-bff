@@ -21,6 +21,7 @@ class TilgangskontrollService(
     private val poaoTilgangCachedClient: PoaoTilgangCachedClient,
     private val navAnsattService: NavAnsattService,
     private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
+    private val tiltakskoordinatorTilgangProducer: TiltakskoordinatorTilgangProducer,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -101,15 +102,19 @@ class TilgangskontrollService(
             return Result.failure(IllegalArgumentException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
         }
 
-        val tilgang = TiltakskoordinatorDeltakerlisteTilgang(
-            id = UUID.randomUUID(),
-            navAnsattId = koordinator.id,
-            deltakerlisteId = deltakerlisteId,
-            gyldigFra = LocalDateTime.now(),
-            gyldigTil = null,
+        val tilgang = tiltakskoordinatorTilgangRepository.upsert(
+            TiltakskoordinatorDeltakerlisteTilgang(
+                id = UUID.randomUUID(),
+                navAnsattId = koordinator.id,
+                deltakerlisteId = deltakerlisteId,
+                gyldigFra = LocalDateTime.now(),
+                gyldigTil = null,
+            ),
         )
 
-        return tiltakskoordinatorTilgangRepository.upsert(tilgang)
+        tilgang.onSuccess { tiltakskoordinatorTilgangProducer.produce(it.toDto(navIdent)) }
+
+        return tilgang
     }
 
     suspend fun verifiserTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID) {

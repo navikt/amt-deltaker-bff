@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangProducer
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
@@ -168,11 +169,13 @@ fun Application.module() {
     )
 
     val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
+    val tiltakskoordinatorTilgangProducer = TiltakskoordinatorTilgangProducer(kafkaProducer)
 
     val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
+        tiltakskoordinatorTilgangProducer,
     )
 
     val sporbarhetsloggService = SporbarhetsloggService(AuditLoggerImpl())

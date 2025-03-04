@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgangDto
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.amt.lib.testing.shouldBeCloseTo
@@ -27,6 +28,27 @@ fun assertProduced(forslag: Forslag) {
         cachedForslag.opprettet shouldBe forslag.opprettet
         cachedForslag.opprettetAvArrangorAnsattId shouldBe forslag.opprettetAvArrangorAnsattId
         sammenlignForslagStatus(cachedForslag.status, forslag.status)
+    }
+
+    consumer.stop()
+}
+
+fun assertProduced(tilgang: TiltakskoordinatorDeltakerlisteTilgangDto) {
+    val cache = mutableMapOf<UUID, TiltakskoordinatorDeltakerlisteTilgangDto>()
+
+    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC) { k, v ->
+        cache[UUID.fromString(k)] = objectMapper.readValue(v)
+    }
+
+    consumer.run()
+
+    AsyncUtils.eventually {
+        val cachedTilgang = cache[tilgang.id]!!
+        cachedTilgang.id shouldBe tilgang.id
+        cachedTilgang.gjennomforingId shouldBe tilgang.gjennomforingId
+        cachedTilgang.navIdent shouldBe tilgang.navIdent
+        cachedTilgang.gyldigTil shouldBe tilgang.gyldigTil
+        cachedTilgang.gyldigFra shouldBe tilgang.gyldigFra
     }
 
     consumer.stop()

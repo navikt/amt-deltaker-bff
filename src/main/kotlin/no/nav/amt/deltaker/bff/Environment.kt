@@ -43,6 +43,8 @@ data class Environment(
         const val AMT_DELTAKERV2_TOPIC = "amt.deltaker-v2"
         const val AMT_NAV_BRUKER_TOPIC = "amt.nav-bruker-personalia-v1"
         const val AMT_NAV_ANSATT_TOPIC = "amt.nav-ansatt-personalia-v1"
+
+        const val AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC = "amt.tiltakskoordinator-deltakerliste-tilgang-v1"
         const val AMT_PERSONSERVICE_URL_KEY = "AMT_PERSONSERVICE_URL"
         const val AMT_PERSONSERVICE_SCOPE_KEY = "AMT_PERSONSERVICE_SCOPE"
 
@@ -83,8 +85,6 @@ data class Environment(
             return cluster == "prod-gcp"
         }
 
-        fun isLocal(): Boolean {
-            return !isDev() && !isProd()
-        }
+        fun isLocal(): Boolean = !isDev() && !isProd()
     }
 }
