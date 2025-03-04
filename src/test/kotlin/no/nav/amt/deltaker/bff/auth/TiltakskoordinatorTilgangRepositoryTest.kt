@@ -111,6 +111,22 @@ class TiltakskoordinatorTilgangRepositoryTest {
             repository.hentUtdaterteTilganger() shouldHaveSize 0
         }
     }
+
+    @Test
+    fun `hentAktiveForDeltakerliste - aktiv tilgang - henter tilganger på deltakerliste`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 1
+        }
+    }
+
+    @Test
+    fun `hentAktiveForDeltakerliste - inaktiv tilgang - henter ikke tilganger på deltakerliste`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medInaktivTilgang()
+            repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 0
+        }
+    }
 }
 
 fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgang2: TiltakskoordinatorDeltakerlisteTilgang) {

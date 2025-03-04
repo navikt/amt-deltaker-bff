@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
+import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
@@ -24,6 +25,7 @@ class DeltakerlisteConsumer(
     private val arrangorService: ArrangorService,
     private val tiltakstypeRepository: TiltakstypeRepository,
     private val pameldingService: PameldingService,
+    private val tilgangskontrollService: TilgangskontrollService,
     kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
@@ -62,6 +64,8 @@ class DeltakerlisteConsumer(
                 pameldingService.slettKladd(it)
             }
             log.info("Slettet ${kladderSomSkalSlettes.size} for deltakerliste ${deltakerliste.id} med status ${deltakerliste.status.name}")
+
+            tilgangskontrollService.stengTilgangerTilDeltakerliste(deltakerliste.id)
         }
     }
 }

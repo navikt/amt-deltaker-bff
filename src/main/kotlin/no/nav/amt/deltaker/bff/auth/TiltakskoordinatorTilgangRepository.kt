@@ -126,4 +126,21 @@ class TiltakskoordinatorTilgangRepository {
 
         it.run(queryOf(sql, params).map(::rowmapper).asList)
     }
+
+    fun hentAktiveForDeltakerliste(deltakerlisteId: UUID) = Database.query {
+        val sql =
+            """
+            select
+                t.id,
+                t.nav_ansatt_id,
+                t.deltakerliste_id,
+                t.gyldig_fra,
+                t.gyldig_til
+            from tiltakskoordinator_deltakerliste_tilgang t 
+                join deltakerliste dl on t.deltakerliste_id = dl.id
+            where dl.id = :deltakerliste_id and t.gyldig_til is null 
+            """
+        val params = mapOf("deltakerliste_id" to deltakerlisteId)
+        it.run(queryOf(sql, params).map(::rowmapper).asList)
+    }
 }

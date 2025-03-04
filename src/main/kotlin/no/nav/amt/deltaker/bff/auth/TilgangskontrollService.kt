@@ -120,15 +120,23 @@ class TilgangskontrollService(
     fun stengTiltakskoordinatorTilgang(id: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
         val tilgang = tiltakskoordinatorTilgangRepository.get(id).getOrThrow()
 
+        return stengTiltakskoordinatorTilgang(tilgang)
+    }
+
+    private fun stengTiltakskoordinatorTilgang(
+        tilgang: TiltakskoordinatorDeltakerlisteTilgang,
+    ): Result<TiltakskoordinatorDeltakerlisteTilgang> {
         if (tilgang.gyldigTil != null) {
-            log.warn("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt $id")
-            return Result.failure(IllegalArgumentException("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt $id"))
+            log.warn("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}")
+            return Result.failure(
+                IllegalArgumentException("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}"),
+            )
         }
 
         val stengtTilgang = tiltakskoordinatorTilgangRepository.upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
 
-        stengtTilgang.onSuccess { tiltakskoordinatorTilgangProducer.produceTombstone(id) }
-        log.info("Stengte tiltakskoordinators tilgang $id")
+        stengtTilgang.onSuccess { tiltakskoordinatorTilgangProducer.produceTombstone(tilgang.id) }
+        log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
 
         return stengtTilgang
     }
@@ -142,7 +150,13 @@ class TilgangskontrollService(
         }
     }
 
-    fun getUtdaterteTiltakskoordinatorTilganger(): List<TiltakskoordinatorDeltakerlisteTilgang> {
-        return tiltakskoordinatorTilgangRepository.hentUtdaterteTilganger()
+    fun getUtdaterteTiltakskoordinatorTilganger(): List<TiltakskoordinatorDeltakerlisteTilgang> =
+        tiltakskoordinatorTilgangRepository.hentUtdaterteTilganger()
+
+    fun stengTilgangerTilDeltakerliste(deltakerlisteId: UUID) {
+        val tilganger = tiltakskoordinatorTilgangRepository.hentAktiveForDeltakerliste(deltakerlisteId)
+
+        log.info("Stenger ${tilganger.size} aktive tiltakskoordinatortilganger til deltakerliste $deltakerlisteId")
+        tilganger.forEach { stengTiltakskoordinatorTilgang(it) }
     }
 }

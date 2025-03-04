@@ -203,7 +203,7 @@ fun Application.module() {
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
-        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService),
+        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService),
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerService, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
