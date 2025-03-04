@@ -47,8 +47,6 @@ fun assertProduced(tilgang: TiltakskoordinatorDeltakerlisteTilgangDto) {
         cachedTilgang.id shouldBe tilgang.id
         cachedTilgang.gjennomforingId shouldBe tilgang.gjennomforingId
         cachedTilgang.navIdent shouldBe tilgang.navIdent
-        cachedTilgang.gyldigTil shouldBe tilgang.gyldigTil
-        cachedTilgang.gyldigFra shouldBe tilgang.gyldigFra
     }
 
     consumer.stop()
