@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorStengTilgangJob
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangProducer
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -233,6 +234,9 @@ fun Application.module() {
 
     val slettUtdatertKladdJob = SlettUtdatertKladdJob(leaderElection, attributes, deltakerRepository, pameldingService)
     slettUtdatertKladdJob.startJob()
+
+    val tiltakskoordinatorStengTilgangJob = TiltakskoordinatorStengTilgangJob(leaderElection, attributes, tilgangskontrollService)
+    tiltakskoordinatorStengTilgangJob.startJob()
 
     attributes.put(isReadyKey, true)
 }

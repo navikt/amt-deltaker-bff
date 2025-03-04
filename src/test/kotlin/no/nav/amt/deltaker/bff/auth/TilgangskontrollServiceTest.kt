@@ -5,6 +5,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
+import no.nav.amt.deltaker.bff.kafka.utils.assertProducedTombstone
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.lib.kafka.Producer
@@ -194,6 +195,32 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
             tilgangTilDeltaker shouldBe true
+        }
+    }
+
+    @Test
+    fun `stengTiltakskoordinatorTilgang - aktiv tilgang - tilgang stenges`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            val stengtTilgang = tilgangskontrollService.stengTiltakskoordinatorTilgang(tilgang.id)
+
+            runBlocking {
+                assertThrows<AuthorizationException> {
+                    tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
+                }
+            }
+
+            assertProducedTombstone(stengtTilgang.getOrThrow())
+        }
+    }
+
+    @Test
+    fun `stengTiltakskoordinatorTilgang - ikke aktiv tilgang - tilgang stenges ikke på nytt`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medInaktivTilgang()
+            val resultat = tilgangskontrollService.stengTiltakskoordinatorTilgang(tilgang.id)
+
+            resultat.isFailure shouldBe true
         }
     }
 
