@@ -24,8 +24,8 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorStengTilgangJob
-import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
