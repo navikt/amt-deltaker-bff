@@ -13,7 +13,6 @@ class TiltakskoordinatorTilgangProducer(
         producer.produce(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC, dto.id.toString(), objectMapper.writeValueAsString(dto))
     }
 
-    // Produser en tombstone når tilganger fjernes
     fun produceTombstone(id: UUID) {
         producer.tombstone(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC, id.toString())
     }
