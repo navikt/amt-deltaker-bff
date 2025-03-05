@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
-import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgangDto
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteDto
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.AsyncUtils
@@ -34,10 +34,10 @@ fun assertProduced(forslag: Forslag) {
     consumer.stop()
 }
 
-fun assertProduced(tilgang: TiltakskoordinatorDeltakerlisteTilgangDto) {
-    val cache = mutableMapOf<UUID, TiltakskoordinatorDeltakerlisteTilgangDto?>()
+fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto) {
+    val cache = mutableMapOf<UUID, TiltakskoordinatorsDeltakerlisteDto?>()
 
-    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC) { k, v ->
+    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC) { k, v ->
         cache[UUID.fromString(k)] = v?.let { objectMapper.readValue(it) }
     }
 
@@ -54,9 +54,9 @@ fun assertProduced(tilgang: TiltakskoordinatorDeltakerlisteTilgangDto) {
 }
 
 fun assertProducedTombstone(tilgang: TiltakskoordinatorDeltakerlisteTilgang) {
-    val cache = mutableMapOf<UUID, TiltakskoordinatorDeltakerlisteTilgangDto?>()
+    val cache = mutableMapOf<UUID, TiltakskoordinatorsDeltakerlisteDto?>()
 
-    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC) { k, v ->
+    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC) { k, v ->
         cache[UUID.fromString(k)] = v?.let { objectMapper.readValue(it) }
     }
 

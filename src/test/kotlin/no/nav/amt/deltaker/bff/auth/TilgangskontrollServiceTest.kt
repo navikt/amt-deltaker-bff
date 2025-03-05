@@ -28,7 +28,7 @@ class TilgangskontrollServiceTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
 
     private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
-    private val tiltakskoordinatorTilgangProducer = TiltakskoordinatorTilgangProducer(kafkaProducer)
+    private val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(kafkaProducer)
 
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockk())
     private val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
@@ -36,7 +36,7 @@ class TilgangskontrollServiceTest {
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
-        tiltakskoordinatorTilgangProducer,
+        tiltakskoordinatorsDeltakerlisteProducer,
     )
 
     init {

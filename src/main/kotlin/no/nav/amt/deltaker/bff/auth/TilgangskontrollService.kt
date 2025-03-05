@@ -21,7 +21,7 @@ class TilgangskontrollService(
     private val poaoTilgangCachedClient: PoaoTilgangCachedClient,
     private val navAnsattService: NavAnsattService,
     private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
-    private val tiltakskoordinatorTilgangProducer: TiltakskoordinatorTilgangProducer,
+    private val tiltakskoordinatorsDeltakerlisteProducer: TiltakskoordinatorsDeltakerlisteProducer,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -112,7 +112,7 @@ class TilgangskontrollService(
             ),
         )
 
-        tilgang.onSuccess { tiltakskoordinatorTilgangProducer.produce(it.toDto(navIdent)) }
+        tilgang.onSuccess { tiltakskoordinatorsDeltakerlisteProducer.produce(it.toDto(navIdent)) }
 
         return tilgang
     }
@@ -135,7 +135,7 @@ class TilgangskontrollService(
 
         val stengtTilgang = tiltakskoordinatorTilgangRepository.upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
 
-        stengtTilgang.onSuccess { tiltakskoordinatorTilgangProducer.produceTombstone(tilgang.id) }
+        stengtTilgang.onSuccess { tiltakskoordinatorsDeltakerlisteProducer.produceTombstone(tilgang.id) }
         log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
 
         return stengtTilgang

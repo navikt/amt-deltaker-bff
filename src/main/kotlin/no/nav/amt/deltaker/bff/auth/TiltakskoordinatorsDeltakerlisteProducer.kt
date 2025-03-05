@@ -6,25 +6,25 @@ import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.lib.kafka.Producer
 import java.util.UUID
 
-class TiltakskoordinatorTilgangProducer(
+class TiltakskoordinatorsDeltakerlisteProducer(
     private val producer: Producer<String, String>,
 ) {
-    fun produce(dto: TiltakskoordinatorDeltakerlisteTilgangDto) {
-        producer.produce(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC, dto.id.toString(), objectMapper.writeValueAsString(dto))
+    fun produce(dto: TiltakskoordinatorsDeltakerlisteDto) {
+        producer.produce(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC, dto.id.toString(), objectMapper.writeValueAsString(dto))
     }
 
     fun produceTombstone(id: UUID) {
-        producer.tombstone(Environment.AMT_TILTAKSKOORDINATOR_TILGANG_TOPIC, id.toString())
+        producer.tombstone(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC, id.toString())
     }
 }
 
-data class TiltakskoordinatorDeltakerlisteTilgangDto(
+data class TiltakskoordinatorsDeltakerlisteDto(
     val id: UUID,
     val navIdent: String,
     val gjennomforingId: UUID,
 )
 
-fun TiltakskoordinatorDeltakerlisteTilgang.toDto(navIdent: String) = TiltakskoordinatorDeltakerlisteTilgangDto(
+fun TiltakskoordinatorDeltakerlisteTilgang.toDto(navIdent: String) = TiltakskoordinatorsDeltakerlisteDto(
     id = id,
     navIdent = navIdent,
     gjennomforingId = deltakerlisteId,
