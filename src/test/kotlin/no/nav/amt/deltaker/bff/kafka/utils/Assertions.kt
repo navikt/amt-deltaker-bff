@@ -63,7 +63,7 @@ fun assertProducedTombstone(tilgang: TiltakskoordinatorDeltakerlisteTilgang) {
     consumer.run()
 
     AsyncUtils.eventually {
-        cache.keys.contains(tilgang.id)
+        cache.keys.contains(tilgang.id) shouldBe true
         cache[tilgang.id] shouldBe null
     }
 
