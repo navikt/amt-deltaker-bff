@@ -23,7 +23,9 @@ import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorStengTilgangJob
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
@@ -168,11 +170,13 @@ fun Application.module() {
     )
 
     val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
+    val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(kafkaProducer)
 
     val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
+        tiltakskoordinatorsDeltakerlisteProducer,
     )
 
     val sporbarhetsloggService = SporbarhetsloggService(AuditLoggerImpl())
@@ -199,7 +203,7 @@ fun Application.module() {
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
-        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService),
+        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService),
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerService, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
@@ -230,6 +234,9 @@ fun Application.module() {
 
     val slettUtdatertKladdJob = SlettUtdatertKladdJob(leaderElection, attributes, deltakerRepository, pameldingService)
     slettUtdatertKladdJob.startJob()
+
+    val tiltakskoordinatorStengTilgangJob = TiltakskoordinatorStengTilgangJob(leaderElection, attributes, tilgangskontrollService)
+    tiltakskoordinatorStengTilgangJob.startJob()
 
     attributes.put(isReadyKey, true)
 }

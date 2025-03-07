@@ -21,6 +21,7 @@ class TilgangskontrollService(
     private val poaoTilgangCachedClient: PoaoTilgangCachedClient,
     private val navAnsattService: NavAnsattService,
     private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
+    private val tiltakskoordinatorsDeltakerlisteProducer: TiltakskoordinatorsDeltakerlisteProducer,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -101,15 +102,43 @@ class TilgangskontrollService(
             return Result.failure(IllegalArgumentException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
         }
 
-        val tilgang = TiltakskoordinatorDeltakerlisteTilgang(
-            id = UUID.randomUUID(),
-            navAnsattId = koordinator.id,
-            deltakerlisteId = deltakerlisteId,
-            gyldigFra = LocalDateTime.now(),
-            gyldigTil = null,
+        val tilgang = tiltakskoordinatorTilgangRepository.upsert(
+            TiltakskoordinatorDeltakerlisteTilgang(
+                id = UUID.randomUUID(),
+                navAnsattId = koordinator.id,
+                deltakerlisteId = deltakerlisteId,
+                gyldigFra = LocalDateTime.now(),
+                gyldigTil = null,
+            ),
         )
 
-        return tiltakskoordinatorTilgangRepository.upsert(tilgang)
+        tilgang.onSuccess { tiltakskoordinatorsDeltakerlisteProducer.produce(it.toDto(navIdent)) }
+
+        return tilgang
+    }
+
+    fun stengTiltakskoordinatorTilgang(id: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
+        val tilgang = tiltakskoordinatorTilgangRepository.get(id).getOrThrow()
+
+        return stengTiltakskoordinatorTilgang(tilgang)
+    }
+
+    private fun stengTiltakskoordinatorTilgang(
+        tilgang: TiltakskoordinatorDeltakerlisteTilgang,
+    ): Result<TiltakskoordinatorDeltakerlisteTilgang> {
+        if (tilgang.gyldigTil != null) {
+            log.warn("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}")
+            return Result.failure(
+                IllegalArgumentException("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}"),
+            )
+        }
+
+        val stengtTilgang = tiltakskoordinatorTilgangRepository.upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
+
+        stengtTilgang.onSuccess { tiltakskoordinatorsDeltakerlisteProducer.produceTombstone(tilgang.id) }
+        log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
+
+        return stengtTilgang
     }
 
     suspend fun verifiserTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID) {
@@ -119,5 +148,15 @@ class TilgangskontrollService(
         if (aktivTilgang.isFailure) {
             throw AuthorizationException("Ansatt ${koordinator.id} har ikke tilgang til deltakerliste $deltakerlisteId")
         }
+    }
+
+    fun getUtdaterteTiltakskoordinatorTilganger(): List<TiltakskoordinatorDeltakerlisteTilgang> =
+        tiltakskoordinatorTilgangRepository.hentUtdaterteTilganger()
+
+    fun stengTilgangerTilDeltakerliste(deltakerlisteId: UUID) {
+        val tilganger = tiltakskoordinatorTilgangRepository.hentAktiveForDeltakerliste(deltakerlisteId)
+
+        log.info("Stenger ${tilganger.size} aktive tiltakskoordinatortilganger til deltakerliste $deltakerlisteId")
+        tilganger.forEach { stengTiltakskoordinatorTilgang(it) }
     }
 }

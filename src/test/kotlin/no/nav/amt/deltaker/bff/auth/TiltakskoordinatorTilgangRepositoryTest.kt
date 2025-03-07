@@ -8,6 +8,8 @@ import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -15,6 +17,7 @@ import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -90,6 +93,40 @@ class TiltakskoordinatorTilgangRepositoryTest {
             navAnsatte.first().navn shouldBeEqual "Veileder Veiledersen"
         }
     }
+
+    @Test
+    fun `hentUtdaterteTilganger - deltakerlisten er avsluttet og stengt - returnerer utdatert tilgang`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            medStengtDeltakerliste()
+            repository.hentUtdaterteTilganger() shouldHaveSize 1
+        }
+    }
+
+    @Test
+    fun `hentUtdaterteTilganger - deltakerlisten er avsluttet men ikke stengt - returnerer ikke utdatert tilgang`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            medAvsluttetDeltakerliste()
+            repository.hentUtdaterteTilganger() shouldHaveSize 0
+        }
+    }
+
+    @Test
+    fun `hentAktiveForDeltakerliste - aktiv tilgang - henter tilganger på deltakerliste`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 1
+        }
+    }
+
+    @Test
+    fun `hentAktiveForDeltakerliste - inaktiv tilgang - henter ikke tilganger på deltakerliste`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medInaktivTilgang()
+            repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 0
+        }
+    }
 }
 
 fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgang2: TiltakskoordinatorDeltakerlisteTilgang) {
@@ -102,7 +139,7 @@ fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgan
 
 data class TiltakskoordinatorTilgangContext(
     val navAnsatt: NavAnsatt = TestData.lagNavAnsatt(),
-    val deltakerliste: Deltakerliste = TestData.lagDeltakerliste(),
+    var deltakerliste: Deltakerliste = TestData.lagDeltakerliste(),
     var tilgang: TiltakskoordinatorDeltakerlisteTilgang = TestData.lagTiltakskoordinatorTilgang(
         deltakerliste = deltakerliste,
         navAnsatt = navAnsatt,
@@ -110,6 +147,7 @@ data class TiltakskoordinatorTilgangContext(
     var deltaker: Deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste),
 ) {
     val deltakerRepository = DeltakerRepository()
+    val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattAzureId = UUID.randomUUID()
 
     init {
@@ -136,6 +174,22 @@ data class TiltakskoordinatorTilgangContext(
     fun medFortroligDeltaker() = adressebeskyttetDeltaker(Adressebeskyttelse.FORTROLIG)
 
     fun medStrengtFortroligDeltaker() = adressebeskyttetDeltaker(Adressebeskyttelse.STRENGT_FORTROLIG)
+
+    fun medStengtDeltakerliste() {
+        deltakerliste = deltakerliste.copy(
+            status = Deltakerliste.Status.AVSLUTTET,
+            sluttDato = LocalDate.now().minus(DeltakerlisteService.tiltakskoordinatorGraceperiode).minusDays(1),
+        )
+        deltakerlisteRepository.upsert(deltakerliste)
+    }
+
+    fun medAvsluttetDeltakerliste() {
+        deltakerliste = deltakerliste.copy(
+            status = Deltakerliste.Status.AVSLUTTET,
+            sluttDato = LocalDate.now(),
+        )
+        deltakerlisteRepository.upsert(deltakerliste)
+    }
 
     private fun adressebeskyttetDeltaker(adressebeskyttelse: Adressebeskyttelse?) {
         deltaker = deltaker.copy(navBruker = deltaker.navBruker.copy(adressebeskyttelse = adressebeskyttelse))

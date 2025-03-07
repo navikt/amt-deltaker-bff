@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
@@ -85,10 +86,12 @@ class DeltakerApiTest {
     private val sporbarhetsloggService = mockk<SporbarhetsloggService>(relaxed = true)
     private val unleashToggle = mockk<UnleashToggle>()
     private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
+    private val tiltakskoordinatorsDeltakerlisteProducer = mockk<TiltakskoordinatorsDeltakerlisteProducer>()
     private val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
+        tiltakskoordinatorsDeltakerlisteProducer,
     )
 
     @Before

@@ -4,8 +4,13 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
+import no.nav.amt.deltaker.bff.kafka.utils.assertProducedTombstone
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.lib.kafka.Producer
+import no.nav.amt.lib.kafka.config.LocalKafkaConfig
+import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
@@ -22,12 +27,16 @@ import kotlin.test.assertFailsWith
 class TilgangskontrollServiceTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
 
+    private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+    private val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(kafkaProducer)
+
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockk())
     private val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
     private val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
+        tiltakskoordinatorsDeltakerlisteProducer,
     )
 
     init {
@@ -71,6 +80,7 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
+            assertProduced(resultat.getOrThrow().toDto(navAnsatt.navIdent))
         }
     }
 
@@ -80,6 +90,7 @@ class TilgangskontrollServiceTest {
             medInaktivTilgang()
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
+            assertProduced(resultat.getOrThrow().toDto(navAnsatt.navIdent))
         }
     }
 
@@ -184,6 +195,32 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             val tilgangTilDeltaker = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
             tilgangTilDeltaker shouldBe true
+        }
+    }
+
+    @Test
+    fun `stengTiltakskoordinatorTilgang - aktiv tilgang - tilgang stenges`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medAktivTilgang()
+            val stengtTilgang = tilgangskontrollService.stengTiltakskoordinatorTilgang(tilgang.id)
+
+            runBlocking {
+                assertThrows<AuthorizationException> {
+                    tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
+                }
+            }
+
+            assertProducedTombstone(stengtTilgang.getOrThrow())
+        }
+    }
+
+    @Test
+    fun `stengTiltakskoordinatorTilgang - ikke aktiv tilgang - tilgang stenges ikke på nytt`() {
+        with(TiltakskoordinatorTilgangContext()) {
+            medInaktivTilgang()
+            val resultat = tilgangskontrollService.stengTiltakskoordinatorTilgang(tilgang.id)
+
+            resultat.isFailure shouldBe true
         }
     }
 

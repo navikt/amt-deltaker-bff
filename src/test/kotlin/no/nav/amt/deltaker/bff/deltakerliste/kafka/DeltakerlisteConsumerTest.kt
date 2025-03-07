@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
+import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -40,6 +41,7 @@ class DeltakerlisteConsumerTest {
         lateinit var deltakerService: DeltakerService
         lateinit var pameldingService: PameldingService
         lateinit var navAnsattService: NavAnsattService
+        lateinit var tilgangskontrollService: TilgangskontrollService
 
         @JvmStatic
         @BeforeClass
@@ -49,6 +51,7 @@ class DeltakerlisteConsumerTest {
             tiltakstypeRepository = TiltakstypeRepository()
             navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
             navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+            tilgangskontrollService = mockk(relaxed = true)
             deltakerService = DeltakerService(
                 deltakerRepository = DeltakerRepository(),
                 amtDeltakerClient = mockAmtDeltakerClient(),
@@ -75,7 +78,7 @@ class DeltakerlisteConsumerTest {
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(tiltakstype = deltakerliste.tiltak)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
 
         runBlocking {
             consumer.consume(
@@ -94,7 +97,7 @@ class DeltakerlisteConsumerTest {
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
         TestRepository.insert(deltakerliste)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
 
         val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now())
 
@@ -115,7 +118,7 @@ class DeltakerlisteConsumerTest {
 
         TestRepository.insert(deltakerliste)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
 
         runBlocking {
             consumer.consume(deltakerliste.id, null)
@@ -138,7 +141,7 @@ class DeltakerlisteConsumerTest {
         TestRepository.insert(deltaker)
         MockResponseHandler.addSlettKladdResponse(kladd.id)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService)
+        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
 
         val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now(), status = Deltakerliste.Status.AVBRUTT)
 

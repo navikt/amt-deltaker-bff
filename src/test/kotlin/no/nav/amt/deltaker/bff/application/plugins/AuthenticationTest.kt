@@ -36,6 +36,7 @@ class AuthenticationTest {
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
+        mockk(relaxed = true),
     )
 
     @Before

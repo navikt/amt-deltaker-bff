@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteDto
+import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.AsyncUtils
 import no.nav.amt.lib.testing.shouldBeCloseTo
@@ -32,23 +34,62 @@ fun assertProduced(forslag: Forslag) {
     consumer.stop()
 }
 
+fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto) {
+    val cache = mutableMapOf<UUID, TiltakskoordinatorsDeltakerlisteDto?>()
+
+    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC) { k, v ->
+        cache[UUID.fromString(k)] = v?.let { objectMapper.readValue(it) }
+    }
+
+    consumer.run()
+
+    AsyncUtils.eventually {
+        val cachedTilgang = cache[tilgang.id]!!
+        cachedTilgang.id shouldBe tilgang.id
+        cachedTilgang.gjennomforingId shouldBe tilgang.gjennomforingId
+        cachedTilgang.navIdent shouldBe tilgang.navIdent
+    }
+
+    consumer.stop()
+}
+
+fun assertProducedTombstone(tilgang: TiltakskoordinatorDeltakerlisteTilgang) {
+    val cache = mutableMapOf<UUID, TiltakskoordinatorsDeltakerlisteDto?>()
+
+    val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC) { k, v ->
+        cache[UUID.fromString(k)] = v?.let { objectMapper.readValue(it) }
+    }
+
+    consumer.run()
+
+    AsyncUtils.eventually {
+        cache.keys.contains(tilgang.id) shouldBe true
+        cache[tilgang.id] shouldBe null
+    }
+
+    consumer.stop()
+}
+
 fun sammenlignForslagStatus(a: Forslag.Status, b: Forslag.Status) {
     when (a) {
         is Forslag.Status.VenterPaSvar -> {
             b as Forslag.Status.VenterPaSvar
             a shouldBe b
         }
+
         is Forslag.Status.Avvist -> {
             b as Forslag.Status.Avvist
             a.avvist shouldBeCloseTo b.avvist
             a.avvistAv shouldBe b.avvistAv
             a.begrunnelseFraNav shouldBe b.begrunnelseFraNav
         }
+
         is Forslag.Status.Godkjent -> {
             b as Forslag.Status.Godkjent
             a.godkjent shouldBeCloseTo b.godkjent
             a.godkjentAv shouldBe b.godkjentAv
         }
+
         is Forslag.Status.Tilbakekalt -> {
             b as Forslag.Status.Tilbakekalt
             a.tilbakekalt shouldBeCloseTo b.tilbakekalt
