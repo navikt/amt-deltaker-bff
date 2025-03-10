@@ -119,6 +119,14 @@ class DeltakerRepository {
             ?: Result.failure(NoSuchElementException("Ingen deltaker med id $id"))
     }
 
+    fun get(ider: List<UUID>) = Database.query {
+        val sql = getDeltakerSql("where d.id in :ider and ds.gyldig_til is null")
+
+        val query = queryOf(sql, mapOf("ider" to ider.toTypedArray())).map(::rowMapper).asList
+
+        it.run(query)
+    }
+
     fun getMany(personident: String, deltakerlisteId: UUID) = Database.query {
         val sql = getDeltakerSql(
             """ where nb.personident = :personident 
@@ -346,36 +354,23 @@ class DeltakerRepository {
             }
             return@query
         }
-        val sql =
-            """
-            update deltaker set 
-                startdato            = :startdato,
-                sluttdato            = :sluttdato,
-                dager_per_uke        = :dagerPerUke,
-                deltakelsesprosent   = :deltakelsesprosent,
-                bakgrunnsinformasjon = :bakgrunnsinformasjon,
-                innhold              = :innhold,
-                historikk            = :historikk,
-                modified_at          = :modified_at
-            where id = :id
-            """.trimIndent()
-
-        val params = mapOf(
-            "id" to deltaker.id,
-            "startdato" to deltaker.startdato,
-            "sluttdato" to deltaker.sluttdato,
-            "dagerPerUke" to deltaker.dagerPerUke,
-            "deltakelsesprosent" to deltaker.deltakelsesprosent,
-            "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
-            "innhold" to toPGObject(deltaker.deltakelsesinnhold),
-            "historikk" to toPGObject(deltaker.historikk),
-            "modified_at" to deltaker.sistEndret,
-        )
 
         session.transaction { tx ->
-            tx.update(queryOf(sql, params))
+            tx.update(queryOf(updateDeltakerSQL, updateDeltakerParams(deltaker)))
             tx.update(insertStatusQuery(deltaker.status, deltaker.id))
             tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+        }
+    }
+
+    fun updateBatch(deltakere: List<Deltaker>) = Database.query { session ->
+        val deltakerParams = deltakere.map { updateDeltakerParams(it) }
+        val statusParams = deltakere.map { insertStatusParams(it.status, it.id) }
+        val deaktiverTidligereStatuserParams = deltakere.map { deaktiverTidligereStatuserParams(it.status, it.id) }
+
+        session.transaction { tx ->
+            tx.batchPreparedNamedStatement(updateDeltakerSQL, deltakerParams)
+            tx.batchPreparedNamedStatement(insertStatusSQL, statusParams)
+            tx.batchPreparedNamedStatement(deaktiverTidligereStatuserSQL, deaktiverTidligereStatuserParams)
         }
     }
 
@@ -407,40 +402,6 @@ class DeltakerRepository {
         return queryOf(sql, params)
     }
 
-    private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query {
-        val sql =
-            """
-            insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, created_at) 
-            values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :opprettet) 
-            on conflict (id) do nothing;
-            """.trimIndent()
-
-        val params = mapOf(
-            "id" to status.id,
-            "deltaker_id" to deltakerId,
-            "type" to status.type.name,
-            "aarsak" to toPGObject(status.aarsak),
-            "gyldig_fra" to status.gyldigFra,
-            "opprettet" to status.opprettet,
-        )
-
-        return queryOf(sql, params)
-    }
-
-    private fun deaktiverTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID): Query {
-        val sql =
-            """
-            update deltaker_status
-            set gyldig_til = current_timestamp
-            where deltaker_id = :deltaker_id 
-              and id != :id 
-              and gyldig_fra < :ny_gyldig_fra
-              and gyldig_til is null;
-            """.trimIndent()
-
-        return queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
-    }
-
     fun getDeltakereMedFlereGyldigeStatuser() = Database.query { session ->
         val sql =
             """
@@ -463,7 +424,12 @@ class DeltakerRepository {
 
     fun getForDeltakerliste(deltakerlisteId: UUID) = Database.query { session ->
         val params = mapOf("deltakerliste_id" to deltakerlisteId)
-        session.run(queryOf(getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"), params).map(::rowMapper).asList)
+        session.run(
+            queryOf(
+                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"),
+                params,
+            ).map(::rowMapper).asList,
+        )
     }
 
     fun deaktiverUkritiskTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID) = Database.query { session ->
@@ -588,7 +554,8 @@ class DeltakerRepository {
 
     private fun skalOppdatereHistorikkForLaastDeltaker(eksisterendeDeltaker: Deltaker, oppdatering: Deltakeroppdatering): Boolean =
         eksisterendeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT &&
-            !eksisterendeDeltaker.kanEndres && kunHistorikkErEndret(eksisterendeDeltaker, oppdatering)
+            !eksisterendeDeltaker.kanEndres &&
+            kunHistorikkErEndret(eksisterendeDeltaker, oppdatering)
 
     private fun kunHistorikkErEndret(eksisterendeDeltaker: Deltaker, oppdatering: Deltakeroppdatering): Boolean =
         oppdatering.startdato == eksisterendeDeltaker.startdato &&
@@ -635,4 +602,81 @@ class DeltakerRepository {
 
         return queryOf(sql, params)
     }
+
+    private fun updateDeltakerParams(deltaker: Deltaker) = mapOf(
+        "id" to deltaker.id,
+        "startdato" to deltaker.startdato,
+        "sluttdato" to deltaker.sluttdato,
+        "dagerPerUke" to deltaker.dagerPerUke,
+        "deltakelsesprosent" to deltaker.deltakelsesprosent,
+        "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
+        "innhold" to toPGObject(deltaker.deltakelsesinnhold),
+        "historikk" to toPGObject(deltaker.historikk),
+        "modified_at" to deltaker.sistEndret,
+    )
+
+    private fun updateDeltakerParams(deltaker: Deltakeroppdatering) = mapOf(
+        "id" to deltaker.id,
+        "startdato" to deltaker.startdato,
+        "sluttdato" to deltaker.sluttdato,
+        "dagerPerUke" to deltaker.dagerPerUke,
+        "deltakelsesprosent" to deltaker.deltakelsesprosent,
+        "bakgrunnsinformasjon" to deltaker.bakgrunnsinformasjon,
+        "innhold" to toPGObject(deltaker.deltakelsesinnhold),
+        "historikk" to toPGObject(deltaker.historikk),
+        "modified_at" to deltaker.sistEndret,
+    )
+
+    private val updateDeltakerSQL =
+        """
+        update deltaker set 
+            startdato            = :startdato,
+            sluttdato            = :sluttdato,
+            dager_per_uke        = :dagerPerUke,
+            deltakelsesprosent   = :deltakelsesprosent,
+            bakgrunnsinformasjon = :bakgrunnsinformasjon,
+            innhold              = :innhold,
+            historikk            = :historikk,
+            modified_at          = :modified_at
+        where id = :id
+        """.trimIndent()
+
+    private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query =
+        queryOf(insertStatusSQL, insertStatusParams(status, deltakerId))
+
+    private val insertStatusSQL =
+        """
+        insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, er_manuelt_delt_med_arrangor, created_at)
+        values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :er_manuelt_delt_med_arrangor, :created_at)
+        on conflict (id) do update set
+            er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor,
+            modified_at = current_timestamp
+        ;
+        """.trimIndent()
+
+    private fun insertStatusParams(status: DeltakerStatus, deltakerId: UUID) = mapOf(
+        "id" to status.id,
+        "deltaker_id" to deltakerId,
+        "type" to status.type.name,
+        "aarsak" to toPGObject(status.aarsak),
+        "gyldig_fra" to status.gyldigFra,
+        "created_at" to status.opprettet,
+        "er_manuelt_delt_med_arrangor" to status.erManueltDeltMedArrangor,
+    )
+
+    private fun deaktiverTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID): Query =
+        queryOf(deaktiverTidligereStatuserSQL, deaktiverTidligereStatuserParams(status, deltakerId))
+
+    private val deaktiverTidligereStatuserSQL =
+        """
+        update deltaker_status
+        set gyldig_til = current_timestamp
+        where deltaker_id = :deltaker_id 
+          and id != :id 
+          and gyldig_fra < :ny_gyldig_fra
+          and gyldig_til is null;
+        """.trimIndent()
+
+    private fun deaktiverTidligereStatuserParams(status: DeltakerStatus, deltakerId: UUID) =
+        mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra)
 }

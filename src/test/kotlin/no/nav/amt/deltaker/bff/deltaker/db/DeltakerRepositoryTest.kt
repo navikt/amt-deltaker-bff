@@ -412,6 +412,34 @@ class DeltakerRepositoryTest {
 
         deltakereFraDb shouldBe emptyList()
     }
+
+    @Test
+    fun `updateBatch - flere deltakere - oppdaterer deltakere og statuser riktig`() {
+        val deltaker1 = TestData.lagDeltaker()
+        val deltaker2 = TestData.lagDeltaker()
+
+        TestRepository.insert(deltaker1)
+        TestRepository.insert(deltaker2)
+
+        val oppdatertDeltaker1 = deltaker1.copy(
+            sluttdato = LocalDate.now().plusWeeks(2),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+        )
+        val oppdatertDeltaker2 = deltaker2.copy(
+            sluttdato = LocalDate.now().plusWeeks(2),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+        )
+
+        repository.updateBatch(listOf(oppdatertDeltaker1, oppdatertDeltaker2))
+
+        val deltaker1FraDB = repository.get(deltaker1.id).getOrThrow()
+        sammenlignDeltakere(deltaker1FraDB, oppdatertDeltaker1)
+
+        val deltaker2FraDB = repository.get(deltaker2.id).getOrThrow()
+        sammenlignDeltakere(deltaker2FraDB, oppdatertDeltaker2)
+
+        repository.getDeltakereMedFlereGyldigeStatuser() shouldBe emptyList()
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
