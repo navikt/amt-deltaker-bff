@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
+import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.RoutingContext
@@ -11,9 +12,7 @@ import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -25,15 +24,15 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.KoordinatorResponse
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorApi(
-    deltakerService: DeltakerService,
     vurderingService: VurderingService,
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
-    tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
     navEnhetService: NavEnhetService,
+    tiltakskoordinatorService: TiltakskoordinatorService,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
@@ -43,31 +42,52 @@ fun Routing.registerTiltakskoordinatorApi(
         return TiltakskoordinatorsDeltaker(deltaker, harTilgang, sisteVurdering)
     }
 
+    fun tilResponse(deltakere: List<TiltakskoordinatorsDeltaker>): List<DeltakerResponse> {
+        val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.deltaker.navBruker.navEnhetId })
+        return deltakere.map { it.toDeltakerResponse(navEnheter[it.deltaker.navBruker.navEnhetId]) }
+    }
+
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
         get(apiPath) {
             val deltakerlisteId = getDeltakerlisteId()
             val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
-            val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
+            val koordinatorer = tiltakskoordinatorService.hentKoordinatorer(deltakerlisteId)
 
             call.respond(deltakerliste.toResponse(koordinatorer))
         }
 
         get("$apiPath/deltakere") {
             val deltakerlisteId = getDeltakerlisteId()
+            val navIdent = call.getNavIdent()
 
             deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
-            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
 
             val navAnsattAzureId = call.getNavAnsattAzureId()
 
-            val deltakere = deltakerService
-                .getForDeltakerliste(deltakerlisteId)
-                .filterNot { deltaker -> deltaker.skalSkjules() }
+            val deltakere = tiltakskoordinatorService
+                .hentDeltakere(deltakerlisteId)
                 .map { lagTiltakskoordinatorsDeltaker(it, navAnsattAzureId) }
 
-            val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.deltaker.navBruker.navEnhetId })
+            call.respond(tilResponse(deltakere))
+        }
 
-            call.respond(deltakere.map { it.toDeltakerResponse(navEnheter[it.deltaker.navBruker.navEnhetId]) })
+        post("$apiPath/deltakere/del-med-arrangor") {
+            val deltakerlisteId = getDeltakerlisteId()
+            val navIdent = call.getNavIdent()
+
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
+
+            val deltakerIder = call.receive<List<UUID>>()
+            val oppdaterteDeltakere = tiltakskoordinatorService
+                .endreDeltakere(
+                    deltakerIder,
+                    EndringFraTiltakskoordinator.DelMedArrangor,
+                    navIdent,
+                ).map { lagTiltakskoordinatorsDeltaker(it, call.getNavAnsattAzureId()) }
+
+            call.respond(tilResponse(oppdaterteDeltakere))
         }
 
         post("$apiPath/tilgang/legg-til") {

@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
@@ -439,6 +440,17 @@ class DeltakerRepositoryTest {
         sammenlignDeltakere(deltaker2FraDB, oppdatertDeltaker2)
 
         repository.getDeltakereMedFlereGyldigeStatuser() shouldBe emptyList()
+    }
+
+    @Test
+    fun `get(list) - henter flere deltakere`() {
+        val deltaker1 = TestData.lagDeltaker()
+        val deltaker2 = TestData.lagDeltaker()
+
+        TestRepository.insert(deltaker1)
+        TestRepository.insert(deltaker2)
+
+        repository.getMany(listOf(deltaker1.id, deltaker2.id)) shouldHaveSize 2
     }
 }
 

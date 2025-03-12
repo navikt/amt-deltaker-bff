@@ -119,8 +119,10 @@ class DeltakerRepository {
             ?: Result.failure(NoSuchElementException("Ingen deltaker med id $id"))
     }
 
-    fun get(ider: List<UUID>) = Database.query {
-        val sql = getDeltakerSql("where d.id in :ider and ds.gyldig_til is null")
+    fun getMany(ider: List<UUID>) = Database.query {
+        if (ider.isEmpty()) return@query emptyList()
+
+        val sql = getDeltakerSql("where d.id = any(:ider) and ds.gyldig_til is null")
 
         val query = queryOf(sql, mapOf("ider" to ider.toTypedArray())).map(::rowMapper).asList
 
