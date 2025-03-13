@@ -17,7 +17,6 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -25,6 +24,8 @@ import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toDeltakerResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toResponse
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagVurdering
@@ -33,7 +34,7 @@ import org.junit.Before
 import org.junit.Test
 import java.util.UUID
 
-class TiltakskoordinatorApiTest {
+class TiltakskoordinatorDeltakerlisteApiTest {
     private val tilgangskontrollService = mockk<TilgangskontrollService>()
     private val deltakerlisteService = mockk<DeltakerlisteService>()
     private val tiltakskoordinatorService = mockk<TiltakskoordinatorService>()
@@ -264,6 +265,5 @@ class TiltakskoordinatorApiTest {
         }
     }
 
-    private fun Deltaker.toDeltakerTilgang(tilgang: Boolean = true, vurdering: Vurdering) =
-        TiltakskoordinatorsDeltaker(this, tilgang, vurdering)
+    private fun Deltaker.toDeltakerTilgang(tilgang: Boolean = true, vurdering: Vurdering) = DeltakerResponseUtils(this, tilgang, vurdering)
 }

@@ -33,8 +33,10 @@ import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorsDeltakerService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.registerTiltakskoordinatorApi
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import org.slf4j.LoggerFactory
@@ -55,7 +57,7 @@ fun Application.configureRouting(
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
     tiltakskoordinatorService: TiltakskoordinatorService,
-) {
+    ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
             StatusPageLogger.log(HttpStatusCode.BadRequest, call, cause)
@@ -124,12 +126,18 @@ fun Application.configureRouting(
             unleash,
         )
 
-        registerTiltakskoordinatorApi(
+        registerTiltakskoordinatorDeltakerlisteApi(
             vurderingService,
             deltakerlisteService,
             tilgangskontrollService,
             navEnhetService,
             tiltakskoordinatorService,
+        )
+
+        registerTiltakskoordinatorDeltakerApi(
+            tiltakskoordinatorsDeltakerService,
+            deltakerlisteService,
+            tilgangskontrollService,
         )
 
         val catchAllRoute = "{...}"

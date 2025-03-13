@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.tiltakskoordinator
+package no.nav.amt.deltaker.bff.tiltakskoordinator.api
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -12,7 +12,6 @@ import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -20,14 +19,19 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.KoordinatorResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.DeltakerResponseUtils
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusAarsakResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
-fun Routing.registerTiltakskoordinatorApi(
+
+fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
     vurderingService: VurderingService,
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
@@ -36,13 +40,13 @@ fun Routing.registerTiltakskoordinatorApi(
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
-    fun lagTiltakskoordinatorsDeltaker(deltaker: Deltaker, navAnsattAzureId: UUID): TiltakskoordinatorsDeltaker {
+    fun lagTiltakskoordinatorsDeltaker(deltaker: Deltaker, navAnsattAzureId: UUID): DeltakerResponseUtils {
         val harTilgang = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
-        return TiltakskoordinatorsDeltaker(deltaker, harTilgang, sisteVurdering)
+        return DeltakerResponseUtils(deltaker, harTilgang, sisteVurdering)
     }
 
-    fun tilResponse(deltakere: List<TiltakskoordinatorsDeltaker>): List<DeltakerResponse> {
+    fun tilResponse(deltakere: List<DeltakerResponseUtils>): List<DeltakerResponse> {
         val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.deltaker.navBruker.navEnhetId })
         return deltakere.map { it.toDeltakerResponse(navEnheter[it.deltaker.navBruker.navEnhetId]) }
     }
@@ -110,7 +114,7 @@ private fun RoutingContext.getDeltakerlisteId(): UUID {
     }
 }
 
-fun TiltakskoordinatorsDeltaker.toDeltakerResponse(navEnhet: NavEnhet?): DeltakerResponse {
+fun DeltakerResponseUtils.toDeltakerResponse(navEnhet: NavEnhet?): DeltakerResponse {
     val (fornavn, mellomnavn, etternavn) = visningsnavn()
 
     return DeltakerResponse(
@@ -118,11 +122,12 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(navEnhet: NavEnhet?): Deltake
         fornavn = fornavn,
         mellomnavn = mellomnavn,
         etternavn = etternavn,
-        status = DeltakerResponse.DeltakerStatusResponse(
+        status = DeltakerStatusResponse(
             type = deltaker.status.type,
             aarsak = deltaker.status.aarsak?.let {
-                DeltakerResponse.DeltakerStatusAarsakResponse(
+                DeltakerStatusAarsakResponse(
                     it.type,
+                    it.beskrivelse
                 )
             },
         ),
@@ -141,12 +146,4 @@ fun Deltakerliste.toResponse(koordinatorer: List<NavAnsatt>) = DeltakerlisteResp
     this.apentForPamelding,
     this.antallPlasser,
     koordinatorer.map { KoordinatorResponse(id = it.id, navn = it.navn) },
-)
-
-fun Deltaker.skalSkjules() = status.type in listOf(
-    DeltakerStatus.Type.KLADD,
-    DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
-    DeltakerStatus.Type.AVBRUTT_UTKAST,
-    DeltakerStatus.Type.FEILREGISTRERT,
-    DeltakerStatus.Type.PABEGYNT_REGISTRERING,
 )

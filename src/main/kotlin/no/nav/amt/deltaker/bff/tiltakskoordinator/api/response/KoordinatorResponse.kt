@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.tiltakskoordinator.model
+package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
 import java.util.UUID
 
