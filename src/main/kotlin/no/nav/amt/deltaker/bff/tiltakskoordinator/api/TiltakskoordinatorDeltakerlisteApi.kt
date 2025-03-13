@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.tiltakskoordinator
+package no.nav.amt.deltaker.bff.tiltakskoordinator.api
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -12,7 +12,6 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
@@ -21,13 +20,15 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.DeltakerlisteResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.KoordinatorResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.DeltakerResponseUtils
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.toResponse
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import java.util.UUID
 
-fun Routing.registerTiltakskoordinatorApi(
+fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
     deltakerService: DeltakerService,
     vurderingService: VurderingService,
     deltakerlisteService: DeltakerlisteService,
@@ -37,10 +38,10 @@ fun Routing.registerTiltakskoordinatorApi(
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
-    fun lagTiltakskoordinatorsDeltaker(deltaker: Deltaker, navAnsattAzureId: UUID): TiltakskoordinatorsDeltaker {
+    fun lagTiltakskoordinatorsDeltaker(deltaker: Deltaker, navAnsattAzureId: UUID): DeltakerResponseUtils {
         val harTilgang = tilgangskontrollService.harKoordinatorTilgangTilDeltaker(navAnsattAzureId, deltaker)
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
-        return TiltakskoordinatorsDeltaker(deltaker, harTilgang, sisteVurdering)
+        return DeltakerResponseUtils(deltaker, harTilgang, sisteVurdering)
     }
 
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
@@ -90,7 +91,7 @@ private fun RoutingContext.getDeltakerlisteId(): UUID {
     }
 }
 
-fun TiltakskoordinatorsDeltaker.toDeltakerResponse(navEnhet: NavEnhet?): DeltakerResponse {
+fun DeltakerResponseUtils.toDeltakerResponse(navEnhet: NavEnhet?): DeltakerResponse {
     val (fornavn, mellomnavn, etternavn) = visningsnavn()
 
     return DeltakerResponse(
@@ -98,14 +99,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(navEnhet: NavEnhet?): Deltake
         fornavn = fornavn,
         mellomnavn = mellomnavn,
         etternavn = etternavn,
-        status = DeltakerResponse.DeltakerStatusResponse(
-            type = deltaker.status.type,
-            aarsak = deltaker.status.aarsak?.let {
-                DeltakerResponse.DeltakerStatusAarsakResponse(
-                    it.type,
-                )
-            },
-        ),
+        status = deltaker.status.toResponse(),
         vurdering = vurdering?.vurderingstype,
         beskyttelsesmarkering = beskyttelsesmarkering(),
         navEnhet = navEnhet?.navn,

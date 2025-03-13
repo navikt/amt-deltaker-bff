@@ -75,7 +75,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-class DeltakerApiTest {
+class TiltakskoordinatorDeltakerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
@@ -748,6 +748,7 @@ class DeltakerApiTest {
                 mockk(),
                 amtDistribusjonClient,
                 sporbarhetsloggService,
+                mockk(),
                 mockk(),
                 mockk(),
                 mockk(),

@@ -73,6 +73,13 @@ class TilgangskontrollService(
         return tilgangTilAdressebeskyttelse.isPermit && tilgangTilSkjerming.isPermit
     }
 
+    fun harKoordinatorTilgangTilPerson(navAnsattAzureId: UUID, navBruker: NavBruker): Boolean {
+        val tilgangTilAdressebeskyttelse = vurderAdressebeskyttelseTilgang(navBruker.adressebeskyttelse, navAnsattAzureId)
+        val tilgangTilSkjerming = vurderSkjermingTilgang(navBruker, navAnsattAzureId)
+
+        return tilgangTilAdressebeskyttelse.isPermit && tilgangTilSkjerming.isPermit
+    }
+
     private fun vurderSkjermingTilgang(navBruker: NavBruker, navAnsattAzureId: UUID): Decision = if (navBruker.erSkjermet) {
         poaoTilgangCachedClient.evaluatePolicy(NavAnsattBehandleSkjermedePersonerPolicyInput(navAnsattAzureId)).getOrThrow()
     } else {

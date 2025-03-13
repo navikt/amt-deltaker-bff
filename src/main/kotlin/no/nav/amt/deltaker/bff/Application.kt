@@ -56,6 +56,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorsDeltakerService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
@@ -200,6 +201,13 @@ fun Application.module() {
     val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
 
     val tiltakstypeRepository = TiltakstypeRepository()
+    val tiltakskoordinatorsDeltakerService = TiltakskoordinatorsDeltakerService(
+        deltakerService,
+        navAnsattService,
+        vurderingService,
+        navEnhetService,
+        tilgangskontrollService,
+    )
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
@@ -229,6 +237,7 @@ fun Application.module() {
         deltakerlisteService,
         unleash,
         tiltakskoordinatorTilgangRepository,
+        tiltakskoordinatorsDeltakerService,
     )
     configureMonitoring()
 
