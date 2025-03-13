@@ -16,7 +16,6 @@ import no.nav.amt.deltaker.bff.application.registerHealthApi
 import no.nav.amt.deltaker.bff.auth.AuthenticationException
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
@@ -34,6 +33,7 @@ import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.registerTiltakskoordinatorApi
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
@@ -54,7 +54,7 @@ fun Application.configureRouting(
     amtDeltakerClient: AmtDeltakerClient,
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
-    tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
+    tiltakskoordinatorService: TiltakskoordinatorService,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -125,12 +125,11 @@ fun Application.configureRouting(
         )
 
         registerTiltakskoordinatorApi(
-            deltakerService,
             vurderingService,
             deltakerlisteService,
             tilgangskontrollService,
-            tiltakskoordinatorTilgangRepository,
             navEnhetService,
+            tiltakskoordinatorService,
         )
 
         val catchAllRoute = "{...}"

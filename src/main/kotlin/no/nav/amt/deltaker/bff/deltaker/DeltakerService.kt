@@ -28,6 +28,8 @@ class DeltakerService(
 
     fun get(id: UUID) = deltakerRepository.get(id)
 
+    fun getMany(ider: List<UUID>) = deltakerRepository.getMany(ider)
+
     fun getDeltakelser(personident: String, deltakerlisteId: UUID) = deltakerRepository.getMany(personident, deltakerlisteId)
 
     fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
@@ -293,6 +295,8 @@ class DeltakerService(
         deltakerRepository.getDeltakerIdOgStatusForDeltakelser(personident, deltakerlisteId)
 
     fun getForDeltakerliste(deltakerlisteId: UUID) = deltakerRepository.getForDeltakerliste(deltakerlisteId)
+
+    fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltaker>) = deltakerRepository.updateBatch(oppdaterteDeltakere)
 }
 
 fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(

@@ -17,9 +17,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -36,10 +34,9 @@ import org.junit.Test
 import java.util.UUID
 
 class TiltakskoordinatorApiTest {
-    private val deltakerService = mockk<DeltakerService>()
     private val tilgangskontrollService = mockk<TilgangskontrollService>()
     private val deltakerlisteService = mockk<DeltakerlisteService>()
-    private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
+    private val tiltakskoordinatorService = mockk<TiltakskoordinatorService>()
     private val vurderingService = mockk<VurderingService>()
     private val navEnhetService = mockk<NavEnhetService>()
 
@@ -54,6 +51,8 @@ class TiltakskoordinatorApiTest {
         client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
         client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere").status shouldBe HttpStatusCode.Unauthorized
         client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/tilgang/legg-til").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor").status shouldBe
+            HttpStatusCode.Unauthorized
     }
 
     @Test
@@ -77,6 +76,11 @@ class TiltakskoordinatorApiTest {
             .apply {
                 status shouldBe HttpStatusCode.Unauthorized
             }
+        client
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/del-med-arrangor") { noBodyRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
     }
 
     @Test
@@ -95,7 +99,7 @@ class TiltakskoordinatorApiTest {
         setUpTestApplication()
         val deltakerliste = TestData.lagDeltakerliste()
         every { deltakerlisteService.hentMedFellesOppstart(deltakerliste.id) } returns Result.success(deltakerliste)
-        every { tiltakskoordinatorTilgangRepository.hentKoordinatorer(any()) } returns emptyList()
+        every { tiltakskoordinatorService.hentKoordinatorer(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${deltakerliste.id}") { noBodyTiltakskoordinatorRequest() }
             .apply {
@@ -122,7 +126,7 @@ class TiltakskoordinatorApiTest {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
-        every { deltakerService.getForDeltakerliste(any()) } returns emptyList()
+        every { tiltakskoordinatorService.hentDeltakere(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
@@ -157,7 +161,7 @@ class TiltakskoordinatorApiTest {
 
         every { navEnhetService.hentEnheter(any()) } returns navEnheter
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
-        every { deltakerService.getForDeltakerliste(deltakerliste.id) } returns deltakere
+        every { tiltakskoordinatorService.hentDeltakere(deltakerliste.id) } returns deltakere
         deltakere.forEach {
             every { tilgangskontrollService.harKoordinatorTilgangTilDeltaker(any(), it) } returns true
             every { vurderingService.getSisteVurderingForDeltaker(it.id) } returns vurdering
@@ -206,6 +210,32 @@ class TiltakskoordinatorApiTest {
             .status shouldBe HttpStatusCode.BadRequest
     }
 
+    @Test
+    fun `post del-med-arrangor - mangler tilgang til deltakerliste - returnerer 403`() = testApplication {
+        setUpTestApplication()
+        val deltakerliste = TestData.lagDeltakerliste()
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
+        coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } throws AuthorizationException("")
+        client
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/del-med-arrangor") { noBodyTiltakskoordinatorRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Forbidden
+            }
+    }
+
+    @Test
+    fun `post del-med-arrangor - deltakerliste finnes ikke - returnerer 404`() = testApplication {
+        setUpTestApplication()
+        mockTilgangTilDeltakerliste()
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
+        every { tiltakskoordinatorService.hentDeltakere(any()) } returns emptyList()
+        client
+            .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") { noBodyTiltakskoordinatorRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.NotFound
+            }
+    }
+
     private fun mockTilgangTilDeltakerliste() {
         coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } returns Unit
     }
@@ -216,7 +246,7 @@ class TiltakskoordinatorApiTest {
             configureAuthentication(Environment())
             configureRouting(
                 tilgangskontrollService,
-                deltakerService,
+                mockk(),
                 mockk(),
                 mockk(),
                 navEnhetService,
@@ -229,7 +259,7 @@ class TiltakskoordinatorApiTest {
                 mockk(),
                 deltakerlisteService,
                 mockk(),
-                tiltakskoordinatorTilgangRepository,
+                tiltakskoordinatorService,
             )
         }
     }
