@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.tiltakskoordinator.model
+package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate

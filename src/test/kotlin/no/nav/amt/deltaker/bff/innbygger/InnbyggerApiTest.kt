@@ -209,6 +209,7 @@ class InnbyggerApiTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                mockk(),
             )
         }
     }
