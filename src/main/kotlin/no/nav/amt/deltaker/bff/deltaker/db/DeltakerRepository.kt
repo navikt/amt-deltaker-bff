@@ -63,6 +63,7 @@ class DeltakerRepository {
         },
         kanEndres = row.boolean("d.kan_endres"),
         sistEndret = row.localDateTime("d.modified_at"),
+        erManueltDeltMedArrangor = row.boolean("d.er_manuelt_delt_med_arrangor"),
     )
 
     fun upsert(deltaker: Deltaker) = Database.query { session ->
@@ -70,11 +71,13 @@ class DeltakerRepository {
             """
             insert into deltaker(
                 id, person_id, deltakerliste_id, startdato, sluttdato, dager_per_uke, 
-                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, kan_endres, modified_at
+                deltakelsesprosent, bakgrunnsinformasjon, innhold, historikk, kan_endres, modified_at,
+                er_manuelt_delt_med_arrangor
             )
             values (
                 :id, :person_id, :deltakerlisteId, :startdato, :sluttdato, :dagerPerUke, 
-                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :kan_endres, :modified_at
+                :deltakelsesprosent, :bakgrunnsinformasjon, :innhold, :historikk, :kan_endres, :modified_at,
+                :er_manuelt_delt_med_arrangor
             )
             on conflict (id) do update set 
                 person_id          = :person_id,
@@ -86,7 +89,9 @@ class DeltakerRepository {
                 innhold              = :innhold,
                 historikk            = :historikk,
                 kan_endres           = :kan_endres,
-                modified_at          = :modified_at
+                modified_at          = :modified_at,
+                er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor
+                
             """.trimIndent()
 
         val parameters = mapOf(
@@ -102,6 +107,7 @@ class DeltakerRepository {
             "historikk" to toPGObject(deltaker.historikk),
             "kan_endres" to deltaker.kanEndres,
             "modified_at" to deltaker.sistEndret,
+            "er_manuelt_delt_med_arrangor" to deltaker.erManueltDeltMedArrangor,
         )
 
         session.transaction { tx ->
@@ -358,19 +364,21 @@ class DeltakerRepository {
         }
 
         session.transaction { tx ->
-            tx.update(queryOf(updateDeltakerSQL, updateDeltakerParams(deltaker)))
+            tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
             tx.update(insertStatusQuery(deltaker.status, deltaker.id))
             tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
         }
     }
 
     fun updateBatch(deltakere: List<Deltaker>) = Database.query { session ->
-        val deltakerParams = deltakere.map { updateDeltakerParams(it) }
+        val deltakerParams = deltakere.map { batchUpdateDeltakerParams(it) }
         val statusParams = deltakere.map { insertStatusParams(it.status, it.id) }
         val deaktiverTidligereStatuserParams = deltakere.map { deaktiverTidligereStatuserParams(it.status, it.id) }
 
+        val sql = updateDeltakerSQL(true)
+
         session.transaction { tx ->
-            tx.batchPreparedNamedStatement(updateDeltakerSQL, deltakerParams)
+            tx.batchPreparedNamedStatement(sql, deltakerParams)
             tx.batchPreparedNamedStatement(insertStatusSQL, statusParams)
             tx.batchPreparedNamedStatement(deaktiverTidligereStatuserSQL, deaktiverTidligereStatuserParams)
         }
@@ -461,6 +469,7 @@ class DeltakerRepository {
                    d.historikk as "d.historikk",
                    d.modified_at as "d.modified_at",
                    d.kan_endres as "d.kan_endres",
+                   d.er_manuelt_delt_med_arrangor as "d.er_manuelt_delt_med_arrangor",
                    nb.personident as "nb.personident",
                    nb.fornavn as "nb.fornavn",
                    nb.mellomnavn as "nb.mellomnavn",
@@ -605,7 +614,7 @@ class DeltakerRepository {
         return queryOf(sql, params)
     }
 
-    private fun updateDeltakerParams(deltaker: Deltaker) = mapOf(
+    private fun batchUpdateDeltakerParams(deltaker: Deltaker) = mapOf(
         "id" to deltaker.id,
         "startdato" to deltaker.startdato,
         "sluttdato" to deltaker.sluttdato,
@@ -615,6 +624,7 @@ class DeltakerRepository {
         "innhold" to toPGObject(deltaker.deltakelsesinnhold),
         "historikk" to toPGObject(deltaker.historikk),
         "modified_at" to deltaker.sistEndret,
+        "er_manuelt_delt_med_arrangor" to deltaker.erManueltDeltMedArrangor,
     )
 
     private fun updateDeltakerParams(deltaker: Deltakeroppdatering) = mapOf(
@@ -629,7 +639,7 @@ class DeltakerRepository {
         "modified_at" to deltaker.sistEndret,
     )
 
-    private val updateDeltakerSQL =
+    private fun updateDeltakerSQL(erBatchUpdate: Boolean = false) =
         """
         update deltaker set 
             startdato            = :startdato,
@@ -639,8 +649,9 @@ class DeltakerRepository {
             bakgrunnsinformasjon = :bakgrunnsinformasjon,
             innhold              = :innhold,
             historikk            = :historikk,
+            ${if (erBatchUpdate) "er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor," else ""}
             modified_at          = :modified_at
-        where id = :id
+            where id = :id
         """.trimIndent()
 
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query =
@@ -648,11 +659,9 @@ class DeltakerRepository {
 
     private val insertStatusSQL =
         """
-        insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, er_manuelt_delt_med_arrangor, created_at)
-        values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :er_manuelt_delt_med_arrangor, :created_at)
-        on conflict (id) do update set
-            er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor,
-            modified_at = current_timestamp
+        insert into deltaker_status(id, deltaker_id, type, aarsak, gyldig_fra, created_at)
+        values (:id, :deltaker_id, :type, :aarsak, :gyldig_fra, :created_at)
+        on conflict (id) do nothing
         ;
         """.trimIndent()
 
@@ -663,7 +672,6 @@ class DeltakerRepository {
         "aarsak" to toPGObject(status.aarsak),
         "gyldig_fra" to status.gyldigFra,
         "created_at" to status.opprettet,
-        "er_manuelt_delt_med_arrangor" to status.erManueltDeltMedArrangor,
     )
 
     private fun deaktiverTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID): Query =

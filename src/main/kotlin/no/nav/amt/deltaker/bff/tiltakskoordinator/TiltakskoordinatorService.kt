@@ -4,7 +4,6 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.oppdater
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.models.tiltakskoordinator.response.EndringFraTiltakskoordinatorResponse
 import java.util.UUID
@@ -41,6 +40,6 @@ class TiltakskoordinatorService(
 }
 
 fun Deltaker.oppdater(endring: EndringFraTiltakskoordinatorResponse) = this.copy(
-    status = endring.status,
+    erManueltDeltMedArrangor = endring.erDeltManueltMedArrangor,
     sistEndret = endring.sistEndret,
 )

@@ -425,10 +425,12 @@ class DeltakerRepositoryTest {
         val oppdatertDeltaker1 = deltaker1.copy(
             sluttdato = LocalDate.now().plusWeeks(2),
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            erManueltDeltMedArrangor = true,
         )
         val oppdatertDeltaker2 = deltaker2.copy(
             sluttdato = LocalDate.now().plusWeeks(2),
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            erManueltDeltMedArrangor = true,
         )
 
         repository.updateBatch(listOf(oppdatertDeltaker1, oppdatertDeltaker2))
@@ -484,6 +486,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
+    a.erManueltDeltMedArrangor shouldBe b.erManueltDeltMedArrangor
 }
 
 private fun Deltaker.toKladdResponse() = KladdResponse(

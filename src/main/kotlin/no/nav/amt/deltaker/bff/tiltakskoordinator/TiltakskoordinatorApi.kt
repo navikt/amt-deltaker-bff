@@ -129,6 +129,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(navEnhet: NavEnhet?): Deltake
         vurdering = vurdering?.vurderingstype,
         beskyttelsesmarkering = beskyttelsesmarkering(),
         navEnhet = navEnhet?.navn,
+        erManueltDeltMedArrangor = deltaker.erManueltDeltMedArrangor,
     )
 }
 
