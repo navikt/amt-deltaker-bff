@@ -206,7 +206,7 @@ fun Application.module() {
         tiltakskoordinatorTilgangRepository,
         vurderingService,
         navEnhetService,
-        navAnsattService
+        navAnsattService,
     )
 
     val tiltakstypeRepository = TiltakstypeRepository()

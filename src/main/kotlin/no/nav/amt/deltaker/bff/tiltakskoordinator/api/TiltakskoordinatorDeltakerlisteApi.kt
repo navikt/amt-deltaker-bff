@@ -26,10 +26,8 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusAar
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
-import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
-
 
 fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
     vurderingService: VurderingService,
@@ -127,7 +125,7 @@ fun DeltakerResponseUtils.toDeltakerResponse(navEnhet: NavEnhet?): DeltakerRespo
             aarsak = deltaker.status.aarsak?.let {
                 DeltakerStatusAarsakResponse(
                     it.type,
-                    it.beskrivelse
+                    it.beskrivelse,
                 )
             },
         ),

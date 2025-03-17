@@ -21,9 +21,8 @@ class TiltakskoordinatorService(
     private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
     private val vurderingService: VurderingService,
     private val navEnhetService: NavEnhetService,
-    private val navAnsattService: NavAnsattService
+    private val navAnsattService: NavAnsattService,
 ) {
-
     suspend fun get(deltakerId: UUID): TiltakskoordinatorsDeltaker {
         val deltaker = deltakerService.get(deltakerId).getOrThrow()
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)

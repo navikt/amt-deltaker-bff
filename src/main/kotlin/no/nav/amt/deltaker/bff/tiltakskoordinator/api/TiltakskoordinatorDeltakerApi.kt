@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerDetaljerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.VurderingResponse
@@ -21,6 +22,7 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
     tiltakskoordinatorService: TiltakskoordinatorService,
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
+    sporbarhetsloggService: SporbarhetsloggService,
 ) {
     val apiPath = "/tiltakskoordinator/deltaker/{id}"
 
@@ -30,6 +32,12 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
             val tiltakskoordinatorsDeltaker = tiltakskoordinatorService.get(deltakerId)
             val deltakerlisteId = tiltakskoordinatorsDeltaker.deltakerliste.id
             val navAnsattAzureId = call.getNavAnsattAzureId()
+            val navIdent = call.getNavIdent()
+            sporbarhetsloggService.sendAuditLog(
+                navIdent = navIdent,
+                deltakerPersonIdent = tiltakskoordinatorsDeltaker.navBruker.personident,
+            )
+
             val tilgangTilBruker = tilgangskontrollService.harKoordinatorTilgangTilPerson(
                 navAnsattAzureId,
                 tiltakskoordinatorsDeltaker.navBruker,
