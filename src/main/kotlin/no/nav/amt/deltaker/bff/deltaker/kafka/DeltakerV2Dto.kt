@@ -28,6 +28,7 @@ data class DeltakerV2Dto(
     val vurderingerFraArrangor: List<Vurdering>?,
     val forcedUpdate: Boolean? = false,
     val sistEndret: LocalDateTime?,
+    val erManueltDeltMedArrangor: Boolean = false,
 ) {
     fun toDeltakerOppdatering(): Deltakeroppdatering {
         require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
@@ -75,6 +76,7 @@ data class DeltakerV2Dto(
         historikk = historikk.orEmpty(),
         kanEndres = true,
         sistEndret = sistEndret ?: LocalDateTime.now(),
+        erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     )
 
     enum class Kilde {

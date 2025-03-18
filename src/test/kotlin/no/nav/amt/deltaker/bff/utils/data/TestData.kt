@@ -156,6 +156,7 @@ object TestData {
         kanEndres: Boolean = true,
         sistEndret: LocalDateTime = LocalDateTime.now(),
         innsoktDatoFraArena: LocalDate? = null,
+        erManueltDeltMedArrangor: Boolean = false,
     ): Deltaker {
         val deltaker = Deltaker(
             id,
@@ -171,6 +172,7 @@ object TestData {
             emptyList(),
             kanEndres,
             sistEndret,
+            erManueltDeltMedArrangor,
         )
 
         return if (innsoktDatoFraArena != null) {

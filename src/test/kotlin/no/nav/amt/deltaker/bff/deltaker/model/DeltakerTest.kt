@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Test
 import java.time.LocalDateTime
@@ -164,6 +165,15 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.data.deltakerId shouldBe b.data.deltakerId
             a.data.id shouldBe b.data.id
             a.data.opprettetAvArrangorAnsattId shouldBe b.data.opprettetAvArrangorAnsattId
+        }
+
+        is DeltakerHistorikk.EndringFraTiltakskoordinator -> {
+            b as DeltakerHistorikk.EndringFraTiltakskoordinator
+            a.endringFraTiltakskoordinator.id shouldBe b.endringFraTiltakskoordinator.id
+            a.endringFraTiltakskoordinator.deltakerId shouldBe b.endringFraTiltakskoordinator.deltakerId
+            a.endringFraTiltakskoordinator.endring shouldBe b.endringFraTiltakskoordinator.endring
+            a.endringFraTiltakskoordinator.endretAv shouldBe b.endringFraTiltakskoordinator.endretAv
+            a.endringFraTiltakskoordinator.endret shouldBeCloseTo b.endringFraTiltakskoordinator.endret
         }
     }
 }

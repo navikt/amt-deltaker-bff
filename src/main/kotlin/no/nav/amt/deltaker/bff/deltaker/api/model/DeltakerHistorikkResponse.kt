@@ -13,6 +13,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -71,6 +72,12 @@ data class VurderingFraArrangorResponse(
     val endretAv: String,
 ) : DeltakerHistorikkResponse
 
+data class EndringFraTiltakskoordinatorResponse(
+    val endring: EndringFraTiltakskoordinator.Endring,
+    val endretAv: String,
+    val endret: LocalDateTime,
+) : DeltakerHistorikkResponse
+
 fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
@@ -83,6 +90,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
         is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
         is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
+        is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte)
     }
 }
 
@@ -131,4 +139,10 @@ fun VurderingFraArrangorData.toResponse(arrangornavn: String) = VurderingFraArra
     begrunnelse = begrunnelse,
     opprettetDato = opprettet,
     endretAv = arrangornavn,
+)
+
+fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>) = EndringFraTiltakskoordinatorResponse(
+    endring,
+    ansatte[endretAv]!!.navn,
+    endret,
 )

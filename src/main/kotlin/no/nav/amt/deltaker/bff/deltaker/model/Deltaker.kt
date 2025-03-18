@@ -29,6 +29,7 @@ data class Deltaker(
     val historikk: List<DeltakerHistorikk>,
     val kanEndres: Boolean,
     val sistEndret: LocalDateTime,
+    val erManueltDeltMedArrangor: Boolean,
 ) {
     val deltakelsesmengder: Deltakelsesmengder
         get() = startdato?.let { historikk.toDeltakelsesmengder().periode(it, sluttdato) } ?: historikk.toDeltakelsesmengder()

@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.db
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
@@ -412,6 +413,47 @@ class DeltakerRepositoryTest {
 
         deltakereFraDb shouldBe emptyList()
     }
+
+    @Test
+    fun `updateBatch - flere deltakere - oppdaterer deltakere og statuser riktig`() {
+        val deltaker1 = TestData.lagDeltaker()
+        val deltaker2 = TestData.lagDeltaker()
+
+        TestRepository.insert(deltaker1)
+        TestRepository.insert(deltaker2)
+
+        val oppdatertDeltaker1 = deltaker1.copy(
+            sluttdato = LocalDate.now().plusWeeks(2),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            erManueltDeltMedArrangor = true,
+        )
+        val oppdatertDeltaker2 = deltaker2.copy(
+            sluttdato = LocalDate.now().plusWeeks(2),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+            erManueltDeltMedArrangor = true,
+        )
+
+        repository.updateBatch(listOf(oppdatertDeltaker1, oppdatertDeltaker2))
+
+        val deltaker1FraDB = repository.get(deltaker1.id).getOrThrow()
+        sammenlignDeltakere(deltaker1FraDB, oppdatertDeltaker1)
+
+        val deltaker2FraDB = repository.get(deltaker2.id).getOrThrow()
+        sammenlignDeltakere(deltaker2FraDB, oppdatertDeltaker2)
+
+        repository.getDeltakereMedFlereGyldigeStatuser() shouldBe emptyList()
+    }
+
+    @Test
+    fun `get(list) - henter flere deltakere`() {
+        val deltaker1 = TestData.lagDeltaker()
+        val deltaker2 = TestData.lagDeltaker()
+
+        TestRepository.insert(deltaker1)
+        TestRepository.insert(deltaker2)
+
+        repository.getMany(listOf(deltaker1.id, deltaker2.id)) shouldHaveSize 2
+    }
 }
 
 private fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
@@ -444,6 +486,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.gyldigFra shouldBeCloseTo b.status.gyldigFra
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
+    a.erManueltDeltMedArrangor shouldBe b.erManueltDeltMedArrangor
 }
 
 private fun Deltaker.toKladdResponse() = KladdResponse(
