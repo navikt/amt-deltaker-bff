@@ -273,7 +273,7 @@ class AmtDeltakerClient(
     suspend fun delMedArrangor(deltakerIder: List<UUID>, endretAv: String): List<EndringFraTiltakskoordinatorResponse> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val request = DelMedArrangorRequest(endretAv, deltakerIder)
-        val response = httpClient.post("$baseUrl/deltakere/del-med-arrangor") {
+        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/del-med-arrangor") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
             setBody(request)
