@@ -11,12 +11,14 @@ import io.ktor.server.routing.post
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
+import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.internal.isInternal
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -97,6 +99,31 @@ fun Routing.registerTiltakskoordinatorApi(
 
             call.respond(HttpStatusCode.OK)
         }
+    }
+
+    // Endepunkt for å teste, skal slettes før merge
+    post("/internal/testing/del-med-arrangor") {
+        if (!isInternal(call.request.local.remoteAddress)) {
+            throw AuthorizationException("ingen tilgang")
+        }
+
+        val request = call.receive<Map<String, String>>()
+
+        val deltakerlisteId = UUID.fromString(request["deltakerliste"]!!)
+        val navIdent = request["navIdent"]!!
+        val deltakerIder = listOf(request["deltaker1"]!!, request["deltaker2"]!!).map { UUID.fromString(it) }
+
+        deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
+        tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
+
+        val oppdaterteDeltakere = tiltakskoordinatorService
+            .endreDeltakere(
+                deltakerIder,
+                EndringFraTiltakskoordinator.DelMedArrangor,
+                navIdent,
+            )
+
+        call.respond(oppdaterteDeltakere)
     }
 }
 

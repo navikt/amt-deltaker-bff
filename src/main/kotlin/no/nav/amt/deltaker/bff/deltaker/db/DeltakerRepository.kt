@@ -639,20 +639,21 @@ class DeltakerRepository {
         "modified_at" to deltaker.sistEndret,
     )
 
-    private fun updateDeltakerSQL(erBatchUpdate: Boolean = false) =
-        """
-        update deltaker set 
-            startdato            = :startdato,
-            sluttdato            = :sluttdato,
-            dager_per_uke        = :dagerPerUke,
-            deltakelsesprosent   = :deltakelsesprosent,
-            bakgrunnsinformasjon = :bakgrunnsinformasjon,
-            innhold              = :innhold,
-            historikk            = :historikk,
-            ${if (erBatchUpdate) "er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor," else ""}
-            modified_at          = :modified_at
-            where id = :id
-        """.trimIndent()
+    private fun updateDeltakerSQL(erBatchUpdate: Boolean = false): String {
+        return """
+            update deltaker set 
+                startdato            = :startdato,
+                sluttdato            = :sluttdato,
+                dager_per_uke        = :dagerPerUke,
+                deltakelsesprosent   = :deltakelsesprosent,
+                bakgrunnsinformasjon = :bakgrunnsinformasjon,
+                innhold              = :innhold,
+                historikk            = :historikk,
+                ${if (erBatchUpdate) "er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor," else ""}
+                modified_at          = :modified_at
+                where id = :id
+            """.trimIndent()
+    }
 
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query =
         queryOf(insertStatusSQL, insertStatusParams(status, deltakerId))
