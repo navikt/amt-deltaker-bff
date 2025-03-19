@@ -51,7 +51,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
             val navAnsattAzureId = call.getNavAnsattAzureId()
 
             val deltakere = tiltakskoordinatorService
-                .hentDeltakere(deltakerlisteId)
+                .hentDeltakereForDeltakerliste(deltakerlisteId)
                 .map { deltaker ->
                     val harTilgang =
                         tilgangskontrollService.harKoordinatorTilgangTilPerson(navAnsattAzureId, deltaker.navBruker)

@@ -31,24 +31,7 @@ class TiltakskoordinatorService(
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
 
-        return TiltakskoordinatorsDeltaker(
-            id = deltaker.id,
-            deltakerliste = deltaker.deltakerliste,
-            navBruker = deltaker.navBruker,
-            status = deltaker.status,
-            startdato = deltaker.startdato,
-            sluttdato = deltaker.sluttdato,
-            navEnhet = navEnhet?.navn,
-            navVeileder = NavVeileder(
-                navn = navVeileder?.navn,
-                telefonnummer = null,
-                epost = null,
-            ),
-            beskyttelsesmarkering = deltaker.navBruker.getBeskyttelsesmarkeringer(),
-            vurdering = sisteVurdering,
-            innsatsgruppe = deltaker.navBruker.innsatsgruppe,
-            erManueltDeltMedArrangor = deltaker.erManueltDeltMedArrangor,
-        )
+        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder)
     }
 
     suspend fun endreDeltakere(
@@ -72,19 +55,10 @@ class TiltakskoordinatorService(
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
-    fun hentDeltakere(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
+    fun hentDeltakereForDeltakerliste(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
         val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
-        val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.navBruker.navEnhetId })
-        val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
         return deltakere
-            .map {
-                val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(it.id)
-                it.toTiltakskoordinatorsDeltaker(
-                    sisteVurdering,
-                    navEnheter[it.navBruker.navEnhetId],
-                    navVeiledere[it.navBruker.navVeilederId],
-                )
-            }.filterNot { deltaker -> deltaker.skalSkjules() }
+            .toTiltakskoordinatorsDeltaker()
     }
 
     fun Deltaker.oppdater(endring: EndringFraTiltakskoordinatorResponse) = this.copy(
@@ -110,7 +84,7 @@ class TiltakskoordinatorService(
                 navEnheter[it.navBruker.navEnhetId],
                 navVeiledere[it.navBruker.navVeilederId],
             )
-        }
+        }.filterNot { it.skalSkjules() }
     }
 }
 

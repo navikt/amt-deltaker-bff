@@ -123,7 +123,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
-        every { tiltakskoordinatorService.hentDeltakere(any()) } returns emptyList()
+        every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
@@ -158,7 +158,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
 
         every { navEnhetService.hentEnheter(any()) } returns navEnheter
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
-        every { tiltakskoordinatorService.hentDeltakere(deltakerliste.id) } returns deltakere
+        every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(deltakerliste.id) } returns deltakere
         deltakere.forEach {
             every { tilgangskontrollService.harKoordinatorTilgangTilPerson(any(), it.navBruker) } returns true
         }
@@ -224,7 +224,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
-        every { tiltakskoordinatorService.hentDeltakere(any()) } returns emptyList()
+        every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
         client
             .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") { noBodyTiltakskoordinatorRequest() }
             .apply {
