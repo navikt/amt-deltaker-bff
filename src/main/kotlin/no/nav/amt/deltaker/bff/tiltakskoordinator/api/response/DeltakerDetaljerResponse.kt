@@ -11,7 +11,7 @@ data class DeltakerDetaljerResponse(
     val fornavn: String,
     val mellomnavn: String? = null,
     val etternavn: String,
-    val fodselsnummer: String,
+    val fodselsnummer: String?,
     val status: DeltakerStatusResponse,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,

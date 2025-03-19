@@ -51,12 +51,14 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
 
 fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerDetaljerResponse {
     val (fornavn, mellomnavn, etternavn) = navBruker.getVisningsnavn(tilgangTilBruker)
+    val personident = if (tilgangTilBruker) navBruker.personident else null
+
     return DeltakerDetaljerResponse(
         id = id,
         fornavn = fornavn,
         mellomnavn = mellomnavn,
         etternavn = etternavn,
-        fodselsnummer = navBruker.personident,
+        fodselsnummer = personident,
         status = status.toResponse(),
         startdato = startdato,
         sluttdato = sluttdato,
