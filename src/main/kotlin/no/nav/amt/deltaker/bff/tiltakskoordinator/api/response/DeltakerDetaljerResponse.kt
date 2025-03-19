@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Beskyttelsesmarkering
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Kontaktinformasjon
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import java.time.LocalDate
@@ -16,7 +15,6 @@ data class DeltakerDetaljerResponse(
     val status: DeltakerStatusResponse,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,
-    val kontaktinformasjon: Kontaktinformasjon,
     val navEnhet: String?,
     val navVeileder: NavVeileder,
     val beskyttelsesmarkering: List<Beskyttelsesmarkering>,

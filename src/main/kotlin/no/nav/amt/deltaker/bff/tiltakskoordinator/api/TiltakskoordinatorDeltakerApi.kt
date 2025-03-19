@@ -61,7 +61,6 @@ fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerD
         status = status.toResponse(),
         startdato = startdato,
         sluttdato = sluttdato,
-        kontaktinformasjon = kontaktinformasjon,
         navEnhet = navEnhet,
         navVeileder = navVeileder,
         beskyttelsesmarkering = beskyttelsesmarkering,

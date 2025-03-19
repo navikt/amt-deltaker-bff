@@ -14,7 +14,6 @@ data class TiltakskoordinatorsDeltaker(
     val status: DeltakerStatus,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,
-    val kontaktinformasjon: Kontaktinformasjon,
     val navEnhet: String?,
     val navVeileder: NavVeileder,
     val beskyttelsesmarkering: List<Beskyttelsesmarkering>,

@@ -7,7 +7,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Kontaktinformasjon
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -36,11 +35,6 @@ class TiltakskoordinatorService(
             status = deltaker.status,
             startdato = deltaker.startdato,
             sluttdato = deltaker.sluttdato,
-            kontaktinformasjon = Kontaktinformasjon(
-                telefonnummer = null,
-                epost = null,
-                adresse = null,
-            ),
             navEnhet = navEnhet?.navn,
             navVeileder = NavVeileder(
                 navn = navVeileder?.navn,
