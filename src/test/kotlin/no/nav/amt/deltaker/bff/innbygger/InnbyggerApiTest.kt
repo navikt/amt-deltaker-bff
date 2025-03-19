@@ -201,7 +201,6 @@ class InnbyggerApiTest {
                 navEnhetService,
                 innbyggerService,
                 forslagService,
-                mockk(),
                 amtDistribusjonClient,
                 mockk(),
                 mockk(),

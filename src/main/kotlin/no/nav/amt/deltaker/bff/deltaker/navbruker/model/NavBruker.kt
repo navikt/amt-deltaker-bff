@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker.model
 
+import no.nav.amt.deltaker.bff.tiltakskoordinator.DeltakerResponseUtils.Companion.ADRESSEBESKYTTET_PLACEHOLDER_NAVN
+import no.nav.amt.deltaker.bff.tiltakskoordinator.DeltakerResponseUtils.Companion.SKJERMET_PERSON_PLACEHOLDER_NAVN
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Beskyttelsesmarkering
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import java.util.UUID
@@ -32,6 +34,17 @@ data class NavBruker(
         val skjermet = if (erSkjermet) Beskyttelsesmarkering.SKJERMET else null
 
         return listOfNotNull(adressebeskyttelse, skjermet)
+    }
+
+    fun getVisningsnavn(tilgangTilBruker: Boolean): Triple<String, String?, String> {
+        if (erAdressebeskyttet && !tilgangTilBruker) {
+            return Triple(ADRESSEBESKYTTET_PLACEHOLDER_NAVN, null, "")
+        }
+        if (erSkjermet && !tilgangTilBruker) {
+            return Triple(SKJERMET_PERSON_PLACEHOLDER_NAVN, null, "")
+        }
+
+        return Triple(fornavn, mellomnavn, etternavn)
     }
 
     fun harAktivOppfolgingsperiode(): Boolean = oppfolgingsperioder.find { it.erAktiv() } != null

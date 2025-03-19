@@ -9,9 +9,7 @@ class DeltakerResponseUtilsTest {
     @Test
     fun `visningsnavn - adressebeskyttet og ikke tilgang - sensurerer navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medFortroligDeltaker()
-        val tilgang = DeltakerResponseUtils(deltaker, false, null)
-
-        val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
+        val (fornavn, mellomnavn, etternavn) = deltaker.navBruker.getVisningsnavn(false)
 
         fornavn shouldBe DeltakerResponseUtils.ADRESSEBESKYTTET_PLACEHOLDER_NAVN
         mellomnavn shouldBe null
@@ -21,9 +19,8 @@ class DeltakerResponseUtilsTest {
     @Test
     fun `visningsnavn - adressebeskyttet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medFortroligDeltaker()
-        val tilgang = DeltakerResponseUtils(deltaker, true, null)
 
-        val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
+        val (fornavn, mellomnavn, etternavn) = deltaker.navBruker.getVisningsnavn(true)
 
         fornavn shouldBe deltaker.navBruker.fornavn
         mellomnavn shouldBe deltaker.navBruker.mellomnavn
@@ -32,9 +29,7 @@ class DeltakerResponseUtilsTest {
 
     @Test
     fun `visningsnavn - ikke adressebeskyttet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
-        val tilgang = DeltakerResponseUtils(deltaker, true, null)
-
-        val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
+        val (fornavn, mellomnavn, etternavn) = deltaker.navBruker.getVisningsnavn(true)
 
         fornavn shouldBe deltaker.navBruker.fornavn
         mellomnavn shouldBe deltaker.navBruker.mellomnavn
@@ -44,9 +39,8 @@ class DeltakerResponseUtilsTest {
     @Test
     fun `visningsnavn - skjermet og ikke tilgang - sensurerer navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medSkjermetDeltaker()
-        val tilgang = DeltakerResponseUtils(deltaker, false, null)
 
-        val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
+        val (fornavn, mellomnavn, etternavn) = deltaker.navBruker.getVisningsnavn(false)
 
         fornavn shouldBe DeltakerResponseUtils.SKJERMET_PERSON_PLACEHOLDER_NAVN
         mellomnavn shouldBe null
@@ -56,9 +50,8 @@ class DeltakerResponseUtilsTest {
     @Test
     fun `visningsnavn - skjermet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
         medSkjermetDeltaker()
-        val tilgang = DeltakerResponseUtils(deltaker, true, null)
 
-        val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
+        val (fornavn, mellomnavn, etternavn) = deltaker.navBruker.getVisningsnavn(true)
 
         fornavn shouldBe deltaker.navBruker.fornavn
         mellomnavn shouldBe deltaker.navBruker.mellomnavn
@@ -67,9 +60,7 @@ class DeltakerResponseUtilsTest {
 
     @Test
     fun `visningsnavn - ikke skjermet og tilgang - sensurerer ikke navn`(): Unit = with(TiltakskoordinatorTilgangContext()) {
-        val tilgang = DeltakerResponseUtils(deltaker, true, null)
-
-        val (fornavn, mellomnavn, etternavn) = tilgang.visningsnavn()
+        val (fornavn, mellomnavn, etternavn) = deltaker.navBruker.getVisningsnavn(true)
 
         fornavn shouldBe deltaker.navBruker.fornavn
         mellomnavn shouldBe deltaker.navBruker.mellomnavn

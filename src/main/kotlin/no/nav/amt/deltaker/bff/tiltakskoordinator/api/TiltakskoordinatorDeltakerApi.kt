@@ -14,7 +14,6 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerDetaljerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.VurderingResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.toResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.getVisningsnavn
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import java.util.UUID
 

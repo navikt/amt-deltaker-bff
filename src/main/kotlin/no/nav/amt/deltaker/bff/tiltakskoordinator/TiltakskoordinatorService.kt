@@ -5,10 +5,13 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
+import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.models.tiltakskoordinator.response.EndringFraTiltakskoordinatorResponse
@@ -44,6 +47,7 @@ class TiltakskoordinatorService(
             beskyttelsesmarkering = deltaker.navBruker.getBeskyttelsesmarkeringer(),
             vurdering = sisteVurdering,
             innsatsgruppe = deltaker.navBruker.innsatsgruppe,
+            erManueltDeltMedArrangor = deltaker.erManueltDeltMedArrangor,
         )
     }
 
@@ -51,7 +55,7 @@ class TiltakskoordinatorService(
         deltakerIder: List<UUID>,
         endring: EndringFraTiltakskoordinator.Endring,
         endretAv: String,
-    ): List<Deltaker> {
+    ): List<TiltakskoordinatorsDeltaker> {
         val oppdateringer = when (endring) {
             EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
         }
@@ -63,25 +67,72 @@ class TiltakskoordinatorService(
 
         deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
 
-        return oppdaterteDeltakere
+        return oppdaterteDeltakere.toTiltakskoordinatorsDeltaker()
     }
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
-    fun hentDeltakere(deltakerlisteId: UUID) = deltakerService
-        .getForDeltakerliste(deltakerlisteId)
-        .filterNot { deltaker -> deltaker.skalSkjules() }
+    fun hentDeltakere(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
+        val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
+        val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.navBruker.navEnhetId })
+        val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
+        return deltakere
+            .map {
+                val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(it.id)
+                it.toTiltakskoordinatorsDeltaker(
+                    sisteVurdering,
+                    navEnheter[it.navBruker.navEnhetId],
+                    navVeiledere[it.navBruker.navVeilederId],
+                )
+            }.filterNot { deltaker -> deltaker.skalSkjules() }
+    }
+
+    fun Deltaker.oppdater(endring: EndringFraTiltakskoordinatorResponse) = this.copy(
+        erManueltDeltMedArrangor = endring.erDeltManueltMedArrangor,
+        sistEndret = endring.sistEndret,
+    )
+
+    fun TiltakskoordinatorsDeltaker.skalSkjules() = status.type in listOf(
+        DeltakerStatus.Type.KLADD,
+        DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
+        DeltakerStatus.Type.AVBRUTT_UTKAST,
+        DeltakerStatus.Type.FEILREGISTRERT,
+        DeltakerStatus.Type.PABEGYNT_REGISTRERING,
+    )
+
+    private fun List<Deltaker>.toTiltakskoordinatorsDeltaker(): List<TiltakskoordinatorsDeltaker> {
+        val navEnheter = navEnhetService.hentEnheter(this.mapNotNull { it.navBruker.navEnhetId })
+        val navVeiledere = navAnsattService.hentAnsatte(this.mapNotNull { it.navBruker.navVeilederId })
+        return this.map {
+            val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(it.id)
+            it.toTiltakskoordinatorsDeltaker(
+                sisteVurdering,
+                navEnheter[it.navBruker.navEnhetId],
+                navVeiledere[it.navBruker.navVeilederId],
+            )
+        }
+    }
 }
 
-fun Deltaker.oppdater(endring: EndringFraTiltakskoordinatorResponse) = this.copy(
-    erManueltDeltMedArrangor = endring.erDeltManueltMedArrangor,
-    sistEndret = endring.sistEndret,
-)
-
-fun Deltaker.skalSkjules() = status.type in listOf(
-    DeltakerStatus.Type.KLADD,
-    DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
-    DeltakerStatus.Type.AVBRUTT_UTKAST,
-    DeltakerStatus.Type.FEILREGISTRERT,
-    DeltakerStatus.Type.PABEGYNT_REGISTRERING,
+fun Deltaker.toTiltakskoordinatorsDeltaker(
+    sisteVurdering: Vurdering?,
+    navEnhet: NavEnhet?,
+    navVeileder: NavAnsatt?,
+) = TiltakskoordinatorsDeltaker(
+    id = id,
+    navBruker = navBruker,
+    status = status,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    navEnhet = navEnhet?.navn,
+    navVeileder = NavVeileder(
+        navn = navVeileder?.navn,
+        telefonnummer = null,
+        epost = null,
+    ),
+    beskyttelsesmarkering = navBruker.getBeskyttelsesmarkeringer(),
+    vurdering = sisteVurdering,
+    innsatsgruppe = navBruker.innsatsgruppe,
+    deltakerliste = deltakerliste,
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )

@@ -745,7 +745,6 @@ class TiltakskoordinatorDeltakerApiTest {
                 navEnhetService,
                 mockk(),
                 forslagService,
-                mockk(),
                 amtDistribusjonClient,
                 sporbarhetsloggService,
                 mockk(),

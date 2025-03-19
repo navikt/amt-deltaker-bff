@@ -291,7 +291,6 @@ class PameldingApiTest {
                 navEnhetService,
                 mockk(),
                 forslagService,
-                mockk(),
                 amtDistribusjonClient,
                 mockk(),
                 mockk(),

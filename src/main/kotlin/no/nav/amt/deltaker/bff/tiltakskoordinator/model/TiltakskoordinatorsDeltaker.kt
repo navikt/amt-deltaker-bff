@@ -20,4 +20,5 @@ data class TiltakskoordinatorsDeltaker(
     val vurdering: Vurdering?,
     val innsatsgruppe: Innsatsgruppe?,
     val deltakerliste: Deltakerliste,
+    val erManueltDeltMedArrangor: Boolean,
 )

@@ -17,6 +17,8 @@ import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.deltaker.bff.tiltakskoordinator.toTiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
@@ -182,6 +184,21 @@ object TestData {
         } else {
             deltaker
         }
+    }
+
+    fun lagTiltakskoordinatorDeltaker(
+        sisteVurdering: Vurdering? = lagVurdering(),
+        navEnhet: NavEnhet = lagNavEnhet(),
+        navVeileder: NavAnsatt = lagNavAnsatt(),
+        deltakerliste: Deltakerliste = lagDeltakerliste(),
+    ): TiltakskoordinatorsDeltaker {
+        return lagDeltaker(
+            deltakerliste = deltakerliste,
+        ).toTiltakskoordinatorsDeltaker(
+            sisteVurdering = sisteVurdering,
+            navEnhet = navEnhet,
+            navVeileder = navVeileder,
+        )
     }
 
     fun lagVurdering(
