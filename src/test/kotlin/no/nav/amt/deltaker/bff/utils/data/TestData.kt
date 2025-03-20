@@ -332,7 +332,9 @@ object TestData {
         id: UUID = UUID.randomUUID(),
         navIdent: String = randomNavIdent(),
         navn: String = "Veileder Veiledersen",
-    ) = NavAnsatt(id, navIdent, navn)
+        epost: String = "veileder.veiledersen@nav.no",
+        telefon: String = "12345678",
+    ) = NavAnsatt(id, navIdent = navIdent, navn = navn, epost = epost, telefon = telefon)
 
     private val navEnhetCache = mutableMapOf<String, NavEnhet>()
 

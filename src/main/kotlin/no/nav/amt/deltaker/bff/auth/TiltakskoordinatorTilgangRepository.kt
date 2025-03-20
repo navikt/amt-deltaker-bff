@@ -68,7 +68,7 @@ class TiltakskoordinatorTilgangRepository {
     fun hentKoordinatorer(deltakerlisteId: UUID) = Database.query { session ->
         val sql =
             """
-            select a.id, a.navn, a.nav_ident
+            select a.id, a.navn, a.nav_ident, a.telefon, a.epost
             from tiltakskoordinator_deltakerliste_tilgang t
               left join nav_ansatt a on a.id = t.nav_ansatt_id
             where t.deltakerliste_id = :deltakerliste_id
@@ -84,6 +84,8 @@ class TiltakskoordinatorTilgangRepository {
                     id = it.uuid("id"),
                     navIdent = it.string("nav_ident"),
                     navn = it.string("navn"),
+                    epost = it.stringOrNull("epost"),
+                    telefon = it.stringOrNull("telefon"),
                 )
             }.asList
         session.run(query)
