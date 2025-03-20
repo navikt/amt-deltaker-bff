@@ -24,7 +24,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
-import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
@@ -34,7 +33,8 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.registerTiltakskoordinatorApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import org.slf4j.LoggerFactory
@@ -47,7 +47,6 @@ fun Application.configureRouting(
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
     forslagService: ForslagService,
-    vurderingService: VurderingService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
@@ -124,12 +123,17 @@ fun Application.configureRouting(
             unleash,
         )
 
-        registerTiltakskoordinatorApi(
-            vurderingService,
+        registerTiltakskoordinatorDeltakerlisteApi(
             deltakerlisteService,
             tilgangskontrollService,
-            navEnhetService,
             tiltakskoordinatorService,
+        )
+
+        registerTiltakskoordinatorDeltakerApi(
+            tiltakskoordinatorService,
+            deltakerlisteService,
+            tilgangskontrollService,
+            sporbarhetsloggService,
         )
 
         val catchAllRoute = "{...}"

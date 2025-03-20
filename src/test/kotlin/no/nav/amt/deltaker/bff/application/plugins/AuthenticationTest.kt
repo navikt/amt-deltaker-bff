@@ -119,7 +119,6 @@ class AuthenticationTest {
                 mockk(),
                 mockk(),
                 mockk(),
-                mockk(),
             )
             setUpTestRoute()
         }

@@ -204,9 +204,13 @@ fun Application.module() {
         amtDeltakerClient,
         deltakerService,
         tiltakskoordinatorTilgangRepository,
+        vurderingService,
+        navEnhetService,
+        navAnsattService,
     )
 
     val tiltakstypeRepository = TiltakstypeRepository()
+
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
@@ -228,7 +232,6 @@ fun Application.module() {
         navEnhetService,
         innbyggerService,
         forslagService,
-        vurderingService,
         amtDistribusjonClient,
         sporbarhetsloggService,
         deltakerRepository,
