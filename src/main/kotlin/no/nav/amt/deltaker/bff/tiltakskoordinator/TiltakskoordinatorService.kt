@@ -101,8 +101,8 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     navEnhet = navEnhet?.navn,
     navVeileder = NavVeileder(
         navn = navVeileder?.navn,
-        telefonnummer = null,
-        epost = null,
+        telefonnummer = navVeileder?.telefon,
+        epost = navVeileder?.epost,
     ),
     beskyttelsesmarkering = navBruker.getBeskyttelsesmarkeringer(),
     vurdering = sisteVurdering,
