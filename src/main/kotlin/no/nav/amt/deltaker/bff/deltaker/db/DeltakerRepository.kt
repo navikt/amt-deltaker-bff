@@ -443,16 +443,7 @@ class DeltakerRepository {
     }
 
     fun deaktiverUkritiskTidligereStatuserQuery(status: DeltakerStatus, deltakerId: UUID) = Database.query { session ->
-        val sql =
-            """
-            update deltaker_status
-            set gyldig_til = current_timestamp
-            where deltaker_id = :deltaker_id 
-              and id != :id
-              and gyldig_til is null;
-            """.trimIndent()
-
-        val query = queryOf(sql, mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra))
+        val query = queryOf(deaktiverTidligereStatuserSQL, deaktiverTidligereStatuserParams(status, deltakerId))
         session.update(query)
     }
 
@@ -684,10 +675,9 @@ class DeltakerRepository {
         set gyldig_til = current_timestamp
         where deltaker_id = :deltaker_id 
           and id != :id 
-          and gyldig_fra < :ny_gyldig_fra
           and gyldig_til is null;
         """.trimIndent()
 
     private fun deaktiverTidligereStatuserParams(status: DeltakerStatus, deltakerId: UUID) =
-        mapOf("id" to status.id, "deltaker_id" to deltakerId, "ny_gyldig_fra" to status.gyldigFra)
+        mapOf("id" to status.id, "deltaker_id" to deltakerId)
 }
