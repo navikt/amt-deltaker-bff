@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
@@ -61,6 +62,39 @@ class DeltakerlisteServiceTest {
             deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
         }
     }
+
+    @Test
+    fun `sjekkAldersgrenseForDeltakelse - deltaker for ung - kaster exception`() {
+        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
+            medStartdato(LocalDate.of(2025, 1, 1))
+            val personident = "01010750042"
+            assertThrows<DeltakerForUngException> {
+                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+            }
+        }
+    }
+
+    @Test
+    fun `sjekkAldersgrenseForDeltakelse - deltaker ikke for ung - kaster ikke exception`() {
+        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
+            medStartdato(LocalDate.of(2025, 1, 1))
+            val personident = "01010650042"
+            assertDoesNotThrow {
+                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+            }
+        }
+    }
+
+    @Test
+    fun `sjekkAldersgrenseForDeltakelse - ikke grufagyrke - kaster ikke exception`() {
+        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING)) {
+            medStartdato(LocalDate.of(2025, 1, 1))
+            val personident = "01010750042"
+            assertDoesNotThrow {
+                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+            }
+        }
+    }
 }
 
 data class DeltakerlisteContext(
@@ -88,6 +122,11 @@ data class DeltakerlisteContext(
             sluttDato = LocalDate.now().minus(DeltakerlisteService.tiltakskoordinatorGraceperiode).minusDays(1),
         )
 
+        repository.upsert(deltakerliste)
+    }
+
+    fun medStartdato(dato: LocalDate) {
+        deltakerliste = deltakerliste.copy(startDato = dato, sluttDato = dato.plusMonths(6))
         repository.upsert(deltakerliste)
     }
 }
