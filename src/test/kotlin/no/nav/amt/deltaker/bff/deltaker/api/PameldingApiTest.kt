@@ -33,6 +33,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
@@ -64,6 +65,7 @@ class PameldingApiTest {
         tiltakskoordinatorTilgangRepository,
         tiltakskoordinatorsDeltakerlisteProducer,
     )
+    private val deltakerlisteService = mockk<DeltakerlisteService>()
 
     @Before
     fun setup() {
@@ -124,6 +126,7 @@ class PameldingApiTest {
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
         coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
+        coEvery { deltakerlisteService.sjekkAldersgrenseForDeltakelse(any(), any()) } returns Unit
 
         setUpTestApplication()
 
@@ -140,10 +143,7 @@ class PameldingApiTest {
     fun `post pamelding - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery {
-            pameldingService.opprettKladd(
-                any(),
-                any(),
-            )
+            deltakerlisteService.sjekkAldersgrenseForDeltakelse(any(), any())
         } throws NoSuchElementException("Fant ikke deltakerliste")
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
@@ -295,7 +295,7 @@ class PameldingApiTest {
                 mockk(),
                 mockk(),
                 mockk(),
-                mockk(),
+                deltakerlisteService,
                 mockk(),
                 mockk(),
             )

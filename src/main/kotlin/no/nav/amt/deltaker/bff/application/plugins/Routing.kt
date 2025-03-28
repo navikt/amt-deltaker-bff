@@ -24,6 +24,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerForUngException
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
@@ -80,6 +81,10 @@ fun Application.configureRouting(
             StatusPageLogger.log(HttpStatusCode.InternalServerError, call, cause)
             call.respondText(text = "500: ${cause.message}", status = HttpStatusCode.InternalServerError)
         }
+        exception<DeltakerForUngException> { call, cause ->
+            StatusPageLogger.log(HttpStatusCode.BadRequest, call, cause)
+            call.respondText(text = "DELTAKER_FOR_UNG", status = HttpStatusCode.BadRequest)
+        }
     }
     routing {
         registerHealthApi()
@@ -103,6 +108,7 @@ fun Application.configureRouting(
             navEnhetService,
             forslagService,
             amtDistribusjonClient,
+            deltakerlisteService,
         )
 
         registerInnbyggerApi(
