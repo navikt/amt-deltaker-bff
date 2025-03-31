@@ -140,7 +140,7 @@ fun Deltaker.toDeltakerResponse(
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
     erUnderOppfolging = navBruker.harAktivOppfolgingsperiode(),
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
 
 fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =

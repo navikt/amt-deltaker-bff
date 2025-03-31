@@ -106,7 +106,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
 
 private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = InnbyggerDeltakerResponse.VedtaksinformasjonDto(
