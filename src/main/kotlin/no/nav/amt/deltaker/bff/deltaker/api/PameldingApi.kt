@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.ApplicationRequest
 import io.ktor.server.request.header
@@ -29,6 +28,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
@@ -44,6 +44,7 @@ fun Routing.registerPameldingApi(
     navEnhetService: NavEnhetService,
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
+    deltakerlisteService: DeltakerlisteService,
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
@@ -61,6 +62,9 @@ fun Routing.registerPameldingApi(
             val request = call.receive<PameldingRequest>()
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), request.personident)
+
+            deltakerlisteService.sjekkAldersgrenseForDeltakelse(request.deltakerlisteId, request.personident)
+
             val deltaker = pameldingService.opprettKladd(
                 deltakerlisteId = request.deltakerlisteId,
                 personident = request.personident,
