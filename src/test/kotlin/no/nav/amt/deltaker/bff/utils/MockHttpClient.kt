@@ -27,7 +27,6 @@ import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
-import no.nav.amt.lib.models.deltaker.Vedtak
 import java.util.UUID
 
 const val AMT_DELTAKER_URL = "http://amt-deltaker"
@@ -186,12 +185,8 @@ object MockResponseHandler {
         )
     }
 
-    fun addFattVedtakResponse(
-        deltaker: Deltaker,
-        vedtak: Vedtak,
-        status: HttpStatusCode = HttpStatusCode.OK,
-    ) {
-        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/vedtak/${vedtak.id}/fatt"
+    fun addInnbyggerGodkjennUtkastResponse(deltaker: Deltaker, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_DELTAKER_URL/pamelding/${deltaker.id}/innbygger/godkjenn-utkast"
         addResponse(url, HttpMethod.Post, deltaker.toDeltakeroppdatering(), status)
     }
 

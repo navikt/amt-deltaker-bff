@@ -4,18 +4,18 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.oppdater
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 
 class InnbyggerService(
     private val amtDeltakerClient: AmtDeltakerClient,
     private val deltakerService: DeltakerService,
 ) {
-    suspend fun fattVedtak(deltaker: Deltaker): Deltaker {
-        val ikkeFattetVedtak = deltaker.ikkeFattetVedtak
-        require(ikkeFattetVedtak != null) {
-            "Deltaker ${deltaker.id} har ikke et vedtak som kan fattes"
+    suspend fun godkjennUtkast(deltaker: Deltaker): Deltaker {
+        require(deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
+            "Deltaker har ikke status ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}"
         }
 
-        val oppdatering = amtDeltakerClient.fattVedtak(ikkeFattetVedtak)
+        val oppdatering = amtDeltakerClient.innbyggerGodkjennUtkast(deltaker.id)
 
         deltakerService.oppdaterDeltaker(oppdatering)
 
