@@ -46,6 +46,7 @@ data class DeltakerResponse(
     val harAdresse: Boolean,
     val deltakelsesmengder: DeltakelsesmengderDto,
     val erUnderOppfolging: Boolean,
+    val erManueltDeltMedArrangor: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -139,6 +140,7 @@ fun Deltaker.toDeltakerResponse(
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
     erUnderOppfolging = navBruker.harAktivOppfolgingsperiode(),
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
 
 fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =

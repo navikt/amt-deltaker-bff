@@ -34,6 +34,7 @@ data class InnbyggerDeltakerResponse(
     val forslag: List<ForslagResponse>,
     val importertFraArena: ImportertFraArenaDto?,
     val deltakelsesmengder: DeltakelsesmengderDto,
+    val erManueltDeltMedArrangor: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -105,6 +106,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
 
 private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = InnbyggerDeltakerResponse.VedtaksinformasjonDto(
