@@ -65,7 +65,7 @@ fun Routing.registerInnbyggerApi(
                 "Deltaker ${deltaker.id} har ikke status ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}"
             }
 
-            val oppdatertDeltaker = innbyggerService.fattVedtak(deltaker)
+            val oppdatertDeltaker = innbyggerService.godkjennUtkast(deltaker)
 
             MetricRegister.GODKJENT_UTKAST.inc()
 

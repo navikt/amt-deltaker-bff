@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Assert.assertThrows
 import org.junit.BeforeClass
@@ -34,26 +35,26 @@ class InnbyggerServiceTest {
     }
 
     @Test
-    fun `fattVedtak - deltaker har ikke vedtak som kan fattes - feiler`() {
-        val deltaker = TestData.lagDeltaker()
+    fun `godkjennUtkast - har feil status - feiler`() {
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
         assertThrows(IllegalArgumentException::class.java) {
             runBlocking {
-                innbyggerService.fattVedtak(deltaker)
+                innbyggerService.godkjennUtkast(deltaker)
             }
         }
     }
 
     @Test
-    fun `fattVedtak - deltaker har vedtak som kan fattes - kaller amtDeltaker og oppdaterer deltaker`() {
+    fun `godkjennUtkast - har riktig status - kaller amtDeltaker og oppdaterer deltaker`() {
         val deltaker = deltakerMedIkkeFattetVedtak()
         TestRepository.insert(deltaker)
 
         val deltakerMedFattetVedtak = deltaker.fattVedtak()
 
-        MockResponseHandler.addFattVedtakResponse(deltakerMedFattetVedtak, deltaker.ikkeFattetVedtak!!)
+        MockResponseHandler.addInnbyggerGodkjennUtkastResponse(deltakerMedFattetVedtak)
 
         runBlocking {
-            val oppdatertDeltaker = innbyggerService.fattVedtak(deltaker)
+            val oppdatertDeltaker = innbyggerService.godkjennUtkast(deltaker)
 
             oppdatertDeltaker.ikkeFattetVedtak shouldBe null
             deltaker.ikkeFattetVedtak!!.id shouldBe oppdatertDeltaker.fattetVedtak!!.id

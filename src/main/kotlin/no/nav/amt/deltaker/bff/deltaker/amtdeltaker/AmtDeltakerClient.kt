@@ -32,7 +32,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
-import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.tiltakskoordinator.requests.DelMedArrangorRequest
 import no.nav.amt.lib.models.tiltakskoordinator.response.EndringFraTiltakskoordinatorResponse
 import org.slf4j.LoggerFactory
@@ -254,9 +253,9 @@ class AmtDeltakerClient(
         FJERN_OPPSTARTSDATO,
     )
 
-    suspend fun fattVedtak(vedtak: Vedtak): Deltakeroppdatering {
+    suspend fun innbyggerGodkjennUtkast(deltakerId: UUID): Deltakeroppdatering {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
-        val response = httpClient.post("$baseUrl/deltaker/${vedtak.deltakerId}/vedtak/${vedtak.id}/fatt") {
+        val response = httpClient.post("$baseUrl/pamelding/$deltakerId/innbygger/godkjenn-utkast") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
         }

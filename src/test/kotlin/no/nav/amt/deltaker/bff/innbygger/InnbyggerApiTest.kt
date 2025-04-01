@@ -147,7 +147,7 @@ class InnbyggerApiTest {
         val deltaker = deltakerMedIkkeFattetVedtak()
         val deltakerMedFattetVedak = deltaker.fattVedtak()
 
-        coEvery { innbyggerService.fattVedtak(deltaker) } returns deltakerMedFattetVedak
+        coEvery { innbyggerService.godkjennUtkast(deltaker) } returns deltakerMedFattetVedak
         val (ansatte, enhet) = setupMocks(deltaker, deltakerMedFattetVedak)
 
         val res = client.post("/innbygger/${deltaker.id}/godkjenn-utkast") { noBodyRequest() }
