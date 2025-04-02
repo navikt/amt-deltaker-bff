@@ -64,7 +64,7 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `sjekkAldersgrenseForDeltakelse - deltaker for ung - kaster exception`() {
+    fun `sjekkAldersgrenseForDeltakelse - deltaker for ung grufagyrke - kaster exception`() {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
@@ -75,7 +75,18 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `sjekkAldersgrenseForDeltakelse - deltaker ikke for ung - kaster ikke exception`() {
+    fun `sjekkAldersgrenseForDeltakelse - deltaker for ung gruamo - kaster exception`() {
+        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING)) {
+            medStartdato(LocalDate.of(2025, 1, 1))
+            val personident = "01010750042"
+            assertThrows<DeltakerForUngException> {
+                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+            }
+        }
+    }
+
+    @Test
+    fun `sjekkAldersgrenseForDeltakelse - deltaker ikke for ung grufagyrke - kaster ikke exception`() {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010650042"
@@ -86,8 +97,19 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `sjekkAldersgrenseForDeltakelse - ikke grufagyrke - kaster ikke exception`() {
+    fun `sjekkAldersgrenseForDeltakelse - deltaker ikke for ung gruamo - kaster ikke exception`() {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING)) {
+            medStartdato(LocalDate.of(2025, 1, 1))
+            val personident = "01010650042"
+            assertDoesNotThrow {
+                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+            }
+        }
+    }
+
+    @Test
+    fun `sjekkAldersgrenseForDeltakelse - ikke grufagyrke - kaster ikke exception`() {
+        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.JOBBKLUBB)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
             assertDoesNotThrow {
