@@ -41,7 +41,9 @@ class DeltakerlisteService(
 
     fun sjekkAldersgrenseForDeltakelse(deltakerlisteId: UUID, personident: String) {
         val deltakerliste = get(deltakerlisteId).getOrThrow()
-        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING) {
+        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING &&
+            deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING
+        ) {
             return
         }
 
