@@ -13,8 +13,6 @@ import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
-import java.util.Calendar
-import java.util.Date
 
 class DeltakerlisteServiceTest {
     private val amtPersonServiceClient = mockk<AmtPersonServiceClient>()
@@ -98,7 +96,7 @@ class DeltakerlisteServiceTest {
             assertThrows<DeltakerForUngException> {
                 runBlocking {
                     deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
-                } 
+                }
             }
         }
     }
@@ -114,7 +112,7 @@ class DeltakerlisteServiceTest {
             assertDoesNotThrow {
                 runBlocking {
                     deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
-                } 
+                }
             }
         }
     }
@@ -130,7 +128,7 @@ class DeltakerlisteServiceTest {
             assertDoesNotThrow {
                 runBlocking {
                     deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
-                } 
+                }
             }
         }
     }
@@ -140,13 +138,13 @@ class DeltakerlisteServiceTest {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.JOBBKLUBB)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
-            val fodselsar = LocalDate.now().year- 17
+            val fodselsar = LocalDate.now().year - 17
             coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
 
             assertDoesNotThrow {
                 runBlocking {
                     deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
-                } 
+                }
             }
         }
     }
