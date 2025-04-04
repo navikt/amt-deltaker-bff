@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
-import no.nav.amt.deltaker.bff.utils.Personident
+import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.time.Period
@@ -8,9 +8,10 @@ import java.util.UUID
 
 class DeltakerlisteService(
     private val repository: DeltakerlisteRepository,
+    private val amtPersonServiceClient: AmtPersonServiceClient,
 ) {
     companion object {
-        const val GRUPPE_FAG_OG_YRKESOPPLAERING_ALDERSGRENSE = 19
+        const val GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE = 19
 
         val tiltakskoordinatorGraceperiode: Period = Period.ofDays(14)
     }
@@ -39,15 +40,17 @@ class DeltakerlisteService(
         return deltakerliste
     }
 
-    fun sjekkAldersgrenseForDeltakelse(deltakerlisteId: UUID, personident: String) {
+    suspend fun sjekkAldersgrenseForDeltakelse(deltakerlisteId: UUID, personident: String) {
         val deltakerliste = get(deltakerlisteId).getOrThrow()
-        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING) {
+        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING &&
+            deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING
+        ) {
             return
         }
 
-        val fodselsdato = Personident(personident).fodselsdato()
+        val fodselsar = amtPersonServiceClient.hentNavBrukerFodselsar(personident)
 
-        if (deltakerliste.startDato.year - fodselsdato.year < GRUPPE_FAG_OG_YRKESOPPLAERING_ALDERSGRENSE) {
+        if (deltakerliste.startDato.year - fodselsar < GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE) {
             throw DeltakerForUngException("Deltaker er for ung for å delta på ${deltakerliste.tiltak.tiltakskode}")
         }
     }

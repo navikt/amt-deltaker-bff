@@ -161,7 +161,7 @@ fun Application.module() {
     )
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
-    val deltakerlisteService = DeltakerlisteService(deltakerlisteRepository)
+    val deltakerlisteService = DeltakerlisteService(deltakerlisteRepository, amtPersonServiceClient)
 
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
