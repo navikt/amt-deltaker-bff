@@ -112,6 +112,22 @@ class AmtPersonServiceClient(
 
         return dto.toModel()
     }
+
+    suspend fun hentNavBrukerFodselsar(personident: String): Int {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/api/nav-bruker-fodselsar") {
+            header(HttpHeaders.Authorization, token)
+            contentType(ContentType.Application.Json)
+            setBody(objectMapper.writeValueAsString(NavBrukerRequest(personident)))
+        }
+        if (!response.status.isSuccess()) {
+            error("Kunne ikke hente fodselsar for nav-bruker fra amt-person-service")
+        }
+
+        val dto: NavBrukerFodselsarDto = response.body()
+
+        return dto.fodselsar
+    }
 }
 
 data class NavBrukerRequest(
@@ -124,6 +140,10 @@ data class NavAnsattRequest(
 
 data class NavEnhetRequest(
     val enhetId: String,
+)
+
+data class NavBrukerFodselsarDto(
+    val fodselsar: Int,
 )
 
 data class NavBrukerDto(

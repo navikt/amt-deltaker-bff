@@ -1,6 +1,10 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
@@ -9,9 +13,12 @@ import org.junit.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
+import java.util.Calendar
+import java.util.Date
 
 class DeltakerlisteServiceTest {
-    private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
+    private val amtPersonServiceClient = mockk<AmtPersonServiceClient>()
+    private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository(), amtPersonServiceClient)
 
     @Test
     fun `hentDeltakerlisteMedFellesOppstart - deltakerliste har felles oppstart - returnere success`() {
@@ -68,8 +75,14 @@ class DeltakerlisteServiceTest {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
+
+            val fodselsar = LocalDate.now().year - 17
+            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
+
             assertThrows<DeltakerForUngException> {
-                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                runBlocking {
+                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                }
             }
         }
     }
@@ -79,8 +92,13 @@ class DeltakerlisteServiceTest {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
+            val fodselsar = LocalDate.now().year - 17
+            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
+
             assertThrows<DeltakerForUngException> {
-                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                runBlocking {
+                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                } 
             }
         }
     }
@@ -90,8 +108,13 @@ class DeltakerlisteServiceTest {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010650042"
+            val fodselsar = LocalDate.now().year - 27
+            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
+
             assertDoesNotThrow {
-                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                runBlocking {
+                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                } 
             }
         }
     }
@@ -101,8 +124,13 @@ class DeltakerlisteServiceTest {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010650042"
+            val fodselsar = LocalDate.now().year - 27
+            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
+
             assertDoesNotThrow {
-                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                runBlocking {
+                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                } 
             }
         }
     }
@@ -112,8 +140,13 @@ class DeltakerlisteServiceTest {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.JOBBKLUBB)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
+            val fodselsar = LocalDate.now().year- 17
+            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
+
             assertDoesNotThrow {
-                deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                runBlocking {
+                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
+                } 
             }
         }
     }
