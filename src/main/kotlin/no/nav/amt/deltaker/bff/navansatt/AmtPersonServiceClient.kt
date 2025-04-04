@@ -124,9 +124,7 @@ class AmtPersonServiceClient(
             error("Kunne ikke hente fodselsar for nav-bruker fra amt-person-service")
         }
 
-        val dto: NavBrukerFodselsarDto = response.body()
-
-        return dto.fodselsar
+        return response.body()
     }
 }
 
@@ -140,10 +138,6 @@ data class NavAnsattRequest(
 
 data class NavEnhetRequest(
     val enhetId: String,
-)
-
-data class NavBrukerFodselsarDto(
-    val fodselsar: Int,
 )
 
 data class NavBrukerDto(
