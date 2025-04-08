@@ -28,6 +28,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerMedStatusResponse
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
@@ -46,6 +47,23 @@ class AmtDeltakerClient(
     private val azureAdTokenClient: AzureAdTokenClient,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, deltakerlisteId: UUID): List<Deltaker> {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/sett-paa-venteliste") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(DeltakereRequest(deltakerIder, deltakerlisteId))
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke opprette kladd i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+        return response.body()
+    }
 
     suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): KladdResponse {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
@@ -336,6 +354,11 @@ class AmtDeltakerClient(
         const val FJERN_OPPSTARTSDATO = "fjern-oppstartsdato"
     }
 }
+
+data class DeltakereRequest(
+    val deltakere: List<UUID>,
+    val deltakerlisteId: UUID,
+)
 
 private fun Utkast.toRequest() = UtkastRequest(
     deltakelsesinnhold = this.pamelding.deltakelsesinnhold,

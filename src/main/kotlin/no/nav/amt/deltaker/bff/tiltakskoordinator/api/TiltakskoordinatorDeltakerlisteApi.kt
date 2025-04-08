@@ -61,6 +61,19 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
             call.respond(deltakere)
         }
 
+        post("$apiPath/deltakere/sett-paa-venteliste") {
+            val deltakerRequest = call.receive<DeltakereRequest>()
+            val deltakerlisteId = getDeltakerlisteId()
+            val deltakerIder = deltakerRequest.deltakere
+
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
+
+            tiltakskoordinatorService.settPaaVenteliste(deltakerIder, deltakerlisteId)
+
+            call.respond(HttpStatusCode.OK)
+        }
+
         post("$apiPath/deltakere/del-med-arrangor") {
             val deltakerlisteId = getDeltakerlisteId()
             val navIdent = call.getNavIdent()
@@ -116,6 +129,10 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     )
 }
+
+data class DeltakereRequest(
+    val deltakere: List<UUID>,
+)
 
 fun RoutingContext.getDeltakerlisteId(): UUID {
     val id =

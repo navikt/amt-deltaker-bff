@@ -34,6 +34,19 @@ class TiltakskoordinatorService(
         return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder)
     }
 
+    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
+        return endreDeltakere {
+            amtDeltakerClient.settPaaVenteliste(deltakerIder, deltakerlisteId)
+        }
+    }
+
+    suspend fun endreDeltakere(postEndring: suspend () -> List<Deltaker>): List<TiltakskoordinatorsDeltaker> {
+        val oppdaterteDeltakere = postEndring()
+        deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
+
+        return oppdaterteDeltakere.toTiltakskoordinatorsDeltaker()
+    }
+
     suspend fun endreDeltakere(
         deltakerIder: List<UUID>,
         endring: EndringFraTiltakskoordinator.Endring,
