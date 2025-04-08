@@ -7,7 +7,6 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.Vedtak
-import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.Test
 import java.time.LocalDateTime
@@ -39,7 +38,7 @@ class DeltakerTest {
         )
         val deltaker = TestData.leggTilHistorikk(baseDeltaker, listOf(vedtak), listOf(gammelEndring, nyEndring), listOf(forslag))
 
-        val historikk = deltaker.getDeltakerHistorikkSortert()
+        val historikk = deltaker.getDeltakerHistorikkForVisning()
 
         historikk.size shouldBe 4
         sammenlignHistorikk(historikk[0], DeltakerHistorikk.Endring(nyEndring))
@@ -51,7 +50,7 @@ class DeltakerTest {
     @Test
     fun `getDeltakerHistorikkSortert - ingen historikk - returner tom liste`() {
         val deltaker = TestData.lagDeltaker(historikk = false)
-        deltaker.getDeltakerHistorikkSortert() shouldBe emptyList()
+        deltaker.getDeltakerHistorikkForVisning() shouldBe emptyList()
     }
 
     @Test
@@ -174,6 +173,18 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.endringFraTiltakskoordinator.endring shouldBe b.endringFraTiltakskoordinator.endring
             a.endringFraTiltakskoordinator.endretAv shouldBe b.endringFraTiltakskoordinator.endretAv
             a.endringFraTiltakskoordinator.endret shouldBeCloseTo b.endringFraTiltakskoordinator.endret
+        }
+
+        is DeltakerHistorikk.InnsokPaaFellesOppstart -> {
+            b as DeltakerHistorikk.InnsokPaaFellesOppstart
+            a.data.id shouldBe b.data.id
+            a.data.deltakerId shouldBe b.data.deltakerId
+            a.data.deltakelsesinnholdVedInnsok shouldBe b.data.deltakelsesinnholdVedInnsok
+            a.data.innsokt shouldBeCloseTo b.data.innsokt
+            a.data.innsoktAv shouldBe b.data.innsoktAv
+            a.data.innsoktAvEnhet shouldBe b.data.innsoktAvEnhet
+            a.data.utkastDelt shouldBeCloseTo b.data.utkastDelt
+            a.data.utkastGodkjentAvNav shouldBe b.data.utkastGodkjentAvNav
         }
     }
 }

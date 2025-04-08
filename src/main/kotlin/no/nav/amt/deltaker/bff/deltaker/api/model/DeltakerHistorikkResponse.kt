@@ -11,6 +11,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
+import no.nav.amt.lib.models.deltaker.InnsokPaaFellesOppstart
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
@@ -78,6 +79,15 @@ data class EndringFraTiltakskoordinatorResponse(
     val endret: LocalDateTime,
 ) : DeltakerHistorikkResponse
 
+data class InnsokPaaFellesOppstartResponse(
+    val innsokt: LocalDateTime,
+    val innsoktAv: String,
+    val innsoktAvEnhet: String,
+    val deltakelsesinnholdVedInnsok: Deltakelsesinnhold?,
+    val utkastDelt: LocalDateTime?,
+    val utkastGodkjentAvNav: Boolean,
+) : DeltakerHistorikkResponse
+
 fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
@@ -91,6 +101,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
         is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
         is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte)
+        is DeltakerHistorikk.InnsokPaaFellesOppstart -> it.data.toResponse(ansatte, enheter)
     }
 }
 
@@ -145,4 +156,13 @@ fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>) = End
     endring,
     ansatte[endretAv]!!.navn,
     endret,
+)
+
+fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = InnsokPaaFellesOppstartResponse(
+    innsokt,
+    ansatte[innsoktAv]!!.navn,
+    enheter[innsoktAvEnhet]!!.navn,
+    deltakelsesinnholdVedInnsok,
+    utkastDelt,
+    utkastGodkjentAvNav,
 )
