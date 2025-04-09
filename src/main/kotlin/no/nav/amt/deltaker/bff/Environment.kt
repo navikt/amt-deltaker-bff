@@ -32,7 +32,7 @@ data class Environment(
     companion object {
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
         const val DELTAKERLISTE_TOPIC = "team-mulighetsrommet.siste-tiltaksgjennomforinger-v1"
-        const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v2"
+        const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v3"
 
         const val ARRANGOR_MELDING_TOPIC = "amt.arrangor-melding-v1"
 
