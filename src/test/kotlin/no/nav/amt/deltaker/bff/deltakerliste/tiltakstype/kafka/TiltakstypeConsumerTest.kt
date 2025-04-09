@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.models.deltaker.toV2
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.kafka.TiltakstypeDto
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.BeforeClass
@@ -32,7 +33,7 @@ class TiltakstypeConsumerTest {
             navn = tiltakstype.navn,
             tiltakskode = tiltakstype.tiltakskode,
             arenaKode = tiltakstype.arenaKode.name,
-            innsatsgrupper = tiltakstype.innsatsgrupper,
+            innsatsgrupper = tiltakstype.innsatsgrupper.map { it.toV2() }.toSet(),
             deltakerRegistreringInnhold = tiltakstype.innhold,
         )
         val consumer = TiltakstypeConsumer(repository)

@@ -12,7 +12,6 @@ import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.kafka.TiltakstypeDto
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.UUIDDeserializer
-import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class TiltakstypeConsumer(
@@ -34,8 +33,6 @@ class TiltakstypeConsumer(
     override suspend fun consume(key: UUID, value: String?) {
         value?.let { handterTiltakstype(objectMapper.readValue(it)) }
     }
-
-    private val log = LoggerFactory.getLogger(javaClass)
 
     private fun handterTiltakstype(tiltakstype: TiltakstypeDto) {
         repository.upsert(tiltakstype.toModel())
