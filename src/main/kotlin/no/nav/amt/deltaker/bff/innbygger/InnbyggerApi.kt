@@ -77,7 +77,7 @@ fun Routing.registerInnbyggerApi(
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
-            val historikk = deltaker.getDeltakerHistorikkSortert()
+            val historikk = deltaker.getDeltakerHistorikkForVisning()
 
             val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
             val enheter = navEnhetService.hentEnheterForHistorikk(historikk)

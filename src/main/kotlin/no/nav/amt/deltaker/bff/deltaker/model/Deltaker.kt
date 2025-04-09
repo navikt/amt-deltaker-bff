@@ -53,7 +53,11 @@ data class Deltaker(
             ikkeFattetVedtak
         }
 
-    fun getDeltakerHistorikkSortert() = historikk.sortedByDescending { it.sistEndret }
+    fun getDeltakerHistorikkForVisning() = historikk
+        .filterNot {
+            deltakerliste.getOppstartstype() == Deltakerliste.Oppstartstype.FELLES &&
+                it is DeltakerHistorikk.Vedtak
+        }.sortedByDescending { it.sistEndret }
 
     fun harSluttet(): Boolean = status.type in AVSLUTTENDE_STATUSER
 

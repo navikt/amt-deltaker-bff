@@ -168,7 +168,7 @@ class InnbyggerApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
 
-        val historikk = deltaker.getDeltakerHistorikkSortert()
+        val historikk = deltaker.getDeltakerHistorikkForVisning()
         val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
         val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
@@ -277,4 +277,5 @@ private val DeltakerHistorikk.id
         is DeltakerHistorikk.ImportertFraArena -> importertFraArena.deltakerId
         is DeltakerHistorikk.VurderingFraArrangor -> data.id
         is DeltakerHistorikk.EndringFraTiltakskoordinator -> endringFraTiltakskoordinator.id
+        is DeltakerHistorikk.InnsokPaaFellesOppstart -> data.id
     }
