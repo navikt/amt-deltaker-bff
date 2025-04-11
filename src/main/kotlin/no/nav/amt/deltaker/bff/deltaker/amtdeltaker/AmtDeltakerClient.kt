@@ -48,12 +48,12 @@ class AmtDeltakerClient(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, deltakerlisteId: UUID): List<Deltaker> {
+    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, endretAv: String): List<Deltaker> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/sett-paa-venteliste") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
-            setBody(DeltakereRequest(deltakerIder, deltakerlisteId))
+            setBody(DeltakereRequest(deltakerIder, endretAv))
         }
 
         if (!response.status.isSuccess()) {
@@ -357,7 +357,7 @@ class AmtDeltakerClient(
 
 data class DeltakereRequest(
     val deltakere: List<UUID>,
-    val deltakerlisteId: UUID,
+    val endretAv: String,
 )
 
 private fun Utkast.toRequest() = UtkastRequest(

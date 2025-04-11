@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.Test
 import java.time.LocalDateTime
@@ -55,10 +56,14 @@ class TiltakskoordinatorServiceIntegrationTest {
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTELISTE, null, LocalDateTime.now(), null, LocalDateTime.now())
 
         coEvery {
-            amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), deltaker.deltakerliste.id)
+            amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
         } returns listOf(deltaker.copy(status = nyStatus))
 
-        val resultatFraAmtDeltaker = tiltakskoordinatorService.settPaaVenteliste(listOf(deltaker.id), deltaker.deltakerliste.id)
+        val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
+            listOf(deltaker.id),
+            EndringFraTiltakskoordinator.SettPaaVenteliste,
+            navAnsatt.navIdent,
+        )
         val resultDeltaker = resultatFraAmtDeltaker.first()
         resultatFraAmtDeltaker.size shouldBe 1
         resultDeltaker.status shouldBe nyStatus

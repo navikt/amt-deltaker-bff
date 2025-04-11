@@ -4,10 +4,12 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.kafka.utils.assertProducedTombstone
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.testing.SingletonKafkaProvider
@@ -37,6 +39,8 @@ class TilgangskontrollServiceTest {
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
         tiltakskoordinatorsDeltakerlisteProducer,
+        mockk<TiltakskoordinatorService>(),
+        mockk<DeltakerlisteService>(),
     )
 
     init {
