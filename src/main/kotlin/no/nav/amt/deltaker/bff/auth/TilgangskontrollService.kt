@@ -4,7 +4,9 @@ import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
+import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
@@ -22,6 +24,8 @@ class TilgangskontrollService(
     private val navAnsattService: NavAnsattService,
     private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
     private val tiltakskoordinatorsDeltakerlisteProducer: TiltakskoordinatorsDeltakerlisteProducer,
+    private val tiltakskoordinatorService: TiltakskoordinatorService,
+    private val deltakerlisteService: DeltakerlisteService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -37,6 +41,27 @@ class TilgangskontrollService(
 
         if (tilgang.isDeny) {
             throw AuthorizationException("Ansatt har ikke skrivetilgang til bruker")
+        }
+    }
+
+    suspend fun tilgangTilDeltakereGuard(
+        deltakerIder: List<UUID>,
+        deltakerlisteId: UUID,
+        navIdent: String,
+    ) {
+        val deltakere = tiltakskoordinatorService.getMany(deltakerIder)
+            .filter { it.deltakerliste.id == deltakerlisteId }
+
+        verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
+        deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
+
+        if (deltakerIder.size != deltakere.size) {
+            log.error(
+                "Alle deltakere i bulk operasjon må være på samme deltakerliste. " +
+                    "deltakere: $deltakerIder, " +
+                    "deltakerliste: $deltakerlisteId",
+            )
+            throw AuthorizationException("Alle deltakere i bulk operasjon må være på samme deltakerliste")
         }
     }
 

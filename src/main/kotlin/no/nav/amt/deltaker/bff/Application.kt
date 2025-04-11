@@ -173,13 +173,6 @@ fun Application.module() {
     val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
     val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(kafkaProducer)
 
-    val tilgangskontrollService = TilgangskontrollService(
-        poaoTilgangCachedClient,
-        navAnsattService,
-        tiltakskoordinatorTilgangRepository,
-        tiltakskoordinatorsDeltakerlisteProducer,
-    )
-
     val sporbarhetsloggService = SporbarhetsloggService(AuditLoggerImpl())
 
     val deltakerRepository = DeltakerRepository()
@@ -207,6 +200,15 @@ fun Application.module() {
         vurderingService,
         navEnhetService,
         navAnsattService,
+    )
+
+    val tilgangskontrollService = TilgangskontrollService(
+        poaoTilgangCachedClient,
+        navAnsattService,
+        tiltakskoordinatorTilgangRepository,
+        tiltakskoordinatorsDeltakerlisteProducer,
+        tiltakskoordinatorService,
+        deltakerlisteService,
     )
 
     val tiltakstypeRepository = TiltakstypeRepository()

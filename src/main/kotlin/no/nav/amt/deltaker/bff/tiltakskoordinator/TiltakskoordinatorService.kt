@@ -25,6 +25,8 @@ class TiltakskoordinatorService(
     private val navEnhetService: NavEnhetService,
     private val navAnsattService: NavAnsattService,
 ) {
+    fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
+
     suspend fun get(deltakerId: UUID): TiltakskoordinatorsDeltaker {
         val deltaker = deltakerService.get(deltakerId).getOrThrow()
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
@@ -39,13 +41,16 @@ class TiltakskoordinatorService(
         endring: EndringFraTiltakskoordinator.Endring,
         endretAv: String,
     ): List<TiltakskoordinatorsDeltaker> {
-        val oppdateringer = when (endring) {
-            EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
-        }
-
-        val deltakere = deltakerService.getMany(deltakerIder).associateBy { it.id }
-        val oppdaterteDeltakere = oppdateringer.mapNotNull { oppdatering ->
-            deltakere[oppdatering.id]?.oppdater(oppdatering)
+        val oppdaterteDeltakere = when (endring) {
+            EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
+            EndringFraTiltakskoordinator.DelMedArrangor -> {
+                val res = amtDeltakerClient
+                    .delMedArrangor(deltakerIder, endretAv)
+                val deltakere = deltakerService.getMany(deltakerIder).associateBy { it.id }
+                res.mapNotNull { oppdatering ->
+                    deltakere[oppdatering.id]?.oppdater(oppdatering)
+                }
+            }
         }
 
         deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
