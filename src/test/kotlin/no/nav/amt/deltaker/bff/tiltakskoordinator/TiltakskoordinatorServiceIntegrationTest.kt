@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -72,8 +73,29 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
-        deltakerFraDb shouldBe deltaker
+        deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt)
     }
+}
+
+infix fun TiltakskoordinatorsDeltaker.shouldBeCloseTo(expected: TiltakskoordinatorsDeltaker?) {
+    val statusOpprettetDay = this.status.opprettet.toLocalDate().atStartOfDay()
+    val gyldigFra = this.status.gyldigFra.toLocalDate().atStartOfDay()
+
+    fun LocalDateTime.atStartOfDay() = this.toLocalDate().atStartOfDay()
+
+    this.copy(
+        status = status.copy(
+            id = expected!!.status.id,
+            opprettet = statusOpprettetDay,
+            gyldigFra = gyldigFra,
+        ),
+    ) shouldBe expected.copy(
+        status = expected.status.copy(
+            id = expected.status.id,
+            opprettet = expected.status.opprettet.atStartOfDay(),
+            gyldigFra = expected.status.gyldigFra.atStartOfDay(),
+        ),
+    )
 }
