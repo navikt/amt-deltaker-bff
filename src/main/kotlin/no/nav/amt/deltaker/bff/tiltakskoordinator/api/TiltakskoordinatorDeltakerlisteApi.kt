@@ -59,9 +59,8 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
         post("$apiPath/deltakere/sett-paa-venteliste") {
             val navAnsattAzureId = call.getNavAnsattAzureId()
             val navIdent = call.getNavIdent()
-            val deltakerRequest = call.receive<DeltakereRequest>()
+            val deltakerIder = call.receive<List<UUID>>()
             val deltakerlisteId = getDeltakerlisteId()
-            val deltakerIder = deltakerRequest.deltakere
 
             tilgangskontrollService.tilgangTilDeltakereGuard(deltakerIder, deltakerlisteId, navIdent)
 
