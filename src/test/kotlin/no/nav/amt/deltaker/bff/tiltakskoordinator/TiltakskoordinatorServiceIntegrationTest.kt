@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator
 
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -68,7 +69,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         )
         val resultDeltaker = resultatFraAmtDeltaker.first()
         resultatFraAmtDeltaker.size shouldBe 1
-        resultDeltaker.status shouldBe nyStatus
+        resultDeltaker.status.id shouldNotBe deltaker.status.id
+        resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
@@ -80,20 +82,21 @@ class TiltakskoordinatorServiceIntegrationTest {
     }
 }
 
-infix fun TiltakskoordinatorsDeltaker.shouldBeCloseTo(expected: TiltakskoordinatorsDeltaker?) {
-    fun LocalDateTime.atStartOfDay() = this.toLocalDate().atStartOfDay()
+fun LocalDateTime.atStartOfDay(): LocalDateTime = this.toLocalDate().atStartOfDay()
 
+fun DeltakerStatus.trimMss() = this.copy(
+    opprettet = this.opprettet.atStartOfDay(),
+    gyldigFra = this.gyldigFra.atStartOfDay(),
+)
+
+infix fun TiltakskoordinatorsDeltaker.shouldBeCloseTo(expected: TiltakskoordinatorsDeltaker?) {
     this.copy(
-        status = status.copy(
+        status = status.trimMss().copy(
             id = expected!!.status.id,
-            opprettet = this.status.opprettet.atStartOfDay(),
-            gyldigFra = this.status.gyldigFra.atStartOfDay(),
         ),
     ) shouldBe expected.copy(
-        status = expected.status.copy(
+        status = expected.status.trimMss().copy(
             id = expected.status.id,
-            opprettet = expected.status.opprettet.atStartOfDay(),
-            gyldigFra = expected.status.gyldigFra.atStartOfDay(),
         ),
     )
 }
