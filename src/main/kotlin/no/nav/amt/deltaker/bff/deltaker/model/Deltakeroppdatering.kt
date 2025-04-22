@@ -18,5 +18,6 @@ data class Deltakeroppdatering(
     val status: DeltakerStatus,
     val historikk: List<DeltakerHistorikk>,
     val sistEndret: LocalDateTime = LocalDateTime.now(),
+    val erManueltDeltMedArrangor: Boolean,
     val forcedUpdate: Boolean? = false,
 )

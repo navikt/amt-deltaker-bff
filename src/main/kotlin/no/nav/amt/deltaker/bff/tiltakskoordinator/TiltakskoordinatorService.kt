@@ -4,6 +4,8 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -48,14 +50,14 @@ class TiltakskoordinatorService(
                     .delMedArrangor(deltakerIder, endretAv)
                 val deltakere = deltakerService.getMany(deltakerIder).associateBy { it.id }
                 res.mapNotNull { oppdatering ->
-                    deltakere[oppdatering.id]?.oppdater(oppdatering)
+                    deltakere[oppdatering.id]?.oppdater(oppdatering)?.toDeltakeroppdatering()
                 }
             }
         }
 
         deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
 
-        return oppdaterteDeltakere.toTiltakskoordinatorsDeltaker()
+        return oppdaterteDeltakere.toTiltakskoordinatorsDeltakere()
     }
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
@@ -90,6 +92,11 @@ class TiltakskoordinatorService(
                 navVeiledere[it.navBruker.navVeilederId],
             )
         }.filterNot { it.skalSkjules() }
+    }
+
+    private fun List<Deltakeroppdatering>.toTiltakskoordinatorsDeltakere(): List<TiltakskoordinatorsDeltaker> {
+        val deltakere = deltakerService.getMany(this.map { it.id })
+        return deltakere.toTiltakskoordinatorsDeltaker()
     }
 }
 

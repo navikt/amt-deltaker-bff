@@ -370,7 +370,7 @@ class DeltakerRepository {
         }
     }
 
-    fun updateBatch(deltakere: List<Deltaker>) = Database.query { session ->
+    fun updateBatch(deltakere: List<Deltakeroppdatering>) = Database.query { session ->
         val deltakerParams = deltakere.map { batchUpdateDeltakerParams(it) }
         val statusParams = deltakere.map { insertStatusParams(it.status, it.id) }
         val deaktiverTidligereStatuserParams = deltakere.map { deaktiverTidligereStatuserParams(it.status, it.id) }
@@ -605,7 +605,7 @@ class DeltakerRepository {
         return queryOf(sql, params)
     }
 
-    private fun batchUpdateDeltakerParams(deltaker: Deltaker) = mapOf(
+    private fun batchUpdateDeltakerParams(deltaker: Deltakeroppdatering) = mapOf(
         "id" to deltaker.id,
         "startdato" to deltaker.startdato,
         "sluttdato" to deltaker.sluttdato,

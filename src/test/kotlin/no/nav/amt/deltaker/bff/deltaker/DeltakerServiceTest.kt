@@ -157,6 +157,7 @@ class DeltakerServiceTest {
             bakgrunnsinformasjon = "Tekst",
             deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+            erManueltDeltMedArrangor = false,
             historikk = emptyList(),
         )
 
@@ -185,6 +186,7 @@ class DeltakerServiceTest {
                 aarsak = DeltakerStatus.Aarsak.Type.ANNET,
                 beskrivelse = "Oppdatert",
             ),
+            erManueltDeltMedArrangor = false,
             historikk = emptyList(),
         )
 
@@ -219,6 +221,7 @@ class DeltakerServiceTest {
             bakgrunnsinformasjon = "Tekst",
             deltakelsesinnhold = Deltakelsesinnhold("ny ledetekst", listOf(Innhold("", "", true, ""))),
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+            erManueltDeltMedArrangor = false,
             historikk = emptyList(),
         )
 
@@ -255,6 +258,7 @@ class DeltakerServiceTest {
             bakgrunnsinformasjon = "Tekst",
             deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            erManueltDeltMedArrangor = false,
             historikk = emptyList(),
         )
 
@@ -280,6 +284,7 @@ class DeltakerServiceTest {
             bakgrunnsinformasjon = null,
             deltakelsesinnhold = null,
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+            erManueltDeltMedArrangor = false,
             historikk = emptyList(),
         )
 
@@ -311,6 +316,7 @@ class DeltakerServiceTest {
                 type = DeltakerStatus.Type.IKKE_AKTUELL,
                 aarsak = DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
             ),
+            erManueltDeltMedArrangor = false,
             historikk = emptyList(),
         )
 
@@ -323,7 +329,7 @@ class DeltakerServiceTest {
     }
 }
 
-fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak(
+fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(
     no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak.Type
         .valueOf(type.name),
     beskrivelse,
