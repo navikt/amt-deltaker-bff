@@ -81,16 +81,13 @@ class TiltakskoordinatorServiceIntegrationTest {
 }
 
 infix fun TiltakskoordinatorsDeltaker.shouldBeCloseTo(expected: TiltakskoordinatorsDeltaker?) {
-    val statusOpprettetDay = this.status.opprettet.toLocalDate().atStartOfDay()
-    val gyldigFra = this.status.gyldigFra.toLocalDate().atStartOfDay()
-
     fun LocalDateTime.atStartOfDay() = this.toLocalDate().atStartOfDay()
 
     this.copy(
         status = status.copy(
             id = expected!!.status.id,
-            opprettet = statusOpprettetDay,
-            gyldigFra = gyldigFra,
+            opprettet = this.status.opprettet.atStartOfDay(),
+            gyldigFra = this.status.gyldigFra.atStartOfDay(),
         ),
     ) shouldBe expected.copy(
         status = expected.status.copy(
