@@ -21,7 +21,7 @@ data class IkkeAktuellRequest(
         DeltakerStatus.Type.IKKE_AKTUELL,
         DeltakerStatus.Type.VENTELISTE,
         DeltakerStatus.Type.VURDERES,
-        DeltakerStatus.Type.SOKT_INN
+        DeltakerStatus.Type.SOKT_INN,
     )
 
     override fun valider(deltaker: Deltaker) {
