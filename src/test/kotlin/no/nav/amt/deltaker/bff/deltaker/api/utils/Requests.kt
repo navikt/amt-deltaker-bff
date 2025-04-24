@@ -40,6 +40,23 @@ internal fun HttpRequestBuilder.noBodyRequest() {
     header("aktiv-enhet", "0101")
 }
 
+internal fun HttpRequestBuilder.postTiltakskoordinatorRequest(body: Any) {
+    header(
+        HttpHeaders.Authorization,
+        "Bearer ${
+            generateJWT(
+                consumerClientId = "frontend-clientid",
+                navAnsattAzureId = UUID.randomUUID().toString(),
+                audience = "deltaker-bff",
+                groups = listOf(UUID(0L, 0L).toString()),
+            )
+        }",
+    )
+    header("aktiv-enhet", "0101")
+    contentType(ContentType.Application.Json)
+    setBody(objectMapper.writeValueAsString(body))
+}
+
 internal fun HttpRequestBuilder.noBodyTiltakskoordinatorRequest() {
     header(
         HttpHeaders.Authorization,

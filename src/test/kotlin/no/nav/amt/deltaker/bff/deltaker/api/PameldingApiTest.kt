@@ -38,6 +38,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -64,6 +65,8 @@ class PameldingApiTest {
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
         tiltakskoordinatorsDeltakerlisteProducer,
+        mockk<TiltakskoordinatorService>(),
+        mockk<DeltakerlisteService>(),
     )
     private val deltakerlisteService = mockk<DeltakerlisteService>()
 

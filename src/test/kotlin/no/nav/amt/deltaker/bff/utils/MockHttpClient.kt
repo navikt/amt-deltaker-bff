@@ -222,4 +222,5 @@ fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     deltakelsesinnhold,
     status,
     historikk,
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )

@@ -19,14 +19,16 @@ import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
+import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
+import no.nav.amt.deltaker.bff.deltaker.api.utils.postTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.DeltakereRequest
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toDeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toResponse
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import no.nav.amt.deltaker.bff.utils.data.TestData.lagVurdering
 import org.junit.Before
 import org.junit.Test
 import java.util.UUID
@@ -49,6 +51,8 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         client.get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere").status shouldBe HttpStatusCode.Unauthorized
         client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/tilgang/legg-til").status shouldBe HttpStatusCode.Unauthorized
         client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor").status shouldBe
+            HttpStatusCode.Unauthorized
+        client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/sett-paa-venteliste").status shouldBe
             HttpStatusCode.Unauthorized
     }
 
@@ -75,6 +79,12 @@ class TiltakskoordinatorDeltakerlisteApiTest {
             }
         client
             .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/del-med-arrangor") { noBodyRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+
+        client
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/sett-paa-venteliste") { noBodyRequest() }
             .apply {
                 status shouldBe HttpStatusCode.Unauthorized
             }
@@ -154,7 +164,6 @@ class TiltakskoordinatorDeltakerlisteApiTest {
             .distinct()
             .map { TestData.lagNavEnhet(it) }
             .associateBy { it.id }
-        val vurdering = lagVurdering()
 
         every { navEnhetService.hentEnheter(any()) } returns navEnheter
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
@@ -211,9 +220,12 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         setUpTestApplication()
         val deltakerliste = TestData.lagDeltakerliste()
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
-        coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } throws AuthorizationException("")
+        coEvery { tilgangskontrollService.tilgangTilDeltakereGuard(any(), any(), any()) } throws AuthorizationException("")
+
         client
-            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/del-med-arrangor") { noBodyTiltakskoordinatorRequest() }
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/del-med-arrangor") {
+                postTiltakskoordinatorRequest(listOf(UUID.randomUUID()))
+            }
             .apply {
                 status shouldBe HttpStatusCode.Forbidden
             }
@@ -223,15 +235,52 @@ class TiltakskoordinatorDeltakerlisteApiTest {
     fun `post del-med-arrangor - deltakerliste finnes ikke - returnerer 404`() = testApplication {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
-        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
         every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
+        coEvery { tilgangskontrollService.tilgangTilDeltakereGuard(any(), any(), any()) } throws NoSuchElementException()
         client
-            .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") { noBodyTiltakskoordinatorRequest() }
+            .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") {
+                postTiltakskoordinatorRequest(listOf(UUID.randomUUID()))
+            }
             .apply {
                 status shouldBe HttpStatusCode.NotFound
             }
     }
 
+    @Test
+    fun `post sett-paa-venteliste - deltakerliste er feil type - returnerer unauthorized`() = testApplication {
+        setUpTestApplication()
+        mockTilgangTilDeltakerliste()
+        coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } returns Unit
+        every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
+        client
+            .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") {
+                postRequest(DeltakereRequest(listOf(UUID.randomUUID())))
+            }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+    }
+
+/*
+    @Test
+    fun `sett-paa-venteliste - deltakere i feil liste - returnerer 401`() = testApplication {
+        val deltaker1 = TestData.lagDeltaker()
+        val deltaker2 = TestData.lagDeltaker(deltakerliste = TestData.lagDeltakerliste(id = UUID.randomUUID()))
+        coEvery { deltakerService.getDeltakelser(any()) } returns listOf(deltaker1, deltaker2)
+        coEvery { unleashToggle.erKometMasterForTiltakstype(deltaker1.deltakerliste.tiltakstype.arenaKode) } returns true
+
+        val request = DeltakereRequest(
+            deltakere = listOf(deltaker1.id, deltaker2.id),
+            deltakerlisteId = deltaker1.deltakerliste.id,
+            endretAv = "Nav Veiledersen"
+        )
+        setUpTestApplication()
+        client.post("$apiPath/sett-paa-venteliste") { postRequest(request) }.apply {
+            status shouldBe HttpStatusCode.Forbidden
+            bodyAsText() shouldBe ""
+        }
+    }
+*/
     private fun mockTilgangTilDeltakerliste() {
         coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } returns Unit
     }

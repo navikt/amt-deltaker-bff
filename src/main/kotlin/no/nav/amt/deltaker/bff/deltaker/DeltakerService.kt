@@ -296,7 +296,7 @@ class DeltakerService(
 
     fun getForDeltakerliste(deltakerlisteId: UUID) = deltakerRepository.getForDeltakerliste(deltakerlisteId)
 
-    fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltaker>) = deltakerRepository.updateBatch(oppdaterteDeltakere)
+    fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) = deltakerRepository.updateBatch(oppdaterteDeltakere)
 }
 
 fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
@@ -308,4 +308,18 @@ fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
     deltakelsesinnhold = oppdatering.deltakelsesinnhold,
     status = oppdatering.status,
     historikk = oppdatering.historikk,
+)
+
+fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
+    id = id,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = deltakelsesprosent,
+    bakgrunnsinformasjon = bakgrunnsinformasjon,
+    deltakelsesinnhold = deltakelsesinnhold,
+    status = status,
+    historikk = historikk,
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+    sistEndret = sistEndret,
 )

@@ -42,43 +42,52 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
         }
 
         get("$apiPath/deltakere") {
+            val navAnsattAzureId = call.getNavAnsattAzureId()
             val deltakerlisteId = getDeltakerlisteId()
             val navIdent = call.getNavIdent()
 
             deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
             tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
 
-            val navAnsattAzureId = call.getNavAnsattAzureId()
-
             val deltakere = tiltakskoordinatorService
                 .hentDeltakereForDeltakerliste(deltakerlisteId)
-                .map { deltaker ->
-                    val harTilgang =
-                        tilgangskontrollService.harKoordinatorTilgangTilPerson(navAnsattAzureId, deltaker.navBruker)
-                    deltaker.toDeltakerResponse(harTilgang)
-                }
+                .toDeltakerResponses(tilgangskontrollService, navAnsattAzureId)
 
             call.respond(deltakere)
         }
 
-        post("$apiPath/deltakere/del-med-arrangor") {
-            val deltakerlisteId = getDeltakerlisteId()
+        post("$apiPath/deltakere/sett-paa-venteliste") {
+            val navAnsattAzureId = call.getNavAnsattAzureId()
             val navIdent = call.getNavIdent()
-
-            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
-            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
-
             val deltakerIder = call.receive<List<UUID>>()
+            val deltakerlisteId = getDeltakerlisteId()
+
+            tilgangskontrollService.tilgangTilDeltakereGuard(deltakerIder, deltakerlisteId, navIdent)
+
+            val oppdaterteDeltakere = tiltakskoordinatorService.endreDeltakere(
+                deltakerIder,
+                EndringFraTiltakskoordinator.SettPaaVenteliste,
+                navIdent,
+            )
+            val deltakereResponse = oppdaterteDeltakere.toDeltakerResponses(tilgangskontrollService, navAnsattAzureId)
+
+            call.respond(deltakereResponse)
+        }
+
+        post("$apiPath/deltakere/del-med-arrangor") {
+            val navAnsattAzureId = call.getNavAnsattAzureId()
+            val navIdent = call.getNavIdent()
+            val deltakerlisteId = getDeltakerlisteId()
+            val deltakerIder = call.receive<List<UUID>>()
+
+            tilgangskontrollService.tilgangTilDeltakereGuard(deltakerIder, deltakerlisteId, navIdent)
+
             val oppdaterteDeltakere = tiltakskoordinatorService
                 .endreDeltakere(
                     deltakerIder,
                     EndringFraTiltakskoordinator.DelMedArrangor,
                     navIdent,
-                ).map {
-                    val harTilgang =
-                        tilgangskontrollService.harKoordinatorTilgangTilPerson(call.getNavAnsattAzureId(), it.navBruker)
-                    it.toDeltakerResponse(harTilgang)
-                }
+                ).toDeltakerResponses(tilgangskontrollService, navAnsattAzureId)
 
             call.respond(oppdaterteDeltakere)
         }
@@ -91,6 +100,16 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
             call.respond(HttpStatusCode.OK)
         }
     }
+}
+
+private fun List<TiltakskoordinatorsDeltaker>.toDeltakerResponses(
+    tilgangskontrollService: TilgangskontrollService,
+    navAnsattAzureId: UUID,
+) = map { deltaker ->
+    val harTilgangTilAASeNavn =
+        tilgangskontrollService.harKoordinatorTilgangTilPerson(navAnsattAzureId, deltaker.navBruker)
+
+    deltaker.toDeltakerResponse(harTilgangTilAASeNavn)
 }
 
 fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): DeltakerResponse {
@@ -116,6 +135,10 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     )
 }
+
+data class DeltakereRequest(
+    val deltakere: List<UUID>,
+)
 
 fun RoutingContext.getDeltakerlisteId(): UUID {
     val id =

@@ -51,6 +51,7 @@ data class DeltakerV2Dto(
             ),
             historikk = historikk.orEmpty(),
             sistEndret = sistEndret ?: LocalDateTime.now(),
+            erManueltDeltMedArrangor = erManueltDeltMedArrangor,
             forcedUpdate = forcedUpdate,
         )
     }

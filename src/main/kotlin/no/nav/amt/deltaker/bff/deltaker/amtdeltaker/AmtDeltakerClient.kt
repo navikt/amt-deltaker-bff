@@ -47,6 +47,23 @@ class AmtDeltakerClient(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
+    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/sett-paa-venteliste") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(DeltakereRequest(deltakerIder, endretAv))
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke opprette kladd i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+        return response.body()
+    }
+
     suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): KladdResponse {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding") {
@@ -336,6 +353,11 @@ class AmtDeltakerClient(
         const val FJERN_OPPSTARTSDATO = "fjern-oppstartsdato"
     }
 }
+
+data class DeltakereRequest(
+    val deltakere: List<UUID>,
+    val endretAv: String,
+)
 
 private fun Utkast.toRequest() = UtkastRequest(
     deltakelsesinnhold = this.pamelding.deltakelsesinnhold,
