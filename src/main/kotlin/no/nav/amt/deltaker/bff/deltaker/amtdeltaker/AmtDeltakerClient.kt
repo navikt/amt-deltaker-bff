@@ -33,7 +33,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.tiltakskoordinator.requests.DelMedArrangorRequest
-import no.nav.amt.lib.models.tiltakskoordinator.response.EndringFraTiltakskoordinatorResponse
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -286,10 +285,10 @@ class AmtDeltakerClient(
         return response.body()
     }
 
-    suspend fun delMedArrangor(deltakerIder: List<UUID>, endretAv: String): List<EndringFraTiltakskoordinatorResponse> {
+    suspend fun delMedArrangor(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val request = DelMedArrangorRequest(endretAv, deltakerIder)
-        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/del-med-arrangor") {
+        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/del-med-arrangor-v2") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
             setBody(request)
