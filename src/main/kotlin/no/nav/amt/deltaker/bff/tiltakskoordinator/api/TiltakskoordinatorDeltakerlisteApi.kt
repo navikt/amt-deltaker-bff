@@ -56,6 +56,24 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
             call.respond(deltakere)
         }
 
+        post("$apiPath/deltakere/tildel-plass") {
+            val navAnsattAzureId = call.getNavAnsattAzureId()
+            val navIdent = call.getNavIdent()
+            val deltakerIder = call.receive<List<UUID>>()
+            val deltakerlisteId = getDeltakerlisteId()
+
+            tilgangskontrollService.tilgangTilDeltakereGuard(deltakerIder, deltakerlisteId, navIdent)
+
+            val oppdaterteDeltakere = tiltakskoordinatorService.endreDeltakere(
+                deltakerIder,
+                EndringFraTiltakskoordinator.TildelPlass,
+                navIdent,
+            )
+            val deltakereResponse = oppdaterteDeltakere.toDeltakerResponses(tilgangskontrollService, navAnsattAzureId)
+
+            call.respond(deltakereResponse)
+        }
+
         post("$apiPath/deltakere/sett-paa-venteliste") {
             val navAnsattAzureId = call.getNavAnsattAzureId()
             val navIdent = call.getNavIdent()

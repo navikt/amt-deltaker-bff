@@ -45,6 +45,43 @@ class TiltakskoordinatorServiceIntegrationTest {
     )
 
     @Test
+    fun `tildelPlass - returnerer og lagrer deltaker med ny status`(): Unit = runBlocking {
+        val deltaker = TestData.lagDeltaker()
+        val navEnhet = TestData.lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
+        val navAnsatt = TestData.lagNavAnsatt(id = deltaker.navBruker.navVeilederId!!)
+
+        TestRepository.insert(deltaker)
+        every { vurderingService.getSisteVurderingForDeltaker(deltaker.id) } returns null
+        every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
+        every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
+
+        val nyStatus =
+            DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTER_PA_OPPSTART, null, LocalDateTime.now(), null, LocalDateTime.now())
+
+        coEvery {
+            amtDeltakerClient.tildelPlass(listOf(deltaker.id), navAnsatt.navIdent)
+        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdatering())
+
+        val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
+            listOf(deltaker.id),
+            EndringFraTiltakskoordinator.TildelPlass,
+            navAnsatt.navIdent,
+        )
+        val resultDeltaker = resultatFraAmtDeltaker.first()
+        resultatFraAmtDeltaker.size shouldBe 1
+        resultDeltaker.status.id shouldNotBe deltaker.status.id
+        resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
+
+        coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
+        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+
+        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        deltakerFraDb shouldBeCloseTo deltaker
+            .copy(status = nyStatus)
+            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt)
+    }
+
+    @Test
     fun `settPaaVenteliste - returnerer og lagrer deltaker med ny status`(): Unit = runBlocking {
         val deltaker = TestData.lagDeltaker()
         val navEnhet = TestData.lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
