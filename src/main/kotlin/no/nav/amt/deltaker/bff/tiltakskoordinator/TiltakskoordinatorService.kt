@@ -5,7 +5,6 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -16,7 +15,6 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDelta
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
-import no.nav.amt.lib.models.tiltakskoordinator.response.EndringFraTiltakskoordinatorResponse
 import java.util.UUID
 
 class TiltakskoordinatorService(
@@ -45,14 +43,7 @@ class TiltakskoordinatorService(
     ): List<TiltakskoordinatorsDeltaker> {
         val oppdaterteDeltakere = when (endring) {
             EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
-            EndringFraTiltakskoordinator.DelMedArrangor -> {
-                val res = amtDeltakerClient
-                    .delMedArrangor(deltakerIder, endretAv)
-                val deltakere = deltakerService.getMany(deltakerIder).associateBy { it.id }
-                res.mapNotNull { oppdatering ->
-                    deltakere[oppdatering.id]?.oppdater(oppdatering)?.toDeltakeroppdatering()
-                }
-            }
+            EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
         }
 
         deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
@@ -67,11 +58,6 @@ class TiltakskoordinatorService(
         return deltakere
             .toTiltakskoordinatorsDeltaker()
     }
-
-    fun Deltaker.oppdater(endring: EndringFraTiltakskoordinatorResponse) = this.copy(
-        erManueltDeltMedArrangor = endring.erDeltManueltMedArrangor,
-        sistEndret = endring.sistEndret,
-    )
 
     fun TiltakskoordinatorsDeltaker.skalSkjules() = status.type in listOf(
         DeltakerStatus.Type.KLADD,
