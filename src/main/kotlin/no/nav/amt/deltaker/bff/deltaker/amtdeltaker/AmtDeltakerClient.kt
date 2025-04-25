@@ -57,7 +57,7 @@ class AmtDeltakerClient(
         if (!response.status.isSuccess()) {
             error(
                 "Kunne ikke tildele plass i amt-deltaker. " +
-                        "Status=${response.status.value} error=${response.bodyAsText()}",
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }
         return response.body()
