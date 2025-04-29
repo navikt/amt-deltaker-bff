@@ -49,8 +49,8 @@ class DeltakerlisteConsumerTest {
             SingletonPostgres16Container
             repository = DeltakerlisteRepository()
             tiltakstypeRepository = TiltakstypeRepository()
-            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
             navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient(), navEnhetService)
             tilgangskontrollService = mockk(relaxed = true)
             deltakerService = DeltakerService(
                 deltakerRepository = DeltakerRepository(),

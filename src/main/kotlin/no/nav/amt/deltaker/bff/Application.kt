@@ -149,8 +149,8 @@ fun Application.module() {
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattRepository = NavAnsattRepository()
     val navEnhetRepository = NavEnhetRepository()
-    val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
     val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
+    val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient, navEnhetService)
 
     val navBrukerRepository = NavBrukerRepository()
     val navBrukerService = NavBrukerService(

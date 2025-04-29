@@ -32,7 +32,7 @@ class TilgangskontrollServiceTest {
     private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
     private val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(kafkaProducer)
 
-    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockk())
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockk(), mockk())
     private val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
     private val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,

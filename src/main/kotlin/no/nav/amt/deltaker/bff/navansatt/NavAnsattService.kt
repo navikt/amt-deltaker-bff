@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.navansatt
 
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -8,6 +9,7 @@ import java.util.UUID
 class NavAnsattService(
     private val repository: NavAnsattRepository,
     private val amtPersonServiceClient: AmtPersonServiceClient,
+    private val navEnhetService: NavEnhetService,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -27,7 +29,10 @@ class NavAnsattService(
         return oppdaterNavAnsatt(navAnsatt)
     }
 
-    fun oppdaterNavAnsatt(navAnsatt: NavAnsatt): NavAnsatt = repository.upsert(navAnsatt)
+    suspend fun oppdaterNavAnsatt(navAnsatt: NavAnsatt): NavAnsatt {
+        navAnsatt.navEnhetId?.let { navEnhetService.hentEllerOpprettEnhet(it) }
+        return repository.upsert(navAnsatt)
+    }
 
     fun slettNavAnsatt(navAnsattId: UUID) {
         repository.delete(navAnsattId)

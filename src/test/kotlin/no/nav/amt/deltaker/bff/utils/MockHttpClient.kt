@@ -195,6 +195,11 @@ object MockResponseHandler {
         addResponse(url, HttpMethod.Get, navAnsatt, status)
     }
 
+    fun addNavAnsattPostResponse(navAnsatt: NavAnsatt, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_PERSON_SERVICE_URL/api/nav-ansatt"
+        addResponse(url, HttpMethod.Post, navAnsatt, status)
+    }
+
     fun addNavEnhetGetResponse(navEnhet: NavEnhet, status: HttpStatusCode = HttpStatusCode.OK) {
         val url = "$AMT_PERSON_SERVICE_URL/api/nav-enhet/${navEnhet.id}"
         addResponse(url, HttpMethod.Get, navEnhet.toDto(), status)

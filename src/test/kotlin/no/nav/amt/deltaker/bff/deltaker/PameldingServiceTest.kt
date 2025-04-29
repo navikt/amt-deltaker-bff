@@ -35,8 +35,8 @@ import kotlin.test.assertFailsWith
 
 class PameldingServiceTest {
     companion object {
-        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
         private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient(), navEnhetService)
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),

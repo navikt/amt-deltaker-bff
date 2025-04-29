@@ -38,8 +38,8 @@ class DeltakerV2ConsumerTest {
         SingletonPostgres16Container
     }
 
-    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient(), navEnhetService)
     private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)
     private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk(relaxed = true))
     private val deltakerlisteRepository = DeltakerlisteRepository()

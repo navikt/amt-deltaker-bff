@@ -4,6 +4,8 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
+import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.BeforeClass
@@ -11,6 +13,8 @@ import org.junit.Test
 
 class NavAnsattConsumerTest {
     private val amtPersonServiceClient = mockk<AmtPersonServiceClient>()
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), amtPersonServiceClient)
+    private val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient, navEnhetService))
 
     companion object {
         lateinit var repository: NavAnsattRepository
@@ -26,7 +30,6 @@ class NavAnsattConsumerTest {
     @Test
     fun `consumeNavAnsatt - ny navansatt - upserter`() {
         val navAnsatt = TestData.lagNavAnsatt()
-        val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
         runBlocking {
             navAnsattConsumer.consume(navAnsatt.id, objectMapper.writeValueAsString(navAnsatt.toDto()))
@@ -40,7 +43,6 @@ class NavAnsattConsumerTest {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
-        val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
         runBlocking {
             navAnsattConsumer.consume(navAnsatt.id, objectMapper.writeValueAsString(oppdatertNavAnsatt.toDto()))
@@ -53,7 +55,6 @@ class NavAnsattConsumerTest {
     fun `consumeNavAnsatt - tombstonet navansatt - sletter`() {
         val navAnsatt = TestData.lagNavAnsatt()
         repository.upsert(navAnsatt)
-        val navAnsattConsumer = NavAnsattConsumer(NavAnsattService(repository, amtPersonServiceClient))
 
         runBlocking {
             navAnsattConsumer.consume(navAnsatt.id, null)
@@ -63,4 +64,4 @@ class NavAnsattConsumerTest {
     }
 }
 
-private fun NavAnsatt.toDto() = NavAnsattDto(id, navident = navIdent, navn = navn, epost = epost, telefon = telefon)
+private fun NavAnsatt.toDto() = NavAnsattDto(id, navIdent, navn, epost, telefon, navEnhetId)

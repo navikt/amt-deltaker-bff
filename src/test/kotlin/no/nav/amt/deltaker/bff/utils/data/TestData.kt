@@ -191,15 +191,13 @@ object TestData {
         navEnhet: NavEnhet = lagNavEnhet(),
         navVeileder: NavAnsatt = lagNavAnsatt(),
         deltakerliste: Deltakerliste = lagDeltakerliste(),
-    ): TiltakskoordinatorsDeltaker {
-        return lagDeltaker(
-            deltakerliste = deltakerliste,
-        ).toTiltakskoordinatorsDeltaker(
-            sisteVurdering = sisteVurdering,
-            navEnhet = navEnhet,
-            navVeileder = navVeileder,
-        )
-    }
+    ): TiltakskoordinatorsDeltaker = lagDeltaker(
+        deltakerliste = deltakerliste,
+    ).toTiltakskoordinatorsDeltaker(
+        sisteVurdering = sisteVurdering,
+        navEnhet = navEnhet,
+        navVeileder = navVeileder,
+    )
 
     fun lagVurdering(
         id: UUID = UUID.randomUUID(),
@@ -334,7 +332,15 @@ object TestData {
         navn: String = "Veileder Veiledersen",
         epost: String = "veileder.veiledersen@nav.no",
         telefon: String = "12345678",
-    ) = NavAnsatt(id, navIdent = navIdent, navn = navn, epost = epost, telefon = telefon)
+        navEnhetId: UUID? = navEnhetCache.values.firstOrNull()?.id,
+    ) = NavAnsatt(
+        id,
+        navIdent = navIdent,
+        navn = navn,
+        epost = epost,
+        telefon = telefon,
+        navEnhetId = navEnhetId,
+    )
 
     private val navEnhetCache = mutableMapOf<String, NavEnhet>()
 

@@ -13,18 +13,20 @@ class NavAnsattRepository {
         navn = row.string("navn"),
         telefon = row.stringOrNull("telefon"),
         epost = row.stringOrNull("epost"),
+        navEnhetId = row.uuidOrNull("nav_enhet_id"),
     )
 
     fun upsert(navAnsatt: NavAnsatt): NavAnsatt {
         val sql =
             """
-            INSERT INTO nav_ansatt(id, nav_ident, navn, epost, telefon, modified_at)
-            VALUES (:id, :nav_ident, :navn, :epost, :telefon, :modified_at) 
+            INSERT INTO nav_ansatt(id, nav_ident, navn, epost, telefon, nav_enhet_id, modified_at)
+            VALUES (:id, :nav_ident, :navn, :epost, :telefon, :nav_enhet_id, :modified_at) 
             ON CONFLICT (id) DO UPDATE SET
                 nav_ident = :nav_ident,
                 navn = :navn,
                 epost = :epost,
                 telefon = :telefon,
+                nav_enhet_id = :nav_enhet_id,
                 modified_at = :modified_at
             returning *
             """.trimIndent()
@@ -38,6 +40,7 @@ class NavAnsattRepository {
                     "navn" to navAnsatt.navn,
                     "epost" to navAnsatt.epost,
                     "telefon" to navAnsatt.telefon,
+                    "nav_enhet_id" to navAnsatt.navEnhetId,
                     "modified_at" to LocalDateTime.now(),
                 ),
             ).map(::rowMapper).asSingle

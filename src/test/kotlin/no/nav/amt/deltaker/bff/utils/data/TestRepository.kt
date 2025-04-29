@@ -267,10 +267,12 @@ object TestRepository {
     }
 
     fun insert(navAnsatt: NavAnsatt) = Database.query {
+        navAnsatt.navEnhetId?.let { id -> insert(TestData.lagNavEnhet(id)) }
+
         val sql =
             """
-            insert into nav_ansatt(id, nav_ident, navn, epost, telefon, modified_at)
-            values (:id, :nav_ident, :navn, :epost, :telefon, :modified_at) 
+            insert into nav_ansatt(id, nav_ident, navn, epost, telefon, nav_enhet_id, modified_at)
+            values (:id, :nav_ident, :navn, :epost, :telefon, :nav_enhet_id, :modified_at) 
             on conflict (id) do nothing;
             """.trimIndent()
 
@@ -280,6 +282,7 @@ object TestRepository {
             "navn" to navAnsatt.navn,
             "epost" to navAnsatt.epost,
             "telefon" to navAnsatt.telefon,
+            "nav_enhet_id" to navAnsatt.navEnhetId,
             "modified_at" to LocalDateTime.now(),
         )
 
