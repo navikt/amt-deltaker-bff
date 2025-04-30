@@ -46,6 +46,23 @@ class AmtDeltakerClient(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
+    suspend fun tildelPlass(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/tildel-plass") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(DeltakereRequest(deltakerIder, endretAv))
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke tildele plass i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+        return response.body()
+    }
+
     suspend fun settPaaVenteliste(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/sett-paa-venteliste") {
@@ -56,7 +73,7 @@ class AmtDeltakerClient(
 
         if (!response.status.isSuccess()) {
             error(
-                "Kunne ikke opprette kladd i amt-deltaker. " +
+                "Kunne ikke sette på venteliste i amt-deltaker. " +
                     "Status=${response.status.value} error=${response.bodyAsText()}",
             )
         }

@@ -44,6 +44,7 @@ class TiltakskoordinatorService(
         val oppdaterteDeltakere = when (endring) {
             EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
+            EndringFraTiltakskoordinator.TildelPlass -> amtDeltakerClient.tildelPlass(deltakerIder, endretAv)
         }
 
         deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
