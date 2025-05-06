@@ -1,15 +1,12 @@
 package no.nav.amt.deltaker.bff.navansatt.navenhet
 
 import io.kotest.matchers.shouldBe
-import io.mockk.mockk
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
-import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
-import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
+import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
-import no.nav.amt.deltaker.bff.utils.mockHttpClient
+import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.testing.SingletonPostgres16Container
@@ -20,14 +17,15 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class NavEnhetServiceTest {
-    companion object {
-        lateinit var repository: NavEnhetRepository
+    private val repository = NavEnhetRepository()
+    private val amtPersonServiceClient = mockAmtPersonServiceClient()
+    private val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
 
+    companion object {
         @JvmStatic
         @BeforeClass
         fun setup() {
             SingletonPostgres16Container
-            repository = NavEnhetRepository()
         }
     }
 
@@ -40,7 +38,6 @@ class NavEnhetServiceTest {
     fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes i db - henter fra db`() {
         val navEnhet = TestData.lagNavEnhet()
         repository.upsert(navEnhet)
-        val navEnhetService = NavEnhetService(repository, mockk())
 
         runBlocking {
             val navEnhetFraDb = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhet.enhetsnummer)
@@ -51,17 +48,7 @@ class NavEnhetServiceTest {
     @Test
     fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes ikke i db - henter fra personservice og lagrer`() {
         val navEnhetResponse = TestData.lagNavEnhet()
-        val httpClient =
-            mockHttpClient(
-                objectMapper.writeValueAsString(NavEnhetDto(navEnhetResponse.id, navEnhetResponse.enhetsnummer, navEnhetResponse.navn)),
-            )
-        val amtPersonServiceClient = AmtPersonServiceClient(
-            baseUrl = "http://amt-person-service",
-            scope = "scope",
-            httpClient = httpClient,
-            azureAdTokenClient = mockAzureAdClient(),
-        )
-        val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
+        MockResponseHandler.addNavEnhetPostResponse(navEnhetResponse)
 
         runBlocking {
             val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
@@ -82,18 +69,9 @@ class NavEnhetServiceTest {
                 sistEndret = LocalDateTime.now().minusMonths(2),
             ),
         )
-        val navEnhetResponse = TestData.lagNavEnhet(id = utdatertNavEnhet.id, utdatertNavEnhet.enhetsnummer, "Oppdatert navn")
-        val httpClient =
-            mockHttpClient(
-                objectMapper.writeValueAsString(NavEnhetDto(navEnhetResponse.id, navEnhetResponse.enhetsnummer, navEnhetResponse.navn)),
-            )
-        val amtPersonServiceClient = AmtPersonServiceClient(
-            baseUrl = "http://amt-person-service",
-            scope = "scope",
-            httpClient = httpClient,
-            azureAdTokenClient = mockAzureAdClient(),
-        )
-        val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
+
+        val navEnhetResponse = utdatertNavEnhet.copy(navn = "Oppdater navn")
+        MockResponseHandler.addNavEnhetPostResponse(navEnhetResponse)
 
         runBlocking {
             val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
@@ -105,7 +83,6 @@ class NavEnhetServiceTest {
 
     @Test
     fun `hentEnheterForHistorikk - historikk endret av flere ansatte - returnerer alle enheter`() {
-        val navEnhetService = NavEnhetService(repository, mockk())
         val deltaker = TestData.lagDeltaker()
         val vedtak = TestData.lagVedtak(
             deltakerVedVedtak = deltaker,
@@ -133,9 +110,27 @@ class NavEnhetServiceTest {
         enheter.forEach { TestRepository.insert(it) }
         TestRepository.insert(deltaker)
 
-        val faktiskeEnheter = navEnhetService.hentEnheterForHistorikk(historikk)
+        val faktiskeEnheter = runBlocking { navEnhetService.hentEnheterForHistorikk(historikk) }
         faktiskeEnheter.size shouldBe enheter.size
 
         faktiskeEnheter.toList().map { it.second }.containsAll(enheter) shouldBe true
+    }
+
+    @Test
+    fun `hentEnheterForHistorikk - enhet finnes ikke i database - henter og returnerer enhet`() {
+        val deltaker = TestData.lagDeltaker()
+        val endring = TestData.lagEndringFraTiltakskoordinator()
+
+        val historikk = listOf(
+            DeltakerHistorikk.EndringFraTiltakskoordinator(endring),
+        )
+
+        TestRepository.insert(deltaker)
+        MockResponseHandler.addNavEnhetGetResponse(TestData.lagNavEnhet(id = endring.endretAvEnhet))
+
+        val faktiskeEnheter = runBlocking { navEnhetService.hentEnheterForHistorikk(historikk) }
+        faktiskeEnheter.size shouldBe 1
+
+        faktiskeEnheter[endring.endretAvEnhet] shouldNotBe null
     }
 }

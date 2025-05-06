@@ -78,6 +78,7 @@ data class VurderingFraArrangorResponse(
 data class EndringFraTiltakskoordinatorResponse(
     val endring: EndringFraTiltakskoordinator.Endring,
     val endretAv: String,
+    val endretAvEnhet: String,
     val endret: LocalDateTime,
 ) : DeltakerHistorikkResponse
 
@@ -102,7 +103,7 @@ fun List<DeltakerHistorikk>.toResponse(
         is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
         is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.toResponse()
         is DeltakerHistorikk.VurderingFraArrangor -> it.data.toResponse(arrangornavn)
-        is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte)
+        is DeltakerHistorikk.EndringFraTiltakskoordinator -> it.endringFraTiltakskoordinator.toResponse(ansatte, enheter)
         is DeltakerHistorikk.InnsokPaaFellesOppstart -> it.data.toResponse(ansatte, enheter)
     }
 }
@@ -154,11 +155,13 @@ fun VurderingFraArrangorData.toResponse(arrangornavn: String) = VurderingFraArra
     endretAv = arrangornavn,
 )
 
-fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>) = EndringFraTiltakskoordinatorResponse(
-    endring,
-    ansatte[endretAv]!!.navn,
-    endret,
-)
+fun EndringFraTiltakskoordinator.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) =
+    EndringFraTiltakskoordinatorResponse(
+        endring,
+        ansatte[endretAv]!!.navn,
+        enheter[endretAvEnhet]!!.navn,
+        endret,
+    )
 
 fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: Map<UUID, NavEnhet>) = InnsokPaaFellesOppstartResponse(
     innsokt,
