@@ -449,7 +449,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val enheter = TestData.lagNavEnheterForHistorikk(historikk).associateBy { it.id }
 
         every { navAnsattService.hentAnsatteForHistorikk(historikk) } returns ansatte
-        every { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
+        coEvery { navEnhetService.hentEnheterForHistorikk(historikk) } returns enheter
         client.get("/deltaker/${deltaker.id}/historikk") { noBodyRequest() }.apply {
             status shouldBe HttpStatusCode.OK
             val res = bodyAsText()
@@ -821,7 +821,7 @@ class TiltakskoordinatorDeltakerApiTest {
 
         every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         enhet?.let { every { navEnhetService.hentEnhet(it.id) } returns it }
-        every { navEnhetService.hentEnheterForHistorikk(any()) } returns enheter
+        coEvery { navEnhetService.hentEnheterForHistorikk(any()) } returns enheter
 
         return Pair(ansatte, enhet)
     }

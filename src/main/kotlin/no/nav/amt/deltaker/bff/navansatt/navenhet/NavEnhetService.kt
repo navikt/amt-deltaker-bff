@@ -23,7 +23,7 @@ class NavEnhetService(
         return repository.upsert(navEnhet).toNavEnhet()
     }
 
-    suspend fun hentEllerOpprettEnhet(id: UUID): NavEnhet? {
+    suspend fun hentEllerOpprettEnhet(id: UUID): NavEnhet {
         repository.get(id)?.let { return it.toNavEnhet() }
 
         val navEnhet = amtPersonServiceClient.hentNavEnhet(id)
@@ -32,9 +32,20 @@ class NavEnhetService(
 
     fun hentEnhet(id: UUID) = repository.get(id)?.toNavEnhet()
 
-    fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
+    suspend fun hentEnheterForHistorikk(historikk: List<DeltakerHistorikk>): Map<UUID, NavEnhet> {
         val ider = historikk.flatMap { it.navEnheter() }.distinct()
-        return hentEnheter(ider)
+        val enheterFraDb = hentEnheter(ider)
+
+        return if (ider.size != enheterFraDb.size) {
+            enheterFraDb + hentManglendeEnheter(ider, enheterFraDb).associateBy { it.id }
+        } else {
+            enheterFraDb
+        }
+    }
+
+    private suspend fun hentManglendeEnheter(ider: List<UUID>, lagredeEnheter: Map<UUID, NavEnhet>): List<NavEnhet> {
+        val manglendeEnheter = ider.toSet() - lagredeEnheter.keys
+        return manglendeEnheter.map { hentEllerOpprettEnhet(it) }
     }
 
     fun hentEnheter(enhetIder: List<UUID>) = repository.getMany(enhetIder).map { it.toNavEnhet() }.associateBy { it.id }
