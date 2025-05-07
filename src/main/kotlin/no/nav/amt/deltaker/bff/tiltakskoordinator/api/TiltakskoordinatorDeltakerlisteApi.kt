@@ -187,6 +187,7 @@ fun RoutingContext.getDeltakerlisteId(): UUID {
 
 fun Deltakerliste.toResponse(koordinatorer: List<NavAnsatt>) = DeltakerlisteResponse(
     this.id,
+    this.navn,
     this.tiltak.tiltakskode,
     this.startDato,
     this.sluttDato,

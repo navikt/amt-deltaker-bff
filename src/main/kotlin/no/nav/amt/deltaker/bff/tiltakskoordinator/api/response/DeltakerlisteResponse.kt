@@ -6,6 +6,7 @@ import java.util.UUID
 
 data class DeltakerlisteResponse(
     val id: UUID,
+    val navn: String,
     val tiltakskode: Tiltakstype.Tiltakskode,
     val startdato: LocalDate,
     val sluttdato: LocalDate?,
