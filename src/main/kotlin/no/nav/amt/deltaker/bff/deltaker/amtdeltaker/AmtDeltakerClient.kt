@@ -331,7 +331,10 @@ class AmtDeltakerClient(
             setBody(
                 GiAvslagRequest(
                     deltakerId = request.deltakerId,
-                    avslag = request.avslag,
+                    avslag = EndringFraTiltakskoordinator.Avslag(
+                        request.aarsak,
+                        request.begrunnelse,
+                    ),
                     endretAv = endretAv,
                 ),
             )

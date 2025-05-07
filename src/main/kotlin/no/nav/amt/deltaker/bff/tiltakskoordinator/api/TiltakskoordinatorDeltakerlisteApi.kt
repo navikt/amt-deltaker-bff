@@ -171,7 +171,8 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
 
 data class AvslagRequest(
     val deltakerId: UUID,
-    val avslag: EndringFraTiltakskoordinator.Avslag,
+    val aarsak: EndringFraTiltakskoordinator.Avslag.Aarsak,
+    val begrunnelse: String?,
 )
 
 fun RoutingContext.getDeltakerlisteId(): UUID {
