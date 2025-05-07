@@ -110,6 +110,21 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
             call.respond(oppdaterteDeltakere)
         }
 
+        post("$apiPath/deltakere/gi-avslag") {
+            val navAnsattAzureId = call.getNavAnsattAzureId()
+            val navIdent = call.getNavIdent()
+            val deltakerlisteId = getDeltakerlisteId()
+            val request = call.receive<AvslagRequest>()
+
+            tilgangskontrollService.tilgangTilDeltakereGuard(listOf(request.deltakerId), deltakerlisteId, navIdent)
+
+            val oppdatertDeltaker = tiltakskoordinatorService.giAvslag(request, navIdent)
+
+            val harTilgang = tilgangskontrollService.harKoordinatorTilgangTilPerson(navAnsattAzureId, oppdatertDeltaker.navBruker)
+
+            call.respond(oppdatertDeltaker.toDeltakerResponse(harTilgang))
+        }
+
         post("$apiPath/tilgang/legg-til") {
             val deltakerlisteId = getDeltakerlisteId()
 
@@ -154,8 +169,9 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
     )
 }
 
-data class DeltakereRequest(
-    val deltakere: List<UUID>,
+data class AvslagRequest(
+    val deltakerId: UUID,
+    val avslag: EndringFraTiltakskoordinator.Avslag,
 )
 
 fun RoutingContext.getDeltakerlisteId(): UUID {

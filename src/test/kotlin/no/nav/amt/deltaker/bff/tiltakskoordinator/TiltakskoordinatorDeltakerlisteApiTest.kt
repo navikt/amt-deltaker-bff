@@ -24,7 +24,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.postTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.api.DeltakereRequest
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toDeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toResponse
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
@@ -53,6 +52,8 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor").status shouldBe
             HttpStatusCode.Unauthorized
         client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/sett-paa-venteliste").status shouldBe
+            HttpStatusCode.Unauthorized
+        client.post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/gi-avslag").status shouldBe
             HttpStatusCode.Unauthorized
     }
 
@@ -85,6 +86,11 @@ class TiltakskoordinatorDeltakerlisteApiTest {
 
         client
             .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/sett-paa-venteliste") { noBodyRequest() }
+            .apply {
+                status shouldBe HttpStatusCode.Unauthorized
+            }
+        client
+            .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/gi-avslag") { noBodyRequest() }
             .apply {
                 status shouldBe HttpStatusCode.Unauthorized
             }
@@ -225,8 +231,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         client
             .post("/tiltakskoordinator/deltakerliste/${deltakerliste.id}/deltakere/del-med-arrangor") {
                 postTiltakskoordinatorRequest(listOf(UUID.randomUUID()))
-            }
-            .apply {
+            }.apply {
                 status shouldBe HttpStatusCode.Forbidden
             }
     }
@@ -240,8 +245,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         client
             .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") {
                 postTiltakskoordinatorRequest(listOf(UUID.randomUUID()))
-            }
-            .apply {
+            }.apply {
                 status shouldBe HttpStatusCode.NotFound
             }
     }
@@ -254,33 +258,32 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
         client
             .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") {
-                postRequest(DeltakereRequest(listOf(UUID.randomUUID())))
-            }
-            .apply {
+                postRequest(listOf(UUID.randomUUID()))
+            }.apply {
                 status shouldBe HttpStatusCode.Unauthorized
             }
     }
 
-/*
-    @Test
-    fun `sett-paa-venteliste - deltakere i feil liste - returnerer 401`() = testApplication {
-        val deltaker1 = TestData.lagDeltaker()
-        val deltaker2 = TestData.lagDeltaker(deltakerliste = TestData.lagDeltakerliste(id = UUID.randomUUID()))
-        coEvery { deltakerService.getDeltakelser(any()) } returns listOf(deltaker1, deltaker2)
-        coEvery { unleashToggle.erKometMasterForTiltakstype(deltaker1.deltakerliste.tiltakstype.arenaKode) } returns true
+    /*
+        @Test
+        fun `sett-paa-venteliste - deltakere i feil liste - returnerer 401`() = testApplication {
+            val deltaker1 = TestData.lagDeltaker()
+            val deltaker2 = TestData.lagDeltaker(deltakerliste = TestData.lagDeltakerliste(id = UUID.randomUUID()))
+            coEvery { deltakerService.getDeltakelser(any()) } returns listOf(deltaker1, deltaker2)
+            coEvery { unleashToggle.erKometMasterForTiltakstype(deltaker1.deltakerliste.tiltakstype.arenaKode) } returns true
 
-        val request = DeltakereRequest(
-            deltakere = listOf(deltaker1.id, deltaker2.id),
-            deltakerlisteId = deltaker1.deltakerliste.id,
-            endretAv = "Nav Veiledersen"
-        )
-        setUpTestApplication()
-        client.post("$apiPath/sett-paa-venteliste") { postRequest(request) }.apply {
-            status shouldBe HttpStatusCode.Forbidden
-            bodyAsText() shouldBe ""
+            val request = DeltakereRequest(
+                deltakere = listOf(deltaker1.id, deltaker2.id),
+                deltakerlisteId = deltaker1.deltakerliste.id,
+                endretAv = "Nav Veiledersen"
+            )
+            setUpTestApplication()
+            client.post("$apiPath/sett-paa-venteliste") { postRequest(request) }.apply {
+                status shouldBe HttpStatusCode.Forbidden
+                bodyAsText() shouldBe ""
+            }
         }
-    }
-*/
+     */
     private fun mockTilgangTilDeltakerliste() {
         coEvery { tilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } returns Unit
     }
