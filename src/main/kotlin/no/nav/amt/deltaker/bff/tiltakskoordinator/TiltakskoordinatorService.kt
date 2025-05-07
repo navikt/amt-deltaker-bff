@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
@@ -45,11 +46,20 @@ class TiltakskoordinatorService(
             EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.TildelPlass -> amtDeltakerClient.tildelPlass(deltakerIder, endretAv)
+            is EndringFraTiltakskoordinator.Avslag -> throw NotImplementedError("Batch håndtering for avslag er ikke støttet")
         }
 
         deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
 
         return oppdaterteDeltakere.toTiltakskoordinatorsDeltakere()
+    }
+
+    suspend fun giAvslag(request: AvslagRequest, endretAv: String): TiltakskoordinatorsDeltaker {
+        val deltakeroppdatering = amtDeltakerClient.giAvslag(request, endretAv)
+
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
+
+        return deltakerService.get(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
     }
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
@@ -67,6 +77,8 @@ class TiltakskoordinatorService(
         DeltakerStatus.Type.FEILREGISTRERT,
         DeltakerStatus.Type.PABEGYNT_REGISTRERING,
     )
+
+    private fun Deltaker.toTiltakskoordinatorsDeltaker() = listOf(this).toTiltakskoordinatorsDeltaker().first()
 
     private fun List<Deltaker>.toTiltakskoordinatorsDeltaker(): List<TiltakskoordinatorsDeltaker> {
         val navEnheter = navEnhetService.hentEnheter(this.mapNotNull { it.navBruker.navEnhetId })

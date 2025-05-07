@@ -30,8 +30,10 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerMedStatusRe
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.models.tiltakskoordinator.requests.DelMedArrangorRequest
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -321,6 +323,30 @@ class AmtDeltakerClient(
         return response.body()
     }
 
+    suspend fun giAvslag(request: AvslagRequest, endretAv: String): Deltakeroppdatering {
+        val token = azureAdTokenClient.getMachineToMachineToken(scope)
+        val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/gi-avslag") {
+            header(HttpHeaders.Authorization, token)
+            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            setBody(
+                GiAvslagRequest(
+                    deltakerId = request.deltakerId,
+                    avslag = request.avslag,
+                    endretAv = endretAv,
+                ),
+            )
+        }
+
+        if (!response.status.isSuccess()) {
+            error(
+                "Kunne ikke gi avslag i amt-deltaker. " +
+                    "Status=${response.status.value} error=${response.bodyAsText()}",
+            )
+        }
+
+        return response.body()
+    }
+
     private suspend fun postEndring(
         deltakerId: UUID,
         request: Any,
@@ -372,6 +398,12 @@ class AmtDeltakerClient(
 
 data class DeltakereRequest(
     val deltakere: List<UUID>,
+    val endretAv: String,
+)
+
+data class GiAvslagRequest(
+    val deltakerId: UUID,
+    val avslag: EndringFraTiltakskoordinator.Avslag,
     val endretAv: String,
 )
 
