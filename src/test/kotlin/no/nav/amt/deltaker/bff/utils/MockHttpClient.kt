@@ -165,6 +165,7 @@ object MockResponseHandler {
     ) {
         val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/" + when (endring) {
             is DeltakerEndring.Endring.AvsluttDeltakelse -> AmtDeltakerClient.AVSLUTT_DELTAKELSE
+            is DeltakerEndring.Endring.AvbrytDeltakelse -> AmtDeltakerClient.AVBRYT_DELTAKELSE
             is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.BAKGRUNNSINFORMASJON
             is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.DELTAKELSESMENGDE
             is DeltakerEndring.Endring.EndreInnhold -> AmtDeltakerClient.INNHOLD

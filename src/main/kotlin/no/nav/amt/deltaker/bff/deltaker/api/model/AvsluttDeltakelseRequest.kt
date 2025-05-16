@@ -12,16 +12,17 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class AvsluttDeltakelseRequest(
-    val aarsak: DeltakerEndring.Aarsak,
+    val aarsak: DeltakerEndring.Aarsak?,
     val sluttdato: LocalDate?,
     val harDeltatt: Boolean? = true,
+    val harFullfort: Boolean? = null,
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
     private val kanAvslutteDeltakelse = listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET)
 
     override fun valider(deltaker: Deltaker) {
-        validerAarsaksBeskrivelse(aarsak.beskrivelse)
+        validerAarsaksBeskrivelse(aarsak?.beskrivelse)
         validerBegrunnelse(begrunnelse)
         validerDeltakerKanEndres(deltaker)
         require(deltaker.status.type in kanAvslutteDeltakelse) {
@@ -44,6 +45,8 @@ data class AvsluttDeltakelseRequest(
     }
 
     fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
+
+    fun harFullfort(): Boolean = harFullfort == null || harFullfort == true
 
     private fun deltakerErEndret(deltaker: Deltaker): Boolean {
         return deltaker.status.type != DeltakerStatus.Type.HAR_SLUTTET ||

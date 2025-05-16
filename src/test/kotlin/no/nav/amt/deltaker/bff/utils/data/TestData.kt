@@ -512,6 +512,15 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
             sluttdato = endring.sluttdato,
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsak = endring.aarsak?.toStatusAarsak()?.type,
+                beskrivelse = endring.aarsak?.beskrivelse,
+            ),
+        )
+
+        is DeltakerEndring.Endring.AvbrytDeltakelse -> this.copy(
+            sluttdato = endring.sluttdato,
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.AVBRUTT,
                 aarsak = endring.aarsak.toStatusAarsak().type,
                 beskrivelse = endring.aarsak.beskrivelse,
             ),

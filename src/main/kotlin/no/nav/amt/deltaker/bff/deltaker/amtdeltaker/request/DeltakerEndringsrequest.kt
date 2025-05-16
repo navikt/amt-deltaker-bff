@@ -82,7 +82,7 @@ data class AvsluttDeltakelseRequest(
     override val endretAvEnhet: String,
     override val forslagId: UUID?,
     val sluttdato: LocalDate,
-    val aarsak: DeltakerEndring.Aarsak,
+    val aarsak: DeltakerEndring.Aarsak?,
     val begrunnelse: String?,
 ) : DeltakerEndringMedForslag
 

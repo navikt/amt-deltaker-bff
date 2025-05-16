@@ -535,7 +535,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.HAR_SLUTTET,
-                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+                avsluttDeltakelseRequest.aarsak!!.toDeltakerStatusAarsak(),
             ),
             sluttdato = avsluttDeltakelseRequest.sluttdato,
         )
@@ -556,7 +556,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.HAR_SLUTTET,
-                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+                avsluttDeltakelseRequest.aarsak!!.toDeltakerStatusAarsak(),
             ),
             sluttdato = avsluttDeltakelseRequest.sluttdato,
         )
@@ -581,7 +581,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.IKKE_AKTUELL,
-                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+                avsluttDeltakelseRequest.aarsak!!.toDeltakerStatusAarsak(),
             ),
             startdato = null,
             sluttdato = null,
@@ -612,7 +612,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
                 DeltakerStatus.Type.IKKE_AKTUELL,
-                avsluttDeltakelseRequest.aarsak.toDeltakerStatusAarsak(),
+                avsluttDeltakelseRequest.aarsak!!.toDeltakerStatusAarsak(),
             ),
             startdato = null,
             sluttdato = null,
@@ -782,6 +782,7 @@ class TiltakskoordinatorDeltakerApiTest {
             DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
             LocalDate.now(),
             harDeltatt = true,
+            harFullfort = null,
             "begrunnelse",
             null,
         )

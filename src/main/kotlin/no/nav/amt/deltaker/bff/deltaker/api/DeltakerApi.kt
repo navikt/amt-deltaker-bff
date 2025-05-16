@@ -184,9 +184,15 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/avslutt") {
             val request = call.receive<AvsluttDeltakelseRequest>()
             handleEndring(call, request) {
-                if (request.harDeltatt() && request.sluttdato != null) {
+                if (request.harDeltatt() && request.harFullfort()) {
+                    require(request.sluttdato != null) { "Sluttdato er påkrevd for å avslutte deltakelse" }
                     DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
+                } else if (request.harDeltatt() && !request.harFullfort()) {
+                    require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
+                    require(request.sluttdato != null) { "Sluttdato er påkrevd for å avbryte deltakelse" }
+                    DeltakerEndring.Endring.AvbrytDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
                 } else {
+                    require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
                     DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
                 }
             }

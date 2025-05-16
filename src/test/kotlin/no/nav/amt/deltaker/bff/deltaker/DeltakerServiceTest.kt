@@ -63,6 +63,14 @@ class DeltakerServiceTest {
                 ),
                 begrunnelse = "begrunnelse",
             ),
+            DeltakerEndring.Endring.AvbrytDeltakelse(
+                sluttdato = LocalDate.now(),
+                aarsak = DeltakerEndring.Aarsak(
+                    DeltakerEndring.Aarsak.Type.ANNET,
+                    "beskrivelse2",
+                ),
+                begrunnelse = "begrunnelse2",
+            ),
             DeltakerEndring.Endring.ReaktiverDeltakelse(
                 reaktivertDato = LocalDate.now(),
                 begrunnelse = "begrunnelse",
@@ -126,6 +134,11 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.AvsluttDeltakelse -> {
                     oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
+                    oppdatertDeltaker.status.aarsak shouldBe endring.aarsak?.toDeltakerStatusAarsak()
+                    oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
+                }
+                is DeltakerEndring.Endring.AvbrytDeltakelse -> {
+                    oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
                 }
