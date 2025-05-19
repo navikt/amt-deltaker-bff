@@ -67,7 +67,7 @@ object TestData {
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
-        oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.arenaKode),
+        oppstart: Deltakerliste.Oppstartstype = finnOppstartstype(tiltak.arenaKode),
         apentForPamelding: Boolean = true,
         antallPlasser: Int = 42,
     ) = Deltakerliste(

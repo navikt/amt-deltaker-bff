@@ -454,7 +454,12 @@ class TiltakskoordinatorDeltakerApiTest {
             status shouldBe HttpStatusCode.OK
             val res = bodyAsText()
             val json = objectMapper.writePolymorphicListAsString(
-                historikk.toResponse(ansatte, deltaker.deltakerliste.arrangor.getArrangorNavn(), enheter),
+                historikk.toResponse(
+                    ansatte,
+                    deltaker.deltakerliste.arrangor.getArrangorNavn(),
+                    enheter,
+                    deltaker.deltakerliste.oppstart!!,
+                ),
             )
             res shouldBe json
         }
