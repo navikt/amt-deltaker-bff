@@ -154,8 +154,10 @@ fun validerDeltakelsesinnhold(
     }
 }
 
-fun harEndretSluttaarsak(opprinneligDeltakerStatusAarsak: DeltakerStatus.Aarsak?, nyDeltakerStatusAarsak: DeltakerEndring.Aarsak): Boolean =
-    nyDeltakerStatusAarsak.toDeltakerStatusAarsak() != opprinneligDeltakerStatusAarsak
+fun harEndretSluttaarsak(
+    opprinneligDeltakerStatusAarsak: DeltakerStatus.Aarsak?,
+    nyDeltakerStatusAarsak: DeltakerEndring.Aarsak?,
+): Boolean = nyDeltakerStatusAarsak?.toDeltakerStatusAarsak() != opprinneligDeltakerStatusAarsak
 
 private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(
     DeltakerStatus.Aarsak.Type.valueOf(type.name),

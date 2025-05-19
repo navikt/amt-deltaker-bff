@@ -267,13 +267,27 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         sluttdato: LocalDate,
-        aarsak: DeltakerEndring.Aarsak,
+        aarsak: DeltakerEndring.Aarsak?,
         begrunnelse: String?,
         forslagId: UUID?,
     ) = postEndring(
         deltakerId,
         AvsluttDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
         AVSLUTT_DELTAKELSE,
+    )
+
+    suspend fun avbrytDeltakelse(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        sluttdato: LocalDate,
+        aarsak: DeltakerEndring.Aarsak?,
+        begrunnelse: String?,
+        forslagId: UUID?,
+    ) = postEndring(
+        deltakerId,
+        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
+        AVBRYT_DELTAKELSE,
     )
 
     suspend fun fjernOppstartsdato(
@@ -393,6 +407,7 @@ class AmtDeltakerClient(
         const val FORLENG_DELTAKELSE = "forleng"
         const val IKKE_AKTUELL = "ikke-aktuell"
         const val AVSLUTT_DELTAKELSE = "avslutt"
+        const val AVBRYT_DELTAKELSE = "avbryt"
         const val SIST_BESOKT = "sist-besokt"
         const val REAKTIVER = "reaktiver"
         const val FJERN_OPPSTARTSDATO = "fjern-oppstartsdato"

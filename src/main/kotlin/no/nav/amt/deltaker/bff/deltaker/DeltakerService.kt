@@ -77,6 +77,17 @@ class DeltakerService(
                     forslagId = forslagId,
                 )
             }
+            is DeltakerEndring.Endring.AvbrytDeltakelse -> endreDeltaker(deltaker) {
+                amtDeltakerClient.avbrytDeltakelse(
+                    deltakerId = deltaker.id,
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    sluttdato = endring.sluttdato,
+                    aarsak = endring.aarsak,
+                    begrunnelse = endring.begrunnelse,
+                    forslagId = forslagId,
+                )
+            }
 
             is DeltakerEndring.Endring.EndreDeltakelsesmengde -> endreDeltaker(deltaker) {
                 amtDeltakerClient.endreDeltakelsesmengde(

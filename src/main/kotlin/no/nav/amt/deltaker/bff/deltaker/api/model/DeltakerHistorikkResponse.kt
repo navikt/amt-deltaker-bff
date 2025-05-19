@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
@@ -33,7 +34,7 @@ import java.util.UUID
 sealed interface DeltakerHistorikkResponse
 
 data class DeltakerEndringResponse(
-    val endring: DeltakerEndring.Endring,
+    val endring: DeltakerEndringEndringDto,
     val endretAv: String,
     val endretAvEnhet: String,
     val endret: LocalDateTime,
@@ -95,9 +96,10 @@ fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
     enheter: Map<UUID, NavEnhet>,
+    oppstartstype: Deltakerliste.Oppstartstype,
 ): List<DeltakerHistorikkResponse> = this.map {
     when (it) {
-        is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn)
+        is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn, oppstartstype)
         is DeltakerHistorikk.Vedtak -> it.vedtak.toResponse(ansatte, enheter)
         is DeltakerHistorikk.Forslag -> it.forslag.toResponse(arrangornavn, ansatte, enheter)
         is DeltakerHistorikk.EndringFraArrangor -> it.endringFraArrangor.toResponse(arrangornavn)
@@ -112,8 +114,9 @@ fun DeltakerEndring.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     enheter: Map<UUID, NavEnhet>,
     arrangornavn: String,
+    oppstartstype: Deltakerliste.Oppstartstype,
 ) = DeltakerEndringResponse(
-    endring = endring,
+    endring = endring.toDto(oppstartstype),
     endretAv = ansatte[endretAv]!!.navn,
     endretAvEnhet = enheter[endretAvEnhet]!!.navn,
     endret = endret,
@@ -171,3 +174,38 @@ fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: M
     utkastDelt,
     utkastGodkjentAvNav,
 )
+
+fun DeltakerEndring.Endring.toDto(oppstartstype: Deltakerliste.Oppstartstype): DeltakerEndringEndringDto {
+    return when (this) {
+        is DeltakerEndring.Endring.AvsluttDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
+            aarsak = aarsak,
+            sluttdato = sluttdato,
+            begrunnelse = begrunnelse,
+            harFullfort = true,
+            oppstartstype = oppstartstype,
+        )
+
+        is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
+            aarsak = aarsak,
+            sluttdato = sluttdato,
+            begrunnelse = begrunnelse,
+            harFullfort = false,
+            oppstartstype = oppstartstype,
+        )
+        is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> DeltakerEndringEndringDto.EndreBakgrunnsinformasjon(bakgrunnsinformasjon)
+        is DeltakerEndring.Endring.EndreDeltakelsesmengde -> DeltakerEndringEndringDto.EndreDeltakelsesmengde(
+            deltakelsesprosent,
+            dagerPerUke,
+            gyldigFra,
+            begrunnelse,
+        )
+        is DeltakerEndring.Endring.EndreInnhold -> DeltakerEndringEndringDto.EndreInnhold(ledetekst, innhold)
+        is DeltakerEndring.Endring.EndreSluttarsak -> DeltakerEndringEndringDto.EndreSluttarsak(aarsak, begrunnelse)
+        is DeltakerEndring.Endring.EndreSluttdato -> DeltakerEndringEndringDto.EndreSluttdato(sluttdato, begrunnelse)
+        is DeltakerEndring.Endring.EndreStartdato -> DeltakerEndringEndringDto.EndreStartdato(startdato, sluttdato, begrunnelse)
+        is DeltakerEndring.Endring.FjernOppstartsdato -> DeltakerEndringEndringDto.FjernOppstartsdato(begrunnelse)
+        is DeltakerEndring.Endring.ForlengDeltakelse -> DeltakerEndringEndringDto.ForlengDeltakelse(sluttdato, begrunnelse)
+        is DeltakerEndring.Endring.IkkeAktuell -> DeltakerEndringEndringDto.IkkeAktuell(aarsak, begrunnelse)
+        is DeltakerEndring.Endring.ReaktiverDeltakelse -> DeltakerEndringEndringDto.ReaktiverDeltakelse(reaktivertDato, begrunnelse)
+    }
+}

@@ -67,7 +67,7 @@ object TestData {
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
-        oppstart: Deltakerliste.Oppstartstype? = finnOppstartstype(tiltak.arenaKode),
+        oppstart: Deltakerliste.Oppstartstype = finnOppstartstype(tiltak.arenaKode),
         apentForPamelding: Boolean = true,
         antallPlasser: Int = 42,
     ) = Deltakerliste(
@@ -512,6 +512,15 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
             sluttdato = endring.sluttdato,
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsak = endring.aarsak?.toStatusAarsak()?.type,
+                beskrivelse = endring.aarsak?.beskrivelse,
+            ),
+        )
+
+        is DeltakerEndring.Endring.AvbrytDeltakelse -> this.copy(
+            sluttdato = endring.sluttdato,
+            status = TestData.lagDeltakerStatus(
+                type = DeltakerStatus.Type.AVBRUTT,
                 aarsak = endring.aarsak.toStatusAarsak().type,
                 beskrivelse = endring.aarsak.beskrivelse,
             ),
