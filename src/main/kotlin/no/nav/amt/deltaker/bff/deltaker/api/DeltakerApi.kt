@@ -41,6 +41,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
@@ -183,11 +184,12 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/avslutt") {
             val request = call.receive<AvsluttDeltakelseRequest>()
+            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             handleEndring(call, request) {
                 if (request.harDeltatt() && request.harFullfort()) {
                     require(request.sluttdato != null) { "Sluttdato er påkrevd for å avslutte deltakelse" }
                     DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
-                } else if (request.harDeltatt() && !request.harFullfort()) {
+                } else if (request.harDeltatt() && !request.harFullfort() && deltaker.deltakerliste.oppstart == Deltakerliste.Oppstartstype.FELLES) {
                     require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
                     require(request.sluttdato != null) { "Sluttdato er påkrevd for å avbryte deltakelse" }
                     DeltakerEndring.Endring.AvbrytDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
