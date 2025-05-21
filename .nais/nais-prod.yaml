@@ -46,8 +46,6 @@ spec:
           - id: {{ad_rolle_tiltak_koordinator}}
     sidecar:
       enabled: true
-  secureLogs:
-    enabled: true
   leaderElection: true
   kafka:
     pool: nav-prod
