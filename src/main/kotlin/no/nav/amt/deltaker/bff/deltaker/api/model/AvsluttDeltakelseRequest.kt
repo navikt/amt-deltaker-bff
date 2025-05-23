@@ -19,7 +19,8 @@ data class AvsluttDeltakelseRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    private val kanAvslutteDeltakelse = listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET)
+    private val kanAvslutteDeltakelse =
+        listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.FULLFORT)
 
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak?.beskrivelse)

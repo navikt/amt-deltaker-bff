@@ -34,5 +34,8 @@ data class ForlengDeltakelseRequest(
         opprinneligDeltaker.sluttdato != null && opprinneligDeltaker.sluttdato.isAfter(sluttdato)
 
     private fun deltakerDeltarEllerHarSluttet(opprinneligDeltaker: Deltaker) =
-        opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR || opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET
+        opprinneligDeltaker.status.type == DeltakerStatus.Type.DELTAR ||
+            opprinneligDeltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET ||
+            opprinneligDeltaker.status.type == DeltakerStatus.Type.AVBRUTT ||
+            opprinneligDeltaker.status.type == DeltakerStatus.Type.FULLFORT
 }
