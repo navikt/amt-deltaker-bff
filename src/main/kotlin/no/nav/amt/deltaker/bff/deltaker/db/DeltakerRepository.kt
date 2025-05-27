@@ -510,6 +510,10 @@ class DeltakerRepository {
       """
 
     private fun skalOppdateres(eksisterendeDeltaker: Deltaker?, oppdatering: Deltakeroppdatering): Boolean {
+        if (oppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
+            return true
+        }
+
         if (eksisterendeDeltaker == null) {
             log.info("Deltakeren finnes ikke fra før, oppdaterer ${oppdatering.id}")
             return true
