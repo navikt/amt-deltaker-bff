@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Beskyttelsesmarkering
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
 
@@ -20,4 +21,5 @@ data class DeltakerDetaljerResponse(
     val beskyttelsesmarkering: List<Beskyttelsesmarkering>,
     val vurdering: VurderingResponse?,
     val innsatsgruppe: Innsatsgruppe?,
+    val tiltakskode: Tiltakstype.Tiltakskode,
 )
