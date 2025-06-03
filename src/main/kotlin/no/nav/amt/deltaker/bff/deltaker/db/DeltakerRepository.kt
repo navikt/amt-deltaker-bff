@@ -524,11 +524,6 @@ class DeltakerRepository {
             return true
         }
 
-        if (eksisterendeDeltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
-            log.info("Har mottatt oppdatering på feilregistrert deltaker, ignorerer, ${oppdatering.id}")
-            return false
-        }
-
         val erUtkast = oppdatering.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING &&
             eksisterendeDeltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING
 
@@ -537,7 +532,7 @@ class DeltakerRepository {
 
         val kanOppdateres = eksisterendeDeltaker.kanEndres &&
             (
-                oppdatering.historikk.size > eksisterendeDeltaker.historikk.size ||
+                oppdatering.historikk.size >= eksisterendeDeltaker.historikk.size ||
                     oppdateringHarNyereStatus ||
                     erUtkast
             )

@@ -154,17 +154,6 @@ class DeltakerRepositoryTest {
     }
 
     @Test
-    fun `update - deltaker endringshistorikk mangler - oppdaterer ikke`() {
-        val deltaker = TestData.lagDeltaker()
-        TestRepository.insert(deltaker)
-        val oppdatertDeltaker = deltaker.copy(bakgrunnsinformasjon = "Endringshistorikk mangler")
-
-        repository.update(oppdatertDeltaker.toDeltakeroppdatering())
-
-        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
-    }
-
-    @Test
     fun `update - deltaker endringshistorikk mangler men er utkast - oppdaterer`() {
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
