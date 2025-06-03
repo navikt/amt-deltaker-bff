@@ -119,6 +119,6 @@ fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerD
         },
         innsatsgruppe = innsatsgruppe,
         tiltakskode = deltakerliste.tiltak.tiltakskode,
-        tilgangTilBruker = tilgangTilBruker
+        tilgangTilBruker = tilgangTilBruker,
     )
 }
