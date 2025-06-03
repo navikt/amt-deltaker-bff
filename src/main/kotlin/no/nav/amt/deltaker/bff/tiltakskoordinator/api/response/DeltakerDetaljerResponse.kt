@@ -22,4 +22,5 @@ data class DeltakerDetaljerResponse(
     val vurdering: VurderingResponse?,
     val innsatsgruppe: Innsatsgruppe?,
     val tiltakskode: Tiltakstype.Tiltakskode,
+    val tilgangTilBruker: Boolean,
 )
