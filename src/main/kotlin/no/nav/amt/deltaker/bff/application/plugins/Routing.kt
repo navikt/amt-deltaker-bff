@@ -137,6 +137,9 @@ fun Application.configureRouting(
 
         registerTiltakskoordinatorDeltakerApi(
             tiltakskoordinatorService,
+            deltakerService,
+            navAnsattService,
+            navEnhetService,
             deltakerlisteService,
             tilgangskontrollService,
             sporbarhetsloggService,
