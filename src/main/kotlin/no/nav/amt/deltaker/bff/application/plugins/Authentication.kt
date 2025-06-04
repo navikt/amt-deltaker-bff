@@ -83,7 +83,8 @@ fun Application.configureAuthentication(environment: Environment) {
                 }
 
                 if (!credentials.harRolle(adRolleTiltakskoordinator)) {
-                    application.log.warn("Ikke tilgang. Mangler rolle 0000-GA-TILTAK-DELTAKERE.")
+                    val ident = credentials["NAVident"]
+                    application.log.warn("Ikke tilgang. $ident mangler rolle 0000-GA-TILTAK-DELTAKERE.")
                     return@validate null
                 }
 
