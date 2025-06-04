@@ -49,8 +49,15 @@ class DeltakerlisteService(
         }
 
         val fodselsar = amtPersonServiceClient.hentNavBrukerFodselsar(personident)
+        val dagensDato = LocalDate.now()
 
-        if (deltakerliste.startDato.year - fodselsar < GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE) {
+        if (deltakerliste.startDato.isBefore(dagensDato)) {
+            // For kurstiltak med løpende oppstart så kan oppstartsdatoen på kurset være i fortiden når man melder på
+            // og da må personen ha fylt 19 år på tidspunktet som man melder på
+            if (dagensDato.year - fodselsar < GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE) {
+                throw DeltakerForUngException("Deltaker er for ung for å delta på ${deltakerliste.tiltak.tiltakskode}")
+            }
+        } else if (deltakerliste.startDato.year - fodselsar < GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE) {
             throw DeltakerForUngException("Deltaker er for ung for å delta på ${deltakerliste.tiltak.tiltakskode}")
         }
     }
