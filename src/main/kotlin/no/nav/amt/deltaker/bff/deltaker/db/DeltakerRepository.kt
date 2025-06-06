@@ -436,7 +436,7 @@ class DeltakerRepository {
         val params = mapOf("deltakerliste_id" to deltakerlisteId)
         session.run(
             queryOf(
-                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"),
+                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null and d.kan_endres = true"),
                 params,
             ).map(::rowMapper).asList,
         )
@@ -527,15 +527,12 @@ class DeltakerRepository {
         val erUtkast = oppdatering.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING &&
             eksisterendeDeltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING
 
-        val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >
+        val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >=
             eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
 
-        val kanOppdateres = eksisterendeDeltaker.kanEndres &&
-            (
-                oppdatering.historikk.size >= eksisterendeDeltaker.historikk.size ||
-                    oppdateringHarNyereStatus ||
-                    erUtkast
-            )
+        val kanOppdateres = oppdatering.historikk.size >= eksisterendeDeltaker.historikk.size ||
+            oppdateringHarNyereStatus ||
+            erUtkast
 
         if (!kanOppdateres) {
             log.info(
