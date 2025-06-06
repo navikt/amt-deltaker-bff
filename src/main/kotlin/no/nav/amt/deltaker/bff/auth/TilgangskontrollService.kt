@@ -52,13 +52,14 @@ class TilgangskontrollService(
         val deltakere = tiltakskoordinatorService.getMany(deltakerIder)
             .filter { it.deltakerliste.id == deltakerlisteId }
         val kanIkkeEndres = deltakere.any { !it.kanEndres }
+
         verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
         deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
 
         if (!kanIkkeEndres) {
             throw AuthorizationException(
                 "En eller flere deltakere kan ikke endres" +
-                    "deltakere: $deltakerIder, " +
+                    "deltakere: ${deltakere.filter { !it.kanEndres }.map { it.id }}, " +
                     "deltakerliste: $deltakerlisteId",
             )
         }
