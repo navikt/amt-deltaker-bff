@@ -175,6 +175,7 @@ class DeltakerRepositoryTest {
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }
+
     @Test
     fun `update - deltaker kan ikke endres - oppdaterer deltaker men beholder låsing`() {
         val sistEndret = LocalDateTime.now().minusDays(3)
@@ -188,6 +189,7 @@ class DeltakerRepositoryTest {
         sammenlignDeltakere(deltakerResultat, oppdatertDeltaker)
         deltakerResultat.kanEndres shouldBe false
     }
+
     @Test
     fun `update - deltaker kan ikke endres, kun oppdatert historikk - oppdaterer historikk`() {
         val sistEndret = LocalDateTime.now().minusDays(3)
