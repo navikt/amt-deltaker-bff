@@ -120,4 +120,5 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     innsatsgruppe = navBruker.innsatsgruppe,
     deltakerliste = deltakerliste,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+    kanEndres = kanEndres,
 )

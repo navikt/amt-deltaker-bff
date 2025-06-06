@@ -21,4 +21,5 @@ data class TiltakskoordinatorsDeltaker(
     val innsatsgruppe: Innsatsgruppe?,
     val deltakerliste: Deltakerliste,
     val erManueltDeltMedArrangor: Boolean,
+    val kanEndres: Boolean,
 )
