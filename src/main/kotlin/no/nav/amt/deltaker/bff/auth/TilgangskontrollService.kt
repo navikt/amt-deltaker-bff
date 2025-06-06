@@ -51,10 +51,18 @@ class TilgangskontrollService(
     ) {
         val deltakere = tiltakskoordinatorService.getMany(deltakerIder)
             .filter { it.deltakerliste.id == deltakerlisteId }
+        val kanIkkeEndres = deltakere.any { !it.kanEndres }
 
         verifiserTiltakskoordinatorTilgang(navIdent, deltakerlisteId)
         deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
 
+        if (!kanIkkeEndres) {
+            throw AuthorizationException(
+                "En eller flere deltakere kan ikke endres" +
+                    "deltakere: ${deltakere.filter { !it.kanEndres }.map { it.id }}, " +
+                    "deltakerliste: $deltakerlisteId",
+            )
+        }
         if (deltakerIder.size != deltakere.size) {
             log.error(
                 "Alle deltakere i bulk operasjon må være på samme deltakerliste. " +
