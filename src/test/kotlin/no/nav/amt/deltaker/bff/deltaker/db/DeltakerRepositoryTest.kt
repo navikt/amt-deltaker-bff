@@ -175,9 +175,8 @@ class DeltakerRepositoryTest {
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
         sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), oppdatertDeltaker)
     }
-
     @Test
-    fun `update - deltaker kan ikke endres - oppdaterer ikke`() {
+    fun `update - deltaker kan ikke endres - oppdaterer deltaker men beholder låsing`() {
         val sistEndret = LocalDateTime.now().minusDays(3)
         val deltaker = TestData.lagDeltaker(sistEndret = sistEndret, kanEndres = false)
         TestRepository.insert(deltaker)
@@ -185,9 +184,10 @@ class DeltakerRepositoryTest {
         val oppdatertDeltaker = deltaker.endre(TestData.lagDeltakerEndring(endring = endring))
 
         repository.update(oppdatertDeltaker.toDeltakeroppdatering())
-        sammenlignDeltakere(repository.get(deltaker.id).getOrThrow(), deltaker)
+        val deltakerResultat = repository.get(deltaker.id).getOrThrow()
+        sammenlignDeltakere(deltakerResultat, oppdatertDeltaker)
+        deltakerResultat.kanEndres shouldBe false
     }
-
     @Test
     fun `update - deltaker kan ikke endres, kun oppdatert historikk - oppdaterer historikk`() {
         val sistEndret = LocalDateTime.now().minusDays(3)
@@ -440,6 +440,7 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.status.gyldigTil shouldBeCloseTo b.status.gyldigTil
     a.status.opprettet shouldBeCloseTo b.status.opprettet
     a.erManueltDeltMedArrangor shouldBe b.erManueltDeltMedArrangor
+    a.kanEndres shouldBe b.kanEndres
 }
 
 private fun Deltaker.toKladdResponse() = KladdResponse(
