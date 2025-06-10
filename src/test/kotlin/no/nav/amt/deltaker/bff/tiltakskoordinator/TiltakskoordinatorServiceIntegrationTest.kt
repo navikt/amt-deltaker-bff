@@ -11,7 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
-import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -60,7 +60,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.tildelPlass(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdatering())
+        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse())
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -97,7 +97,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdatering())
+        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse())
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
