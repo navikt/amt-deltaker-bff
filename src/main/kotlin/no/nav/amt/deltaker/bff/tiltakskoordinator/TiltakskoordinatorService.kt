@@ -3,6 +3,8 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
@@ -42,16 +44,16 @@ class TiltakskoordinatorService(
         endring: EndringFraTiltakskoordinator.Endring,
         endretAv: String,
     ): List<TiltakskoordinatorsDeltaker> {
-        val oppdaterteDeltakere = when (endring) {
+        val oppdaterteDeltakereResponse = when (endring) {
             EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.TildelPlass -> amtDeltakerClient.tildelPlass(deltakerIder, endretAv)
             is EndringFraTiltakskoordinator.Avslag -> throw NotImplementedError("Batch håndtering for avslag er ikke støttet")
         }
+        val deltakerOppdatering = oppdaterteDeltakereResponse.toDeltakerOppdatering()
+        deltakerService.oppdaterDeltakere(deltakerOppdatering)
 
-        deltakerService.oppdaterDeltakere(oppdaterteDeltakere)
-
-        return oppdaterteDeltakere.toTiltakskoordinatorsDeltakere()
+        return oppdaterteDeltakereResponse.toTiltakskoordinatorsDeltakere()
     }
 
     suspend fun giAvslag(request: AvslagRequest, endretAv: String): TiltakskoordinatorsDeltaker {
@@ -93,9 +95,19 @@ class TiltakskoordinatorService(
         }.filterNot { it.skalSkjules() }
     }
 
-    private fun List<Deltakeroppdatering>.toTiltakskoordinatorsDeltakere(): List<TiltakskoordinatorsDeltaker> {
+    private fun List<DeltakerOppdateringResponse>.toTiltakskoordinatorsDeltakere(): List<TiltakskoordinatorsDeltaker> {
         val deltakere = deltakerService.getMany(this.map { it.id })
-        return deltakere.toTiltakskoordinatorsDeltaker()
+        val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.navBruker.navEnhetId })
+        val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
+        return deltakere.map { deltaker ->
+            val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
+            deltaker.toTiltakskoordinatorsDeltaker(
+                sisteVurdering,
+                navEnheter[deltaker.navBruker.navEnhetId],
+                navVeiledere[deltaker.navBruker.navVeilederId],
+                first { it.id == deltaker.id }.feilkode,
+            )
+        }.filterNot { it.skalSkjules() }
     }
 }
 
@@ -103,6 +115,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     sisteVurdering: Vurdering?,
     navEnhet: NavEnhet?,
     navVeileder: NavAnsatt?,
+    feilkode: DeltakerOppdateringFeilkode? = null,
 ) = TiltakskoordinatorsDeltaker(
     id = id,
     navBruker = navBruker,
@@ -121,4 +134,21 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     deltakerliste = deltakerliste,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     kanEndres = kanEndres,
+    feilkode = feilkode,
+)
+
+private fun List<DeltakerOppdateringResponse>.toDeltakerOppdatering() = this.map { it.toDeltakerOppdatering() }
+
+private fun DeltakerOppdateringResponse.toDeltakerOppdatering() = Deltakeroppdatering(
+    id = id,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = deltakelsesprosent,
+    bakgrunnsinformasjon = bakgrunnsinformasjon,
+    deltakelsesinnhold = deltakelsesinnhold,
+    status = status,
+    historikk = historikk,
+    sistEndret = sistEndret,
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )

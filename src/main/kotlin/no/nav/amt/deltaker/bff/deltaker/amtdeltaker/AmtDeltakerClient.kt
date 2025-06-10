@@ -27,6 +27,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.SluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.StartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerMedStatusResponse
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -48,7 +49,7 @@ class AmtDeltakerClient(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun tildelPlass(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
+    suspend fun tildelPlass(deltakerIder: List<UUID>, endretAv: String): List<DeltakerOppdateringResponse> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/tildel-plass") {
             header(HttpHeaders.Authorization, token)
@@ -65,7 +66,7 @@ class AmtDeltakerClient(
         return response.body()
     }
 
-    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
+    suspend fun settPaaVenteliste(deltakerIder: List<UUID>, endretAv: String): List<DeltakerOppdateringResponse> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/sett-paa-venteliste") {
             header(HttpHeaders.Authorization, token)
@@ -318,7 +319,7 @@ class AmtDeltakerClient(
         return response.body()
     }
 
-    suspend fun delMedArrangor(deltakerIder: List<UUID>, endretAv: String): List<Deltakeroppdatering> {
+    suspend fun delMedArrangor(deltakerIder: List<UUID>, endretAv: String): List<DeltakerOppdateringResponse> {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val request = DelMedArrangorRequest(endretAv, deltakerIder)
         val response = httpClient.post("$baseUrl/tiltakskoordinator/deltakere/del-med-arrangor") {

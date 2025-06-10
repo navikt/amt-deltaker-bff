@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.model
 
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
@@ -22,4 +23,5 @@ data class TiltakskoordinatorsDeltaker(
     val deltakerliste: Deltakerliste,
     val erManueltDeltMedArrangor: Boolean,
     val kanEndres: Boolean,
+    val feilkode: DeltakerOppdateringFeilkode? = null,
 )
