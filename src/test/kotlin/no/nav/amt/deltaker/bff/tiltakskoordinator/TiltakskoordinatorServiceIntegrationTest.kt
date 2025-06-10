@@ -118,6 +118,7 @@ class TiltakskoordinatorServiceIntegrationTest {
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt)
     }
+
     @Test
     fun `settPaaVenteliste - en deltaker feiler i amt-deltaker - returnerer deltaker med feilkode`(): Unit = runBlocking {
         val deltaker = TestData.lagDeltaker()
