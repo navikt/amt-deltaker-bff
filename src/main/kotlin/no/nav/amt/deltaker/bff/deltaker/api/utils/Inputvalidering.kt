@@ -191,7 +191,7 @@ private fun validerVarighet(
 
     val senesteSluttdato = startdato.plusDays(maxVarighet.toDays())
 
-    if (senesteSluttdato.isBefore(deltaker.sluttdato)) {
+    if (deltaker.sluttdato != null && senesteSluttdato.isBefore(deltaker.sluttdato)) {
         require(!sluttdato.isAfter(deltaker.sluttdato))
     } else {
         require(!sluttdato.isAfter(senesteSluttdato)) {
