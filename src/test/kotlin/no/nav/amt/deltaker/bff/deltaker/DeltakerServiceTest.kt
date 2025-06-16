@@ -158,6 +158,35 @@ class DeltakerServiceTest {
     }
 
     @Test
+    fun `oppdaterDeltaker(deltakerOppdatering) - reaktivering med kladd - sletter kladd`(): Unit = runBlocking {
+        val deltakerKladd = TestData.lagDeltakerKladd()
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerKladd.deltakerliste, navBruker = deltakerKladd.navBruker)
+        TestRepository.insert(deltaker)
+        TestRepository.insert(deltakerKladd)
+        val navEnhet = navEnhetService.hentEnhet(deltaker.navBruker.navEnhetId!!)!!
+        val endring = DeltakerEndring.Endring.ReaktiverDeltakelse(
+            reaktivertDato = LocalDate.now(),
+            begrunnelse = "begrunnelse",
+        )
+
+        MockResponseHandler.addEndringsresponse(
+            deltaker.endre(TestData.lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
+            endring,
+        )
+        service.get(deltakerKladd.id).isFailure shouldBe false
+        service.oppdaterDeltaker(
+            deltaker,
+            endring,
+            "navIdent",
+            navEnhet.enhetsnummer,
+        )
+
+        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        deltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
+        service.get(deltakerKladd.id).isFailure shouldBe true
+    }
+
+    @Test
     fun `oppdaterDeltaker(deltakerOppdatering) - har ikke andre deltakelser - oppdaterer deltaker`() {
         val deltaker = TestData.lagDeltakerKladd()
         TestRepository.insert(deltaker)

@@ -159,12 +159,15 @@ class DeltakerService(
             }
 
             is DeltakerEndring.Endring.ReaktiverDeltakelse -> endreDeltaker(deltaker) {
-                amtDeltakerClient.reaktiverDeltakelse(
+                val kladd = deltakerRepository.getKladdForDeltakerliste(deltaker.deltakerliste.id, deltaker.navBruker.personident)
+                val response = amtDeltakerClient.reaktiverDeltakelse(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
                     begrunnelse = endring.begrunnelse,
                 )
+                kladd?.let { deltakerRepository.delete(it.id) }
+                response
             }
 
             is DeltakerEndring.Endring.FjernOppstartsdato -> endreDeltaker(deltaker) {
