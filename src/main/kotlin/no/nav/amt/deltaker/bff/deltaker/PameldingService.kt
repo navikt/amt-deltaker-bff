@@ -64,15 +64,7 @@ class PameldingService(
         return deltakerService.get(utkast.deltakerId).getOrThrow()
     }
 
-    suspend fun slettKladd(deltaker: Deltaker): Boolean {
-        if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
-            log.warn("Kan ikke slette deltaker med id ${deltaker.id} som har status ${deltaker.status.type}")
-            return false
-        }
-        amtDeltakerClient.slettKladd(deltaker.id)
-        deltakerService.delete(deltaker.id)
-        return true
-    }
+    suspend fun slettKladd(deltaker: Deltaker) = deltakerService.slettKladd(deltaker)
 
     suspend fun avbrytUtkast(
         deltakerId: UUID,

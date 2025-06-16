@@ -1,9 +1,11 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -27,7 +29,8 @@ class DeltakerServiceTest {
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk())
+    private val forslagService = mockk<ForslagService>()
+    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, forslagService)
 
     @Test
     fun `oppdaterDeltaker(endring) - kaller client og returnerer deltaker`(): Unit = runBlocking {
@@ -155,6 +158,39 @@ class DeltakerServiceTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun `oppdaterDeltaker(deltakerOppdatering) - reaktivering med kladd - sletter kladd`(): Unit = runBlocking {
+        val deltakerKladd = TestData.lagDeltakerKladd()
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerKladd.deltakerliste, navBruker = deltakerKladd.navBruker)
+        TestRepository.insert(deltaker)
+        TestRepository.insert(deltakerKladd)
+        val navEnhet = navEnhetService.hentEnhet(deltaker.navBruker.navEnhetId!!)!!
+        val endring = DeltakerEndring.Endring.ReaktiverDeltakelse(
+            reaktivertDato = LocalDate.now(),
+            begrunnelse = "begrunnelse",
+        )
+
+        MockResponseHandler.addEndringsresponse(
+            deltaker.endre(TestData.lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
+            endring,
+        )
+
+        MockResponseHandler.addSlettKladdResponse(deltakerKladd.id)
+        every { forslagService.deleteForDeltaker(deltakerKladd.id) } returns Unit
+
+        service.get(deltakerKladd.id).isFailure shouldBe false
+        service.oppdaterDeltaker(
+            deltaker,
+            endring,
+            "navIdent",
+            navEnhet.enhetsnummer,
+        )
+
+        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        deltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
+        service.get(deltakerKladd.id).isFailure shouldBe true
     }
 
     @Test
