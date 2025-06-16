@@ -159,14 +159,13 @@ class DeltakerService(
             }
 
             is DeltakerEndring.Endring.ReaktiverDeltakelse -> endreDeltaker(deltaker) {
-                val kladd = deltakerRepository.getKladdForDeltakerliste(deltaker.deltakerliste.id, deltaker.navBruker.personident)
                 val response = amtDeltakerClient.reaktiverDeltakelse(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
                     begrunnelse = endring.begrunnelse,
                 )
-                kladd?.let { deltakerRepository.delete(it.id) }
+                slettKladd(deltaker.deltakerliste.id, deltaker.navBruker.personident)
                 response
             }
 
@@ -277,6 +276,21 @@ class DeltakerService(
         ) {
             deltakerRepository.settKanIkkeEndres(listOf(deltakeroppdatering.id))
         }
+    }
+
+    suspend fun slettKladd(deltakerlisteId: UUID, personident: String): Boolean {
+        val kladd = deltakerRepository.getKladdForDeltakerliste(deltakerlisteId, personident)
+        return kladd?.let { slettKladd(kladd) } == true
+    }
+
+    suspend fun slettKladd(deltaker: Deltaker): Boolean {
+        if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
+            log.warn("Kan ikke slette deltaker med id ${deltaker.id} som har status ${deltaker.status.type}")
+            return false
+        }
+        amtDeltakerClient.slettKladd(deltaker.id)
+        delete(deltaker.id)
+        return true
     }
 
     fun delete(deltakerId: UUID) {

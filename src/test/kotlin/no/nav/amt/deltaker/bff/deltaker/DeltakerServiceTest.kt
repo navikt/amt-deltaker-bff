@@ -1,9 +1,11 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.matchers.shouldBe
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -27,7 +29,8 @@ class DeltakerServiceTest {
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk())
+    private val forslagService = mockk<ForslagService>()
+    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, forslagService)
 
     @Test
     fun `oppdaterDeltaker(endring) - kaller client og returnerer deltaker`(): Unit = runBlocking {
@@ -173,6 +176,10 @@ class DeltakerServiceTest {
             deltaker.endre(TestData.lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
             endring,
         )
+
+        MockResponseHandler.addSlettKladdResponse(deltakerKladd.id)
+        every { forslagService.deleteForDeltaker(deltakerKladd.id) } returns Unit
+
         service.get(deltakerKladd.id).isFailure shouldBe false
         service.oppdaterDeltaker(
             deltaker,
