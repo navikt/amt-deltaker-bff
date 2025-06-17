@@ -22,4 +22,6 @@ data class TiltakskoordinatorsDeltaker(
     val deltakerliste: Deltakerliste,
     val erManueltDeltMedArrangor: Boolean,
     val kanEndres: Boolean,
+    val digitalBruker: Boolean,
+    val harAdresse: Boolean,
 )

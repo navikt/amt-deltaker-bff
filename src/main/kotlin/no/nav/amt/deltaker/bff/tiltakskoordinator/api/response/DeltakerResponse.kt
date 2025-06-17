@@ -14,4 +14,6 @@ data class DeltakerResponse(
     val vurdering: Vurderingstype?,
     val navEnhet: String?,
     val erManueltDeltMedArrangor: Boolean,
+    val digitalBruker: Boolean,
+    val harAdresse: Boolean,
 )

@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
@@ -25,16 +26,18 @@ class TiltakskoordinatorService(
     private val vurderingService: VurderingService,
     private val navEnhetService: NavEnhetService,
     private val navAnsattService: NavAnsattService,
+    private val amtDistribusjonClient: AmtDistribusjonClient,
 ) {
-    fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
+    suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
 
     suspend fun get(deltakerId: UUID): TiltakskoordinatorsDeltaker {
         val deltaker = deltakerService.get(deltakerId).getOrThrow()
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
+        val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
 
-        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder)
+        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, digitalBruker)
     }
 
     suspend fun endreDeltakere(
@@ -64,7 +67,7 @@ class TiltakskoordinatorService(
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
-    fun hentDeltakereForDeltakerliste(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
+    suspend fun hentDeltakereForDeltakerliste(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
         val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
         return deltakere
             .toTiltakskoordinatorsDeltaker()
@@ -78,22 +81,24 @@ class TiltakskoordinatorService(
         DeltakerStatus.Type.PABEGYNT_REGISTRERING,
     )
 
-    private fun Deltaker.toTiltakskoordinatorsDeltaker() = listOf(this).toTiltakskoordinatorsDeltaker().first()
+    private suspend fun Deltaker.toTiltakskoordinatorsDeltaker() = listOf(this).toTiltakskoordinatorsDeltaker().first()
 
-    private fun List<Deltaker>.toTiltakskoordinatorsDeltaker(): List<TiltakskoordinatorsDeltaker> {
+    private suspend fun List<Deltaker>.toTiltakskoordinatorsDeltaker(): List<TiltakskoordinatorsDeltaker> {
         val navEnheter = navEnhetService.hentEnheter(this.mapNotNull { it.navBruker.navEnhetId })
         val navVeiledere = navAnsattService.hentAnsatte(this.mapNotNull { it.navBruker.navVeilederId })
         return this.map {
             val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(it.id)
+            val digitalBruker = amtDistribusjonClient.digitalBruker(it.navBruker.personident)
             it.toTiltakskoordinatorsDeltaker(
                 sisteVurdering,
                 navEnheter[it.navBruker.navEnhetId],
                 navVeiledere[it.navBruker.navVeilederId],
+                digitalBruker,
             )
         }.filterNot { it.skalSkjules() }
     }
 
-    private fun List<Deltakeroppdatering>.toTiltakskoordinatorsDeltakere(): List<TiltakskoordinatorsDeltaker> {
+    private suspend fun List<Deltakeroppdatering>.toTiltakskoordinatorsDeltakere(): List<TiltakskoordinatorsDeltaker> {
         val deltakere = deltakerService.getMany(this.map { it.id })
         return deltakere.toTiltakskoordinatorsDeltaker()
     }
@@ -103,6 +108,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     sisteVurdering: Vurdering?,
     navEnhet: NavEnhet?,
     navVeileder: NavAnsatt?,
+    digitalBruker: Boolean,
 ) = TiltakskoordinatorsDeltaker(
     id = id,
     navBruker = navBruker,
@@ -121,4 +127,6 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     deltakerliste = deltakerliste,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     kanEndres = kanEndres,
+    digitalBruker = digitalBruker,
+    harAdresse = navBruker.adresse != null,
 )

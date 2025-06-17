@@ -166,6 +166,8 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         beskyttelsesmarkering = beskyttelsesmarkering,
         navEnhet = navEnhet,
         erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+        digitalBruker = digitalBruker,
+        harAdresse = harAdresse,
     )
 }
 
