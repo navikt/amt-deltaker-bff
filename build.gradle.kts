@@ -9,7 +9,7 @@ plugins {
     val kotlinVersion = "2.1.21"
 
     kotlin("jvm") version kotlinVersion
-    id("io.ktor.plugin") version "3.1.3"
+    id("io.ktor.plugin") version "3.2.0"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jlleitschuh.gradle.ktlint") version "12.3.0"
     id("com.gradleup.shadow") version "8.3.6"
@@ -25,7 +25,7 @@ val ktorVersion = "3.2.0"
 val logbackVersion = "1.5.18"
 val prometeusVersion = "1.15.1"
 val ktlintVersion = "1.2.1"
-val jacksonVersion = "2.19.0"
+val jacksonVersion = "2.19.1"
 val logstashEncoderVersion = "8.1"
 val commonVersion = "3.2024.10.25_13.44-9db48a0dbe67"
 val poaoTilgangVersion = "2024.10.29_14.10-4fff597d6e1b"
