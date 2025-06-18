@@ -16,4 +16,5 @@ data class DeltakerResponse(
     val navEnhet: String?,
     val erManueltDeltMedArrangor: Boolean,
     val feilkode: DeltakerOppdateringFeilkode? = null,
+    val ikkeDigitalBrukerUtenAdresse: Boolean,
 )

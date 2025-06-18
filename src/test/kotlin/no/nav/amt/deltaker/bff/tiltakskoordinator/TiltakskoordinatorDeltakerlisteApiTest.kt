@@ -139,7 +139,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(any()) } throws NoSuchElementException()
-        every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
+        coEvery { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
         client
             .get("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere") { noBodyTiltakskoordinatorRequest() }
             .apply {
@@ -173,7 +173,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
 
         every { navEnhetService.hentEnheter(any()) } returns navEnheter
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id) } returns deltakerliste
-        every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(deltakerliste.id) } returns deltakere
+        coEvery { tiltakskoordinatorService.hentDeltakereForDeltakerliste(deltakerliste.id) } returns deltakere
         deltakere.forEach {
             every { tilgangskontrollService.harKoordinatorTilgangTilPerson(any(), it.navBruker) } returns true
         }
@@ -240,7 +240,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
     fun `post del-med-arrangor - deltakerliste finnes ikke - returnerer 404`() = testApplication {
         setUpTestApplication()
         mockTilgangTilDeltakerliste()
-        every { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
+        coEvery { tiltakskoordinatorService.hentDeltakereForDeltakerliste(any()) } returns emptyList()
         coEvery { tilgangskontrollService.tilgangTilDeltakereGuard(any(), any(), any()) } throws NoSuchElementException()
         client
             .post("/tiltakskoordinator/deltakerliste/${UUID.randomUUID()}/deltakere/del-med-arrangor") {

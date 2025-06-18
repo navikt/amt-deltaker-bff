@@ -199,6 +199,8 @@ object TestData {
             sisteVurdering = sisteVurdering,
             navEnhet = navEnhet,
             navVeileder = navVeileder,
+            null,
+            false,
         )
     }
 
