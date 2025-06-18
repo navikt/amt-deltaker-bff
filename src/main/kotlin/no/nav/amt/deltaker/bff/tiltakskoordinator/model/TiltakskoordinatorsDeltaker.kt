@@ -24,5 +24,5 @@ data class TiltakskoordinatorsDeltaker(
     val erManueltDeltMedArrangor: Boolean,
     val kanEndres: Boolean,
     val feilkode: DeltakerOppdateringFeilkode? = null,
-    val ikkeDigitalBrukerUtenAdresse: Boolean,
+    val ikkeDigitalOgManglerAdresse: Boolean,
 )

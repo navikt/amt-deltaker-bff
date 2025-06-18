@@ -38,11 +38,10 @@ class TiltakskoordinatorService(
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
 
-        if (deltaker.navBruker.adresse == null)
-            {
-                val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-                return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, !digitalBruker)
-            }
+        if (deltaker.navBruker.adresse == null) {
+            val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+            return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, !digitalBruker)
+        }
 
         return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false)
     }
@@ -95,18 +94,18 @@ class TiltakskoordinatorService(
         val navVeiledere = navAnsattService.hentAnsatte(this.mapNotNull { it.navBruker.navVeilederId })
         return this.map {
             val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(it.id)
-            var ikkeDigitalBrukerUtenAdresse = false
-            if (it.navBruker.adresse == null)
-                {
-                    ikkeDigitalBrukerUtenAdresse = !amtDistribusjonClient.digitalBruker(it.navBruker.personident)
-                }
+
+            var ikkeDigitalOgManglerAdresse = false
+            if (it.navBruker.adresse == null) {
+                ikkeDigitalOgManglerAdresse = !amtDistribusjonClient.digitalBruker(it.navBruker.personident)
+            }
 
             it.toTiltakskoordinatorsDeltaker(
                 sisteVurdering,
                 navEnheter[it.navBruker.navEnhetId],
                 navVeiledere[it.navBruker.navVeilederId],
                 null,
-                ikkeDigitalBrukerUtenAdresse,
+                ikkeDigitalOgManglerAdresse,
             )
         }.filterNot { it.skalSkjules() }
     }
@@ -117,17 +116,16 @@ class TiltakskoordinatorService(
         val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
         return deltakere.map { deltaker ->
             val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
-            var ikkeDigitalBrukerUtenAdresse = false
-            if (deltaker.navBruker.adresse == null)
-                {
-                    ikkeDigitalBrukerUtenAdresse = !amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-                }
+            var ikkeDigitalOgManglerAdresse = false
+            if (deltaker.navBruker.adresse == null) {
+                ikkeDigitalOgManglerAdresse = !amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+            }
             deltaker.toTiltakskoordinatorsDeltaker(
                 sisteVurdering,
                 navEnheter[deltaker.navBruker.navEnhetId],
                 navVeiledere[deltaker.navBruker.navVeilederId],
                 first { it.id == deltaker.id }.feilkode,
-                ikkeDigitalBrukerUtenAdresse,
+                ikkeDigitalOgManglerAdresse,
             )
         }.filterNot { it.skalSkjules() }
     }
@@ -138,7 +136,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     navEnhet: NavEnhet?,
     navVeileder: NavAnsatt?,
     feilkode: DeltakerOppdateringFeilkode? = null,
-    ikkeDigitalBrukerUtenAdresse: Boolean,
+    ikkeDigitalOgManglerAdresse: Boolean,
 ) = TiltakskoordinatorsDeltaker(
     id = id,
     navBruker = navBruker,
@@ -158,7 +156,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     kanEndres = kanEndres,
     feilkode = feilkode,
-    ikkeDigitalBrukerUtenAdresse = ikkeDigitalBrukerUtenAdresse,
+    ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
 )
 
 private fun List<DeltakerOppdateringResponse>.toDeltakerOppdatering() = this.map { it.toDeltakerOppdatering() }
