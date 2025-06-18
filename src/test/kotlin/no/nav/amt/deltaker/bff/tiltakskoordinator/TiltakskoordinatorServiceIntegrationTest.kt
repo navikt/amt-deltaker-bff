@@ -9,9 +9,10 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
-import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
@@ -60,7 +61,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.tildelPlass(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdatering())
+        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse())
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -97,7 +98,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdatering())
+        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse())
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -106,6 +107,45 @@ class TiltakskoordinatorServiceIntegrationTest {
         )
         val resultDeltaker = resultatFraAmtDeltaker.first()
         resultatFraAmtDeltaker.size shouldBe 1
+        resultDeltaker.status.id shouldNotBe deltaker.status.id
+        resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
+
+        coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
+        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+
+        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        deltakerFraDb shouldBeCloseTo deltaker
+            .copy(status = nyStatus)
+            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt)
+    }
+
+    @Test
+    fun `settPaaVenteliste - en deltaker feiler i amt-deltaker - returnerer deltaker med feilkode`(): Unit = runBlocking {
+        val deltaker = TestData.lagDeltaker()
+        val navEnhet = TestData.lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
+        val navAnsatt = TestData.lagNavAnsatt(id = deltaker.navBruker.navVeilederId!!)
+
+        TestRepository.insert(deltaker)
+        every { vurderingService.getSisteVurderingForDeltaker(deltaker.id) } returns null
+        every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
+        every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
+
+        val nyStatus =
+            DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTELISTE, null, LocalDateTime.now(), null, LocalDateTime.now())
+
+        coEvery {
+            amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
+        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse(feilkode = DeltakerOppdateringFeilkode.UKJENT))
+
+        val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
+            listOf(deltaker.id),
+            EndringFraTiltakskoordinator.SettPaaVenteliste,
+            navAnsatt.navIdent,
+        )
+        val resultDeltaker = resultatFraAmtDeltaker.first()
+        resultatFraAmtDeltaker.size shouldBe 1
+        resultatFraAmtDeltaker.first().feilkode shouldBe DeltakerOppdateringFeilkode.UKJENT
+
         resultDeltaker.status.id shouldNotBe deltaker.status.id
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 

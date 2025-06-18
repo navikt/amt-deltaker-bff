@@ -1,6 +1,8 @@
 package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
@@ -338,7 +340,7 @@ fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
     historikk = oppdatering.historikk,
 )
 
-fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
+fun Deltaker.toDeltakeroppdateringResponse(feilkode: DeltakerOppdateringFeilkode? = null) = DeltakerOppdateringResponse(
     id = id,
     startdato = startdato,
     sluttdato = sluttdato,
@@ -350,4 +352,5 @@ fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     historikk = historikk,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     sistEndret = sistEndret,
+    feilkode = feilkode,
 )
