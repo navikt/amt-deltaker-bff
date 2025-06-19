@@ -167,6 +167,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         navEnhet = navEnhet,
         erManueltDeltMedArrangor = erManueltDeltMedArrangor,
         feilkode = feilkode,
+        ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
     )
 }
 
