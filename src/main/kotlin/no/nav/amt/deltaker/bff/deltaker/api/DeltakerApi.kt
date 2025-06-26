@@ -10,12 +10,12 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import jakarta.ws.rs.ForbiddenException
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
-import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
@@ -46,6 +46,7 @@ import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.UUID
@@ -70,6 +71,26 @@ fun Routing.registerDeltakerApi(
         return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker, forslag)
     }
 
+    fun illegalUpdateGuard(deltaker: Deltaker, tillatEndringUtenOppfPeriode: Boolean) {
+        if (!deltaker.kanEndres) {
+            log.error("Kan ikke endre deltaker med id ${deltaker.id} som er låst")
+            throw ForbiddenException("Kan ikke endre låst deltaker ${deltaker.id}")
+        }
+
+        if (deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
+            throw ForbiddenException("Kan ikke endre låst deltaker ${deltaker.id}")
+        }
+
+        if (!unleashToggle.erKometMasterForTiltakstype(deltaker.deltakerliste.tiltak.arenaKode)) {
+            throw ForbiddenException("Kan ikke utføre endring på deltaker ${deltaker.id}")
+        }
+
+        if (!deltaker.navBruker.harAktivOppfolgingsperiode() && !tillatEndringUtenOppfPeriode) {
+            log.warn("Kan ikke endre deltaker med id ${deltaker.id} som ikke har aktiv oppfølgingsperiode")
+            throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
+        }
+    }
+
     suspend fun handleEndring(
         call: ApplicationCall,
         request: Endringsrequest,
@@ -79,11 +100,8 @@ fun Routing.registerDeltakerApi(
         val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
         val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-        if (!unleashToggle.erKometMasterForTiltakstype(deltaker.deltakerliste.tiltak.arenaKode)) {
-            throw AuthorizationException("Kan ikke utføre endring på deltaker ${deltaker.id}")
-        }
-
         tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
+        illegalUpdateGuard(deltaker, request.tillattEndringUtenAktivOppfolgingsperiode())
 
         request.valider(deltaker)
 
@@ -91,11 +109,6 @@ fun Routing.registerDeltakerApi(
             request.forslagId?.let { forslagService.get(it).getOrThrow() }
         } else {
             null
-        }
-
-        if (!deltaker.navBruker.harAktivOppfolgingsperiode() && !request.tillattEndringUtenAktivOppfolgingsperiode()) {
-            log.warn("Kan ikke endre deltaker med id ${deltaker.id} som ikke har aktiv oppfølgingsperiode")
-            throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
         }
 
         val oppdatertDeltaker = deltakerService.oppdaterDeltaker(

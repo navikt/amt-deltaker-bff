@@ -21,7 +21,6 @@ import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerRepository {
@@ -371,17 +370,6 @@ class DeltakerRepository {
     }
 
     fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
-        val eksisterendeDeltaker = get(deltaker.id).getOrNull()
-        if (!skalOppdateres(eksisterendeDeltaker, deltaker)) {
-            if (eksisterendeDeltaker != null && skalOppdatereHistorikkForLaastDeltaker(eksisterendeDeltaker, deltaker)) {
-                log.info("Oppdaterer historikk for deltaker som ikke kan endres")
-                session.transaction { tx ->
-                    tx.update(oppdaterHistorikk(deltaker))
-                }
-            }
-            return@query
-        }
-
         session.transaction { tx ->
             tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
             tx.update(insertStatusQuery(deltaker.status, deltaker.id))
@@ -528,64 +516,6 @@ class DeltakerRepository {
                 $where
       """
 
-    private fun skalOppdateres(eksisterendeDeltaker: Deltaker?, oppdatering: Deltakeroppdatering): Boolean {
-        if (oppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT) {
-            return true
-        }
-
-        if (eksisterendeDeltaker == null) {
-            log.info("Deltakeren finnes ikke fra før, oppdaterer ${oppdatering.id}")
-            return true
-        }
-
-        if (oppdatering.forcedUpdate == true) {
-            log.info("Tvungen oppdatering på deltaker med id ${oppdatering.id}")
-            return true
-        }
-
-        val erUtkast = oppdatering.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING &&
-            eksisterendeDeltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING
-
-        val oppdateringHarNyereStatus = oppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >=
-            eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
-
-        val kanOppdateres = oppdatering.historikk.size >= eksisterendeDeltaker.historikk.size ||
-            oppdateringHarNyereStatus ||
-            erUtkast
-
-        if (!kanOppdateres) {
-            log.info(
-                """
-                Deltaker ${oppdatering.id} skal ikke oppdateres
-                oppdatering.historikk:        ${oppdatering.historikk.size}
-                deltaker.historikk:           ${eksisterendeDeltaker.historikk.size}
-                oppdatering.status.opprettet: ${oppdatering.status.opprettet} 
-                deltaker.status.opprettet:    ${eksisterendeDeltaker.status.opprettet}
-                deltaker.kan_endres:          ${eksisterendeDeltaker.kanEndres}
-                """.trimIndent(),
-            )
-        }
-
-        return kanOppdateres
-    }
-
-    private fun skalOppdatereHistorikkForLaastDeltaker(eksisterendeDeltaker: Deltaker, oppdatering: Deltakeroppdatering): Boolean =
-        eksisterendeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT &&
-            !eksisterendeDeltaker.kanEndres &&
-            kunHistorikkErEndret(eksisterendeDeltaker, oppdatering)
-
-    private fun kunHistorikkErEndret(eksisterendeDeltaker: Deltaker, oppdatering: Deltakeroppdatering): Boolean =
-        oppdatering.startdato == eksisterendeDeltaker.startdato &&
-            oppdatering.sluttdato == eksisterendeDeltaker.sluttdato &&
-            oppdatering.dagerPerUke == eksisterendeDeltaker.dagerPerUke &&
-            oppdatering.deltakelsesprosent == eksisterendeDeltaker.deltakelsesprosent &&
-            oppdatering.bakgrunnsinformasjon == eksisterendeDeltaker.bakgrunnsinformasjon &&
-            oppdatering.deltakelsesinnhold == eksisterendeDeltaker.deltakelsesinnhold &&
-            oppdatering.status.id == eksisterendeDeltaker.status.id &&
-            oppdatering.status.type == eksisterendeDeltaker.status.type &&
-            oppdatering.status.aarsak == eksisterendeDeltaker.status.aarsak &&
-            eksisterendeDeltaker.historikk.size < oppdatering.historikk.size
-
     fun oppdaterSistBesokt(id: UUID, sistBesokt: ZonedDateTime) = Database.query {
         val sql =
             """
@@ -600,24 +530,6 @@ class DeltakerRepository {
         )
 
         it.update(queryOf(sql, params))
-    }
-
-    private fun oppdaterHistorikk(deltaker: Deltakeroppdatering): Query {
-        val sql =
-            """
-            update deltaker set 
-                historikk            = :historikk,
-                modified_at          = :modified_at
-            where id = :id
-            """.trimIndent()
-
-        val params = mapOf(
-            "historikk" to toPGObject(deltaker.historikk),
-            "modified_at" to deltaker.sistEndret,
-            "id" to deltaker.id,
-        )
-
-        return queryOf(sql, params)
     }
 
     private fun batchUpdateDeltakerParams(deltaker: Deltakeroppdatering) = mapOf(

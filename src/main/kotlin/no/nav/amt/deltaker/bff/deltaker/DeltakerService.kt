@@ -264,7 +264,7 @@ class DeltakerService(
         }
     }
 
-    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+    fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
             val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
             deltakerRepository.settKanIkkeEndres(tidligereDeltakelser)
@@ -272,7 +272,12 @@ class DeltakerService(
                 "Har låst ${tidligereDeltakelser.size} deltakere for endringer pga nyere aktiv deltaker med id ${deltakeroppdatering.id}",
             )
         }
+    }
+
+    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+        laasTidligereDeltakelser(deltakeroppdatering)
         deltakerRepository.update(deltakeroppdatering)
+
         if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         ) {
