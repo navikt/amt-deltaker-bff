@@ -11,7 +11,7 @@ data class Deltakerliste(
     val status: Status,
     val startDato: LocalDate,
     val sluttDato: LocalDate? = null,
-    val oppstart: Oppstartstype?,
+    val oppstart: Oppstartstype,
     val arrangor: Arrangor,
     val apentForPamelding: Boolean,
     val antallPlasser: Int,
@@ -46,19 +46,6 @@ data class Deltakerliste(
 
     fun getOppstartstype(): Oppstartstype {
         return oppstart
-            ?: if (erKurs()) {
-                Oppstartstype.FELLES
-            } else {
-                Oppstartstype.LOPENDE
-            }
-    }
-
-    private fun erKurs(): Boolean {
-        return if (oppstart != null) {
-            oppstart == Oppstartstype.FELLES
-        } else {
-            tiltak.erKurs()
-        }
     }
 
     fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.arenaKode)
