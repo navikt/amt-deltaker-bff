@@ -46,6 +46,25 @@ class ForslagRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
+    fun getForDeltakere(deltakerIder: List<UUID>) = Database.query {
+        val query = queryOf(
+            """
+            SELECT 
+                f.id as "f.id",
+                f.deltaker_id as "f.deltaker_id",
+                f.arrangoransatt_id as "f.arrangoransatt_id",
+                f.opprettet as "f.opprettet",
+                f.begrunnelse as "f.begrunnelse",
+                f.endring as "f.endring",
+                f.status as "f.status"
+            FROM forslag f 
+            WHERE f.deltaker_id in (:deltaker_ider);
+            """.trimIndent(),
+            mapOf("deltaker_ider" to deltakerIder),
+        )
+        it.run(query.map(::rowMapper).asList)
+    }
+
     fun get(id: UUID) = Database.query {
         val query = queryOf(
             """

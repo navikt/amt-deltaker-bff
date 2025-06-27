@@ -17,4 +17,5 @@ data class DeltakerResponse(
     val erManueltDeltMedArrangor: Boolean,
     val feilkode: DeltakerOppdateringFeilkode? = null,
     val ikkeDigitalOgManglerAdresse: Boolean,
+    val harAktiveForslag: Boolean,
 )

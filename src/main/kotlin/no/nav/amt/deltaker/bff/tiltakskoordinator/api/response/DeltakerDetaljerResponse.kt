@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
+import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Beskyttelsesmarkering
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
@@ -23,4 +24,5 @@ data class DeltakerDetaljerResponse(
     val innsatsgruppe: Innsatsgruppe?,
     val tiltakskode: Tiltakstype.Tiltakskode,
     val tilgangTilBruker: Boolean,
+    val aktiveForslag: List<ForslagResponse>,
 )
