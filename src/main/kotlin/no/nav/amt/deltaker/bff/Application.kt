@@ -201,6 +201,7 @@ fun Application.module() {
         navEnhetService,
         navAnsattService,
         amtDistribusjonClient,
+        forslagService,
     )
 
     val tilgangskontrollService = TilgangskontrollService(

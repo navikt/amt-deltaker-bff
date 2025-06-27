@@ -18,6 +18,8 @@ class ForslagService(
 
     fun getForDeltaker(deltakerId: UUID) = forslagRepository.getForDeltaker(deltakerId)
 
+    fun getForDeltakere(deltakerIder: List<UUID>) = forslagRepository.getForDeltakere(deltakerIder)
+
     fun get(id: UUID) = forslagRepository.get(id)
 
     fun upsert(forslag: Forslag) = forslagRepository.upsert(forslag)

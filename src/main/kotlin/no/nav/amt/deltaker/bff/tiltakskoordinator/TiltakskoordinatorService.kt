@@ -6,6 +6,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
@@ -16,10 +17,12 @@ import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
+import kotlin.collections.map
 
 class TiltakskoordinatorService(
     private val amtDeltakerClient: AmtDeltakerClient,
@@ -29,6 +32,7 @@ class TiltakskoordinatorService(
     private val navEnhetService: NavEnhetService,
     private val navAnsattService: NavAnsattService,
     private val amtDistribusjonClient: AmtDistribusjonClient,
+    private val forslagService: ForslagService,
 ) {
     suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
 
@@ -37,13 +41,14 @@ class TiltakskoordinatorService(
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
+        val forslag = forslagService.getForDeltaker(deltaker.id)
 
         if (deltaker.navBruker.adresse == null) {
             val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-            return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, !digitalBruker)
+            return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, !digitalBruker, forslag)
         }
 
-        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false)
+        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false, forslag)
     }
 
     suspend fun endreDeltakere(
@@ -92,6 +97,8 @@ class TiltakskoordinatorService(
     private suspend fun List<Deltaker>.toTiltakskoordinatorsDeltaker(): List<TiltakskoordinatorsDeltaker> {
         val navEnheter = navEnhetService.hentEnheter(this.mapNotNull { it.navBruker.navEnhetId })
         val navVeiledere = navAnsattService.hentAnsatte(this.mapNotNull { it.navBruker.navVeilederId })
+        val forslag = forslagService.getForDeltakere(this.map { it.id })
+
         return this.map {
             val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(it.id)
 
@@ -106,6 +113,7 @@ class TiltakskoordinatorService(
                 navVeiledere[it.navBruker.navVeilederId],
                 null,
                 ikkeDigitalOgManglerAdresse,
+                forslag.filter { forslag -> forslag.deltakerId == it.id },
             )
         }.filterNot { it.skalSkjules() }
     }
@@ -114,6 +122,8 @@ class TiltakskoordinatorService(
         val deltakere = deltakerService.getMany(this.map { it.id })
         val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.navBruker.navEnhetId })
         val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
+        val forslag = forslagService.getForDeltakere(this.map { it.id })
+
         return deltakere.map { deltaker ->
             val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
             var ikkeDigitalOgManglerAdresse = false
@@ -126,6 +136,7 @@ class TiltakskoordinatorService(
                 navVeiledere[deltaker.navBruker.navVeilederId],
                 first { it.id == deltaker.id }.feilkode,
                 ikkeDigitalOgManglerAdresse,
+                forslag.filter { forslag -> forslag.deltakerId == deltaker.id },
             )
         }.filterNot { it.skalSkjules() }
     }
@@ -137,6 +148,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     navVeileder: NavAnsatt?,
     feilkode: DeltakerOppdateringFeilkode? = null,
     ikkeDigitalOgManglerAdresse: Boolean,
+    forslag: List<Forslag>,
 ) = TiltakskoordinatorsDeltaker(
     id = id,
     navBruker = navBruker,
@@ -157,6 +169,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     kanEndres = kanEndres,
     feilkode = feilkode,
     ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
+    forslag = forslag,
 )
 
 private fun List<DeltakerOppdateringResponse>.toDeltakerOppdatering() = this.map { it.toDeltakerOppdatering() }
