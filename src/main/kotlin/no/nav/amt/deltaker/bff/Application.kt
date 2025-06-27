@@ -219,6 +219,7 @@ fun Application.module(): suspend () -> Unit {
         navEnhetService,
         navAnsattService,
         amtDistribusjonClient,
+        forslagService,
     )
 
     val tilgangskontrollService = TilgangskontrollService(
