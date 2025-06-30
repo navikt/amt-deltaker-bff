@@ -10,6 +10,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.log
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.AttributeKey
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
 import no.nav.amt.deltaker.bff.application.isReadyKey
@@ -66,6 +67,7 @@ import no.nav.amt.lib.utils.database.Database
 import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
+import org.slf4j.LoggerFactory
 
 fun main() {
     var shutdownConsumers: suspend () -> Unit = {}
@@ -75,16 +77,17 @@ fun main() {
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
+            log.info("Received shutdown signal")
             server.application.attributes.put(isReadyKey, false)
 
             runBlocking {
-                print("Shutting down consumers")
+                log.info("Shutting down consumers")
                 shutdownConsumers()
 
-                print("Shutting down database")
+                log.info("Shutting down database")
                 Database.close()
 
-                print("Shutting down server")
+                log.info("Shutting down server")
                 server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
             }
         },
