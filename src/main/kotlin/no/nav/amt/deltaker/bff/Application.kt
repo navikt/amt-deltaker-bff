@@ -75,9 +75,9 @@ fun main() {
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
-            runBlocking {
-                server.application.attributes.put(isReadyKey, false)
+            server.application.attributes.put(isReadyKey, false)
 
+            runBlocking {
                 print("Shutting down consumers")
                 shutdownConsumers()
 
