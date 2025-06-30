@@ -74,6 +74,7 @@ fun main() {
     val server = embeddedServer(Netty, port = 8080) {
         shutdownConsumers = module()
     }
+    val log = LoggerFactory.getLogger("shutdownlogger")
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
