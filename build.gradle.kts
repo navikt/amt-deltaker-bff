@@ -17,6 +17,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
@@ -37,7 +38,7 @@ val postgresVersion = "42.7.7"
 val caffeineVersion = "3.2.1"
 val mockkVersion = "1.14.4"
 val nimbusVersion = "10.3"
-val amtLibVersion = "1.2025.06.30_08.01-66bf5925c17b"
+val amtLibVersion = "1.2025.06.30_11.34-39810db912fa"
 val unleashVersion = "11.0.0"
 
 dependencies {

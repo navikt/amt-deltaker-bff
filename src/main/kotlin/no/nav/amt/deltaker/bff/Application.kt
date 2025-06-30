@@ -7,6 +7,7 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
+import io.ktor.server.application.log
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.runBlocking
@@ -67,21 +68,32 @@ import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 
 fun main() {
-    val server = embeddedServer(Netty, port = 8080, module = Application::module)
+    var shutdownConsumers: suspend () -> Unit = {}
+    val server = embeddedServer(Netty, port = 8080) {
+        shutdownConsumers = module()
+    }
 
     Runtime.getRuntime().addShutdownHook(
         Thread {
-            server.application.attributes.put(isReadyKey, false)
-            Database.close()
-            server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
+            runBlocking {
+                server.application.attributes.put(isReadyKey, false)
+
+                print("Shutting down consumers")
+                shutdownConsumers()
+
+                print("Shutting down database")
+                Database.close()
+
+                print("Shutting down server")
+                server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
+            }
         },
     )
     server.start(wait = true)
 }
 
-fun Application.module() {
+fun Application.module(): suspend () -> Unit {
     configureSerialization()
-
     val environment = Environment()
 
     Database.init(environment.databaseConfig)
@@ -253,4 +265,16 @@ fun Application.module() {
     tiltakskoordinatorStengTilgangJob.startJob()
 
     attributes.put(isReadyKey, true)
+
+    suspend fun shutdownConsumers() {
+        consumers.forEach {
+            try {
+                it.close()
+            } catch (e: Exception) {
+                log.error("Error shutting down consumer", e)
+            }
+        }
+    }
+
+    return { shutdownConsumers() }
 }
