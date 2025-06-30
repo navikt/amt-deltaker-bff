@@ -72,6 +72,7 @@ fun main() {
     Runtime.getRuntime().addShutdownHook(
         Thread {
             server.application.attributes.put(isReadyKey, false)
+            Database.close()
             server.stop(gracePeriodMillis = 5_000, timeoutMillis = 30_000)
         },
     )
