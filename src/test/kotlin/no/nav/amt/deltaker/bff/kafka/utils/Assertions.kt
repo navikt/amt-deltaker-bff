@@ -18,7 +18,7 @@ fun assertProduced(forslag: Forslag) {
         cache[UUID.fromString(k)] = objectMapper.readValue(v)
     }
 
-    consumer.run()
+    consumer.start()
 
     AsyncUtils.eventually {
         val cachedForslag = cache[forslag.id]!!
@@ -41,7 +41,7 @@ fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto) {
         cache[UUID.fromString(k)] = v?.let { objectMapper.readValue(it) }
     }
 
-    consumer.run()
+    consumer.start()
 
     AsyncUtils.eventually {
         val cachedTilgang = cache[tilgang.id]!!
@@ -60,7 +60,7 @@ fun assertProducedTombstone(tilgang: TiltakskoordinatorDeltakerlisteTilgang) {
         cache[UUID.fromString(k)] = v?.let { objectMapper.readValue(it) }
     }
 
-    consumer.run()
+    consumer.start()
 
     AsyncUtils.eventually {
         cache.keys.contains(tilgang.id) shouldBe true

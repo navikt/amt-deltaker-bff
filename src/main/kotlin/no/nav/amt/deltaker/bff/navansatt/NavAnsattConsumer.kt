@@ -40,7 +40,10 @@ class NavAnsattConsumer(
         }
     }
 
+    @Deprecated("Use start() instead.", replaceWith = ReplaceWith("start()"))
     override fun run() = consumer.run()
+
+    override fun start() = consumer.start()
 }
 
 data class NavAnsattDto(
