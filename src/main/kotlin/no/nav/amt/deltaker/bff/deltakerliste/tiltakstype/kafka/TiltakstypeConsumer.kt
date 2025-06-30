@@ -28,7 +28,7 @@ class TiltakstypeConsumer(
         consume = ::consume,
     )
 
-    override fun run() = consumer.run()
+    override fun start() = consumer.start()
 
     override suspend fun consume(key: UUID, value: String?) {
         value?.let { handterTiltakstype(objectMapper.readValue(it)) }

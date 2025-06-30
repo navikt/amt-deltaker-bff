@@ -40,7 +40,7 @@ class DeltakerlisteConsumer(
         consume = ::consume,
     )
 
-    override fun run() = consumer.run()
+    override fun start() = consumer.start()
 
     override suspend fun consume(key: UUID, value: String?) {
         if (value == null) {

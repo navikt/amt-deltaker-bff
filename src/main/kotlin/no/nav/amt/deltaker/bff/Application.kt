@@ -224,7 +224,7 @@ fun Application.module() {
         DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle),
         ArrangorMeldingConsumer(forslagService),
     )
-    consumers.forEach { it.run() }
+    consumers.forEach { it.start() }
 
     configureAuthentication(environment)
     configureRouting(

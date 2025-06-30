@@ -77,5 +77,5 @@ class DeltakerV2Consumer(
         }
     }
 
-    override fun run() = consumer.run()
+    override fun start() = consumer.start()
 }
