@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.utils.database.Database
 import java.util.UUID
+import kotlin.collections.toTypedArray
 
 class ForslagRepository {
     companion object {
@@ -60,7 +61,7 @@ class ForslagRepository {
             FROM forslag f 
             WHERE f.deltaker_id in (:deltaker_ider);
             """.trimIndent(),
-            mapOf("deltaker_ider" to deltakerIder),
+            mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
         )
         it.run(query.map(::rowMapper).asList)
     }
