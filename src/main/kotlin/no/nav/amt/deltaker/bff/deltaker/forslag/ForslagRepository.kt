@@ -59,7 +59,7 @@ class ForslagRepository {
                 f.endring as "f.endring",
                 f.status as "f.status"
             FROM forslag f 
-            WHERE f.deltaker_id in (:deltaker_ider);
+            WHERE f.deltaker_id = any(:deltaker_ider);
             """.trimIndent(),
             mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
         )
