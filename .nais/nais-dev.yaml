@@ -61,6 +61,8 @@ spec:
           namespace: team-mulighetsrommet
         - application: veilarbpersonflate
           namespace: poao
+        - application: tiltakspenger-tiltak
+          namespace: tpts
     outbound:
       rules:
         - application: amt-arrangor

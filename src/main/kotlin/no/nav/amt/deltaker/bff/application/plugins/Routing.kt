@@ -12,6 +12,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
+import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.registerHealthApi
 import no.nav.amt.deltaker.bff.auth.AuthenticationException
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
@@ -33,6 +34,8 @@ import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.testdata.TestdataService
+import no.nav.amt.deltaker.bff.testdata.registerTestdataApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
@@ -55,6 +58,7 @@ fun Application.configureRouting(
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
     tiltakskoordinatorService: TiltakskoordinatorService,
+    testdataService: TestdataService,
 ) {
     install(StatusPages) {
         exception<IllegalArgumentException> { call, cause ->
@@ -144,6 +148,10 @@ fun Application.configureRouting(
             tilgangskontrollService,
             sporbarhetsloggService,
         )
+
+        if (!Environment.isProd()) {
+            registerTestdataApi(testdataService)
+        }
 
         val catchAllRoute = "{...}"
         route(catchAllRoute) {

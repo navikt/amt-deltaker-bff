@@ -57,6 +57,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
+import no.nav.amt.deltaker.bff.testdata.TestdataService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Producer
@@ -194,7 +195,8 @@ fun Application.module(): suspend () -> Unit {
     val deltakerRepository = DeltakerRepository()
 
     val forslagRepository = ForslagRepository()
-    val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, ArrangorMeldingProducer(kafkaProducer))
+    val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
+    val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, arrangorMeldingProducer)
 
     val vurderingRepository = VurderingRepository()
     val vurderingService = VurderingService(vurderingRepository)
@@ -230,6 +232,13 @@ fun Application.module(): suspend () -> Unit {
 
     val tiltakstypeRepository = TiltakstypeRepository()
 
+    val testdataService = TestdataService(
+        pameldingService = pameldingService,
+        deltakerlisteService = deltakerlisteService,
+        arrangorMeldingProducer = arrangorMeldingProducer,
+        deltakerService = deltakerService,
+    )
+
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
@@ -258,6 +267,7 @@ fun Application.module(): suspend () -> Unit {
         deltakerlisteService,
         unleash,
         tiltakskoordinatorService,
+        testdataService,
     )
     configureMonitoring()
 

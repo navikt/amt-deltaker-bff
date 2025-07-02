@@ -307,6 +307,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
                 deltakerlisteService,
                 mockk(),
                 tiltakskoordinatorService,
+                mockk(),
             )
         }
     }
