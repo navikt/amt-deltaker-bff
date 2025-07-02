@@ -301,6 +301,7 @@ class PameldingApiTest {
                 deltakerlisteService,
                 mockk(),
                 mockk(),
+                mockk(),
             )
         }
     }

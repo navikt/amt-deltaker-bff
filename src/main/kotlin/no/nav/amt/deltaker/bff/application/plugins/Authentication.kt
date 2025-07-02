@@ -23,6 +23,7 @@ enum class AuthLevel {
     INNBYGGER,
     VEILEDER,
     TILTAKSKOORDINATOR,
+    SYSTEM,
 }
 
 fun Application.configureAuthentication(environment: Environment) {
@@ -91,6 +92,26 @@ fun Application.configureAuthentication(environment: Environment) {
                 JWTPrincipal(credentials.payload)
             }
         }
+
+        jwt(AuthLevel.SYSTEM.name) {
+            verifier(azureJwkProvider, environment.azureJwtIssuer) {
+                withAudience(environment.azureClientId)
+            }
+
+            validate { credentials ->
+                if (!erMaskinTilMaskin(credentials)) {
+                    application.log.warn("Token med sluttbrukerkontekst har ikke tilgang til api med systemkontekst")
+                    return@validate null
+                }
+                val appid: String = credentials.payload.getClaim("azp").asString()
+                val app = environment.preAuthorizedApp.firstOrNull { it.clientId == appid }
+                if (app?.appName !in listOf("tiltakspenger-tiltak")) {
+                    application.log.warn("App-id $appid med navn ${app?.appName} har ikke tilgang til api med systemkontekst")
+                    return@validate null
+                }
+                JWTPrincipal(credentials.payload)
+            }
+        }
     }
 }
 
@@ -109,3 +130,9 @@ fun ApplicationCall.getPersonident(): String = this
     .principal<JWTPrincipal>()
     ?.get("pid")
     ?: throw AuthenticationException("Pid mangler i JWTPrincipal")
+
+fun erMaskinTilMaskin(credentials: JWTCredential): Boolean {
+    val sub: String = credentials.payload.getClaim("sub").asString()
+    val oid: String = credentials.payload.getClaim("oid").asString()
+    return sub == oid
+}

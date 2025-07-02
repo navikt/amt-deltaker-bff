@@ -8,6 +8,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.generateJWT
+import no.nav.amt.deltaker.bff.utils.generateSystemJWT
 import java.util.UUID
 
 internal fun HttpRequestBuilder.postRequest(body: Any) {
@@ -70,4 +71,18 @@ internal fun HttpRequestBuilder.noBodyTiltakskoordinatorRequest() {
         }",
     )
     header("aktiv-enhet", "0101")
+}
+
+internal fun HttpRequestBuilder.systemPostRequest(body: Any) {
+    header(
+        HttpHeaders.Authorization,
+        "Bearer ${
+            generateSystemJWT(
+                consumerClientId = "tiltakspenger-tiltak",
+                audience = "deltaker-bff",
+            )
+        }",
+    )
+    contentType(ContentType.Application.Json)
+    setBody(objectMapper.writeValueAsString(body))
 }

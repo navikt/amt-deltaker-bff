@@ -1,5 +1,8 @@
 package no.nav.amt.deltaker.bff
 
+import com.fasterxml.jackson.module.kotlin.readValue
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.auth.PreAuthorizedApp
 import no.nav.amt.lib.utils.database.DatabaseConfig
 import no.nav.amt.lib.utils.getEnvVar
 
@@ -28,6 +31,12 @@ data class Environment(
     val unleashUrl: String = getEnvVar(UNLEASH_SERVER_API_URL),
     val unleashApiToken: String = getEnvVar(UNLEASH_SERVER_API_TOKEN),
     val appName: String = "amt-deltaker-bff",
+    val preAuthorizedApp: List<PreAuthorizedApp> = getEnvVar(
+        AZURE_APP_PRE_AUTHORIZED_APPS,
+        objectMapper.writeValueAsString(
+            emptyList<PreAuthorizedApp>(),
+        ),
+    ).let { objectMapper.readValue(it) },
 ) {
     companion object {
         const val KAFKA_CONSUMER_GROUP_ID = "amt-deltaker-bff-consumer"
@@ -59,6 +68,7 @@ data class Environment(
         const val AZURE_APP_CLIENT_ID_KEY = "AZURE_APP_CLIENT_ID"
         const val AZURE_OPENID_CONFIG_JWKS_URI_KEY = "AZURE_OPENID_CONFIG_JWKS_URI"
         const val AZURE_OPENID_CONFIG_ISSUER_KEY = "AZURE_OPENID_CONFIG_ISSUER"
+        const val AZURE_APP_PRE_AUTHORIZED_APPS = "AZURE_APP_PRE_AUTHORIZED_APPS"
 
         const val AD_ROLLE_TILTAKSKOORDINATOR = "AD_ROLLE_TILTAKSKOORDINATOR"
 
