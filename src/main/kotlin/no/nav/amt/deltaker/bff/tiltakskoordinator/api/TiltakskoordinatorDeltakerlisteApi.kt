@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusRes
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
@@ -168,6 +169,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         erManueltDeltMedArrangor = erManueltDeltMedArrangor,
         feilkode = feilkode,
         ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
+        harAktiveForslag = forslag.any { f -> f.status == Forslag.Status.VenterPaSvar },
     )
 }
 

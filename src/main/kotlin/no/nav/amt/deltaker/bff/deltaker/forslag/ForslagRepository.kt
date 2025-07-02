@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.utils.database.Database
 import java.util.UUID
+import kotlin.collections.toTypedArray
 
 class ForslagRepository {
     companion object {
@@ -42,6 +43,25 @@ class ForslagRepository {
             WHERE f.deltaker_id = :deltaker_id;
             """.trimIndent(),
             mapOf("deltaker_id" to deltakerId),
+        )
+        it.run(query.map(::rowMapper).asList)
+    }
+
+    fun getForDeltakere(deltakerIder: List<UUID>) = Database.query {
+        val query = queryOf(
+            """
+            SELECT 
+                f.id as "f.id",
+                f.deltaker_id as "f.deltaker_id",
+                f.arrangoransatt_id as "f.arrangoransatt_id",
+                f.opprettet as "f.opprettet",
+                f.begrunnelse as "f.begrunnelse",
+                f.endring as "f.endring",
+                f.status as "f.status"
+            FROM forslag f 
+            WHERE f.deltaker_id = any(:deltaker_ider);
+            """.trimIndent(),
+            mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
         )
         it.run(query.map(::rowMapper).asList)
     }

@@ -201,6 +201,7 @@ object TestData {
             navVeileder = navVeileder,
             null,
             false,
+            emptyList(),
         )
     }
 

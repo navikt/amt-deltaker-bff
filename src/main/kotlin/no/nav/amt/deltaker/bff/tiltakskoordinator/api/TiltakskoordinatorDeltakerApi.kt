@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerDetaljerR
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.VurderingResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.toResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorDeltakerApi(
@@ -120,5 +121,9 @@ fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerD
         innsatsgruppe = innsatsgruppe,
         tiltakskode = deltakerliste.tiltak.tiltakskode,
         tilgangTilBruker = tilgangTilBruker,
+        aktiveForslag = forslag.filter {
+                f ->
+            f.status == Forslag.Status.VenterPaSvar
+        }.map { f -> f.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
     )
 }

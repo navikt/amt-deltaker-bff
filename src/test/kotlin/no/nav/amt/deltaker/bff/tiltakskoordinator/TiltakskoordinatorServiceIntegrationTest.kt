@@ -38,6 +38,7 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val vurderingService = mockk<VurderingService>()
     private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService, mockk<ForslagService>())
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
+    private val forslagService = mockk<ForslagService>()
     private val tiltakskoordinatorService = TiltakskoordinatorService(
         amtDeltakerClient,
         deltakerService,
@@ -46,6 +47,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         navEnhetService,
         navAnsattService,
         amtDistribusjonClient,
+        forslagService,
     )
 
     @Test
@@ -59,6 +61,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
         every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
+        every { forslagService.getForDeltakere(any()) } returns emptyList()
+        every { forslagService.getForDeltaker(any()) } returns emptyList()
 
         val nyStatus =
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTER_PA_OPPSTART, null, LocalDateTime.now(), null, LocalDateTime.now())
@@ -83,7 +87,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
-            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false)
+            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
     }
 
     @Test
@@ -97,6 +101,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
         every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
+        every { forslagService.getForDeltakere(any()) } returns emptyList()
+        every { forslagService.getForDeltaker(any()) } returns emptyList()
 
         val nyStatus =
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTELISTE, null, LocalDateTime.now(), null, LocalDateTime.now())
@@ -121,7 +127,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
-            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false)
+            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
     }
 
     @Test
@@ -134,6 +140,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         every { vurderingService.getSisteVurderingForDeltaker(deltaker.id) } returns null
         every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
         every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
+        every { forslagService.getForDeltakere(any()) } returns emptyList()
+        every { forslagService.getForDeltaker(any()) } returns emptyList()
 
         val nyStatus =
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTELISTE, null, LocalDateTime.now(), null, LocalDateTime.now())
@@ -160,7 +168,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
-            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false)
+            .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
     }
 }
 
