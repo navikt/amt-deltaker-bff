@@ -30,7 +30,7 @@ class TestdataService(
     private val deltakerService: DeltakerService,
 ) {
     suspend fun opprettDeltakelse(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest): Deltaker {
-        deltakerFinnesFraAllerede(opprettTestDeltakelseRequest)
+        deltakerFinnesAllerede(opprettTestDeltakelseRequest)
         val deltakerliste = deltakerlisteService.get(opprettTestDeltakelseRequest.deltakerlisteId).getOrThrow()
         val forventetSluttdato = opprettTestDeltakelseRequest.startdato.plusMonths(3)
         valider(
@@ -63,7 +63,7 @@ class TestdataService(
         return deltakerService.get(deltakerId).getOrThrow()
     }
 
-    private fun deltakerFinnesFraAllerede(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest) {
+    private fun deltakerFinnesAllerede(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest) {
         val eksisterendeDeltaker = deltakerService
             .getDeltakelser(opprettTestDeltakelseRequest.personident, opprettTestDeltakelseRequest.deltakerlisteId)
             .firstOrNull { !it.harSluttet() }
