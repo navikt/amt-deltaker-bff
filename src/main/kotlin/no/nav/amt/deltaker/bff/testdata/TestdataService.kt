@@ -30,6 +30,7 @@ class TestdataService(
     private val deltakerService: DeltakerService,
 ) {
     suspend fun opprettDeltakelse(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest): Deltaker {
+        deltakerFinnesFraAllerede(opprettTestDeltakelseRequest)
         val deltakerliste = deltakerlisteService.get(opprettTestDeltakelseRequest.deltakerlisteId).getOrThrow()
         val forventetSluttdato = opprettTestDeltakelseRequest.startdato.plusMonths(3)
         valider(
@@ -60,6 +61,16 @@ class TestdataService(
         delay(100)
 
         return deltakerService.get(deltakerId).getOrThrow()
+    }
+
+    private fun deltakerFinnesFraAllerede(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest) {
+        val eksisterendeDeltaker = deltakerService
+            .getDeltakelser(opprettTestDeltakelseRequest.personident, opprettTestDeltakelseRequest.deltakerlisteId)
+            .firstOrNull { !it.harSluttet() }
+
+        if (eksisterendeDeltaker != null) {
+            throw IllegalArgumentException("Deltakeren ${eksisterendeDeltaker.id} er allerede opprettet og deltar fortsatt")
+        }
     }
 
     private fun valider(
