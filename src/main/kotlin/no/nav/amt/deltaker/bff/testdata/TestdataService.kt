@@ -45,12 +45,12 @@ class TestdataService(
 
         delay(10)
 
-        val utkast = getUtkast(deltakerId, deltakerliste, opprettTestDeltakelseRequest)
+        val utkast = lagUtkast(deltakerId, deltakerliste, opprettTestDeltakelseRequest)
         pameldingService.upsertUtkast(utkast)
 
         delay(100)
 
-        val endringFraArrangor = getEndringFraArrangor(
+        val endringFraArrangor = lagEndringFraArrangor(
             deltakerId = deltakerId,
             startdato = opprettTestDeltakelseRequest.startdato,
             sluttdato = forventetSluttdato,
@@ -78,7 +78,7 @@ class TestdataService(
         }
     }
 
-    private fun getEndringFraArrangor(
+    private fun lagEndringFraArrangor(
         deltakerId: UUID,
         startdato: LocalDate,
         sluttdato: LocalDate,
@@ -93,7 +93,7 @@ class TestdataService(
         ),
     )
 
-    private fun getUtkast(
+    private fun lagUtkast(
         deltakerId: UUID,
         deltakerliste: Deltakerliste,
         opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest,
@@ -101,7 +101,7 @@ class TestdataService(
         return Utkast(
             deltakerId = deltakerId,
             pamelding = Pamelding(
-                deltakelsesinnhold = getInnhold(deltakerliste),
+                deltakelsesinnhold = lagInnhold(deltakerliste),
                 bakgrunnsinformasjon = null,
                 deltakelsesprosent = opprettTestDeltakelseRequest.deltakelsesprosent.toFloat(),
                 dagerPerUke = opprettTestDeltakelseRequest.dagerPerUke?.toFloat(),
@@ -112,7 +112,7 @@ class TestdataService(
         )
     }
 
-    private fun getInnhold(deltakerliste: Deltakerliste): Deltakelsesinnhold {
+    private fun lagInnhold(deltakerliste: Deltakerliste): Deltakelsesinnhold {
         val innhold = deltakerliste.tiltak.innhold
         val valgtInnhold = innhold?.innholdselementer?.firstOrNull()?.toInnhold(valgt = true)
         return Deltakelsesinnhold(
