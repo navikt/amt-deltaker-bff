@@ -12,8 +12,11 @@ import java.util.UUID
  * Oppretter instans av [ManagedKafkaConsumer] med [UUID] som nøkkel og
  * nullable [String] som verdi.
  *
- * @param topic
- * @param consumerGroupId
+ * @param topic Navnet på Kafka-topic som det skal lyttes på.
+ * @param consumerGroupId ID-en til consumer-gruppen. Default: [Environment.KAFKA_CONSUMER_GROUP_ID].
+ * @param consumeFunc Funksjon som håndterer mottatte meldinger.
+ *
+ * @return Instans av [ManagedKafkaConsumer] konfigurert for spesifisert topic og consumer group.
  */
 fun buildManagedKafkaConsumer(
     topic: String,
@@ -23,7 +26,7 @@ fun buildManagedKafkaConsumer(
     val kafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl()
 
     return ManagedKafkaConsumer(
-        topic,
+        topic = topic,
         config = kafkaConfig.consumerConfig(
             keyDeserializer = UUIDDeserializer(),
             valueDeserializer = StringDeserializer(),
