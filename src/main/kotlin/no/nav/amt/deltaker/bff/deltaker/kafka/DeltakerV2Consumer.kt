@@ -8,13 +8,8 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
+import no.nav.amt.deltaker.bff.utils.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
-import no.nav.amt.lib.kafka.ManagedKafkaConsumer
-import no.nav.amt.lib.kafka.config.KafkaConfig
-import no.nav.amt.lib.kafka.config.KafkaConfigImpl
-import no.nav.amt.lib.kafka.config.LocalKafkaConfig
-import org.apache.kafka.common.serialization.StringDeserializer
-import org.apache.kafka.common.serialization.UUIDDeserializer
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -24,18 +19,12 @@ class DeltakerV2Consumer(
     private val vurderingService: VurderingService,
     private val navBrukerService: NavBrukerService,
     private val unleashToggle: UnleashToggle,
-    kafkaConfig: KafkaConfig = if (Environment.isLocal()) LocalKafkaConfig() else KafkaConfigImpl(),
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    private val consumer = ManagedKafkaConsumer(
+    private val consumer = buildManagedKafkaConsumer(
         topic = Environment.AMT_DELTAKERV2_TOPIC,
-        config = kafkaConfig.consumerConfig(
-            keyDeserializer = UUIDDeserializer(),
-            valueDeserializer = StringDeserializer(),
-            groupId = Environment.KAFKA_CONSUMER_GROUP_ID,
-        ),
-        consume = ::consume,
+        consumeFunc = ::consume,
     )
 
     override suspend fun consume(key: UUID, value: String?) {
