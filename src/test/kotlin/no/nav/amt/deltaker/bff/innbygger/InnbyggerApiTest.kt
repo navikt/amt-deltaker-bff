@@ -45,8 +45,8 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -72,7 +72,7 @@ class InnbyggerApiTest {
         deltakerlisteService,
     )
 
-    @Before
+    @BeforeEach
     fun setup() {
         configureEnvForAuthentication()
     }
@@ -187,7 +187,7 @@ class InnbyggerApiTest {
                     ansatte,
                     deltaker.deltakerliste.arrangor.getArrangorNavn(),
                     enheter,
-                    deltaker.deltakerliste.oppstart!!,
+                    deltaker.deltakerliste.oppstart,
                 ),
             )
         }

@@ -21,8 +21,8 @@ import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.toDto
 import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class NavBrukerConsumerTest {
@@ -46,7 +46,7 @@ class NavBrukerConsumerTest {
         )
 
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun setup() {
             SingletonPostgres16Container
         }
@@ -132,4 +132,4 @@ fun NavBruker.toDto(navEnhet: NavEnhet) = NavBrukerDto(
     navVeilederId,
 )
 
-fun NavBrukerDto.toJSON() = objectMapper.writeValueAsString(this)
+fun NavBrukerDto.toJSON(): String = objectMapper.writeValueAsString(this)

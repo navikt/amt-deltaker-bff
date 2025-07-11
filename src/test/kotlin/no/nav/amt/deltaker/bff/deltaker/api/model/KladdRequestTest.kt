@@ -9,7 +9,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.MIN_DAGER_PER_UKE
 import no.nav.amt.deltaker.bff.deltaker.api.utils.MIN_DELTAKELSESPROSENT
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.utils.data.TestData.input
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class KladdRequestTest {
     @Test

@@ -14,7 +14,6 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.mockk
-import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
@@ -26,8 +25,9 @@ import no.nav.amt.deltaker.bff.utils.generateJWT
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class AuthenticationTest {
@@ -43,7 +43,7 @@ class AuthenticationTest {
         mockk<DeltakerlisteService>(),
     )
 
-    @Before
+    @BeforeEach
     fun setup() {
         configureEnvForAuthentication()
     }
@@ -59,8 +59,8 @@ class AuthenticationTest {
                     "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
                 )
             }.apply {
-                TestCase.assertEquals(HttpStatusCode.OK, status)
-                TestCase.assertEquals("Veileder har tilgang!", bodyAsText())
+                assertEquals(HttpStatusCode.OK, status)
+                assertEquals("Veileder har tilgang!", bodyAsText())
             }
     }
 
@@ -78,7 +78,7 @@ class AuthenticationTest {
                     "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
                 )
             }.apply {
-                TestCase.assertEquals(HttpStatusCode.Forbidden, status)
+                assertEquals(HttpStatusCode.Forbidden, status)
             }
     }
 
@@ -100,7 +100,7 @@ class AuthenticationTest {
                     }",
                 )
             }.apply {
-                TestCase.assertEquals(HttpStatusCode.Unauthorized, status)
+                assertEquals(HttpStatusCode.Unauthorized, status)
             }
     }
 

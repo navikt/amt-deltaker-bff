@@ -1,4 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
@@ -20,7 +19,6 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val kotlinVersion = "2.1.10"
 val ktorVersion = "3.2.1"
 val logbackVersion = "1.5.18"
 val prometeusVersion = "1.15.1"
@@ -37,7 +35,7 @@ val postgresVersion = "42.7.7"
 val caffeineVersion = "3.2.1"
 val mockkVersion = "1.14.4"
 val nimbusVersion = "10.3.1"
-val amtLibVersion = "1.2025.06.30_11.34-39810db912fa"
+val amtLibVersion = "1.2025.07.11_07.32-0b792ea86796"
 val unleashVersion = "11.0.2"
 
 dependencies {
@@ -82,7 +80,7 @@ dependencies {
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
     testImplementation("io.mockk:mockk:$mockkVersion")
@@ -92,6 +90,9 @@ dependencies {
 
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        freeCompilerArgs.add("-Xjsr305=strict")
+    }
 }
 
 application {
@@ -101,7 +102,17 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
 }
 
+ktlint {
+    version = ktlintVersion
+}
+
 tasks.test {
+    useJUnitPlatform()
+
+    jvmArgs(
+        "-Xshare:off",
+    )
+
     testLogging {
         showExceptions = true
         showStackTraces = true
@@ -118,10 +129,6 @@ tasks.jar {
     }
 }
 
-tasks.withType<ShadowJar> {
+tasks.shadowJar {
     mergeServiceFiles()
-}
-
-configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-    version.set(ktlintVersion)
 }

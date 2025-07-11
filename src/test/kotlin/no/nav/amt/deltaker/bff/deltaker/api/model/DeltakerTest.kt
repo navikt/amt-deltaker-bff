@@ -7,7 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.years
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class DeltakerTest {

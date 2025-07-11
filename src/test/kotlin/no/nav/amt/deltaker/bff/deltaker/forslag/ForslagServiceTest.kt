@@ -15,9 +15,9 @@ import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class ForslagServiceTest {
@@ -30,7 +30,7 @@ class ForslagServiceTest {
         val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
 
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun setup() {
             SingletonPostgres16Container
             repository = ForslagRepository()
@@ -38,7 +38,7 @@ class ForslagServiceTest {
         }
     }
 
-    @Before
+    @BeforeEach
     fun cleanDatabase() {
         TestRepository.cleanDatabase()
     }

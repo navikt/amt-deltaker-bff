@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.navbruker.model
 
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
 class AktivOppfolgingsperiodeTest {

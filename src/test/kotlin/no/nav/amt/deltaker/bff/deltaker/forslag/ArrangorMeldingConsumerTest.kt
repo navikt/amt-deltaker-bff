@@ -9,9 +9,9 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -21,7 +21,7 @@ class ArrangorMeldingConsumerTest {
         lateinit var service: ForslagService
 
         @JvmStatic
-        @BeforeClass
+        @BeforeAll
         fun setup() {
             SingletonPostgres16Container
             repository = ForslagRepository()
@@ -29,7 +29,7 @@ class ArrangorMeldingConsumerTest {
         }
     }
 
-    @Before
+    @BeforeEach
     fun cleanDatabase() {
         TestRepository.cleanDatabase()
     }

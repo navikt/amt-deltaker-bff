@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.auth.model
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangContext
 import no.nav.amt.deltaker.bff.tiltakskoordinator.DeltakerResponseUtils
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class DeltakerResponseUtilsTest {
     @Test

@@ -28,8 +28,8 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toDeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toResponse
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class TiltakskoordinatorDeltakerlisteApiTest {
@@ -38,7 +38,7 @@ class TiltakskoordinatorDeltakerlisteApiTest {
     private val tiltakskoordinatorService = mockk<TiltakskoordinatorService>()
     private val navEnhetService = mockk<NavEnhetService>()
 
-    @Before
+    @BeforeEach
     fun setup() {
         configureEnvForAuthentication()
     }

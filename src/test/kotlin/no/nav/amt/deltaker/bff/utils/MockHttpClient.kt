@@ -54,7 +54,7 @@ fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
 
 fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArrangorClient {
     val overordnetArrangor = arrangor.overordnetArrangorId?.let {
-        TestData.lagArrangor(id = arrangor.overordnetArrangorId!!)
+        TestData.lagArrangor(id = arrangor.overordnetArrangorId)
     }
 
     val response = ArrangorDto(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
