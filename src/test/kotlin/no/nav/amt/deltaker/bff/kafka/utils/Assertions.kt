@@ -15,7 +15,7 @@ fun assertProduced(forslag: Forslag) {
     val cache = mutableMapOf<UUID, Forslag>()
 
     val consumer = stringStringConsumer(Environment.ARRANGOR_MELDING_TOPIC) { k, v ->
-        cache[UUID.fromString(k)] = objectMapper.readValue(v)
+        cache[UUID.fromString(k)] = objectMapper.readValue(v!!)
     }
 
     consumer.start()

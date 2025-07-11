@@ -21,7 +21,7 @@ import no.nav.poao_tilgang.client.NavAnsattBehandleStrengtFortroligBrukerePolicy
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PolicyInput
 import no.nav.poao_tilgang.client.api.ApiResult
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.util.UUID
 import kotlin.test.assertFailsWith

@@ -6,7 +6,7 @@ import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.deltaker.bff.utils.mockHttpClient
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class AmtArrangorClientTest {
     @Test

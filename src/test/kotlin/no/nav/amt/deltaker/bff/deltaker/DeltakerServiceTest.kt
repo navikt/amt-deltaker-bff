@@ -20,7 +20,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class DeltakerServiceTest {
@@ -105,7 +105,7 @@ class DeltakerServiceTest {
 
                 is DeltakerEndring.Endring.EndreInnhold -> {
                     oppdatertDeltaker.deltakelsesinnhold!!.innhold shouldBe endring.innhold
-                    oppdatertDeltaker.deltakelsesinnhold!!.ledetekst shouldBe endring.ledetekst
+                    oppdatertDeltaker.deltakelsesinnhold.ledetekst shouldBe endring.ledetekst
                 }
 
                 is DeltakerEndring.Endring.EndreDeltakelsesmengde -> {
@@ -246,7 +246,7 @@ class DeltakerServiceTest {
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.ANNET
         deltakerFraDb.status.aarsak?.beskrivelse shouldBe "Oppdatert"
         deltakerFraDb.deltakelsesinnhold!!.innhold shouldBe deltakeroppdatering.deltakelsesinnhold!!.innhold
-        deltakerFraDb.deltakelsesinnhold!!.ledetekst shouldBe deltakeroppdatering.deltakelsesinnhold!!.ledetekst
+        deltakerFraDb.deltakelsesinnhold.ledetekst shouldBe deltakeroppdatering.deltakelsesinnhold.ledetekst
         deltakerFraDb.kanEndres shouldBe true
     }
 
@@ -379,7 +379,7 @@ class DeltakerServiceTest {
 }
 
 fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(
-    no.nav.amt.lib.models.deltaker.DeltakerStatus.Aarsak.Type
+    DeltakerStatus.Aarsak.Type
         .valueOf(type.name),
     beskrivelse,
 )

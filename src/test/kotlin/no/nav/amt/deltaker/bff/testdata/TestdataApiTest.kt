@@ -19,14 +19,14 @@ import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class TestdataApiTest {
     private val testdataService = mockk<TestdataService>()
 
-    @Before
+    @BeforeEach
     fun setup() {
         configureEnvForAuthentication()
     }

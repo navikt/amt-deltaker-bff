@@ -9,7 +9,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class InnholdDtoTest {
     @Test
