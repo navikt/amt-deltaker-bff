@@ -10,6 +10,7 @@
         </filter>
     </appender>
     <logger name="no.nav" level="DEBUG"/>
+    <logger name="org.apache.kafka.clients" level="ERROR"/>
     <root level="WARN">
         <appender-ref ref="consoleAppender"/>
     </root>

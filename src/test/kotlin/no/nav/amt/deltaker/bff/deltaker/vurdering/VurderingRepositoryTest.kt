@@ -6,11 +6,11 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.lagVurdering
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class VurderingRepositoryTest {
-    @Before
+    @BeforeEach
     fun setup() {
         SingletonPostgres16Container
     }

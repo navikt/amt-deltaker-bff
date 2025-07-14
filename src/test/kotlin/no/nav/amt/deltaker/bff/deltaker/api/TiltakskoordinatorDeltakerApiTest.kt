@@ -71,8 +71,8 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -100,7 +100,7 @@ class TiltakskoordinatorDeltakerApiTest {
         deltakerlisteService,
     )
 
-    @Before
+    @BeforeEach
     fun setup() {
         configureEnvForAuthentication()
         clearMocks(sporbarhetsloggService)
@@ -458,7 +458,7 @@ class TiltakskoordinatorDeltakerApiTest {
                     ansatte,
                     deltaker.deltakerliste.arrangor.getArrangorNavn(),
                     enheter,
-                    deltaker.deltakerliste.oppstart!!,
+                    deltaker.deltakerliste.oppstart,
                 ),
             )
             res shouldBe json

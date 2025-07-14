@@ -11,7 +11,6 @@ import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import junit.framework.TestCase
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
@@ -46,8 +45,9 @@ import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.api.ApiResult
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class PameldingApiTest {
@@ -70,7 +70,7 @@ class PameldingApiTest {
     )
     private val deltakerlisteService = mockk<DeltakerlisteService>()
 
-    @Before
+    @BeforeEach
     fun setup() {
         configureEnvForAuthentication()
     }
@@ -134,8 +134,8 @@ class PameldingApiTest {
         setUpTestApplication()
 
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
-            TestCase.assertEquals(HttpStatusCode.OK, status)
-            TestCase.assertEquals(
+            assertEquals(HttpStatusCode.OK, status)
+            assertEquals(
                 objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet, true, emptyList())),
                 bodyAsText(),
             )
