@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 class AmtDistribusjonClientTest {
     @Test
     fun `digitalBruker skal kaste feil nar respons med feilkode`(): Unit = runBlocking {
-        val distribusjonClient = createAmtDistribusjonClient(EXPECTED_URL, HttpStatusCode.BadRequest)
+        val distribusjonClient = createAmtDistribusjonClient(HttpStatusCode.BadRequest)
 
         val thrown = shouldThrow<IllegalStateException> {
             distribusjonClient.digitalBruker("~personident~")
@@ -25,14 +25,14 @@ class AmtDistribusjonClientTest {
 
     @Test
     fun `digitalBruker skal returnere true`(): Unit = runBlocking {
-        val distribusjonClient = createAmtDistribusjonClient(EXPECTED_URL, responseBody = DigitalBrukerResponse(erDigital = true))
+        val distribusjonClient = createAmtDistribusjonClient(responseBody = DigitalBrukerResponse(erDigital = true))
         val erDigitalBruker = distribusjonClient.digitalBruker("~personident~")
         erDigitalBruker shouldBe true
     }
 
     @Test
     fun `digitalBruker skal returnere false`(): Unit = runBlocking {
-        val distribusjonClient = createAmtDistribusjonClient(EXPECTED_URL, responseBody = DigitalBrukerResponse(erDigital = false))
+        val distribusjonClient = createAmtDistribusjonClient(responseBody = DigitalBrukerResponse(erDigital = false))
         val erDigitalBruker = distribusjonClient.digitalBruker("~personident~")
         erDigitalBruker shouldBe false
     }
@@ -42,7 +42,6 @@ class AmtDistribusjonClientTest {
         val countingCache = CountingCache<String, Boolean>()
 
         val distribusjonClient = createAmtDistribusjonClient(
-            expectedUrl = EXPECTED_URL,
             responseBody = DigitalBrukerResponse(erDigital = false),
             cache = countingCache,
         )
@@ -55,7 +54,6 @@ class AmtDistribusjonClientTest {
 
     companion object {
         private fun createAmtDistribusjonClient(
-            expectedUrl: String,
             statusCode: HttpStatusCode = HttpStatusCode.OK,
             responseBody: DigitalBrukerResponse? = null,
             cache: Cache<String, Boolean>? = null,
@@ -63,14 +61,14 @@ class AmtDistribusjonClientTest {
             AmtDistribusjonClient(
                 baseUrl = DISTRIBUSJON_BASE_URL,
                 scope = "scope",
-                httpClient = createMockHttpClient(expectedUrl, responseBody, statusCode),
+                httpClient = createMockHttpClient(EXPECTED_URL, responseBody, statusCode),
                 azureAdTokenClient = mockAzureAdClient(),
             )
         } else {
             AmtDistribusjonClient(
                 baseUrl = DISTRIBUSJON_BASE_URL,
                 scope = "scope",
-                httpClient = createMockHttpClient(expectedUrl, responseBody, statusCode),
+                httpClient = createMockHttpClient(EXPECTED_URL, responseBody, statusCode),
                 azureAdTokenClient = mockAzureAdClient(),
                 digitalBrukerCache = cache,
             )
