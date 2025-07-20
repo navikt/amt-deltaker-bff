@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.navansatt
 
-import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
@@ -72,7 +71,7 @@ class AmtPersonServiceClientTest {
 
         @Test
         fun `skal returnere NavEnhet`() {
-            runHappyPathTest(expectedUrl, navEnhet.toDto(), navEnhet) { personServiceClient ->
+            runHappyPathTest(expectedUrl, navEnhet, navEnhet.toDto()) { personServiceClient ->
                 personServiceClient.hentNavEnhet(navEnhet.enhetsnummer)
             }
         }
@@ -92,7 +91,7 @@ class AmtPersonServiceClientTest {
 
         @Test
         fun `skal returnere NavEnhet`() {
-            runHappyPathTest(expectedUrl, navEnhet.toDto(), navEnhet) { personServiceClient ->
+            runHappyPathTest(expectedUrl, navEnhet, navEnhet.toDto()) { personServiceClient ->
                 personServiceClient.hentNavEnhet(navEnhet.id)
             }
         }
@@ -112,7 +111,7 @@ class AmtPersonServiceClientTest {
         @Test
         fun `skal returnere NavBruker`() {
             val navBrukerDto = lagNavBruker().toDto(lagNavEnhet())
-            runHappyPathTest(expectedUrl, navBrukerDto, navBrukerDto.toModel()) { personServiceClient ->
+            runHappyPathTest(expectedUrl, navBrukerDto.toModel(), navBrukerDto) { personServiceClient ->
                 personServiceClient.hentNavBruker("~personident~")
             }
         }
@@ -124,7 +123,10 @@ class AmtPersonServiceClientTest {
 
         @Test
         fun `skal kaste feil hvis respons har feilkode`() {
-            runFailureTest(expectedUrl, "Kunne ikke hente fodselsar for nav-bruker fra amt-person-service") { personServiceClient ->
+            runFailureTest(
+                expectedUrl,
+                "Kunne ikke hente fodselsar for nav-bruker fra amt-person-service",
+            ) { personServiceClient ->
                 personServiceClient.hentNavBrukerFodselsar("~personident~")
             }
         }
@@ -132,7 +134,7 @@ class AmtPersonServiceClientTest {
         @Test
         fun `skal returnere fodselsar`() {
             val brukerFodselsarDto = NavBrukerFodselsarDto(Year.now().value - 20)
-            runHappyPathTest(expectedUrl, brukerFodselsarDto, brukerFodselsarDto.fodselsar) { personServiceClient ->
+            runHappyPathTest(expectedUrl, brukerFodselsarDto.fodselsar, brukerFodselsarDto) { personServiceClient ->
                 personServiceClient.hentNavBrukerFodselsar("~personident~")
             }
         }
@@ -154,19 +156,14 @@ class AmtPersonServiceClientTest {
             thrown.message shouldStartWith expectedError
         }
 
-        private fun <T> runHappyPathTest(
+        private fun <T : Any> runHappyPathTest(
             expectedUrl: String,
-            responseBody: T,
-            expectedResponse: T = responseBody,
+            expectedResponse: T,
+            responseBody: Any = expectedResponse,
             block: suspend (AmtPersonServiceClient) -> T,
         ) = runBlocking {
             val personServiceClient = createPersonServiceClient(expectedUrl, HttpStatusCode.OK, responseBody)
-
-            if (expectedResponse == null) {
-                shouldNotThrowAny { block(personServiceClient) }
-            } else {
-                block(personServiceClient) shouldBe expectedResponse
-            }
+            block(personServiceClient) shouldBe expectedResponse
         }
 
         private fun createPersonServiceClient(
