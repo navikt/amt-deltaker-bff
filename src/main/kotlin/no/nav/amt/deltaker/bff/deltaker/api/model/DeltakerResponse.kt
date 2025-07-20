@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
@@ -133,7 +134,7 @@ fun Deltaker.toDeltakerResponse(
     maxVarighet = maxVarighet?.toMillis(),
     softMaxVarighet = softMaxVarighet?.toMillis(),
     forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
-    importertFraArena = toImporertFraArenaDto(),
+    importertFraArena = toImportertFraArenaDto(),
     harAdresse = navBruker.adresse != null,
     deltakelsesmengder = DeltakerResponse.DeltakelsesmengderDto(
         nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
@@ -143,7 +144,20 @@ fun Deltaker.toDeltakerResponse(
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
 
-fun Deltaker.toImporertFraArenaDto(): ImportertFraArenaDto? =
+fun Deltaker.toKladdResponse() = KladdResponse(
+    id = id,
+    navBruker = navBruker,
+    deltakerlisteId = deltakerliste.id,
+    startdato = startdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = deltakelsesprosent,
+    bakgrunnsinformasjon = bakgrunnsinformasjon,
+    deltakelsesinnhold = deltakelsesinnhold!!,
+    status = status,
+)
+
+fun Deltaker.toImportertFraArenaDto(): ImportertFraArenaDto? =
     historikk.filterIsInstance<DeltakerHistorikk.ImportertFraArena>().firstOrNull()?.let {
         ImportertFraArenaDto(it.importertFraArena.deltakerVedImport.innsoktDato)
     }
