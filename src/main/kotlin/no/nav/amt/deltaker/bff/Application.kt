@@ -54,6 +54,7 @@ import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattConsumer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
+import no.nav.amt.deltaker.bff.navenhet.NavEnhetConsumer
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
@@ -249,6 +250,7 @@ fun Application.module(): suspend () -> Unit {
         TiltakstypeConsumer(tiltakstypeRepository),
         DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle),
         ArrangorMeldingConsumer(forslagService),
+        NavEnhetConsumer(navEnhetService),
     )
     consumers.forEach { it.start() }
 
