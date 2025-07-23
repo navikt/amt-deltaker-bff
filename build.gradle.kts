@@ -83,7 +83,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("io.kotest:kotest-assertions-json-jvm:$kotestVersion")
-    testImplementation("io.mockk:mockk:$mockkVersion")
+    testImplementation("io.mockk:mockk-jvm:$mockkVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
 }
@@ -111,6 +111,7 @@ tasks.test {
 
     jvmArgs(
         "-Xshare:off",
+        "-XX:+EnableDynamicAgentLoading",
     )
 
     testLogging {

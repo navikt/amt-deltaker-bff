@@ -73,43 +73,12 @@ class TestdataService(
         }
     }
 
-    private fun valider(
-        startdato: LocalDate,
-        sluttdato: LocalDate,
-        deltakerliste: Deltakerliste,
-    ) {
-        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) {
-            throw IllegalArgumentException("Det er kun AFT som er støttet for testdeltakelser inntil videre")
-        }
-        if (startdato.isBefore(deltakerliste.startDato)) {
-            throw IllegalArgumentException("Kan ikke sette startdato tidligere enn gjennomføringens startdato")
-        }
-        if (deltakerliste.sluttDato != null && sluttdato.isAfter(deltakerliste.sluttDato)) {
-            throw IllegalArgumentException("Kan ikke sette sluttdato senere enn gjennomføringens sluttdato")
-        }
-    }
-
-    private fun lagEndringFraArrangor(
-        deltakerId: UUID,
-        startdato: LocalDate,
-        sluttdato: LocalDate,
-    ): EndringFraArrangor = EndringFraArrangor(
-        id = UUID.randomUUID(),
-        deltakerId = deltakerId,
-        opprettetAvArrangorAnsattId = UUID.fromString(TESTARRANGORANSATT),
-        opprettet = LocalDateTime.now(),
-        endring = EndringFraArrangor.LeggTilOppstartsdato(
-            startdato = startdato,
-            sluttdato = sluttdato,
-        ),
-    )
-
-    private fun lagUtkast(
-        deltakerId: UUID,
-        deltakerliste: Deltakerliste,
-        opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest,
-    ): Utkast {
-        return Utkast(
+    companion object {
+        fun lagUtkast(
+            deltakerId: UUID,
+            deltakerliste: Deltakerliste,
+            opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest,
+        ) = Utkast(
             deltakerId = deltakerId,
             pamelding = Pamelding(
                 deltakelsesinnhold = lagInnhold(deltakerliste),
@@ -121,14 +90,45 @@ class TestdataService(
             ),
             godkjentAvNav = true,
         )
-    }
 
-    private fun lagInnhold(deltakerliste: Deltakerliste): Deltakelsesinnhold {
-        val innhold = deltakerliste.tiltak.innhold
-        val valgtInnhold = innhold?.innholdselementer?.firstOrNull()?.toInnhold(valgt = true)
-        return Deltakelsesinnhold(
-            ledetekst = innhold?.ledetekst,
-            innhold = valgtInnhold?.let { listOf(it) } ?: emptyList(),
+        private fun valider(
+            startdato: LocalDate,
+            sluttdato: LocalDate,
+            deltakerliste: Deltakerliste,
+        ) {
+            if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) {
+                throw IllegalArgumentException("Det er kun AFT som er støttet for testdeltakelser inntil videre")
+            }
+            if (startdato.isBefore(deltakerliste.startDato)) {
+                throw IllegalArgumentException("Kan ikke sette startdato tidligere enn gjennomføringens startdato")
+            }
+            if (deltakerliste.sluttDato != null && sluttdato.isAfter(deltakerliste.sluttDato)) {
+                throw IllegalArgumentException("Kan ikke sette sluttdato senere enn gjennomføringens sluttdato")
+            }
+        }
+
+        private fun lagEndringFraArrangor(
+            deltakerId: UUID,
+            startdato: LocalDate,
+            sluttdato: LocalDate,
+        ) = EndringFraArrangor(
+            id = UUID.randomUUID(),
+            deltakerId = deltakerId,
+            opprettetAvArrangorAnsattId = UUID.fromString(TESTARRANGORANSATT),
+            opprettet = LocalDateTime.now(),
+            endring = EndringFraArrangor.LeggTilOppstartsdato(
+                startdato = startdato,
+                sluttdato = sluttdato,
+            ),
         )
+
+        private fun lagInnhold(deltakerliste: Deltakerliste): Deltakelsesinnhold {
+            val innhold = deltakerliste.tiltak.innhold
+            val valgtInnhold = innhold?.innholdselementer?.firstOrNull()?.toInnhold(valgt = true)
+            return Deltakelsesinnhold(
+                ledetekst = innhold?.ledetekst,
+                innhold = valgtInnhold?.let { listOf(it) } ?: emptyList(),
+            )
+        }
     }
 }

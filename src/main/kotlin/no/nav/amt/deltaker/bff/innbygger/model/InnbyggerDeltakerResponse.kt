@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.innbygger.model
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.ImportertFraArenaDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
-import no.nav.amt.deltaker.bff.deltaker.api.model.toImporertFraArenaDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.toImportertFraArenaDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -101,7 +101,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
     vedtaksinformasjon = vedtaksinformasjon?.toDto(ansatte, vedtakSistEndretAvEnhet),
     adresseDelesMedArrangor = adresseDelesMedArrangor(),
     forslag = forslag.map { it.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
-    importertFraArena = toImporertFraArenaDto(),
+    importertFraArena = toImportertFraArenaDto(),
     deltakelsesmengder = InnbyggerDeltakerResponse.DeltakelsesmengderDto(
         nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),

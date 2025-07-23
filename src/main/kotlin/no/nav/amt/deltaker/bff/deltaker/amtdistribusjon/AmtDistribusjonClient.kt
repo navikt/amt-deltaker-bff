@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.amtdistribusjon
 
+import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -18,11 +19,10 @@ class AmtDistribusjonClient(
     private val scope: String,
     private val httpClient: HttpClient,
     private val azureAdTokenClient: AzureAdTokenClient,
-) {
-    private val digitalBrukerCache = Caffeine.newBuilder()
+    private val digitalBrukerCache: Cache<String, Boolean> = Caffeine<String, Boolean>.newBuilder()
         .expireAfterWrite(Duration.ofMinutes(15))
-        .build<String, Boolean>()
-
+        .build(),
+) {
     suspend fun digitalBruker(personident: String): Boolean {
         digitalBrukerCache.getIfPresent(personident)?.let {
             return it

@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.db
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.toKladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -444,18 +444,5 @@ fun sammenlignDeltakere(a: Deltaker, b: Deltaker) {
     a.erManueltDeltMedArrangor shouldBe b.erManueltDeltMedArrangor
     a.kanEndres shouldBe b.kanEndres
 }
-
-private fun Deltaker.toKladdResponse() = KladdResponse(
-    id = id,
-    navBruker = navBruker,
-    deltakerlisteId = deltakerliste.id,
-    startdato = startdato,
-    sluttdato = sluttdato,
-    dagerPerUke = dagerPerUke,
-    deltakelsesprosent = deltakelsesprosent,
-    bakgrunnsinformasjon = bakgrunnsinformasjon,
-    deltakelsesinnhold = deltakelsesinnhold!!,
-    status = status,
-)
 
 private fun Deltaker.getAlleVedtak() = historikk.filterIsInstance<DeltakerHistorikk.Vedtak>().map { it.vedtak }
