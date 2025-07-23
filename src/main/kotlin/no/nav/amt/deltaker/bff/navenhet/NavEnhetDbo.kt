@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.navansatt.navenhet
+package no.nav.amt.deltaker.bff.navenhet
 
 import java.time.LocalDateTime
 import java.util.UUID

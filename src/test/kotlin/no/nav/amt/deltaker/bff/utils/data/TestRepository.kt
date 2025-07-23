@@ -8,8 +8,8 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetDbo
+import no.nav.amt.deltaker.bff.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.navenhet.NavEnhetDbo
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype

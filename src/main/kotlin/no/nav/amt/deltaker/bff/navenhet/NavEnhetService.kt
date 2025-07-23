@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.navansatt.navenhet
+package no.nav.amt.deltaker.bff.navenhet
 
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
@@ -20,14 +20,14 @@ class NavEnhetService(
 
         log.info("Fant ikke oppdatert nav-enhet med nummer $enhetsnummer, henter fra amt-person-service")
         val navEnhet = amtPersonServiceClient.hentNavEnhet(enhetsnummer)
-        return repository.upsert(navEnhet).toNavEnhet()
+        return upsert(navEnhet)
     }
 
     suspend fun hentEllerOpprettEnhet(id: UUID): NavEnhet {
         repository.get(id)?.let { return it.toNavEnhet() }
 
         val navEnhet = amtPersonServiceClient.hentNavEnhet(id)
-        return repository.upsert(navEnhet).toNavEnhet()
+        return upsert(navEnhet)
     }
 
     fun hentEnhet(id: UUID) = repository.get(id)?.toNavEnhet()
@@ -49,4 +49,6 @@ class NavEnhetService(
     }
 
     fun hentEnheter(enhetIder: List<UUID>) = repository.getMany(enhetIder).map { it.toNavEnhet() }.associateBy { it.id }
+
+    fun upsert(enhet: NavEnhet) = repository.upsert(enhet).toNavEnhet()
 }
