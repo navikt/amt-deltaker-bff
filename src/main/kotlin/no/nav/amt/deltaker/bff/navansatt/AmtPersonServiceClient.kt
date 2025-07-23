@@ -17,7 +17,7 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adresse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Oppfolgingsperiode
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.navenhet.NavEnhet
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

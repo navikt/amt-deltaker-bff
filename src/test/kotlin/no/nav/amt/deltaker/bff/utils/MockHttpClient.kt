@@ -25,7 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavEnhetDto
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhet
+import no.nav.amt.deltaker.bff.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import java.util.UUID

@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.navansatt.navenhet
+package no.nav.amt.deltaker.bff.navenhet
 
 import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk

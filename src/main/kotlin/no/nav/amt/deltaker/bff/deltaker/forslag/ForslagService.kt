@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.forslag
 
 import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
-import no.nav.amt.deltaker.bff.navansatt.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
