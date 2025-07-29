@@ -38,7 +38,11 @@ class KladdRequestTest {
             dagerPerUke = null,
         )
 
-        request.sanitize().innhold[0].beskrivelse!!.length shouldBe MAX_ANNET_INNHOLD_LENGDE * 2
+        request
+            .sanitize()
+            .innhold[0]
+            .beskrivelse!!
+            .length shouldBe MAX_ANNET_INNHOLD_LENGDE * 2
     }
 
     @Test

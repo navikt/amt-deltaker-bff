@@ -75,11 +75,9 @@ class PameldingService(
         amtDeltakerClient.avbrytUtkast(deltakerId, avbruttAv, avbruttAvEnhet)
     }
 
-    fun getKladder(personident: String): List<Deltaker> {
-        return deltakerService.getDeltakelser(personident).filter { it.status.type == DeltakerStatus.Type.KLADD }
+    fun getKladder(personident: String): List<Deltaker> = deltakerService.getDeltakelser(personident).filter {
+        it.status.type == DeltakerStatus.Type.KLADD
     }
 
-    fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> {
-        return deltakerService.getKladderForDeltakerliste(deltakerlisteId)
-    }
+    fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> = deltakerService.getKladderForDeltakerliste(deltakerlisteId)
 }

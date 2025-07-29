@@ -19,7 +19,8 @@ class SporbarhetsloggService(
 
     fun sendAuditLog(navIdent: String, deltakerPersonIdent: String) {
         val builder =
-            CefMessage.builder()
+            CefMessage
+                .builder()
                 .applicationName(APPLICATION_NAME)
                 .event(CefMessageEvent.ACCESS)
                 .name(AUDIT_LOG_NAME)

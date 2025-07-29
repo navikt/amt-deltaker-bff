@@ -175,37 +175,37 @@ fun InnsokPaaFellesOppstart.toResponse(ansatte: Map<UUID, NavAnsatt>, enheter: M
     utkastGodkjentAvNav,
 )
 
-fun DeltakerEndring.Endring.toDto(oppstartstype: Deltakerliste.Oppstartstype): DeltakerEndringEndringDto {
-    return when (this) {
-        is DeltakerEndring.Endring.AvsluttDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
-            aarsak = aarsak,
-            sluttdato = sluttdato,
-            begrunnelse = begrunnelse,
-            harFullfort = true,
-            oppstartstype = oppstartstype,
-        )
+fun DeltakerEndring.Endring.toDto(oppstartstype: Deltakerliste.Oppstartstype): DeltakerEndringEndringDto = when (this) {
+    is DeltakerEndring.Endring.AvsluttDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
+        aarsak = aarsak,
+        sluttdato = sluttdato,
+        begrunnelse = begrunnelse,
+        harFullfort = true,
+        oppstartstype = oppstartstype,
+    )
 
-        is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
-            aarsak = aarsak,
-            sluttdato = sluttdato,
-            begrunnelse = begrunnelse,
-            harFullfort = false,
-            oppstartstype = oppstartstype,
-        )
-        is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> DeltakerEndringEndringDto.EndreBakgrunnsinformasjon(bakgrunnsinformasjon)
-        is DeltakerEndring.Endring.EndreDeltakelsesmengde -> DeltakerEndringEndringDto.EndreDeltakelsesmengde(
-            deltakelsesprosent,
-            dagerPerUke,
-            gyldigFra,
-            begrunnelse,
-        )
-        is DeltakerEndring.Endring.EndreInnhold -> DeltakerEndringEndringDto.EndreInnhold(ledetekst, innhold)
-        is DeltakerEndring.Endring.EndreSluttarsak -> DeltakerEndringEndringDto.EndreSluttarsak(aarsak, begrunnelse)
-        is DeltakerEndring.Endring.EndreSluttdato -> DeltakerEndringEndringDto.EndreSluttdato(sluttdato, begrunnelse)
-        is DeltakerEndring.Endring.EndreStartdato -> DeltakerEndringEndringDto.EndreStartdato(startdato, sluttdato, begrunnelse)
-        is DeltakerEndring.Endring.FjernOppstartsdato -> DeltakerEndringEndringDto.FjernOppstartsdato(begrunnelse)
-        is DeltakerEndring.Endring.ForlengDeltakelse -> DeltakerEndringEndringDto.ForlengDeltakelse(sluttdato, begrunnelse)
-        is DeltakerEndring.Endring.IkkeAktuell -> DeltakerEndringEndringDto.IkkeAktuell(aarsak, begrunnelse)
-        is DeltakerEndring.Endring.ReaktiverDeltakelse -> DeltakerEndringEndringDto.ReaktiverDeltakelse(reaktivertDato, begrunnelse)
-    }
+    is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
+        aarsak = aarsak,
+        sluttdato = sluttdato,
+        begrunnelse = begrunnelse,
+        harFullfort = false,
+        oppstartstype = oppstartstype,
+    )
+
+    is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> DeltakerEndringEndringDto.EndreBakgrunnsinformasjon(bakgrunnsinformasjon)
+    is DeltakerEndring.Endring.EndreDeltakelsesmengde -> DeltakerEndringEndringDto.EndreDeltakelsesmengde(
+        deltakelsesprosent,
+        dagerPerUke,
+        gyldigFra,
+        begrunnelse,
+    )
+
+    is DeltakerEndring.Endring.EndreInnhold -> DeltakerEndringEndringDto.EndreInnhold(ledetekst, innhold)
+    is DeltakerEndring.Endring.EndreSluttarsak -> DeltakerEndringEndringDto.EndreSluttarsak(aarsak, begrunnelse)
+    is DeltakerEndring.Endring.EndreSluttdato -> DeltakerEndringEndringDto.EndreSluttdato(sluttdato, begrunnelse)
+    is DeltakerEndring.Endring.EndreStartdato -> DeltakerEndringEndringDto.EndreStartdato(startdato, sluttdato, begrunnelse)
+    is DeltakerEndring.Endring.FjernOppstartsdato -> DeltakerEndringEndringDto.FjernOppstartsdato(begrunnelse)
+    is DeltakerEndring.Endring.ForlengDeltakelse -> DeltakerEndringEndringDto.ForlengDeltakelse(sluttdato, begrunnelse)
+    is DeltakerEndring.Endring.IkkeAktuell -> DeltakerEndringEndringDto.IkkeAktuell(aarsak, begrunnelse)
+    is DeltakerEndring.Endring.ReaktiverDeltakelse -> DeltakerEndringEndringDto.ReaktiverDeltakelse(reaktivertDato, begrunnelse)
 }

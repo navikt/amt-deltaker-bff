@@ -9,16 +9,14 @@ import java.util.UUID
 
 class VurderingRepository {
     companion object {
-        fun rowMapper(row: Row): Vurdering {
-            return Vurdering(
-                id = row.uuid("id"),
-                deltakerId = row.uuid("deltaker_id"),
-                opprettetAvArrangorAnsattId = row.uuid("opprettet_av_arrangor_ansatt_id"),
-                opprettet = row.localDateTime("opprettet"),
-                vurderingstype = Vurderingstype.valueOf(row.string("vurderingstype")),
-                begrunnelse = row.stringOrNull("begrunnelse"),
-            )
-        }
+        fun rowMapper(row: Row): Vurdering = Vurdering(
+            id = row.uuid("id"),
+            deltakerId = row.uuid("deltaker_id"),
+            opprettetAvArrangorAnsattId = row.uuid("opprettet_av_arrangor_ansatt_id"),
+            opprettet = row.localDateTime("opprettet"),
+            vurderingstype = Vurderingstype.valueOf(row.string("vurderingstype")),
+            begrunnelse = row.stringOrNull("begrunnelse"),
+        )
     }
 
     fun getForDeltaker(deltakerId: UUID) = Database.query {

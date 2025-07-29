@@ -49,7 +49,8 @@ class TilgangskontrollService(
         deltakerlisteId: UUID,
         navIdent: String,
     ) {
-        val deltakere = tiltakskoordinatorService.getMany(deltakerIder)
+        val deltakere = tiltakskoordinatorService
+            .getMany(deltakerIder)
             .filter { it.deltakerliste.id == deltakerlisteId }
         val noenKanIkkeEndres = deltakere.any { !it.kanEndres }
 

@@ -173,7 +173,8 @@ fun Routing.registerPameldingApi(
                     deltakerId = deltaker.id,
                     pamelding = Pamelding(
                         deltakelsesinnhold = Deltakelsesinnhold(
-                            deltaker.deltakerliste.tiltak.innhold?.ledetekst,
+                            deltaker.deltakerliste.tiltak.innhold
+                                ?.ledetekst,
                             finnValgtInnhold(request.innhold, deltaker),
                         ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,

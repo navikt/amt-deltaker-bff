@@ -9,11 +9,9 @@ data class NavEnhetDbo(
     val navn: String,
     val sistEndret: LocalDateTime,
 ) {
-    fun toNavEnhet(): NavEnhet {
-        return NavEnhet(
-            id = id,
-            enhetsnummer = enhetsnummer,
-            navn = navn,
-        )
-    }
+    fun toNavEnhet(): NavEnhet = NavEnhet(
+        id = id,
+        enhetsnummer = enhetsnummer,
+        navn = navn,
+    )
 }

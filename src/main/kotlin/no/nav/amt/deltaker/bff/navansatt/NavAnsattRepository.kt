@@ -46,26 +46,22 @@ class NavAnsattRepository {
         } ?: throw RuntimeException("Noe gikk galt ved lagring av nav-ansatt")
     }
 
-    fun get(id: UUID): NavAnsatt? {
-        return Database.query {
-            val query = queryOf(
-                """select * from nav_ansatt where id = :id""",
-                mapOf("id" to id),
-            ).map(::rowMapper).asSingle
+    fun get(id: UUID): NavAnsatt? = Database.query {
+        val query = queryOf(
+            """select * from nav_ansatt where id = :id""",
+            mapOf("id" to id),
+        ).map(::rowMapper).asSingle
 
-            it.run(query)
-        }
+        it.run(query)
     }
 
-    fun get(navIdent: String): NavAnsatt? {
-        return Database.query {
-            val query = queryOf(
-                """select * from nav_ansatt where nav_ident = :nav_ident""",
-                mapOf("nav_ident" to navIdent),
-            ).map(::rowMapper).asSingle
+    fun get(navIdent: String): NavAnsatt? = Database.query {
+        val query = queryOf(
+            """select * from nav_ansatt where nav_ident = :nav_ident""",
+            mapOf("nav_ident" to navIdent),
+        ).map(::rowMapper).asSingle
 
-            it.run(query)
-        }
+        it.run(query)
     }
 
     fun delete(id: UUID) = Database.query {

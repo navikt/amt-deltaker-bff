@@ -18,14 +18,11 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.utils.database.Database
-import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.UUID
 
 class DeltakerRepository {
-    private val log = LoggerFactory.getLogger(javaClass)
-
     private fun rowMapper(row: Row) = Deltaker(
         id = row.uuid("d.id"),
         navBruker = NavBruker(
@@ -557,21 +554,20 @@ class DeltakerRepository {
         "modified_at" to deltaker.sistEndret,
     )
 
-    private fun updateDeltakerSQL(erBatchUpdate: Boolean = false): String {
-        return """
-            update deltaker set 
-                startdato            = :startdato,
-                sluttdato            = :sluttdato,
-                dager_per_uke        = :dagerPerUke,
-                deltakelsesprosent   = :deltakelsesprosent,
-                bakgrunnsinformasjon = :bakgrunnsinformasjon,
-                innhold              = :innhold,
-                historikk            = :historikk,
-                ${if (erBatchUpdate) "er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor," else ""}
-                modified_at          = :modified_at
-                where id = :id
-            """.trimIndent()
-    }
+    private fun updateDeltakerSQL(erBatchUpdate: Boolean = false): String =
+        """
+        update deltaker set 
+            startdato            = :startdato,
+            sluttdato            = :sluttdato,
+            dager_per_uke        = :dagerPerUke,
+            deltakelsesprosent   = :deltakelsesprosent,
+            bakgrunnsinformasjon = :bakgrunnsinformasjon,
+            innhold              = :innhold,
+            historikk            = :historikk,
+            ${if (erBatchUpdate) "er_manuelt_delt_med_arrangor = :er_manuelt_delt_med_arrangor," else ""}
+            modified_at          = :modified_at
+            where id = :id
+        """.trimIndent()
 
     private fun insertStatusQuery(status: DeltakerStatus, deltakerId: UUID): Query =
         queryOf(insertStatusSQL, insertStatusParams(status, deltakerId))

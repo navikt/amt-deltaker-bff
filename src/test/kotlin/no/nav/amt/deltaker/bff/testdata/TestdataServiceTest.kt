@@ -104,7 +104,12 @@ class TestdataServiceTest {
             kanEndres = true,
             deltakelsesinnhold = Deltakelsesinnhold(
                 ledetekst = deltakerliste.tiltak.innhold!!.ledetekst,
-                innhold = listOf(deltakerliste.tiltak.innhold!!.innholdselementer.first().toInnhold(valgt = true)),
+                innhold = listOf(
+                    deltakerliste.tiltak.innhold!!
+                        .innholdselementer
+                        .first()
+                        .toInnhold(valgt = true),
+                ),
             ),
         )
 
@@ -130,7 +135,8 @@ class TestdataServiceTest {
             coEvery {
                 arrangorMeldingProducer.produce(
                     match {
-                        it is EndringFraArrangor && it.deltakerId == deltaker.id &&
+                        it is EndringFraArrangor &&
+                            it.deltakerId == deltaker.id &&
                             it.opprettetAvArrangorAnsattId.toString() == TESTARRANGORANSATT &&
                             it.endring == EndringFraArrangor.LeggTilOppstartsdato(
                                 startdato = opprettTestDeltakelseRequest.startdato,

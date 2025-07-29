@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.internal
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.post
@@ -38,6 +37,4 @@ fun Routing.registerInternalApi(deltakerRepository: DeltakerRepository, amtDelta
     }
 }
 
-fun isInternal(remoteAdress: String): Boolean {
-    return remoteAdress == "127.0.0.1"
-}
+fun isInternal(remoteAdress: String): Boolean = remoteAdress == "127.0.0.1"
