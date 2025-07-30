@@ -89,7 +89,7 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
             val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
             val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
 
-            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart!!)
+            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart)
             val json = objectMapper.writePolymorphicListAsString(historikkResponse)
             call.respondText(json, ContentType.Application.Json)
         }
@@ -121,9 +121,9 @@ fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerD
         innsatsgruppe = innsatsgruppe,
         tiltakskode = deltakerliste.tiltak.tiltakskode,
         tilgangTilBruker = tilgangTilBruker,
-        aktiveForslag = forslag.filter {
-                f ->
-            f.status == Forslag.Status.VenterPaSvar
-        }.map { f -> f.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
+        aktiveForslag = forslag
+            .filter { f ->
+                f.status == Forslag.Status.VenterPaSvar
+            }.map { f -> f.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
     )
 }

@@ -192,18 +192,16 @@ object TestData {
         navEnhet: NavEnhet = lagNavEnhet(),
         navVeileder: NavAnsatt = lagNavAnsatt(),
         deltakerliste: Deltakerliste = lagDeltakerliste(),
-    ): TiltakskoordinatorsDeltaker {
-        return lagDeltaker(
-            deltakerliste = deltakerliste,
-        ).toTiltakskoordinatorsDeltaker(
-            sisteVurdering = sisteVurdering,
-            navEnhet = navEnhet,
-            navVeileder = navVeileder,
-            null,
-            false,
-            emptyList(),
-        )
-    }
+    ): TiltakskoordinatorsDeltaker = lagDeltaker(
+        deltakerliste = deltakerliste,
+    ).toTiltakskoordinatorsDeltaker(
+        sisteVurdering = sisteVurdering,
+        navEnhet = navEnhet,
+        navVeileder = navVeileder,
+        null,
+        false,
+        emptyList(),
+    )
 
     fun lagVurdering(
         id: UUID = UUID.randomUUID(),

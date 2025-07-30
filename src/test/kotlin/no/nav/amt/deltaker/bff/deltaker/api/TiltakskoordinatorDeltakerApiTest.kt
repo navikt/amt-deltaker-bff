@@ -153,9 +153,10 @@ class TiltakskoordinatorDeltakerApiTest {
             ) { postRequest(reaktiverDeltakelseRequest) }
             .status shouldBe HttpStatusCode.Forbidden
         client.post("/forslag/${UUID.randomUUID()}/avvis") { postRequest(avvisForslagRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/deltaker/${UUID.randomUUID()}/fjern-oppstartsdato") {
-            postRequest(fjernOppstartsdatoRequest)
-        }.status shouldBe HttpStatusCode.Forbidden
+        client
+            .post("/deltaker/${UUID.randomUUID()}/fjern-oppstartsdato") {
+                postRequest(fjernOppstartsdatoRequest)
+            }.status shouldBe HttpStatusCode.Forbidden
     }
 
     @Test

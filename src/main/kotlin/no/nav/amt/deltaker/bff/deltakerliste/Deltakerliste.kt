@@ -44,9 +44,7 @@ data class Deltakerliste(
         }
     }
 
-    fun getOppstartstype(): Oppstartstype {
-        return oppstart
-    }
+    fun getOppstartstype(): Oppstartstype = oppstart
 
     fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.arenaKode)
 }

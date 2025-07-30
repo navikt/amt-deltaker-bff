@@ -44,8 +44,6 @@ data class IkkeAktuellRequest(
         }
     }
 
-    private fun deltakerErEndret(deltaker: Deltaker): Boolean {
-        return deltaker.status.type != DeltakerStatus.Type.IKKE_AKTUELL ||
-            harEndretSluttaarsak(deltaker.status.aarsak, aarsak)
-    }
+    private fun deltakerErEndret(deltaker: Deltaker): Boolean = deltaker.status.type != DeltakerStatus.Type.IKKE_AKTUELL ||
+        harEndretSluttaarsak(deltaker.status.aarsak, aarsak)
 }

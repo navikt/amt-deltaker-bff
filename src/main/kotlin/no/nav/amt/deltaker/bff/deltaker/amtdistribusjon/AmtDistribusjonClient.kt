@@ -19,7 +19,8 @@ class AmtDistribusjonClient(
     private val scope: String,
     private val httpClient: HttpClient,
     private val azureAdTokenClient: AzureAdTokenClient,
-    private val digitalBrukerCache: Cache<String, Boolean> = Caffeine<String, Boolean>.newBuilder()
+    private val digitalBrukerCache: Cache<String, Boolean> = Caffeine
+        .newBuilder()
         .expireAfterWrite(Duration.ofMinutes(15))
         .build(),
 ) {

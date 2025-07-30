@@ -34,7 +34,8 @@ fun generateJWT(
     val key = getDefaultRSAKey()
     val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
 
-    return JWT.create()
+    return JWT
+        .create()
         .withKeyId(KEY_ID)
         .withSubject(subject)
         .withIssuer(issuer)
@@ -65,7 +66,8 @@ fun generateSystemJWT(
     val key = getDefaultRSAKey()
     val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
 
-    return JWT.create()
+    return JWT
+        .create()
         .withKeyId(KEY_ID)
         .withSubject(subject)
         .withIssuer(issuer)
@@ -85,7 +87,8 @@ fun generateSystemJWT(
 
 fun tokenXToken(pid: String, env: Environment): String? {
     val key = getDefaultRSAKey()
-    return JWT.create()
+    return JWT
+        .create()
         .withAudience(env.tokenXClientId)
         .withIssuer(env.tokenXJwtIssuer)
         .withClaim("pid", pid)
@@ -94,9 +97,7 @@ fun tokenXToken(pid: String, env: Environment): String? {
         .sign(Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey()))
 }
 
-private fun getDefaultRSAKey(): RSAKey {
-    return getJWKSet().getKeyByKeyId(KEY_ID) as RSAKey
-}
+private fun getDefaultRSAKey(): RSAKey = getJWKSet().getKeyByKeyId(KEY_ID) as RSAKey
 
 private fun getJWKSet(): JWKSet {
     try {

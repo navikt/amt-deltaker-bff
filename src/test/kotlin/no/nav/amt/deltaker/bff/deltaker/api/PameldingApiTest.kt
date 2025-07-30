@@ -91,17 +91,19 @@ class PameldingApiTest {
 
         setUpTestApplication()
         client.post("/pamelding") { postRequest(pameldingRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}") {
-            postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto()))
-        }.status shouldBe HttpStatusCode.Forbidden
+        client
+            .post("/pamelding/${UUID.randomUUID()}") {
+                postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto()))
+            }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/kladd") { postRequest(kladdRequest) }.status shouldBe HttpStatusCode.Forbidden
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") {
-            postRequest(
-                pameldingUtenGodkjenningRequest(
-                    deltaker.deltakelsesinnhold!!.innhold.toInnholdDto(),
-                ),
-            )
-        }.status shouldBe HttpStatusCode.Forbidden
+        client
+            .post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") {
+                postRequest(
+                    pameldingUtenGodkjenningRequest(
+                        deltaker.deltakelsesinnhold!!.innhold.toInnholdDto(),
+                    ),
+                )
+            }.status shouldBe HttpStatusCode.Forbidden
         client.delete("/pamelding/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
         client.post("/pamelding/${UUID.randomUUID()}/avbryt") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
     }
@@ -222,7 +224,8 @@ class PameldingApiTest {
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
-        client.post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
+        client
+            .post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
             .apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
@@ -234,7 +237,8 @@ class PameldingApiTest {
         every { deltakerService.get(any()) } throws NoSuchElementException()
 
         setUpTestApplication()
-        client.post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest()) }
+        client
+            .post("/pamelding/${UUID.randomUUID()}/utenGodkjenning") { postRequest(pameldingUtenGodkjenningRequest()) }
             .apply {
                 status shouldBe HttpStatusCode.NotFound
             }

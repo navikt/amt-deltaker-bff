@@ -7,9 +7,7 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 
 fun Routing.registerUnleashApi(unleash: Unleash) {
-    fun getFeaturetoggles(features: List<String>): Map<String, Boolean> {
-        return features.associateWith { unleash.isEnabled(it) }
-    }
+    fun getFeaturetoggles(features: List<String>): Map<String, Boolean> = features.associateWith { unleash.isEnabled(it) }
 
     authenticate("VEILEDER") {
         get("/unleash/api/feature") {

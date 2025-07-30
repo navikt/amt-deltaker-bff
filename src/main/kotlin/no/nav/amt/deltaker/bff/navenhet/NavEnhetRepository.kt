@@ -41,26 +41,22 @@ class NavEnhetRepository {
         } ?: throw RuntimeException("Noe gikk galt ved lagring av nav-enhet")
     }
 
-    fun get(enhetsnummer: String): NavEnhetDbo? {
-        return Database.query {
-            val query = queryOf(
-                """select * from nav_enhet where nav_enhet_nummer = :nav_enhet_nummer""",
-                mapOf("nav_enhet_nummer" to enhetsnummer),
-            ).map(::rowMapper).asSingle
+    fun get(enhetsnummer: String): NavEnhetDbo? = Database.query {
+        val query = queryOf(
+            """select * from nav_enhet where nav_enhet_nummer = :nav_enhet_nummer""",
+            mapOf("nav_enhet_nummer" to enhetsnummer),
+        ).map(::rowMapper).asSingle
 
-            it.run(query)
-        }
+        it.run(query)
     }
 
-    fun get(id: UUID): NavEnhetDbo? {
-        return Database.query {
-            val query = queryOf(
-                """select * from nav_enhet where id = :id""",
-                mapOf("id" to id),
-            ).map(::rowMapper).asSingle
+    fun get(id: UUID): NavEnhetDbo? = Database.query {
+        val query = queryOf(
+            """select * from nav_enhet where id = :id""",
+            mapOf("id" to id),
+        ).map(::rowMapper).asSingle
 
-            it.run(query)
-        }
+        it.run(query)
     }
 
     fun getMany(enhetIder: List<UUID>) = Database.query {
