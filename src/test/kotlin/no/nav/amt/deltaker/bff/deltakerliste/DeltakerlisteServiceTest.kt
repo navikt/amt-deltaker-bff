@@ -69,23 +69,6 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `sjekkAldersgrenseForDeltakelse - deltaker for ung grufagyrke - kaster exception`() {
-        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
-            medStartdato(LocalDate.of(2025, 1, 1))
-            val personident = "01010750042"
-
-            val fodselsar = LocalDate.now().year - 17
-            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
-
-            assertThrows<DeltakerForUngException> {
-                runBlocking {
-                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
-                }
-            }
-        }
-    }
-
-    @Test
     fun `sjekkAldersgrenseForDeltakelse - deltaker for ung gruamo - kaster exception`() {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING)) {
             medStartdato(LocalDate.of(2025, 1, 1))
@@ -94,22 +77,6 @@ class DeltakerlisteServiceTest {
             coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
 
             assertThrows<DeltakerForUngException> {
-                runBlocking {
-                    deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
-                }
-            }
-        }
-    }
-
-    @Test
-    fun `sjekkAldersgrenseForDeltakelse - deltaker ikke for ung grufagyrke - kaster ikke exception`() {
-        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)) {
-            medStartdato(LocalDate.of(2025, 1, 1))
-            val personident = "01010650042"
-            val fodselsar = LocalDate.now().year - 27
-            coEvery { amtPersonServiceClient.hentNavBrukerFodselsar(personident) } returns fodselsar
-
-            assertDoesNotThrow {
                 runBlocking {
                     deltakerlisteService.sjekkAldersgrenseForDeltakelse(deltakerliste.id, personident)
                 }
@@ -134,7 +101,7 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `sjekkAldersgrenseForDeltakelse - ikke grufagyrke - kaster ikke exception`() {
+    fun `sjekkAldersgrenseForDeltakelse - ikke gruppe amo - kaster ikke exception`() {
         with(DeltakerlisteContext(Tiltakstype.Tiltakskode.JOBBKLUBB)) {
             medStartdato(LocalDate.of(2025, 1, 1))
             val personident = "01010750042"
