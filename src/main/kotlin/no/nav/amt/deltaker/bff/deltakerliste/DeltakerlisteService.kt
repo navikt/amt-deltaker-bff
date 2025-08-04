@@ -11,7 +11,7 @@ class DeltakerlisteService(
     private val amtPersonServiceClient: AmtPersonServiceClient,
 ) {
     companion object {
-        const val GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE = 19
+        const val GRUPPE_AMO_ALDERSGRENSE = 19
 
         val tiltakskoordinatorGraceperiode: Period = Period.ofDays(14)
     }
@@ -42,9 +42,7 @@ class DeltakerlisteService(
 
     suspend fun sjekkAldersgrenseForDeltakelse(deltakerlisteId: UUID, personident: String) {
         val deltakerliste = get(deltakerlisteId).getOrThrow()
-        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING &&
-            deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING
-        ) {
+        if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING) {
             return
         }
 
@@ -54,10 +52,10 @@ class DeltakerlisteService(
         if (deltakerliste.startDato.isBefore(dagensDato)) {
             // For kurstiltak med løpende oppstart så kan oppstartsdatoen på kurset være i fortiden når man melder på
             // og da må personen ha fylt 19 år på tidspunktet som man melder på
-            if (dagensDato.year - fodselsar < GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE) {
+            if (dagensDato.year - fodselsar < GRUPPE_AMO_ALDERSGRENSE) {
                 throw DeltakerForUngException("Deltaker er for ung for å delta på ${deltakerliste.tiltak.tiltakskode}")
             }
-        } else if (deltakerliste.startDato.year - fodselsar < GRUPPE_FAG_OG_YRKE_OG_AMO_ALDERSGRENSE) {
+        } else if (deltakerliste.startDato.year - fodselsar < GRUPPE_AMO_ALDERSGRENSE) {
             throw DeltakerForUngException("Deltaker er for ung for å delta på ${deltakerliste.tiltak.tiltakskode}")
         }
     }
