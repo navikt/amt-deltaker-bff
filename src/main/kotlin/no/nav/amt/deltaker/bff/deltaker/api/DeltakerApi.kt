@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreAvslutningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
@@ -204,6 +205,21 @@ fun Routing.registerDeltakerApi(
                     require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
                     require(request.sluttdato != null) { "Sluttdato er påkrevd for å avbryte deltakelse" }
                     DeltakerEndring.Endring.AvbrytDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
+                } else {
+                    require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
+                    DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
+                }
+            }
+        }
+
+        post("/deltaker/{deltakerId}/endre-avslutning") {
+            val request = call.receive<EndreAvslutningRequest>()
+            handleEndring(call, request) {
+                if (request.harDeltatt() && request.harFullfort()) {
+                    DeltakerEndring.Endring.EndreAvslutning(request.aarsak, true, request.begrunnelse)
+                } else if (request.harDeltatt() && !request.harFullfort()) {
+                    require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
+                    DeltakerEndring.Endring.EndreAvslutning(request.aarsak, false, request.begrunnelse)
                 } else {
                     require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
                     DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
