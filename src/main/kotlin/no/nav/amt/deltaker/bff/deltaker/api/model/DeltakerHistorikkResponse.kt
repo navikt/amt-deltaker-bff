@@ -187,7 +187,7 @@ fun DeltakerEndring.Endring.toDto(oppstartstype: Deltakerliste.Oppstartstype): D
     is DeltakerEndring.Endring.EndreAvslutning -> DeltakerEndringEndringDto.EndreAvslutning(
         aarsak = aarsak,
         begrunnelse = begrunnelse,
-        harFullfort = true,
+        harFullfort = harFullfort,
     )
 
     is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
