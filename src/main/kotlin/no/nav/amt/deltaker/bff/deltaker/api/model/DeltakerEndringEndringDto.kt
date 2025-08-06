@@ -53,6 +53,12 @@ sealed class DeltakerEndringEndringDto {
         val oppstartstype: Deltakerliste.Oppstartstype,
     ) : DeltakerEndringEndringDto()
 
+    data class EndreAvslutning(
+        val aarsak: Aarsak?,
+        val begrunnelse: String?,
+        val harFullfort: Boolean,
+    ) : DeltakerEndringEndringDto()
+
     data class EndreSluttarsak(
         val aarsak: Aarsak,
         val begrunnelse: String?,

@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.DeltakelsesmengdeRequest
+import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.EndreAvslutningRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.IkkeAktuellRequest
@@ -277,6 +278,20 @@ class AmtDeltakerClient(
         AVSLUTT_DELTAKELSE,
     )
 
+    suspend fun endreAvslutning(
+        deltakerId: UUID,
+        endretAv: String,
+        endretAvEnhet: String,
+        aarsak: DeltakerEndring.Aarsak?,
+        begrunnelse: String?,
+        harFullfort: Boolean,
+        forslagId: UUID?,
+    ) = postEndring(
+        deltakerId,
+        EndreAvslutningRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse, harFullfort),
+        ENDRE_AVSLUTNING,
+    )
+
     suspend fun avbrytDeltakelse(
         deltakerId: UUID,
         endretAv: String,
@@ -408,6 +423,7 @@ class AmtDeltakerClient(
         const val FORLENG_DELTAKELSE = "forleng"
         const val IKKE_AKTUELL = "ikke-aktuell"
         const val AVSLUTT_DELTAKELSE = "avslutt"
+        const val ENDRE_AVSLUTNING = "endre-avslutning"
         const val AVBRYT_DELTAKELSE = "avbryt"
         const val SIST_BESOKT = "sist-besokt"
         const val REAKTIVER = "reaktiver"

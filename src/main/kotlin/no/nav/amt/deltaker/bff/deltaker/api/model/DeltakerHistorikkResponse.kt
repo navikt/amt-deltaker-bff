@@ -184,6 +184,12 @@ fun DeltakerEndring.Endring.toDto(oppstartstype: Deltakerliste.Oppstartstype): D
         oppstartstype = oppstartstype,
     )
 
+    is DeltakerEndring.Endring.EndreAvslutning -> DeltakerEndringEndringDto.EndreAvslutning(
+        aarsak = aarsak,
+        begrunnelse = begrunnelse,
+        harFullfort = harFullfort,
+    )
+
     is DeltakerEndring.Endring.AvbrytDeltakelse -> DeltakerEndringEndringDto.AvsluttDeltakelse(
         aarsak = aarsak,
         sluttdato = sluttdato,

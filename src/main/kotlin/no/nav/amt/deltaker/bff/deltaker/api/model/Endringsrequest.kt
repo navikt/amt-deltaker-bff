@@ -17,6 +17,7 @@ sealed interface Endringsrequest {
         -> false
 
         is AvsluttDeltakelseRequest,
+        is EndreAvslutningRequest,
         is EndreSluttarsakRequest,
         is EndreSluttdatoRequest,
         is IkkeAktuellRequest,

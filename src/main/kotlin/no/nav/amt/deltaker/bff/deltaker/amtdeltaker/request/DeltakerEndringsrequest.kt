@@ -86,6 +86,15 @@ data class AvsluttDeltakelseRequest(
     val begrunnelse: String?,
 ) : DeltakerEndringMedForslag
 
+data class EndreAvslutningRequest(
+    override val endretAv: String,
+    override val endretAvEnhet: String,
+    override val forslagId: UUID?,
+    val aarsak: DeltakerEndring.Aarsak?,
+    val begrunnelse: String?,
+    val harFullfort: Boolean,
+) : DeltakerEndringMedForslag
+
 data class ReaktiverDeltakelseRequest(
     override val endretAv: String,
     override val endretAvEnhet: String,

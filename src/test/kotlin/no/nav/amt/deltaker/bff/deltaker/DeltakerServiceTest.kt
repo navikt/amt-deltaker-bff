@@ -140,6 +140,14 @@ class DeltakerServiceTest {
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak?.toDeltakerStatusAarsak()
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
                 }
+                is DeltakerEndring.Endring.EndreAvslutning -> {
+                    if (endring.harFullfort) {
+                        oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.FULLFORT
+                    } else {
+                        oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT
+                    }
+                    oppdatertDeltaker.status.aarsak shouldBe endring.aarsak?.toDeltakerStatusAarsak()
+                }
                 is DeltakerEndring.Endring.AvbrytDeltakelse -> {
                     oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()

@@ -518,6 +518,14 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
             ),
         )
 
+        is DeltakerEndring.Endring.EndreAvslutning -> this.copy(
+            status = TestData.lagDeltakerStatus(
+                type = if (endring.harFullfort) DeltakerStatus.Type.FULLFORT else DeltakerStatus.Type.AVBRUTT,
+                aarsak = endring.aarsak?.toStatusAarsak()?.type,
+                beskrivelse = endring.aarsak?.beskrivelse,
+            ),
+        )
+
         is DeltakerEndring.Endring.AvbrytDeltakelse -> this.copy(
             sluttdato = endring.sluttdato,
             status = TestData.lagDeltakerStatus(

@@ -33,6 +33,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
+import no.nav.amt.deltaker.bff.deltaker.api.model.EndreAvslutningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreBakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreDeltakelsesmengdeRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
@@ -143,6 +144,11 @@ class TiltakskoordinatorDeltakerApiTest {
             ) { postRequest(avsluttDeltakelseRequest) }
             .status shouldBe HttpStatusCode.Forbidden
         client
+            .post(
+                "/deltaker/${UUID.randomUUID()}/endre-avslutning",
+            ) { postRequest(endreAvslutningRequest) }
+            .status shouldBe HttpStatusCode.Forbidden
+        client
             .post("/deltaker/${UUID.randomUUID()}") {
                 postRequest(deltakerRequest)
             }.status shouldBe HttpStatusCode.Forbidden
@@ -174,6 +180,7 @@ class TiltakskoordinatorDeltakerApiTest {
         client.post("/deltaker/${UUID.randomUUID()}/fjern-oppstartsdato") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.post("/deltaker/${UUID.randomUUID()}") { setBody("foo") }.status shouldBe HttpStatusCode.Unauthorized
         client.get("/deltaker/${UUID.randomUUID()}/historikk").status shouldBe HttpStatusCode.Unauthorized
+        client.post("/deltaker/${UUID.randomUUID()}/endre-avslutning").status shouldBe HttpStatusCode.Unauthorized
         client.post("/forslag/${UUID.randomUUID()}/avvis").status shouldBe HttpStatusCode.Unauthorized
     }
 
@@ -653,6 +660,65 @@ class TiltakskoordinatorDeltakerApiTest {
     }
 
     @Test
+    fun `endre-avslutning til avbrutt- har tilgang, har fullført- returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.FULLFORT))
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                DeltakerStatus.Type.AVBRUTT,
+                DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB).toDeltakerStatusAarsak(),
+            ),
+        )
+        val endreAvslutningRequestAvbrutt = EndreAvslutningRequest(
+            aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
+            harDeltatt = null,
+            harFullfort = false,
+            begrunnelse = "begrunnelse",
+            forslagId = null,
+        )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        client.post("/deltaker/${deltaker.id}/endre-avslutning") { postRequest(endreAvslutningRequestAvbrutt) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
+        }
+    }
+
+    @Test
+    fun `endre-avslutning til fullført- har tilgang, har avbrutt- returnerer oppdatert deltaker`() = testApplication {
+        setUpTestApplication()
+        val deltaker = TestData.lagDeltaker(
+            status = TestData.lagDeltakerStatus(
+                DeltakerStatus.Type.AVBRUTT,
+                aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB).toDeltakerStatusAarsak(),
+            ),
+        )
+        val oppdatertDeltaker = deltaker.copy(
+            status = TestData.lagDeltakerStatus(
+                DeltakerStatus.Type.FULLFORT,
+                null,
+            ),
+        )
+        val endreAvslutningRequestAvbrutt = EndreAvslutningRequest(
+            aarsak = DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
+            harDeltatt = null,
+            harFullfort = true,
+            begrunnelse = "begrunnelse",
+            forslagId = null,
+        )
+        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        client.post("/deltaker/${deltaker.id}/endre-avslutning") { postRequest(endreAvslutningRequestAvbrutt) }.apply {
+            status shouldBe HttpStatusCode.OK
+            bodyAsText() shouldBe objectMapper.writeValueAsString(
+                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
+            )
+        }
+    }
+
+    @Test
     fun `reaktiver - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker =
@@ -788,6 +854,14 @@ class TiltakskoordinatorDeltakerApiTest {
         AvsluttDeltakelseRequest(
             DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
             LocalDate.now(),
+            harDeltatt = true,
+            harFullfort = null,
+            "begrunnelse",
+            null,
+        )
+    private val endreAvslutningRequest =
+        EndreAvslutningRequest(
+            DeltakerEndring.Aarsak(DeltakerEndring.Aarsak.Type.FATT_JOBB),
             harDeltatt = true,
             harFullfort = null,
             "begrunnelse",
