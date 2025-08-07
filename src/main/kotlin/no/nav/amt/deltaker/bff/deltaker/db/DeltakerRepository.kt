@@ -23,6 +23,15 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class DeltakerRepository {
+    private fun mapDeltakerStatus(row: Row) = DeltakerStatus(
+        id = row.uuid("ds.id"),
+        type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
+        aarsak = row.stringOrNull("ds.aarsak")?.let { objectMapper.readValue(it) },
+        gyldigFra = row.localDateTime("ds.gyldig_fra"),
+        gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
+        opprettet = row.localDateTime("ds.created_at"),
+    )
+
     private fun rowMapper(row: Row) = Deltaker(
         id = row.uuid("d.id"),
         navBruker = NavBruker(
@@ -46,14 +55,7 @@ class DeltakerRepository {
         deltakelsesprosent = row.floatOrNull("d.deltakelsesprosent"),
         bakgrunnsinformasjon = row.stringOrNull("d.bakgrunnsinformasjon"),
         deltakelsesinnhold = row.stringOrNull("d.innhold")?.let { objectMapper.readValue(it) },
-        status = DeltakerStatus(
-            id = row.uuid("ds.id"),
-            type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
-            aarsak = row.stringOrNull("ds.aarsak")?.let { objectMapper.readValue(it) },
-            gyldigFra = row.localDateTime("ds.gyldig_fra"),
-            gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
-            opprettet = row.localDateTime("ds.created_at"),
-        ),
+        status = mapDeltakerStatus(row),
         historikk = row.string("d.historikk").let { list ->
             objectMapper.readValue<List<DeltakerHistorikk>>(list.trim())
         },
@@ -320,14 +322,7 @@ class DeltakerRepository {
         ).map { row ->
             DeltakerIdOgStatus(
                 id = row.uuid("d.id"),
-                status = DeltakerStatus(
-                    id = row.uuid("ds.id"),
-                    type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
-                    aarsak = row.stringOrNull("ds.aarsak")?.let { objectMapper.readValue(it) },
-                    gyldigFra = row.localDateTime("ds.gyldig_fra"),
-                    gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
-                    opprettet = row.localDateTime("ds.created_at"),
-                ),
+                status = mapDeltakerStatus(row),
                 kanEndres = row.boolean("d.kan_endres"),
             )
         }.asList
@@ -416,7 +411,16 @@ class DeltakerRepository {
         return queryOf(sql, params)
     }
 
-    fun getDeltakereMedFlereGyldigeStatuser() = Database.query { session ->
+    /**
+     * Henter ID-ene til deltakere som har mer enn én aktiv (gyldig) status registrert samtidig.
+     *
+     * En deltaker kun skal ha én aktiv status om gangen, i motsatt fall må koden rette opp i dette ved kall
+     * til [deaktiverUkritiskTidligereStatuserQuery].
+     * En status regnes som aktiv hvis feltet `gyldig_til` er `NULL`.
+     *
+     * @return En liste med deltaker-ID-er (UUID) som har flere aktive statuser.
+     */
+    fun getDeltakereMedFlereGyldigeStatuser(): List<UUID> = Database.query { session ->
         val sql =
             """
             WITH statuser as (SELECT deltaker_id, COUNT(*) AS c
@@ -433,6 +437,7 @@ class DeltakerRepository {
         ).map {
             it.uuid("deltaker_id")
         }.asList
+
         session.run(query)
     }
 
