@@ -36,7 +36,7 @@ import org.postgresql.util.PSQLException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.UUID
 
 class DeltakerRepositoryTest {
     companion object {
@@ -344,7 +344,10 @@ class DeltakerRepositoryTest {
 
         deltakerRepository.deaktiverUkritiskTidligereStatuserQuery(nyStatus, deltaker.id)
 
-        deltakerRepository.get(deltaker.id).getOrThrow().status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
+        deltakerRepository
+            .get(deltaker.id)
+            .getOrThrow()
+            .status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
 
         val statuser = deltakerRepository.getDeltakerStatuser(deltaker.id)
         statuser.size shouldBe 3
@@ -411,8 +414,9 @@ class DeltakerRepositoryTest {
 
         deltakerRepository.updateBatch(
             listOf(
-                oppdatertDeltaker1.toDeltakeroppdatering(), oppdatertDeltaker2.toDeltakeroppdatering()
-            )
+                oppdatertDeltaker1.toDeltakeroppdatering(),
+                oppdatertDeltaker2.toDeltakeroppdatering(),
+            ),
         )
 
         val deltaker1FraDB = deltakerRepository.get(deltaker1.id).getOrThrow()
@@ -473,10 +477,11 @@ class DeltakerRepositoryTest {
             val deltakerInTest = lagDeltaker(deltakerliste = deltakerliste)
             TestRepository.insert(deltakerInTest)
 
-            deltakerRepository.getMany(
-                personident = deltakerInTest.navBruker.personident,
-                deltakerlisteId = deltakerliste.id
-            ).shouldNotBeEmpty()
+            deltakerRepository
+                .getMany(
+                    personident = deltakerInTest.navBruker.personident,
+                    deltakerlisteId = deltakerliste.id,
+                ).shouldNotBeEmpty()
         }
     }
 
@@ -492,7 +497,8 @@ class DeltakerRepositoryTest {
             val deltakerInTest = lagDeltaker()
             TestRepository.insert(deltakerInTest)
 
-            deltakerRepository.getMany(personident = deltakerInTest.navBruker.personident)
+            deltakerRepository
+                .getMany(personident = deltakerInTest.navBruker.personident)
                 .shouldNotBeEmpty()
         }
     }
@@ -501,7 +507,8 @@ class DeltakerRepositoryTest {
     inner class GetKladderForDeltakerlisteByDeltakerListeId {
         @Test
         fun `getKladderForDeltakerliste - ingen deltakere - returnerer tom liste`() {
-            deltakerRepository.getKladderForDeltakerliste(UUID.randomUUID())
+            deltakerRepository
+                .getKladderForDeltakerliste(UUID.randomUUID())
                 .shouldBeEmpty()
         }
 
@@ -514,11 +521,12 @@ class DeltakerRepositoryTest {
 
             val deltakerInTest = lagDeltaker(
                 status = lagDeltakerStatus(type = DeltakerStatus.Type.KLADD),
-                deltakerliste = deltakerliste
+                deltakerliste = deltakerliste,
             )
             TestRepository.insert(deltakerInTest)
 
-            deltakerRepository.getKladderForDeltakerliste(deltakerliste.id)
+            deltakerRepository
+                .getKladderForDeltakerliste(deltakerliste.id)
                 .shouldNotBeEmpty()
         }
     }
@@ -527,10 +535,11 @@ class DeltakerRepositoryTest {
     inner class GetKladdForDeltakerliste {
         @Test
         fun `getKladdForDeltakerliste - ingen deltakere - returnerer null`() {
-            deltakerRepository.getKladdForDeltakerliste(
-                deltakerlisteId = UUID.randomUUID(),
-                personident = "~personindent~"
-            ).shouldBeNull()
+            deltakerRepository
+                .getKladdForDeltakerliste(
+                    deltakerlisteId = UUID.randomUUID(),
+                    personident = "~personindent~",
+                ).shouldBeNull()
         }
 
         @Test
@@ -542,14 +551,15 @@ class DeltakerRepositoryTest {
 
             val deltakerInTest = lagDeltaker(
                 status = lagDeltakerStatus(type = DeltakerStatus.Type.KLADD),
-                deltakerliste = deltakerliste
+                deltakerliste = deltakerliste,
             )
             TestRepository.insert(deltakerInTest)
 
-            deltakerRepository.getKladdForDeltakerliste(
-                deltakerlisteId = deltakerliste.id,
-                personident = deltakerInTest.navBruker.personident
-            ).shouldNotBeNull()
+            deltakerRepository
+                .getKladdForDeltakerliste(
+                    deltakerlisteId = deltakerliste.id,
+                    personident = deltakerInTest.navBruker.personident,
+                ).shouldNotBeNull()
         }
     }
 }
