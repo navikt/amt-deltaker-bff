@@ -210,7 +210,7 @@ class TiltakskoordinatorDeltakerApiTest {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
-            sluttdato = LocalDate.now().minusMonths(1),
+            sluttdato = LocalDate.now().minusMonths(3),
         )
         setupMocks(deltaker, null)
 

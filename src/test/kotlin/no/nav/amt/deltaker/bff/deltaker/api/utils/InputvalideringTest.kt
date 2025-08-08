@@ -246,26 +246,28 @@ class InputvalideringTest {
         val deltakerDeltar = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.DELTAR,
-                gyldigFra = LocalDateTime.now(),
             ),
+            sluttdato = LocalDate.now().plusMonths(6),
         )
         val deltakerSluttetFireUkerSiden = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
-                gyldigFra = LocalDateTime.now().minusWeeks(4),
             ),
+            sluttdato = LocalDate.now().minusWeeks(4),
         )
         val deltakerSluttetFireMndSiden = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.HAR_SLUTTET,
                 gyldigFra = LocalDateTime.now().minusMonths(4),
             ),
+            sluttdato = LocalDate.now().minusMonths(4),
         )
         val deltakerIkkeAktuellFireMndSiden = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
                 type = DeltakerStatus.Type.IKKE_AKTUELL,
                 gyldigFra = LocalDateTime.now().minusMonths(4),
             ),
+            sluttdato = null,
         )
 
         shouldNotThrow<IllegalArgumentException> {
