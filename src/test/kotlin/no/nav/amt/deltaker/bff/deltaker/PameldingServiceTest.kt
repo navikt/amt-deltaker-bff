@@ -205,91 +205,92 @@ class PameldingServiceTest {
             oppdatertDeltaker.dagerPerUke shouldBe forventetDeltaker.dagerPerUke
         }
     }
+
     @Nested
     inner class AvbrytUtkast {
         @Test
-        fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen laases opp om den ikke har status AVBRUTT_UTKAST, FEILREGISTRERT eller aarsak SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT`() = runTest {
+        fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen laases opp om den ikke har status AVBRUTT_UTKAST, FEILREGISTRERT eller aarsak SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT`() =
+            runTest {
+                val navEnhet = TestData.lagNavEnhet()
+                TestRepository.insert(navEnhet)
 
-            val navEnhet = TestData.lagNavEnhet()
-            TestRepository.insert(navEnhet)
+                val gammelDeltaker = TestData.lagDeltaker(
+                    status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                    navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
+                )
+                TestRepository.insert(gammelDeltaker)
 
-            val gammelDeltaker = TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-                navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id)
-            )
-            TestRepository.insert(gammelDeltaker)
+                val nyDeltaker = TestData.lagDeltakerKladd(
+                    deltakerliste = gammelDeltaker.deltakerliste,
+                    navBruker = gammelDeltaker.navBruker,
+                )
+                TestRepository.insert(nyDeltaker)
 
-            val nyDeltaker = TestData.lagDeltakerKladd(
-                deltakerliste = gammelDeltaker.deltakerliste,
-                navBruker = gammelDeltaker.navBruker,
-            )
-            TestRepository.insert(nyDeltaker)
+                val nyDeltakerOppdaterUtkast = Deltakeroppdatering(
+                    id = nyDeltaker.id,
+                    startdato = null,
+                    sluttdato = null,
+                    dagerPerUke = null,
+                    deltakelsesprosent = 100F,
+                    bakgrunnsinformasjon = "Tekst",
+                    deltakelsesinnhold = null,
+                    status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                    erManueltDeltMedArrangor = false,
+                    historikk = emptyList(),
+                )
+                deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
 
-            val nyDeltakerOppdaterUtkast = Deltakeroppdatering(
-                id = nyDeltaker.id,
-                startdato = null,
-                sluttdato = null,
-                dagerPerUke = null,
-                deltakelsesprosent = 100F,
-                bakgrunnsinformasjon = "Tekst",
-                deltakelsesinnhold = null,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-                erManueltDeltMedArrangor = false,
-                historikk = emptyList(),
-            )
-            deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
+                deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
-            deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+                MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
+                pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
 
-            MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
-            pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
-
-            val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
-            gammelDeltakerFraDb.kanEndres shouldBe true
-        }
+                val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
+                gammelDeltakerFraDb.kanEndres shouldBe true
+            }
 
         @Test
-        fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen forblir laast om den har status AVBRUTT_UTKAST, FEILREGISTRERT eller SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT`() = runTest {
-            val navEnhet = TestData.lagNavEnhet()
-            TestRepository.insert(navEnhet)
+        fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen forblir laast om den har status AVBRUTT_UTKAST, FEILREGISTRERT eller SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT`() =
+            runTest {
+                val navEnhet = TestData.lagNavEnhet()
+                TestRepository.insert(navEnhet)
 
-            val gammelDeltaker = TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
-                navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id)
-            )
-            TestRepository.insert(gammelDeltaker)
+                val gammelDeltaker = TestData.lagDeltaker(
+                    status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+                    navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
+                )
+                TestRepository.insert(gammelDeltaker)
 
-            val nyDeltaker = TestData.lagDeltakerKladd(
-                deltakerliste = gammelDeltaker.deltakerliste,
-                navBruker = gammelDeltaker.navBruker,
-            )
-            TestRepository.insert(nyDeltaker)
+                val nyDeltaker = TestData.lagDeltakerKladd(
+                    deltakerliste = gammelDeltaker.deltakerliste,
+                    navBruker = gammelDeltaker.navBruker,
+                )
+                TestRepository.insert(nyDeltaker)
 
-            val nyDeltakerOppdaterUtkast = Deltakeroppdatering(
-                id = nyDeltaker.id,
-                startdato = null,
-                sluttdato = null,
-                dagerPerUke = null,
-                deltakelsesprosent = 100F,
-                bakgrunnsinformasjon = "Tekst",
-                deltakelsesinnhold = null,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
-                erManueltDeltMedArrangor = false,
-                historikk = emptyList(),
-            )
+                val nyDeltakerOppdaterUtkast = Deltakeroppdatering(
+                    id = nyDeltaker.id,
+                    startdato = null,
+                    sluttdato = null,
+                    dagerPerUke = null,
+                    deltakelsesprosent = 100F,
+                    bakgrunnsinformasjon = "Tekst",
+                    deltakelsesinnhold = null,
+                    status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                    erManueltDeltMedArrangor = false,
+                    historikk = emptyList(),
+                )
 
-            deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
+                deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
 
-            deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+                deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
-            MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
+                MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
 
-            pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
+                pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
 
-            val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
-            gammelDeltakerFraDb.kanEndres shouldBe false
-        }
-
+                val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
+                gammelDeltakerFraDb.kanEndres shouldBe false
+            }
     }
 }
 

@@ -79,11 +79,12 @@ class PameldingService(
             .filter { it.id !== deltaker.id && it.paameldtDato != null }
             .sortedByDescending { it.paameldtDato }
             .firstOrNull() ?: return
-        if (forrigeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT
-            && forrigeDeltaker.status.type != DeltakerStatus.Type.AVBRUTT_UTKAST
-            && forrigeDeltaker.status.aarsak?.type != DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT)
-
+        if (forrigeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT &&
+            forrigeDeltaker.status.type != DeltakerStatus.Type.AVBRUTT_UTKAST &&
+            forrigeDeltaker.status.aarsak?.type != DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+        ) {
             deltakerService.laasOppDeltaker(forrigeDeltaker)
+        }
     }
 
     fun getKladder(personident: String): List<Deltaker> = deltakerService.getDeltakelser(personident).filter {

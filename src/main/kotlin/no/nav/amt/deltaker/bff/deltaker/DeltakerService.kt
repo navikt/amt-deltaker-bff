@@ -32,7 +32,8 @@ class DeltakerService(
 
     fun getMany(ider: List<UUID>) = deltakerRepository.getMany(ider)
 
-    fun getDeltakelser(personident: String, deltakerlisteId: UUID): List<Deltaker> = deltakerRepository.getMany(personident, deltakerlisteId)
+    fun getDeltakelser(personident: String, deltakerlisteId: UUID): List<Deltaker> =
+        deltakerRepository.getMany(personident, deltakerlisteId)
 
     fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
 
