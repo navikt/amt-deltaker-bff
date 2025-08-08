@@ -32,7 +32,7 @@ class DeltakerService(
 
     fun getMany(ider: List<UUID>) = deltakerRepository.getMany(ider)
 
-    fun getDeltakelser(personident: String, deltakerlisteId: UUID) = deltakerRepository.getMany(personident, deltakerlisteId)
+    fun getDeltakelser(personident: String, deltakerlisteId: UUID): List<Deltaker> = deltakerRepository.getMany(personident, deltakerlisteId)
 
     fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
 
@@ -231,7 +231,7 @@ class DeltakerService(
             val avsluttedeDeltakelserPaSammeTiltak =
                 deltakelserPaSammeTiltak.filter { it.status.type in AVSLUTTENDE_STATUSER && it.kanEndres }
             if (deltaker.status.type in AKTIVE_STATUSER) {
-                deltakerRepository.settKanIkkeEndres(avsluttedeDeltakelserPaSammeTiltak.map { it.id })
+                deltakerRepository.settKanEndres(avsluttedeDeltakelserPaSammeTiltak.map { it.id }, false)
                 log.info(
                     "Har låst ${avsluttedeDeltakelserPaSammeTiltak.size} " +
                         "deltakere for endringer pga nyere aktiv deltaker fra arena med id ${deltaker.id}",
@@ -239,7 +239,7 @@ class DeltakerService(
             } else { // deltakelsen er gammel(er avsluttet)
                 val aktiveDeltakelser = deltakelserPaSammeTiltak.filterNot { it.status.type in AVSLUTTENDE_STATUSER }
                 if (aktiveDeltakelser.isNotEmpty()) {
-                    deltakerRepository.settKanIkkeEndres(listOf(deltaker.id))
+                    deltakerRepository.settKanEndres(listOf(deltaker.id), false)
                     log.info(
                         "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere aktive deltakelser",
                     )
@@ -250,7 +250,7 @@ class DeltakerService(
                         )
                     }
                     if (nyereAvsluttetDeltakelse != null) {
-                        deltakerRepository.settKanIkkeEndres(listOf(deltaker.id))
+                        deltakerRepository.settKanEndres(listOf(deltaker.id), false)
                         log.info(
                             "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere avsluttet deltakelse",
                         )
@@ -260,7 +260,7 @@ class DeltakerService(
                                 deltaker.status.opprettet,
                             )
                         }
-                        deltakerRepository.settKanIkkeEndres(skalIkkeKunneEndres.map { it.id })
+                        deltakerRepository.settKanEndres(skalIkkeKunneEndres.map { it.id }, false)
                         log.info(
                             "Har låst ${skalIkkeKunneEndres.size} " +
                                 "deltakere for endringer pga nyere avsluttet deltaker fra arena med id ${deltaker.id}",
@@ -273,18 +273,25 @@ class DeltakerService(
         if (deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltaker.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         ) {
-            deltakerRepository.settKanIkkeEndres(listOf(deltaker.id))
+            deltakerRepository.settKanEndres(listOf(deltaker.id), false)
         }
     }
 
     fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
             val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
-            deltakerRepository.settKanIkkeEndres(tidligereDeltakelser)
+            deltakerRepository.settKanEndres(tidligereDeltakelser, false)
             log.info(
                 "Har låst ${tidligereDeltakelser.size} deltakere for endringer pga nyere aktiv deltaker med id ${deltakeroppdatering.id}",
             )
         }
+    }
+
+    fun laasOppDeltaker(deltaker: Deltaker) {
+        deltakerRepository.settKanEndres(listOf(deltaker.id), true)
+        log.info(
+            "Har låst opp tidligere deltaker ${deltaker.id} for endringer pga avbrutt utkast på nåværende deltaker",
+        )
     }
 
     fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
@@ -294,7 +301,7 @@ class DeltakerService(
         if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         ) {
-            deltakerRepository.settKanIkkeEndres(listOf(deltakeroppdatering.id))
+            deltakerRepository.settKanEndres(listOf(deltakeroppdatering.id), false)
         }
     }
 
