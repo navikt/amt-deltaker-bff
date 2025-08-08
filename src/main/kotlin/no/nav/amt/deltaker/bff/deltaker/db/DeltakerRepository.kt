@@ -273,19 +273,22 @@ class DeltakerRepository {
         }
     }
 
-    fun settKanIkkeEndres(ider: List<UUID>) = Database.query {
+    fun settKanEndres(ider: List<UUID>, kanEndres: Boolean) = Database.query {
         if (ider.isEmpty()) {
             return@query
         }
         val sql =
             """
             update deltaker
-            set kan_endres = false
-            where id in (${ider.joinToString { "?" }});
+            set kan_endres = :kan_endres
+            where id =any (:ider);
             """.trimIndent()
-
+        val parameters = mapOf(
+            "kan_endres" to kanEndres,
+            "ider" to ider.toTypedArray(),
+        )
         it.update(
-            queryOf(sql, *ider.toTypedArray()),
+            queryOf(sql, parameters),
         )
     }
 

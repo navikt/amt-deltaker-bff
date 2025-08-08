@@ -278,7 +278,7 @@ class PameldingApiTest {
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
         )
         every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
-        coEvery { pameldingService.avbrytUtkast(deltaker.id, any(), any()) } returns Unit
+        coEvery { pameldingService.avbrytUtkast(deltaker, any(), any()) } returns Unit
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}/avbryt") { noBodyRequest() }.apply {
