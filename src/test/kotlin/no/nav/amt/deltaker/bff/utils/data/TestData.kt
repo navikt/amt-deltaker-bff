@@ -35,10 +35,15 @@ import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.hendelse.Hendelse
+import no.nav.amt.lib.models.hendelse.HendelseAnsvarlig
+import no.nav.amt.lib.models.hendelse.HendelseDeltaker
+import no.nav.amt.lib.models.hendelse.HendelseType
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
+import kotlin.String
 
 object TestData {
     fun randomIdent() = (10_00_00_00_000..31_12_00_99_999).random().toString()
@@ -504,6 +509,57 @@ object TestData {
         endretAv = endretAv,
         endretAvEnhet = endretAvEnhet,
         endret = endret,
+    )
+
+    fun lagHendelse(
+        id: UUID = UUID.randomUUID(),
+        deltaker: Deltaker,
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        ansvarlig: HendelseAnsvarlig = HendelseAnsvarlig.NavVeileder(
+            id = UUID.randomUUID(),
+            navn = UUID.randomUUID().toString(),
+            navIdent = UUID.randomUUID().toString(),
+            enhet = HendelseAnsvarlig.NavVeileder.Enhet(id = UUID.randomUUID(), enhetsnummer = randomEnhetsnummer()),
+        ),
+        payload: HendelseType = HendelseType.EndreBakgrunnsinformasjon(
+            bakgrunnsinformasjon = "Ny bakgrunnsinformasjon",
+        ),
+    ) = Hendelse(
+        id = id,
+        opprettet = opprettet,
+        deltaker = HendelseDeltaker(
+            id = deltaker.id,
+            personident = randomIdent(),
+            deltakerliste = HendelseDeltaker.Deltakerliste(
+                id = deltaker.deltakerliste.id,
+                navn = deltaker.deltakerliste.navn,
+                arrangor = HendelseDeltaker.Deltakerliste.Arrangor(
+                    id = deltaker.deltakerliste.arrangor.arrangor.id,
+                    organisasjonsnummer = deltaker.deltakerliste.arrangor.arrangor.organisasjonsnummer,
+                    navn = deltaker.deltakerliste.arrangor.arrangor.navn,
+                    overordnetArrangor = null,
+                ),
+                tiltak = HendelseDeltaker.Deltakerliste.Tiltak(
+                    navn = deltaker.deltakerliste.navn,
+                    type = deltaker.deltakerliste.tiltak.arenaKode,
+                    ledetekst = "ledetekst",
+                    tiltakskode = deltaker.deltakerliste.tiltak.tiltakskode,
+                ),
+                startdato = deltaker.deltakerliste.startDato,
+                sluttdato = deltaker.deltakerliste.sluttDato,
+                oppstartstype = if (deltaker.deltakerliste.oppstart ==
+                    Deltakerliste.Oppstartstype.FELLES
+                ) {
+                    HendelseDeltaker.Deltakerliste.Oppstartstype.FELLES
+                } else {
+                    HendelseDeltaker.Deltakerliste.Oppstartstype.LOPENDE
+                },
+            ),
+            forsteVedtakFattet = LocalDate.now(),
+            opprettetDato = LocalDate.now(),
+        ),
+        ansvarlig = ansvarlig,
+        payload = payload,
     )
 }
 
