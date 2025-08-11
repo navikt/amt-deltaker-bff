@@ -1,0 +1,99 @@
+package no.nav.amt.deltaker.bff.tiltakskoordinator.hendelse
+
+import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.application.plugins.objectMapper
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka.HendelseConsumer
+import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.hendelse.HendelseType
+import no.nav.amt.lib.testing.SingletonPostgres16Container
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+class HendelseConsumerTest {
+    companion object {
+        lateinit var repository: UlestHendelseRepository
+        lateinit var service: UlestHendelseService
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            SingletonPostgres16Container
+            repository = UlestHendelseRepository()
+            service = UlestHendelseService(repository)
+        }
+    }
+
+    @BeforeEach
+    fun cleanDatabase() {
+        TestRepository.cleanDatabase()
+    }
+
+    @Test
+    fun `consume - hendelse InnbyggerGodkjennUtkast - lagrer`(): Unit = runBlocking {
+        val consumer = HendelseConsumer(service)
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+        )
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
+        TestRepository.insert(deltaker)
+        val hendelse = TestData.lagHendelse(deltaker = deltaker)
+
+        consumer.consume(
+            hendelse.id,
+            objectMapper.writeValueAsString(hendelse),
+        )
+
+        val ulestHendelseFraDb = repository.getForDeltaker(deltaker.id)
+        ulestHendelseFraDb.size shouldBe 1
+        ulestHendelseFraDb.first().id shouldBe hendelse.id
+    }
+
+    @Test
+    fun `consume - hendelse vi ikke bryr oss om - lagrer ikke`(): Unit = runBlocking {
+        val consumer = HendelseConsumer(service)
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+        )
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
+        TestRepository.insert(deltaker)
+        val hendelse = TestData.lagHendelse(
+            deltaker = deltaker,
+            payload = HendelseType.TildelPlass,
+        )
+
+        consumer.consume(
+            hendelse.id,
+            objectMapper.writeValueAsString(hendelse),
+        )
+
+        val ulestHendelseFraDb = repository.get(hendelse.id).getOrNull()
+        ulestHendelseFraDb shouldBe null
+    }
+
+    @Test
+    fun `consume - hendelse tombstone - sletter`(): Unit = runBlocking {
+        val consumer = HendelseConsumer(service)
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+        )
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
+        TestRepository.insert(deltaker)
+        val hendelse = TestData.lagHendelse(deltaker = deltaker)
+
+        repository.upsert(hendelse)
+
+        consumer.consume(
+            hendelse.id,
+            null,
+        )
+
+        val ulestHendelseFraDb = repository.getForDeltaker(deltaker.id)
+        ulestHendelseFraDb.size shouldBe 0
+    }
+}
