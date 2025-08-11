@@ -40,6 +40,17 @@ data class Deltaker(
                 it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
             }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
 
+    val paameldtDato
+        get() = historikk
+            .firstOrNull { it is DeltakerHistorikk.Vedtak || it is DeltakerHistorikk.ImportertFraArena }
+            ?.let {
+                when (it) {
+                    is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.importertDato
+                    is DeltakerHistorikk.Vedtak -> it.vedtak.fattet
+                    else -> null
+                }
+            }
+
     val ikkeFattetVedtak
         get() = historikk
             .firstOrNull {

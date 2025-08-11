@@ -191,6 +191,15 @@ object MockResponseHandler {
         )
     }
 
+    fun avbrytUtkastResponse(deltaker: Deltaker) {
+        val url = "$AMT_DELTAKER_URL/pamelding/${deltaker.id}/avbryt"
+        addResponse(
+            url = url,
+            method = HttpMethod.Post,
+            responseBody = deltaker.toDeltakeroppdatering(),
+        )
+    }
+
     fun addSlettKladdResponse(deltakerId: UUID) {
         val url = "$AMT_DELTAKER_URL/pamelding/$deltakerId"
         addResponse(
