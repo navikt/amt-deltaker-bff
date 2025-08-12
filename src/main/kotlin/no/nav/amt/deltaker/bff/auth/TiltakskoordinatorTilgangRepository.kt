@@ -4,7 +4,7 @@ import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
+import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.utils.database.Database
 import java.time.LocalDate
 import java.util.UUID
@@ -86,6 +86,7 @@ class TiltakskoordinatorTilgangRepository {
                     navn = it.string("navn"),
                     epost = it.stringOrNull("epost"),
                     telefon = it.stringOrNull("telefon"),
+                    navEnhetId = null, // Should be same as amt-deltaker?
                 )
             }.asList
         session.run(query)

@@ -67,12 +67,24 @@ class PameldingService(
     suspend fun slettKladd(deltaker: Deltaker) = deltakerService.slettKladd(deltaker)
 
     suspend fun avbrytUtkast(
-        deltakerId: UUID,
+        deltaker: Deltaker,
         avbruttAvEnhet: String,
         avbruttAv: String,
     ) {
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(avbruttAvEnhet)
-        amtDeltakerClient.avbrytUtkast(deltakerId, avbruttAv, avbruttAvEnhet)
+        amtDeltakerClient.avbrytUtkast(deltaker.id, avbruttAv, avbruttAvEnhet)
+
+        val forrigeDeltaker = deltakerService
+            .getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id)
+            .filter { it.id !== deltaker.id && it.paameldtDato != null }
+            .sortedByDescending { it.paameldtDato }
+            .firstOrNull() ?: return
+        if (forrigeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT &&
+            forrigeDeltaker.status.type != DeltakerStatus.Type.AVBRUTT_UTKAST &&
+            forrigeDeltaker.status.aarsak?.type != DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+        ) {
+            deltakerService.laasOppDeltaker(forrigeDeltaker)
+        }
     }
 
     fun getKladder(personident: String): List<Deltaker> = deltakerService.getDeltakelser(personident).filter {

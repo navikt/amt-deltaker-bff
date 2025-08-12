@@ -11,7 +11,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import no.nav.amt.deltaker.bff.auth.AzureAdTokenClient
+import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import java.time.Duration
 
 class AmtDistribusjonClient(

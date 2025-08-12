@@ -2,9 +2,10 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
+import no.nav.amt.lib.models.person.dto.NavAnsattDto
+import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import java.util.UUID
 
@@ -32,14 +33,4 @@ class NavAnsattConsumer(
     override fun start() = consumer.start()
 
     override suspend fun close() = consumer.close()
-}
-
-data class NavAnsattDto(
-    val id: UUID,
-    val navident: String,
-    val navn: String,
-    val epost: String?,
-    val telefon: String?,
-) {
-    fun toModel() = NavAnsatt(id, navident, navn, epost, telefon)
 }

@@ -3,20 +3,10 @@ package no.nav.amt.deltaker.bff.utils.data
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adresse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Bostedsadresse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Kontaktadresse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Matrikkeladresse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Oppfolgingsperiode
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Vegadresse
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.toTiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
@@ -35,15 +25,20 @@ import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
-import no.nav.amt.lib.models.hendelse.Hendelse
-import no.nav.amt.lib.models.hendelse.HendelseAnsvarlig
-import no.nav.amt.lib.models.hendelse.HendelseDeltaker
-import no.nav.amt.lib.models.hendelse.HendelseType
+import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.models.person.NavEnhet
+import no.nav.amt.lib.models.person.Oppfolgingsperiode
+import no.nav.amt.lib.models.person.address.Adresse
+import no.nav.amt.lib.models.person.address.Adressebeskyttelse
+import no.nav.amt.lib.models.person.address.Bostedsadresse
+import no.nav.amt.lib.models.person.address.Kontaktadresse
+import no.nav.amt.lib.models.person.address.Matrikkeladresse
+import no.nav.amt.lib.models.person.address.Vegadresse
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
-import kotlin.String
 
 object TestData {
     fun randomIdent() = (10_00_00_00_000..31_12_00_99_999).random().toString()
@@ -370,18 +365,20 @@ object TestData {
         navVeilederId: UUID = UUID.randomUUID(),
         navEnhetId: UUID = UUID.randomUUID(),
     ) = NavBruker(
-        personId,
-        personident,
-        fornavn,
-        mellomnavn,
-        etternavn,
-        adressebeskyttelse,
-        oppfolgingsperioder,
-        innsatsgruppe,
-        adresse,
-        erSkjermet,
-        navEnhetId,
-        navVeilederId,
+        personId = personId,
+        personident = personident,
+        fornavn = fornavn,
+        mellomnavn = mellomnavn,
+        etternavn = etternavn,
+        navVeilederId = navVeilederId,
+        navEnhetId = navEnhetId,
+        erSkjermet = erSkjermet,
+        adresse = adresse,
+        adressebeskyttelse = adressebeskyttelse,
+        oppfolgingsperioder = oppfolgingsperioder,
+        innsatsgruppe = innsatsgruppe,
+        telefon = null,
+        epost = null,
     )
 
     fun lagAdresse(): Adresse = Adresse(

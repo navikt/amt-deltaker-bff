@@ -3,12 +3,12 @@ package no.nav.amt.deltaker.bff.deltaker.navbruker
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
+import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.amt.lib.utils.database.Database
+import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 class NavBrukerRepository {
@@ -25,6 +25,8 @@ class NavBrukerRepository {
         erSkjermet = row.boolean("er_skjermet"),
         navEnhetId = row.uuidOrNull("nav_enhet_id"),
         navVeilederId = row.uuidOrNull("nav_veileder_id"),
+        telefon = null,
+        epost = null,
     )
 
     fun upsert(bruker: NavBruker) = Database.query {

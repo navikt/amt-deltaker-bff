@@ -4,8 +4,8 @@ import io.ktor.util.Attributes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import no.nav.amt.deltaker.bff.application.isReadyKey
 import no.nav.amt.deltaker.bff.deltaker.job.leaderelection.LeaderElection
+import no.nav.amt.lib.ktor.routing.isReadyKey
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.Duration

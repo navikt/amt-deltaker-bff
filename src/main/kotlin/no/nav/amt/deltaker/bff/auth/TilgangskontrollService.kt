@@ -2,11 +2,11 @@ package no.nav.amt.deltaker.bff.auth
 
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
+import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput

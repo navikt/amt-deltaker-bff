@@ -3,9 +3,12 @@ package no.nav.amt.deltaker.bff.navansatt
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
+import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.lib.models.person.dto.NavAnsattDto
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
@@ -63,4 +66,4 @@ class NavAnsattConsumerTest {
     }
 }
 
-private fun NavAnsatt.toDto() = NavAnsattDto(id, navident = navIdent, navn = navn, epost = epost, telefon = telefon)
+private fun NavAnsatt.toDto() = NavAnsattDto(id, navident = navIdent, navn = navn, epost = epost, telefon = telefon, null)

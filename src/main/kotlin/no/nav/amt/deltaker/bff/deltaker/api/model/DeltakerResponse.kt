@@ -6,8 +6,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementerMedAnnet
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.utils.toTitleCase
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
@@ -19,6 +17,8 @@ import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.lib.models.person.NavEnhet
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -140,7 +140,7 @@ fun Deltaker.toDeltakerResponse(
         nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.toDto(),
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
-    erUnderOppfolging = navBruker.harAktivOppfolgingsperiode(),
+    erUnderOppfolging = navBruker.harAktivOppfolgingsperiode,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
 

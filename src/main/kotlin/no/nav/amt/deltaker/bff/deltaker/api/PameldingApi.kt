@@ -147,7 +147,7 @@ fun Routing.registerPameldingApi(
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
             pameldingService.avbrytUtkast(
-                deltakerId = deltaker.id,
+                deltaker = deltaker,
                 avbruttAv = navIdent,
                 avbruttAvEnhet = enhetsnummer,
             )

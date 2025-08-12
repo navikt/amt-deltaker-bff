@@ -1,10 +1,10 @@
 package no.nav.amt.deltaker.bff
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.auth.PreAuthorizedApp
 import no.nav.amt.lib.utils.database.DatabaseConfig
 import no.nav.amt.lib.utils.getEnvVar
+import no.nav.amt.lib.utils.objectMapper
 
 data class Environment(
     val databaseConfig: DatabaseConfig = DatabaseConfig(),

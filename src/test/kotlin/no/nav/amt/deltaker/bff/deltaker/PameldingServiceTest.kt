@@ -4,9 +4,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
@@ -28,6 +30,7 @@ import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
@@ -200,6 +203,91 @@ class PameldingServiceTest {
             oppdatertDeltaker.bakgrunnsinformasjon shouldBe forventetDeltaker.bakgrunnsinformasjon
             oppdatertDeltaker.deltakelsesprosent shouldBe forventetDeltaker.deltakelsesprosent
             oppdatertDeltaker.dagerPerUke shouldBe forventetDeltaker.dagerPerUke
+        }
+    }
+
+    @Nested
+    inner class AvbrytUtkast {
+        @Test
+        fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen laases opp`() = runTest {
+            val navEnhet = TestData.lagNavEnhet()
+            TestRepository.insert(navEnhet)
+
+            val gammelDeltaker = TestData.lagDeltaker(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
+            )
+            TestRepository.insert(gammelDeltaker)
+
+            val nyDeltaker = TestData.lagDeltakerKladd(
+                deltakerliste = gammelDeltaker.deltakerliste,
+                navBruker = gammelDeltaker.navBruker,
+            )
+            TestRepository.insert(nyDeltaker)
+
+            val nyDeltakerOppdaterUtkast = Deltakeroppdatering(
+                id = nyDeltaker.id,
+                startdato = null,
+                sluttdato = null,
+                dagerPerUke = null,
+                deltakelsesprosent = 100F,
+                bakgrunnsinformasjon = "Tekst",
+                deltakelsesinnhold = null,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                erManueltDeltMedArrangor = false,
+                historikk = emptyList(),
+            )
+            deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
+
+            deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+
+            MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
+            pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
+
+            val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
+            gammelDeltakerFraDb.kanEndres shouldBe true
+        }
+
+        @Test
+        fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen forblir laast`() = runTest {
+            val navEnhet = TestData.lagNavEnhet()
+            TestRepository.insert(navEnhet)
+
+            val gammelDeltaker = TestData.lagDeltaker(
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+                navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
+            )
+            TestRepository.insert(gammelDeltaker)
+
+            val nyDeltaker = TestData.lagDeltakerKladd(
+                deltakerliste = gammelDeltaker.deltakerliste,
+                navBruker = gammelDeltaker.navBruker,
+            )
+            TestRepository.insert(nyDeltaker)
+
+            val nyDeltakerOppdaterUtkast = Deltakeroppdatering(
+                id = nyDeltaker.id,
+                startdato = null,
+                sluttdato = null,
+                dagerPerUke = null,
+                deltakelsesprosent = 100F,
+                bakgrunnsinformasjon = "Tekst",
+                deltakelsesinnhold = null,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                erManueltDeltMedArrangor = false,
+                historikk = emptyList(),
+            )
+
+            deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
+
+            deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+
+            MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
+
+            pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
+
+            val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
+            gammelDeltakerFraDb.kanEndres shouldBe false
         }
     }
 }

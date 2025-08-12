@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import kotliquery.Row
 import kotliquery.queryOf
+import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.utils.database.Database
 import java.time.LocalDateTime
 import java.util.UUID
@@ -13,6 +14,7 @@ class NavAnsattRepository {
         navn = row.string("navn"),
         telefon = row.stringOrNull("telefon"),
         epost = row.stringOrNull("epost"),
+        navEnhetId = null, // Should be same as amt-deltaker?
     )
 
     fun upsert(navAnsatt: NavAnsatt): NavAnsatt {

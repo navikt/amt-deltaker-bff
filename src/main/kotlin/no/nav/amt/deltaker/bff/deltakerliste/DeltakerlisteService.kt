@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
-import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.time.Period

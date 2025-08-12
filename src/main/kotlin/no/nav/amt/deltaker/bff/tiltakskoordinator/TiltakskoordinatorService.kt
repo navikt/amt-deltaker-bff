@@ -10,9 +10,7 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
-import no.nav.amt.deltaker.bff.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
@@ -20,9 +18,10 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDelta
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
-import kotlin.collections.map
 
 class TiltakskoordinatorService(
     private val amtDeltakerClient: AmtDeltakerClient,
@@ -163,7 +162,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
         telefonnummer = navVeileder?.telefon,
         epost = navVeileder?.epost,
     ),
-    beskyttelsesmarkering = navBruker.getBeskyttelsesmarkeringer(),
+    beskyttelsesmarkering = navBruker.beskyttelsesmarkeringer,
     vurdering = sisteVurdering,
     innsatsgruppe = navBruker.innsatsgruppe,
     deltakerliste = deltakerliste,
