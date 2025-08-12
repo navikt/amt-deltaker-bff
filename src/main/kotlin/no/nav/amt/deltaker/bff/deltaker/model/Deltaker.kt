@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
@@ -9,6 +8,7 @@ import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.person.NavBruker
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -154,8 +154,8 @@ data class Deltaker(
 
 const val FERIETILLEGG = 4L
 
-fun years(n: Long) = Duration.of(n * 365, ChronoUnit.DAYS)
+fun years(n: Long): Duration = Duration.of(n * 365, ChronoUnit.DAYS)
 
-fun months(n: Long) = Duration.of(n * 30, ChronoUnit.DAYS)
+fun months(n: Long): Duration = Duration.of(n * 30, ChronoUnit.DAYS)
 
-fun weeks(n: Long) = Duration.of(n * 7, ChronoUnit.DAYS)
+fun weeks(n: Long): Duration = Duration.of(n * 7, ChronoUnit.DAYS)

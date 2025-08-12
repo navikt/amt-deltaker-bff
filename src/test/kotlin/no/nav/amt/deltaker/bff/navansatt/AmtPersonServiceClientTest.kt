@@ -12,6 +12,8 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavBruker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavEnhet
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.deltaker.bff.utils.toDto
+import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
+import no.nav.amt.lib.models.person.dto.NavBrukerFodselsarDto
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.Year

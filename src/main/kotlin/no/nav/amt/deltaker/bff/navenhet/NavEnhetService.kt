@@ -1,7 +1,8 @@
 package no.nav.amt.deltaker.bff.navenhet
 
-import no.nav.amt.deltaker.bff.navansatt.AmtPersonServiceClient
+import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
+import no.nav.amt.lib.models.person.NavEnhet
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
