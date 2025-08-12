@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
@@ -9,6 +8,7 @@ import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.person.NavBruker
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -40,6 +40,17 @@ data class Deltaker(
                 it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
             }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
 
+    val paameldtDato
+        get() = historikk
+            .firstOrNull { it is DeltakerHistorikk.Vedtak || it is DeltakerHistorikk.ImportertFraArena }
+            ?.let {
+                when (it) {
+                    is DeltakerHistorikk.ImportertFraArena -> it.importertFraArena.importertDato
+                    is DeltakerHistorikk.Vedtak -> it.vedtak.fattet
+                    else -> null
+                }
+            }
+
     val ikkeFattetVedtak
         get() = historikk
             .firstOrNull {
@@ -61,7 +72,9 @@ data class Deltaker(
 
     fun harSluttet(): Boolean = status.type in AVSLUTTENDE_STATUSER
 
-    fun harSluttetForMindreEnnToMndSiden(): Boolean = harSluttet() && status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
+    fun harSluttetForMindreEnnToMndSiden(): Boolean = harSluttet() &&
+        sluttdato?.isAfter(LocalDate.now().minusMonths(2))
+            ?: status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
 
     fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
         this.deltakerliste.deltakerAdresseDeles()
@@ -141,8 +154,8 @@ data class Deltaker(
 
 const val FERIETILLEGG = 4L
 
-fun years(n: Long) = Duration.of(n * 365, ChronoUnit.DAYS)
+fun years(n: Long): Duration = Duration.of(n * 365, ChronoUnit.DAYS)
 
-fun months(n: Long) = Duration.of(n * 30, ChronoUnit.DAYS)
+fun months(n: Long): Duration = Duration.of(n * 30, ChronoUnit.DAYS)
 
-fun weeks(n: Long) = Duration.of(n * 7, ChronoUnit.DAYS)
+fun weeks(n: Long): Duration = Duration.of(n * 7, ChronoUnit.DAYS)

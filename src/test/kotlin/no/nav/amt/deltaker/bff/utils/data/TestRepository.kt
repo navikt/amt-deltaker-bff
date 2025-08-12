@@ -5,14 +5,14 @@ import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
-import no.nav.amt.deltaker.bff.navenhet.NavEnhet
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetDbo
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -109,19 +109,19 @@ object TestRepository {
     fun insert(deltakerliste: Deltakerliste, overordnetArrangor: Arrangor? = null) {
         try {
             insert(deltakerliste.tiltak)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             log.warn("Tiltakstype  ${deltakerliste.tiltak.arenaKode} er allerede opprettet")
         }
         if (overordnetArrangor != null) {
             try {
                 insert(overordnetArrangor)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 log.warn("Overordnet arrangor med id ${overordnetArrangor.id} er allerede opprettet")
             }
         }
         try {
             insert(deltakerliste.arrangor.arrangor)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             log.warn("Arrangor med id ${deltakerliste.arrangor.arrangor.id} er allerede opprettet")
         }
 
@@ -144,7 +144,7 @@ object TestRepository {
                         "tiltakstype_id" to deltakerliste.tiltak.id,
                         "start_dato" to deltakerliste.startDato,
                         "slutt_dato" to deltakerliste.sluttDato,
-                        "oppstart" to deltakerliste.oppstart?.name,
+                        "oppstart" to deltakerliste.oppstart.name,
                         "antall_plasser" to deltakerliste.antallPlasser,
                         "apent_for_pamelding" to deltakerliste.apentForPamelding,
                     ),
@@ -156,7 +156,7 @@ object TestRepository {
     fun insert(deltaker: Deltaker) = Database.query { session ->
         try {
             insert(deltaker.navBruker)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             log.warn("NavBruker med id ${deltaker.navBruker.personId} er allerede opprettet")
         }
         try {
@@ -323,21 +323,25 @@ object TestRepository {
 
     fun insert(bruker: NavBruker) = Database.query {
         try {
-            if (bruker.navVeilederId != null) {
-                val navVeileder = TestData.lagNavAnsatt(bruker.navVeilederId!!)
+            val navVeilederId: UUID? = bruker.navVeilederId
+            if (navVeilederId != null) {
+                val navVeileder = TestData.lagNavAnsatt(navVeilederId)
                 insert(navVeileder)
             }
         } catch (e: Exception) {
             log.warn("NavAnsatt med id ${bruker.navVeilederId} er allerede opprettet", e)
         }
+
         try {
-            if (bruker.navEnhetId != null) {
-                val enhet = TestData.lagNavEnhet(bruker.navEnhetId!!)
+            val navEnhetId: UUID? = bruker.navEnhetId
+            if (navEnhetId != null) {
+                val enhet = TestData.lagNavEnhet(navEnhetId)
                 insert(enhet)
             }
         } catch (e: Exception) {
             log.warn("NavEnhet med id ${bruker.navEnhetId} er allerede opprettet", e)
         }
+
         val sql =
             """
             insert into nav_bruker(person_id, personident, fornavn, mellomnavn, etternavn, adressebeskyttelse, oppfolgingsperioder, innsatsgruppe, adresse, er_skjermet, nav_enhet_id, nav_veileder_id) 

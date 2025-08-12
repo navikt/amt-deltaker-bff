@@ -6,9 +6,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.utils.CountingCache
 import no.nav.amt.deltaker.bff.utils.createMockHttpClient
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
+import no.nav.amt.lib.testing.utils.CountingCache
 import org.junit.jupiter.api.Test
 
 class AmtDistribusjonClientTest {

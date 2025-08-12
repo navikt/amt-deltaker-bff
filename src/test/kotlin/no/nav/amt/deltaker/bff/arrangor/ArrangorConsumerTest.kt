@@ -2,9 +2,9 @@ package no.nav.amt.deltaker.bff.arrangor
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
