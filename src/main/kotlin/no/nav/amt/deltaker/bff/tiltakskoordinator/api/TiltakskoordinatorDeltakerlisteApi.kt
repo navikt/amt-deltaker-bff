@@ -170,6 +170,7 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         feilkode = feilkode,
         ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
         harAktiveForslag = forslag.any { f -> f.status == Forslag.Status.VenterPaSvar },
+        kanEndres = kanEndres,
     )
 }
 
