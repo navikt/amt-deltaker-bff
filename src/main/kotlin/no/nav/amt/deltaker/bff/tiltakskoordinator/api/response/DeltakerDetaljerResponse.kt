@@ -1,10 +1,10 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Beskyttelsesmarkering
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.person.Beskyttelsesmarkering
 import java.time.LocalDate
 import java.util.UUID
 

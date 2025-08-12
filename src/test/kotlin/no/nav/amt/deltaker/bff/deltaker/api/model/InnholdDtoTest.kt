@@ -2,13 +2,13 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.Test
 
 class InnholdDtoTest {

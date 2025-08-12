@@ -11,7 +11,7 @@ plugins {
     id("io.ktor.plugin") version "3.2.3"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
-    id("com.gradleup.shadow") version "8.3.9"
+    id("com.gradleup.shadow") version "9.0.1"
 }
 
 repositories {
@@ -21,7 +21,7 @@ repositories {
 
 val ktorVersion = "3.2.3"
 val logbackVersion = "1.5.18"
-val prometeusVersion = "1.15.2"
+val prometeusVersion = "1.15.3"
 val ktlintVersion = "1.6.0"
 val jacksonVersion = "2.19.2"
 val logstashEncoderVersion = "8.1"
@@ -35,7 +35,7 @@ val postgresVersion = "42.7.7"
 val caffeineVersion = "3.2.2"
 val mockkVersion = "1.14.5"
 val nimbusVersion = "10.4.1"
-val amtLibVersion = "1.2025.08.05_08.41-6d03d723987a"
+val amtLibVersion = "1.2025.08.12_09.57-61d1b79c30eb"
 val unleashVersion = "11.0.2"
 
 dependencies {
@@ -76,7 +76,7 @@ dependencies {
 
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
     implementation("no.nav.amt.lib:utils:$amtLibVersion")
-    implementation("no.nav.amt.lib:models:$amtLibVersion")
+    implementation("no.nav.amt.lib:ktor:$amtLibVersion")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")

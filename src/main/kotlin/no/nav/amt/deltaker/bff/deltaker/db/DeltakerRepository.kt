@@ -4,20 +4,20 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Query
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerIdOgStatus
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.Adressebeskyttelse
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
+import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.amt.lib.utils.database.Database
+import no.nav.amt.lib.utils.objectMapper
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.UUID
@@ -38,6 +38,8 @@ class DeltakerRepository {
             erSkjermet = row.boolean("nb.er_skjermet"),
             navEnhetId = row.uuidOrNull("nb.nav_enhet_id"),
             navVeilederId = row.uuidOrNull("nb.nav_veileder_id"),
+            telefon = null,
+            epost = null,
         ),
         deltakerliste = DeltakerlisteRepository.rowMapper(row),
         startdato = row.localDateOrNull("d.startdato"),

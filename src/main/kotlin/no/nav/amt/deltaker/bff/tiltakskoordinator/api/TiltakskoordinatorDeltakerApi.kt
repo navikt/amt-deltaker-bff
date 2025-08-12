@@ -9,7 +9,6 @@ import io.ktor.server.routing.get
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -26,6 +25,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.VurderingResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.toResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 fun Routing.registerTiltakskoordinatorDeltakerApi(

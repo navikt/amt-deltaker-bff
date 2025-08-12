@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getPersonident
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -26,6 +25,7 @@ import no.nav.amt.deltaker.bff.innbygger.model.toInnbyggerDeltakerResponse
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 fun Routing.registerInnbyggerApi(
@@ -83,7 +83,7 @@ fun Routing.registerInnbyggerApi(
             val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
             val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
-            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart!!)
+            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart)
             val json = objectMapper.writePolymorphicListAsString(historikkResponse)
             call.respondText(json, ContentType.Application.Json)
         }
