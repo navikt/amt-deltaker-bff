@@ -18,17 +18,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
+
       - name: Setup Gradle to generate and submit dependency graphs
         uses: gradle/actions/setup-gradle@v4
         with:
           dependency-graph: generate-and-submit
+
       - name: Build artifacts
-        run: ./gradlew build
+        run: ./gradlew build  --no-daemon
+
       - name: docker-build-push
         uses: nais/docker-build-push@v0
         id: docker-build-push
@@ -50,6 +54,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:
@@ -69,6 +74,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Deploy application
         uses: nais/deploy/actions/deploy@v2
         env:

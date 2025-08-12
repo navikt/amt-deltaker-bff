@@ -1,8 +1,8 @@
 package no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response
 
-import no.nav.amt.deltaker.bff.deltaker.navbruker.model.NavBruker
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.person.NavBruker
 import java.time.LocalDate
 import java.util.UUID
 

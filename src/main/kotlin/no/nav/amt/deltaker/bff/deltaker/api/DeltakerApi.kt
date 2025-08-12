@@ -14,7 +14,6 @@ import jakarta.ws.rs.ForbiddenException
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -48,6 +47,8 @@ import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.utils.objectMapper
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.UUID
@@ -62,7 +63,7 @@ fun Routing.registerDeltakerApi(
     sporbarhetsloggService: SporbarhetsloggService,
     unleashToggle: UnleashToggle,
 ) {
-    val log = LoggerFactory.getLogger(javaClass)
+    val log: Logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
@@ -86,7 +87,7 @@ fun Routing.registerDeltakerApi(
             throw ForbiddenException("Kan ikke utføre endring på deltaker ${deltaker.id}")
         }
 
-        if (!deltaker.navBruker.harAktivOppfolgingsperiode() && !tillatEndringUtenOppfPeriode) {
+        if (!deltaker.navBruker.harAktivOppfolgingsperiode && !tillatEndringUtenOppfPeriode) {
             log.warn("Kan ikke endre deltaker med id ${deltaker.id} som ikke har aktiv oppfølgingsperiode")
             throw IllegalArgumentException("Kan ikke endre deltaker som ikke har aktiv oppfølgingsperiode")
         }
@@ -270,7 +271,7 @@ fun Routing.registerDeltakerApi(
             val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
 
             val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
-            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart!!)
+            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart)
             val json = objectMapper.writePolymorphicListAsString(historikkResponse)
             call.respondText(json, ContentType.Application.Json)
         }
