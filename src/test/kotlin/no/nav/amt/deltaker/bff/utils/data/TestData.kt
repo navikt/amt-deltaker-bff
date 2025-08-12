@@ -25,6 +25,10 @@ import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.hendelse.Hendelse
+import no.nav.amt.lib.models.hendelse.HendelseAnsvarlig
+import no.nav.amt.lib.models.hendelse.HendelseDeltaker
+import no.nav.amt.lib.models.hendelse.HendelseType
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.NavEnhet
@@ -336,7 +340,14 @@ object TestData {
         navn: String = "Veileder Veiledersen",
         epost: String = "veileder.veiledersen@nav.no",
         telefon: String = "12345678",
-    ) = NavAnsatt(id, navIdent = navIdent, navn = navn, epost = epost, telefon = telefon)
+    ) = NavAnsatt(
+        id = id,
+        navIdent = navIdent,
+        navn = navn,
+        epost = epost,
+        telefon = telefon,
+        navEnhetId = null,
+    )
 
     private val navEnhetCache = mutableMapOf<String, NavEnhet>()
 
