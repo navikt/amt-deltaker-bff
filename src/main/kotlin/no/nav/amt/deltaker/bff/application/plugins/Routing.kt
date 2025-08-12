@@ -13,7 +13,6 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.application.registerHealthApi
 import no.nav.amt.deltaker.bff.auth.AuthenticationException
 import no.nav.amt.deltaker.bff.auth.AuthorizationException
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -41,6 +40,8 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinator
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
+import no.nav.amt.lib.ktor.routing.registerHealthApi
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 fun Application.configureRouting(
@@ -168,7 +169,7 @@ fun Application.configureRouting(
 }
 
 object StatusPageLogger {
-    val log = LoggerFactory.getLogger(javaClass)
+    val log: Logger = LoggerFactory.getLogger(javaClass)
 
     fun log(
         statusCode: HttpStatusCode,

@@ -14,7 +14,6 @@ import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
-import no.nav.amt.deltaker.bff.navansatt.NavAnsatt
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusAarsakResponse
@@ -23,6 +22,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResp
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
@@ -185,7 +185,7 @@ fun RoutingContext.getDeltakerlisteId(): UUID {
 
     return try {
         UUID.fromString(id)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         throw IllegalArgumentException("URL parameter 'deltakerlisteId' er ikke formattert riktig.")
     }
 }
