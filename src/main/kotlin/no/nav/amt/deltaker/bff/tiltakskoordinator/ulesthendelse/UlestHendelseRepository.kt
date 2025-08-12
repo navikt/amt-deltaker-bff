@@ -3,12 +3,12 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.application.plugins.objectMapper
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.hendelse.Hendelse
 import no.nav.amt.lib.utils.database.Database
+import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 class UlestHendelseRepository {
