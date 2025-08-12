@@ -77,7 +77,6 @@ dependencies {
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
     implementation("no.nav.amt.lib:utils:$amtLibVersion")
     implementation("no.nav.amt.lib:ktor:$amtLibVersion")
-    implementation("no.nav.amt.lib:testing:$amtLibVersion")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
