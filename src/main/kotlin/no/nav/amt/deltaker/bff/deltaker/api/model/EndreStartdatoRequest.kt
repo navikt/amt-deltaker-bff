@@ -15,7 +15,13 @@ data class EndreStartdatoRequest(
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
     private val kanEndreStartdato =
-        listOf(DeltakerStatus.Type.VENTER_PA_OPPSTART, DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET)
+        listOf(
+            DeltakerStatus.Type.VENTER_PA_OPPSTART,
+            DeltakerStatus.Type.DELTAR,
+            DeltakerStatus.Type.HAR_SLUTTET,
+            DeltakerStatus.Type.FULLFORT,
+            DeltakerStatus.Type.AVBRUTT,
+        )
 
     override fun valider(deltaker: Deltaker) {
         validerDeltakerKanEndres(deltaker)
