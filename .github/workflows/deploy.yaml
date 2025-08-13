@@ -31,7 +31,7 @@ jobs:
           dependency-graph: generate-and-submit
 
       - name: Build artifacts
-        run: ./gradlew build --no-daemon --no-configuration-cache
+        run: ./gradlew clean build --no-build-cache --no-configuration-cache --no-daemon --info
 
       - name: docker-build-push
         uses: nais/docker-build-push@v0
