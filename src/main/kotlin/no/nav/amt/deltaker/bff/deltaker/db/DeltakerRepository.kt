@@ -445,7 +445,7 @@ class DeltakerRepository {
         val params = mapOf("deltakerliste_id" to deltakerlisteId)
         session.run(
             queryOf(
-                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null and d.kan_endres = true"),
+                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"),
                 params,
             ).map(::rowMapper).asList,
         )
