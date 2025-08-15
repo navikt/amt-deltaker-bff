@@ -61,7 +61,7 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), request.personident)
 
-            val deltaker = pameldingService.opprettKladd(
+            val deltaker = pameldingService.opprettDeltaker(
                 deltakerlisteId = request.deltakerlisteId,
                 personIdent = request.personident,
             )

@@ -16,7 +16,7 @@ class PameldingService(
     private val amtDeltakerClient: AmtDeltakerClient,
     private val navEnhetService: NavEnhetService,
 ) {
-    suspend fun opprettKladd(deltakerlisteId: UUID, personIdent: String): Deltaker {
+    suspend fun opprettDeltaker(deltakerlisteId: UUID, personIdent: String): Deltaker {
         val kladdResponse = amtDeltakerClient.opprettKladd(
             personIdent = personIdent,
             deltakerlisteId = deltakerlisteId,

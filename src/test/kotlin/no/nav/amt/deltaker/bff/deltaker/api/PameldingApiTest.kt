@@ -126,7 +126,7 @@ class PameldingApiTest {
         val navEnhet = TestData.lagNavEnhet(id = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet)
 
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery { pameldingService.opprettKladd(any(), any()) } returns deltaker
+        coEvery { pameldingService.opprettDeltaker(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
         coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
@@ -148,7 +148,7 @@ class PameldingApiTest {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
 
         coEvery {
-            pameldingService.opprettKladd(any(), any())
+            pameldingService.opprettDeltaker(any(), any())
         } throws NoSuchElementException("Deltaker ikke funnet")
 
         setUpTestApplication()

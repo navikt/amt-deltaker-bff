@@ -56,7 +56,7 @@ class PameldingServiceTest {
         MockResponseHandler.addNavEnhetGetResponse(navEnhetInTest)
 
         runBlocking {
-            val deltaker = pameldingService.opprettKladd(
+            val deltaker = pameldingService.opprettDeltaker(
                 deltakerlisteId = deltakerListeInTest.id,
                 personIdent = kladdInTest.navBruker.personident,
             )
@@ -93,7 +93,7 @@ class PameldingServiceTest {
         MockResponseHandler.addOpprettKladdResponse(null)
         runBlocking {
             assertFailsWith<IllegalStateException> {
-                pameldingService.opprettKladd(UUID.randomUUID(), personIdent)
+                pameldingService.opprettDeltaker(UUID.randomUUID(), personIdent)
             }
         }
     }
