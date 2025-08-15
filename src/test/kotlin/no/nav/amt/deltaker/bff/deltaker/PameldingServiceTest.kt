@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -20,6 +20,11 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagArrangor
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerKladd
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
@@ -32,143 +37,71 @@ import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.time.LocalDate
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
 class PameldingServiceTest {
-    companion object {
-        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-        private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-        private val deltakerService = DeltakerService(
-            deltakerRepository = DeltakerRepository(),
-            amtDeltakerClient = mockAmtDeltakerClient(),
-            navEnhetService = navEnhetService,
-            forslagService = mockk(),
-        )
-
-        private var pameldingService = PameldingService(
-            deltakerService = deltakerService,
-            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-            amtDeltakerClient = mockAmtDeltakerClient(),
-            navEnhetService = navEnhetService,
-        )
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            SingletonPostgres16Container
-        }
-    }
-
     @Test
     fun `opprettKladd - deltaker finnes ikke - oppretter ny deltaker`() {
-        val overordnetArrangor = TestData.lagArrangor()
-        val arrangor = TestData.lagArrangor(overordnetArrangorId = overordnetArrangor.id)
-        val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
-        val kladd = TestData.lagDeltakerKladd(deltakerliste = deltakerliste)
-        val navVeileder = TestData.lagNavAnsatt(id = kladd.navBruker.navVeilederId!!)
-        val navEnhet = TestData.lagNavEnhet(id = kladd.navBruker.navEnhetId!!)
-        TestRepository.insert(deltakerliste, overordnetArrangor)
+        val overordnetArrangorInTest = lagArrangor()
+        val arrangorInTest = lagArrangor(overordnetArrangorId = overordnetArrangorInTest.id)
+        val deltakerListeInTest = lagDeltakerliste(arrangor = arrangorInTest, overordnetArrangor = overordnetArrangorInTest)
+        val kladdInTest = lagDeltakerKladd(deltakerliste = deltakerListeInTest)
+        val navVeilederInTest = lagNavAnsatt(id = kladdInTest.navBruker.navVeilederId!!)
+        val navEnhetInTest = lagNavEnhet(id = kladdInTest.navBruker.navEnhetId!!)
+        TestRepository.insert(deltakerListeInTest, overordnetArrangorInTest)
 
-        MockResponseHandler.addOpprettKladdResponse(kladd)
-        MockResponseHandler.addNavAnsattResponse(navVeileder)
-        MockResponseHandler.addNavEnhetGetResponse(navEnhet)
+        MockResponseHandler.addOpprettKladdResponse(kladdInTest)
+        MockResponseHandler.addNavAnsattResponse(navVeilederInTest)
+        MockResponseHandler.addNavEnhetGetResponse(navEnhetInTest)
 
         runBlocking {
             val deltaker = pameldingService.opprettKladd(
-                deltakerlisteId = deltakerliste.id,
-                personident = kladd.navBruker.personident,
+                deltakerlisteId = deltakerListeInTest.id,
+                personIdent = kladdInTest.navBruker.personident,
             )
 
             deltaker.id shouldBe deltakerService
-                .getDeltakelser(kladd.navBruker.personident, deltakerliste.id)
+                .getDeltakelser(kladdInTest.navBruker.personident, deltakerListeInTest.id)
                 .first()
                 .id
-            deltaker.deltakerliste.id shouldBe deltakerliste.id
-            deltaker.deltakerliste.navn shouldBe deltakerliste.navn
-            deltaker.deltakerliste.tiltak.arenaKode shouldBe deltakerliste.tiltak.arenaKode
-            deltaker.deltakerliste.arrangor.arrangor shouldBe arrangor
-            deltaker.deltakerliste.arrangor.overordnetArrangorNavn shouldBe overordnetArrangor.navn
-            deltaker.deltakerliste.getOppstartstype() shouldBe deltakerliste.getOppstartstype()
-            deltaker.status.type shouldBe DeltakerStatus.Type.KLADD
-            deltaker.startdato shouldBe null
-            deltaker.sluttdato shouldBe null
-            deltaker.dagerPerUke shouldBe null
-            deltaker.deltakelsesprosent shouldBe null
-            deltaker.bakgrunnsinformasjon shouldBe null
-            deltaker.deltakelsesinnhold!!.innhold shouldBe emptyList()
-        }
-    }
 
-    @Test
-    fun `opprettKladd - kall til amt-deltaker feiler - kaster exception`() {
-        val personident = TestData.randomIdent()
-        MockResponseHandler.addOpprettKladdResponse(null)
-        runBlocking {
-            assertFailsWith<IllegalStateException> {
-                pameldingService.opprettKladd(UUID.randomUUID(), personident)
+            assertSoftly(deltaker) {
+                status.type shouldBe DeltakerStatus.Type.KLADD
+                startdato shouldBe null
+                sluttdato shouldBe null
+                dagerPerUke shouldBe null
+                deltakelsesprosent shouldBe null
+                bakgrunnsinformasjon shouldBe null
+                deltakelsesinnhold!!.innhold shouldBe emptyList()
+
+                assertSoftly(deltakerListeInTest) {
+                    id shouldBe deltakerListeInTest.id
+                    navn shouldBe deltakerListeInTest.navn
+                    tiltak.arenaKode shouldBe deltakerListeInTest.tiltak.arenaKode
+                    it.arrangor.arrangor shouldBe arrangorInTest
+                    it.arrangor.overordnetArrangorNavn shouldBe overordnetArrangorInTest.navn
+                    it.getOppstartstype() shouldBe deltakerListeInTest.getOppstartstype()
+                }
             }
         }
     }
 
     @Test
-    fun `opprettKladd - deltaker finnes og deltar fortsatt - returnerer eksisterende deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            sluttdato = null,
-            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
-        )
-        TestRepository.insert(deltaker)
-
+    fun `opprettKladd - kall til amt-deltaker feiler - kaster exception`() {
+        val personIdent = TestData.randomIdent()
+        MockResponseHandler.addOpprettKladdResponse(null)
         runBlocking {
-            val eksisterendeDeltaker =
-                pameldingService.opprettKladd(
-                    deltaker.deltakerliste.id,
-                    deltaker.navBruker.personident,
-                )
-
-            eksisterendeDeltaker.id shouldBe deltaker.id
-            eksisterendeDeltaker.status.type shouldBe DeltakerStatus.Type.DELTAR
-            eksisterendeDeltaker.startdato shouldBe deltaker.startdato
-            eksisterendeDeltaker.sluttdato shouldBe deltaker.sluttdato
-            eksisterendeDeltaker.dagerPerUke shouldBe deltaker.dagerPerUke
-            eksisterendeDeltaker.deltakelsesprosent shouldBe deltaker.deltakelsesprosent
-            eksisterendeDeltaker.bakgrunnsinformasjon shouldBe deltaker.bakgrunnsinformasjon
-            eksisterendeDeltaker.deltakelsesinnhold shouldBe deltaker.deltakelsesinnhold
-        }
-    }
-
-    @Test
-    fun `opprettKladd - deltaker finnes men har sluttet - oppretter ny deltaker`() {
-        val deltaker = TestData.lagDeltaker(
-            sluttdato = LocalDate.now().minusMonths(3),
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-        )
-        TestRepository.insert(deltaker)
-
-        val kladd = TestData.lagDeltakerKladd(deltakerliste = deltaker.deltakerliste)
-        val navVeileder = TestData.lagNavAnsatt(kladd.navBruker.navVeilederId!!)
-        val navEnhet = TestData.lagNavEnhet(kladd.navBruker.navEnhetId!!)
-        MockResponseHandler.addOpprettKladdResponse(kladd)
-        MockResponseHandler.addNavAnsattResponse(navVeileder)
-        MockResponseHandler.addNavEnhetGetResponse(navEnhet)
-
-        runBlocking {
-            val nyDeltaker =
-                pameldingService.opprettKladd(
-                    deltaker.deltakerliste.id,
-                    deltaker.navBruker.personident,
-                )
-
-            nyDeltaker.id shouldNotBe deltaker.id
-            nyDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
+            assertFailsWith<IllegalStateException> {
+                pameldingService.opprettKladd(UUID.randomUUID(), personIdent)
+            }
         }
     }
 
     @Test
     fun `upsertUtkast - oppdaterer og returnerer deltaker`() {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
-        val navEnhet = TestData.lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
+        val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
         TestRepository.insert(navEnhet)
         TestRepository.insert(deltaker)
 
@@ -210,7 +143,7 @@ class PameldingServiceTest {
     inner class AvbrytUtkast {
         @Test
         fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen laases opp`() = runTest {
-            val navEnhet = TestData.lagNavEnhet()
+            val navEnhet = lagNavEnhet()
             TestRepository.insert(navEnhet)
 
             val gammelDeltaker = TestData.lagDeltaker(
@@ -219,7 +152,7 @@ class PameldingServiceTest {
             )
             TestRepository.insert(gammelDeltaker)
 
-            val nyDeltaker = TestData.lagDeltakerKladd(
+            val nyDeltaker = lagDeltakerKladd(
                 deltakerliste = gammelDeltaker.deltakerliste,
                 navBruker = gammelDeltaker.navBruker,
             )
@@ -250,7 +183,7 @@ class PameldingServiceTest {
 
         @Test
         fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen forblir laast`() = runTest {
-            val navEnhet = TestData.lagNavEnhet()
+            val navEnhet = lagNavEnhet()
             TestRepository.insert(navEnhet)
 
             val gammelDeltaker = TestData.lagDeltaker(
@@ -259,7 +192,7 @@ class PameldingServiceTest {
             )
             TestRepository.insert(gammelDeltaker)
 
-            val nyDeltaker = TestData.lagDeltakerKladd(
+            val nyDeltaker = lagDeltakerKladd(
                 deltakerliste = gammelDeltaker.deltakerliste,
                 navBruker = gammelDeltaker.navBruker,
             )
@@ -288,6 +221,31 @@ class PameldingServiceTest {
 
             val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
             gammelDeltakerFraDb.kanEndres shouldBe false
+        }
+    }
+
+    companion object {
+        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+        private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+        private val deltakerService = DeltakerService(
+            deltakerRepository = DeltakerRepository(),
+            amtDeltakerClient = mockAmtDeltakerClient(),
+            navEnhetService = navEnhetService,
+            forslagService = mockk(),
+        )
+
+        private var pameldingService = PameldingService(
+            deltakerService = deltakerService,
+            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
+            amtDeltakerClient = mockAmtDeltakerClient(),
+            navEnhetService = navEnhetService,
+        )
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            @Suppress("UnusedExpression")
+            SingletonPostgres16Container
         }
     }
 }

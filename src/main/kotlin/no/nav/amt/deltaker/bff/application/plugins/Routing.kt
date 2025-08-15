@@ -113,7 +113,6 @@ fun Application.configureRouting(
             navEnhetService,
             forslagService,
             amtDistribusjonClient,
-            deltakerlisteService,
         )
 
         registerInnbyggerApi(

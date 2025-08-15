@@ -40,7 +40,7 @@ class TestdataService(
         )
         val kladd = pameldingService.opprettKladd(
             deltakerlisteId = opprettTestDeltakelseRequest.deltakerlisteId,
-            personident = opprettTestDeltakelseRequest.personident,
+            personIdent = opprettTestDeltakelseRequest.personident,
         )
         val deltakerId = kladd.id
 

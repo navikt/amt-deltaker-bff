@@ -8,7 +8,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class PameldingService(
@@ -17,25 +16,14 @@ class PameldingService(
     private val amtDeltakerClient: AmtDeltakerClient,
     private val navEnhetService: NavEnhetService,
 ) {
-    private val log = LoggerFactory.getLogger(javaClass)
-
-    suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): Deltaker {
-        val eksisterendeDeltaker = deltakerService
-            .getDeltakelser(personident, deltakerlisteId)
-            .firstOrNull { !it.harSluttet() }
-
-        if (eksisterendeDeltaker != null) {
-            log.warn("Deltakeren ${eksisterendeDeltaker.id} er allerede opprettet og deltar fortsatt")
-            return eksisterendeDeltaker
-        }
-
-        val kladd = amtDeltakerClient.opprettKladd(
+    suspend fun opprettKladd(deltakerlisteId: UUID, personIdent: String): Deltaker {
+        val kladdResponse = amtDeltakerClient.opprettKladd(
+            personIdent = personIdent,
             deltakerlisteId = deltakerlisteId,
-            personident = personident,
         )
 
-        navBrukerService.upsert(kladd.navBruker)
-        val deltaker = deltakerService.opprettDeltaker(kladd).getOrThrow()
+        navBrukerService.upsert(kladdResponse.navBruker)
+        val deltaker = deltakerService.opprettDeltaker(kladdResponse).getOrThrow()
 
         MetricRegister.OPPRETTET_KLADD.inc()
 

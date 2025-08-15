@@ -131,7 +131,6 @@ class PameldingApiTest {
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
         coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
-        coEvery { deltakerlisteService.sjekkAldersgrenseForDeltakelse(any(), any()) } returns Unit
 
         setUpTestApplication()
 
@@ -145,15 +144,18 @@ class PameldingApiTest {
     }
 
     @Test
-    fun `post pamelding - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
+    fun `post pamelding - deltakerliste finnes ikke - returnerer 404`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+
         coEvery {
-            deltakerlisteService.sjekkAldersgrenseForDeltakelse(any(), any())
-        } throws NoSuchElementException("Fant ikke deltakerliste")
+            pameldingService.opprettKladd(any(), any())
+        } throws NoSuchElementException("Deltaker ikke funnet")
+
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
-            status shouldBe HttpStatusCode.NotFound
-        }
+
+        val response = client.post("/pamelding") { postRequest(pameldingRequest) }
+
+        response.status shouldBe HttpStatusCode.NotFound
     }
 
     @Test

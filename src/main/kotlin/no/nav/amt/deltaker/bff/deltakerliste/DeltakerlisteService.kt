@@ -40,6 +40,7 @@ class DeltakerlisteService(
         return deltakerliste
     }
 
+    @Deprecated("Kontroll er flyttet/skal flyttes til amt-deltaker")
     suspend fun sjekkAldersgrenseForDeltakelse(deltakerlisteId: UUID, personident: String) {
         val deltakerliste = get(deltakerlisteId).getOrThrow()
         if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING) {
@@ -60,11 +61,3 @@ class DeltakerlisteService(
         }
     }
 }
-
-class DeltakerlisteStengtException(
-    message: String? = null,
-) : RuntimeException(message)
-
-class DeltakerForUngException(
-    message: String? = null,
-) : RuntimeException(message)
