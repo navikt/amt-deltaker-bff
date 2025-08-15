@@ -38,11 +38,11 @@ class TestdataService(
             sluttdato = forventetSluttdato,
             deltakerliste = deltakerliste,
         )
-        val kladd = pameldingService.opprettKladd(
+        val deltaker = pameldingService.opprettDeltaker(
             deltakerlisteId = opprettTestDeltakelseRequest.deltakerlisteId,
-            personident = opprettTestDeltakelseRequest.personident,
+            personIdent = opprettTestDeltakelseRequest.personident,
         )
-        val deltakerId = kladd.id
+        val deltakerId = deltaker.id
 
         delay(10)
 

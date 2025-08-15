@@ -10,6 +10,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.request.AvsluttDeltakelseRequest
@@ -84,15 +85,19 @@ class AmtDeltakerClient(
         return response.body()
     }
 
-    suspend fun opprettKladd(deltakerlisteId: UUID, personident: String): KladdResponse {
+    suspend fun opprettKladd(deltakerlisteId: UUID, personIdent: String): KladdResponse {
         val token = azureAdTokenClient.getMachineToMachineToken(scope)
         val response = httpClient.post("$baseUrl/pamelding") {
             header(HttpHeaders.Authorization, token)
             header(HttpHeaders.ContentType, ContentType.Application.Json)
-            setBody(OpprettKladdRequest(deltakerlisteId, personident))
+            setBody(OpprettKladdRequest(deltakerlisteId, personIdent))
         }
 
         if (!response.status.isSuccess()) {
+            if (response.status == HttpStatusCode.NotFound) {
+                throw NoSuchElementException(response.bodyAsText())
+            }
+
             error(
                 "Kunne ikke opprette kladd i amt-deltaker. " +
                     "Status=${response.status.value} error=${response.bodyAsText()}",
