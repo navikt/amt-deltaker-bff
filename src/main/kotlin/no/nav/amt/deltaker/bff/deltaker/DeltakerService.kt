@@ -1,9 +1,8 @@
 package no.nav.amt.deltaker.bff.deltaker
 
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringResponse
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
@@ -23,6 +22,7 @@ import java.util.UUID
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
     private val amtDeltakerClient: AmtDeltakerClient,
+    private val paameldingClient: PaameldingClient,
     private val navEnhetService: NavEnhetService,
     private val forslagService: ForslagService,
 ) {
@@ -316,7 +316,7 @@ class DeltakerService(
             log.warn("Kan ikke slette deltaker med id ${deltaker.id} som har status ${deltaker.status.type}")
             return false
         }
-        amtDeltakerClient.slettKladd(deltaker.id)
+        paameldingClient.slettKladd(deltaker.id)
         delete(deltaker.id)
         return true
     }
@@ -331,7 +331,7 @@ class DeltakerService(
         log.info("Upserter kladd for deltaker med id ${deltaker.id}")
     }
 
-    fun opprettDeltaker(kladd: KladdResponse): Result<Deltaker> {
+    fun opprettDeltaker(kladd: OpprettKladdResponse): Result<Deltaker> {
         deltakerRepository.create(kladd)
         return deltakerRepository.get(kladd.id)
     }
@@ -354,29 +354,3 @@ class DeltakerService(
 
     fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) = deltakerRepository.updateBatch(oppdaterteDeltakere)
 }
-
-fun Deltaker.oppdater(oppdatering: Deltakeroppdatering) = this.copy(
-    startdato = oppdatering.startdato,
-    sluttdato = oppdatering.sluttdato,
-    dagerPerUke = oppdatering.dagerPerUke,
-    deltakelsesprosent = oppdatering.deltakelsesprosent,
-    bakgrunnsinformasjon = oppdatering.bakgrunnsinformasjon,
-    deltakelsesinnhold = oppdatering.deltakelsesinnhold,
-    status = oppdatering.status,
-    historikk = oppdatering.historikk,
-)
-
-fun Deltaker.toDeltakeroppdateringResponse(feilkode: DeltakerOppdateringFeilkode? = null) = DeltakerOppdateringResponse(
-    id = id,
-    startdato = startdato,
-    sluttdato = sluttdato,
-    dagerPerUke = dagerPerUke,
-    deltakelsesprosent = deltakelsesprosent,
-    bakgrunnsinformasjon = bakgrunnsinformasjon,
-    deltakelsesinnhold = deltakelsesinnhold,
-    status = status,
-    historikk = historikk,
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-    sistEndret = sistEndret,
-    feilkode = feilkode,
-)

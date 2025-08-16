@@ -18,6 +18,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
@@ -27,7 +28,6 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
@@ -46,7 +46,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
-import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
@@ -193,15 +192,14 @@ class TiltakskoordinatorDeltakerApiTest {
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             bakgrunnsinformasjon = bakgrunnsinformasjonRequest.bakgrunnsinformasjon,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client
             .post("/deltaker/${deltaker.id}/bakgrunnsinformasjon") { postRequest(bakgrunnsinformasjonRequest) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
             }
     }
 
@@ -212,6 +210,7 @@ class TiltakskoordinatorDeltakerApiTest {
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
             sluttdato = LocalDate.now().minusMonths(3),
         )
+
         setupMocks(deltaker, null)
 
         client
@@ -230,16 +229,15 @@ class TiltakskoordinatorDeltakerApiTest {
             status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
             deltakelsesinnhold = Deltakelsesinnhold("ledetekst", finnValgtInnhold(innholdRequest.innhold, deltaker)),
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client
             .post("/deltaker/${deltaker.id}/innhold") {
                 postRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.deltakelsesinnhold!!.innhold[0].innholdskode, null))))
             }.apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
             }
     }
 
@@ -256,13 +254,12 @@ class TiltakskoordinatorDeltakerApiTest {
             dagerPerUke = deltakelsesmengdeRequest.dagerPerUke?.toFloat(),
             deltakelsesprosent = deltakelsesmengdeRequest.deltakelsesprosent?.toFloat(),
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/deltakelsesmengde") { postRequest(deltakelsesmengdeRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -302,13 +299,12 @@ class TiltakskoordinatorDeltakerApiTest {
             startdato = startdatoRequest.startdato,
             sluttdato = sluttdatoRequest.sluttdato,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/startdato") { postRequest(startdatoRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -322,13 +318,12 @@ class TiltakskoordinatorDeltakerApiTest {
         val oppdatertDeltaker = deltaker.copy(
             sluttdato = sluttdatoRequest.sluttdato,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/sluttdato") { postRequest(sluttdatoRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -356,13 +351,12 @@ class TiltakskoordinatorDeltakerApiTest {
                 ikkeAktuellRequest.aarsak.toDeltakerStatusAarsak(),
             ),
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/ikke-aktuell") { postRequest(ikkeAktuellRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -379,18 +373,11 @@ class TiltakskoordinatorDeltakerApiTest {
                 aarsak = sluttarsakRequest.aarsak.toDeltakerStatusAarsak(),
             ),
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/sluttarsak") { postRequest(sluttarsakRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(
-                    ansatte,
-                    enhet,
-                    true,
-                    emptyList(),
-                ),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -401,11 +388,12 @@ class TiltakskoordinatorDeltakerApiTest {
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             navBruker = TestData.lagNavBruker(personident = "1234"),
         )
-        val (ansatte, enhet) = setupMocks(deltaker, null)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(deltaker, setupMocks(deltaker, deltaker))
 
         client.post("/deltaker/${deltaker.id}") { postRequest(deltakerRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
         coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
@@ -484,13 +472,12 @@ class TiltakskoordinatorDeltakerApiTest {
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             sluttdato = forlengDeltakelseRequest.sluttdato,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/forleng") { postRequest(forlengDeltakelseRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -552,13 +539,12 @@ class TiltakskoordinatorDeltakerApiTest {
             ),
             sluttdato = avsluttDeltakelseRequest.sluttdato,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -606,13 +592,12 @@ class TiltakskoordinatorDeltakerApiTest {
             begrunnelse = "begrunnelse",
             forslagId = null,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -638,13 +623,11 @@ class TiltakskoordinatorDeltakerApiTest {
             forslagId = null,
         )
 
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/avslutt") { postRequest(avsluttDeltakelseRequestIkkeDeltatt) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -660,7 +643,7 @@ class TiltakskoordinatorDeltakerApiTest {
     }
 
     @Test
-    fun `endre-avslutning til avbrutt- har tilgang, har fullført- returnerer oppdatert deltaker`() = testApplication {
+    fun `endre-avslutning til avbrutt- har tilgang, har fullfort- returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.FULLFORT))
         val oppdatertDeltaker = deltaker.copy(
@@ -676,18 +659,17 @@ class TiltakskoordinatorDeltakerApiTest {
             begrunnelse = "begrunnelse",
             forslagId = null,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/endre-avslutning") { postRequest(endreAvslutningRequestAvbrutt) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
     @Test
-    fun `endre-avslutning til fullført- har tilgang, har avbrutt- returnerer oppdatert deltaker`() = testApplication {
+    fun `endre-avslutning til fullfort- har tilgang, har avbrutt- returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
@@ -708,13 +690,12 @@ class TiltakskoordinatorDeltakerApiTest {
             begrunnelse = "begrunnelse",
             forslagId = null,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/endre-avslutning") { postRequest(endreAvslutningRequestAvbrutt) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -728,15 +709,14 @@ class TiltakskoordinatorDeltakerApiTest {
             startdato = null,
             sluttdato = null,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client
             .post("/deltaker/${deltaker.id}/reaktiver") { postRequest(reaktiverDeltakelseRequest) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
             }
     }
 
@@ -769,13 +749,12 @@ class TiltakskoordinatorDeltakerApiTest {
             startdato = null,
             sluttdato = null,
         )
-        val (ansatte, enhet) = setupMocks(deltaker, oppdatertDeltaker)
+
+        val expectedDeltakerResponse = deltakerResponseInTest(oppdatertDeltaker, setupMocks(deltaker, oppdatertDeltaker))
 
         client.post("/deltaker/${deltaker.id}/fjern-oppstartsdato") { postRequest(fjernOppstartsdatoRequest) }.apply {
             status shouldBe HttpStatusCode.OK
-            bodyAsText() shouldBe objectMapper.writeValueAsString(
-                oppdatertDeltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-            )
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
     }
 
@@ -786,14 +765,13 @@ class TiltakskoordinatorDeltakerApiTest {
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
         every { forslagService.get(forslag.id) } returns Result.success(forslag)
 
-        val (ansatte, enhet) = setupMocks(deltaker, null)
+        val expectedDeltakerResponse = deltakerResponseInTest(deltaker, setupMocks(deltaker, deltaker))
+
         client
             .post("/forslag/${forslag.id}/avvis") { postRequest(avvisForslagRequest) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(
-                    deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()),
-                )
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
             }
     }
 
@@ -906,5 +884,16 @@ class TiltakskoordinatorDeltakerApiTest {
         coEvery { navEnhetService.hentEnheterForHistorikk(any()) } returns enheter
 
         return Pair(ansatte, enhet)
+    }
+
+    companion object {
+        private fun deltakerResponseInTest(deltaker: Deltaker, mocks: Pair<Map<UUID, NavAnsatt>, NavEnhet?>) =
+            DeltakerResponse.fromDeltaker(
+                deltaker = deltaker,
+                ansatte = mocks.first,
+                vedtakSistEndretAvEnhet = mocks.second,
+                digitalBruker = true,
+                forslag = emptyList(),
+            )
     }
 }

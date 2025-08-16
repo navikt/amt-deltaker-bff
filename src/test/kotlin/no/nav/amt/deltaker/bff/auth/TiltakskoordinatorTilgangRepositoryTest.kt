@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.auth
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -24,6 +23,7 @@ import java.util.UUID
 class TiltakskoordinatorTilgangRepositoryTest {
     @BeforeEach
     fun setup() {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 
@@ -113,7 +113,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     }
 
     @Test
-    fun `hentAktiveForDeltakerliste - aktiv tilgang - henter tilganger på deltakerliste`() {
+    fun `hentAktiveForDeltakerliste - aktiv tilgang - henter tilganger pa deltakerliste`() {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
             repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 1
@@ -121,7 +121,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     }
 
     @Test
-    fun `hentAktiveForDeltakerliste - inaktiv tilgang - henter ikke tilganger på deltakerliste`() {
+    fun `hentAktiveForDeltakerliste - inaktiv tilgang - henter ikke tilganger pa deltakerliste`() {
         with(TiltakskoordinatorTilgangContext()) {
             medInaktivTilgang()
             repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 0
@@ -148,10 +148,12 @@ data class TiltakskoordinatorTilgangContext(
 ) {
     val deltakerRepository = DeltakerRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
-    val navAnsattAzureId = UUID.randomUUID()
+    val navAnsattAzureId: UUID = UUID.randomUUID()
 
     init {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
+
         TestRepository.insert(navAnsatt)
         TestRepository.insert(deltakerliste)
         TestRepository.insert(deltaker)

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 class VurderingRepositoryTest {
     @BeforeEach
     fun setup() {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 

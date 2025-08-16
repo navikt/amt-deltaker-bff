@@ -4,8 +4,8 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Query
 import kotliquery.Row
 import kotliquery.queryOf
+import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerIdOgStatus
@@ -339,7 +339,7 @@ class DeltakerRepository {
         session.run(query)
     }
 
-    fun create(kladd: KladdResponse) = Database.query {
+    fun create(kladd: OpprettKladdResponse) = Database.query {
         val sql =
             """
             insert into deltaker(

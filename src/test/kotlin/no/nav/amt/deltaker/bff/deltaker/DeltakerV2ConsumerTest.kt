@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
@@ -35,13 +36,20 @@ import java.time.LocalDateTime
 
 class DeltakerV2ConsumerTest {
     init {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)
-    private val deltakerService = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, mockk(relaxed = true))
+    private val deltakerService = DeltakerService(
+        DeltakerRepository(),
+        mockAmtDeltakerClient(),
+        mockPaameldingClient(),
+        navEnhetService,
+        mockk(relaxed = true),
+    )
     private val deltakerlisteRepository = DeltakerlisteRepository()
     private val vurderingService = VurderingService(VurderingRepository())
     private val unleashToggle = mockk<UnleashToggle>()

@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.deltaker.bff.utils.toDto
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.NavEnhet
@@ -32,6 +33,7 @@ class NavBrukerConsumerTest {
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),
+            paameldingClient = mockPaameldingClient(),
             navEnhetService = navEnhetService,
             forslagService = mockk(relaxed = true),
         )
@@ -41,13 +43,14 @@ class NavBrukerConsumerTest {
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
             navBrukerService = navBrukerService,
-            amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
+            paameldingClient = mockPaameldingClient(),
         )
 
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
         }
     }

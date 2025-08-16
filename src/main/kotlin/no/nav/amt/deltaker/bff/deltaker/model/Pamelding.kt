@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
-import java.util.UUID
 
 data class Pamelding(
     val deltakelsesinnhold: Deltakelsesinnhold,
@@ -10,15 +9,4 @@ data class Pamelding(
     val dagerPerUke: Float?,
     val endretAv: String,
     val endretAvEnhet: String,
-)
-
-data class Kladd(
-    val opprinneligDeltaker: Deltaker,
-    val pamelding: Pamelding,
-)
-
-data class Utkast(
-    val deltakerId: UUID,
-    val pamelding: Pamelding,
-    val godkjentAvNav: Boolean,
 )

@@ -32,6 +32,7 @@ class ForslagServiceTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
             repository = ForslagRepository()
             service = ForslagService(repository, navAnsattService, navEnhetService, arrangorMeldingProducer)

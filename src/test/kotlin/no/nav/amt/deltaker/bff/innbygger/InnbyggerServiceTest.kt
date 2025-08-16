@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -23,13 +24,14 @@ import org.junit.jupiter.api.Test
 class InnbyggerServiceTest {
     private val amtDeltakerClient = mockAmtDeltakerClient()
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService, mockk())
-    private val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
+    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, mockPaameldingClient(), navEnhetService, mockk())
+    private val innbyggerService = InnbyggerService(deltakerService, mockPaameldingClient())
 
     companion object {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
         }
     }

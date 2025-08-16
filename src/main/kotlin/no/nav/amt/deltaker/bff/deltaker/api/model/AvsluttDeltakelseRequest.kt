@@ -45,9 +45,9 @@ data class AvsluttDeltakelseRequest(
         }
     }
 
-    fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
+    fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt
 
-    fun harFullfort(): Boolean = harFullfort == null || harFullfort == true
+    fun harFullfort(): Boolean = harFullfort == null || harFullfort
 
     private fun deltakerErEndret(deltaker: Deltaker): Boolean = deltaker.status.type != DeltakerStatus.Type.HAR_SLUTTET ||
         deltaker.sluttdato != sluttdato ||

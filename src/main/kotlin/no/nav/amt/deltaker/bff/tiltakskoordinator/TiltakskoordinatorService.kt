@@ -1,11 +1,11 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator
 
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringFeilkode
+import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringResponse
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringResponse
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering

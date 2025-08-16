@@ -12,6 +12,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
@@ -20,13 +21,12 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
@@ -126,34 +126,42 @@ class PameldingApiTest {
         val navEnhet = TestData.lagNavEnhet(id = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet)
 
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        coEvery { pameldingService.opprettKladd(any(), any()) } returns deltaker
+        coEvery { pameldingService.opprettDeltaker(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
         coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
-        coEvery { deltakerlisteService.sjekkAldersgrenseForDeltakelse(any(), any()) } returns Unit
 
         setUpTestApplication()
 
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             assertEquals(HttpStatusCode.OK, status)
-            assertEquals(
-                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet, true, emptyList())),
-                bodyAsText(),
+
+            val expected = DeltakerResponse.fromDeltaker(
+                deltaker = deltaker,
+                ansatte = ansatte,
+                vedtakSistEndretAvEnhet = navEnhet,
+                digitalBruker = true,
+                forslag = emptyList(),
             )
+
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expected)
         }
     }
 
     @Test
-    fun `post pamelding - deltakerliste finnes ikke - reurnerer 404`() = testApplication {
+    fun `post pamelding - deltakerliste finnes ikke - returnerer 404`() = testApplication {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+
         coEvery {
-            deltakerlisteService.sjekkAldersgrenseForDeltakelse(any(), any())
-        } throws NoSuchElementException("Fant ikke deltakerliste")
+            pameldingService.opprettDeltaker(any(), any())
+        } throws NoSuchElementException("Deltaker ikke funnet")
+
         setUpTestApplication()
-        client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
-            status shouldBe HttpStatusCode.NotFound
-        }
+
+        val response = client.post("/pamelding") { postRequest(pameldingRequest) }
+
+        response.status shouldBe HttpStatusCode.NotFound
     }
 
     @Test
@@ -199,7 +207,16 @@ class PameldingApiTest {
             .post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+
+                val expected = DeltakerResponse.fromDeltaker(
+                    deltaker = deltaker,
+                    ansatte = ansatte,
+                    vedtakSistEndretAvEnhet = enhet,
+                    digitalBruker = true,
+                    forslag = emptyList(),
+                )
+
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expected)
             }
     }
 
@@ -228,7 +245,16 @@ class PameldingApiTest {
             .post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+
+                val expected = DeltakerResponse.fromDeltaker(
+                    deltaker = deltaker,
+                    ansatte = ansatte,
+                    vedtakSistEndretAvEnhet = enhet,
+                    digitalBruker = true,
+                    forslag = emptyList(),
+                )
+
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expected)
             }
     }
 

@@ -12,11 +12,12 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 import io.ktor.utils.io.ByteReadChannel
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
 import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -114,6 +115,13 @@ fun mockAmtDeltakerClient() = AmtDeltakerClient(
     azureAdTokenClient = mockAzureAdClient(),
 )
 
+fun mockPaameldingClient() = PaameldingClient(
+    baseUrl = AMT_DELTAKER_URL,
+    scope = "amt.deltaker.scope",
+    httpClient = mockHttpClient(),
+    azureAdTokenClient = mockAzureAdClient(),
+)
+
 fun mockAmtPersonServiceClient(): AmtPersonServiceClient = AmtPersonServiceClient(
     baseUrl = AMT_PERSON_SERVICE_URL,
     scope = "amt.personservice.scope",
@@ -153,7 +161,7 @@ object MockResponseHandler {
         val api = Pair(url, method)
 
         responses[api] = Response(
-            if (responseBody is String) responseBody else objectMapper.writeValueAsString(responseBody),
+            responseBody as? String ?: objectMapper.writeValueAsString(responseBody),
             responseCode,
         )
     }
@@ -166,7 +174,7 @@ object MockResponseHandler {
             addResponse(
                 url = url,
                 method = HttpMethod.Post,
-                responseBody = KladdResponse(
+                responseBody = OpprettKladdResponse(
                     id = deltaker.id,
                     navBruker = deltaker.navBruker,
                     deltakerlisteId = deltaker.deltakerliste.id,

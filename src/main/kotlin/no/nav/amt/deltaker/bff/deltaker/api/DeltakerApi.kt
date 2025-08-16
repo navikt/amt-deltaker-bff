@@ -11,13 +11,13 @@ import io.ktor.server.routing.Routing
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import jakarta.ws.rs.ForbiddenException
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.AvvisForslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerRequest
@@ -37,7 +37,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
-import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -65,13 +64,14 @@ fun Routing.registerDeltakerApi(
 ) {
     val log: Logger = LoggerFactory.getLogger(javaClass)
 
-    suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
-        val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
-        val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-        val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-        val forslag = forslagService.getForDeltaker(deltaker.id)
-        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker, forslag)
-    }
+    // duplikat i PameldiongApi
+    suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse = DeltakerResponse.fromDeltaker(
+        deltaker = deltaker,
+        ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker),
+        vedtakSistEndretAvEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) },
+        digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident),
+        forslag = forslagService.getForDeltaker(deltaker.id),
+    )
 
     fun illegalUpdateGuard(deltaker: Deltaker, tillatEndringUtenOppfPeriode: Boolean) {
         if (!deltaker.kanEndres) {
