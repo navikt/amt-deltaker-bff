@@ -9,20 +9,19 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Routing
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.post
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
-import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
@@ -46,14 +45,14 @@ fun Routing.registerPameldingApi(
 ) {
     val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse {
-        val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
-        val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-        val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-        val forslag = forslagService.getForDeltaker(deltaker.id)
-
-        return deltaker.toDeltakerResponse(ansatte, enhet, digitalBruker, forslag)
-    }
+    // duplikat i DeltakerApi
+    suspend fun komplettDeltakerResponse(deltaker: Deltaker): DeltakerResponse = DeltakerResponse.fromDeltaker(
+        deltaker = deltaker,
+        ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker),
+        vedtakSistEndretAvEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) },
+        digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident),
+        forslag = forslagService.getForDeltaker(deltaker.id),
+    )
 
     authenticate("VEILEDER") {
         post("/pamelding") {

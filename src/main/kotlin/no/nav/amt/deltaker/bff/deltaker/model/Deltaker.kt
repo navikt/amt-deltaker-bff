@@ -150,6 +150,17 @@ data class Deltaker(
             Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             -> null
         }
+
+    fun oppdater(oppdatering: Deltakeroppdatering) = this.copy(
+        startdato = oppdatering.startdato,
+        sluttdato = oppdatering.sluttdato,
+        dagerPerUke = oppdatering.dagerPerUke,
+        deltakelsesprosent = oppdatering.deltakelsesprosent,
+        bakgrunnsinformasjon = oppdatering.bakgrunnsinformasjon,
+        deltakelsesinnhold = oppdatering.deltakelsesinnhold,
+        status = oppdatering.status,
+        historikk = oppdatering.historikk,
+    )
 }
 
 const val FERIETILLEGG = 4L

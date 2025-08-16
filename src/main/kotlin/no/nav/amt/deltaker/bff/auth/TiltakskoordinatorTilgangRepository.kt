@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.auth
 
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.utils.database.Database
@@ -40,7 +39,7 @@ class TiltakskoordinatorTilgangRepository {
             "gyldig_til" to tilgang.gyldigTil,
         )
 
-        it.run(queryOf(sql, params).map(::rowmapper).asSingle)?.let { Result.success(it) }
+        it.run(queryOf(sql, params).map(::rowmapper).asSingle)?.let { deltakerlisteTilgang -> Result.success(deltakerlisteTilgang) }
             ?: Result.failure(IllegalStateException("Noe gikk galt med upsert av tiltakskoordinator tilgang med id ${tilgang.id}"))
     }
 

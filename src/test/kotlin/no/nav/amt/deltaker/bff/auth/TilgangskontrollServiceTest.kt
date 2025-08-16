@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.auth.exceptions.AuthorizationException
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.kafka.utils.assertProducedTombstone
@@ -44,6 +45,7 @@ class TilgangskontrollServiceTest {
     )
 
     init {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 
@@ -84,7 +86,9 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
-            assertProduced(resultat.getOrThrow().toDto(navAnsatt.navIdent))
+
+            val expected = TiltakskoordinatorsDeltakerlisteDto.fromModel(resultat.getOrThrow(), navAnsatt.navIdent)
+            assertProduced(expected)
         }
     }
 
@@ -94,7 +98,9 @@ class TilgangskontrollServiceTest {
             medInaktivTilgang()
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
-            assertProduced(resultat.getOrThrow().toDto(navAnsatt.navIdent))
+
+            val expected = TiltakskoordinatorsDeltakerlisteDto.fromModel(resultat.getOrThrow(), navAnsatt.navIdent)
+            assertProduced(expected)
         }
     }
 

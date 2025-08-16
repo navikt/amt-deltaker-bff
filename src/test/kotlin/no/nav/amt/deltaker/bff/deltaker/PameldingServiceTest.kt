@@ -28,6 +28,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerVedVedtak
@@ -230,6 +231,7 @@ class PameldingServiceTest {
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),
+            paameldingClient = mockPaameldingClient(),
             navEnhetService = navEnhetService,
             forslagService = mockk(),
         )
@@ -237,8 +239,8 @@ class PameldingServiceTest {
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
             navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-            amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
+            paameldingClient = mockPaameldingClient(),
         )
 
         @JvmStatic

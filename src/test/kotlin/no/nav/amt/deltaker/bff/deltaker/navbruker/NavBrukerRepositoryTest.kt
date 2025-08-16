@@ -15,6 +15,7 @@ class NavBrukerRepositoryTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
             repository = NavBrukerRepository()
         }

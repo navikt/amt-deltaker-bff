@@ -12,6 +12,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
@@ -20,13 +21,12 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.toDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.postRequest
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
@@ -136,10 +136,16 @@ class PameldingApiTest {
 
         client.post("/pamelding") { postRequest(pameldingRequest) }.apply {
             assertEquals(HttpStatusCode.OK, status)
-            assertEquals(
-                objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, navEnhet, true, emptyList())),
-                bodyAsText(),
+
+            val expected = DeltakerResponse.fromDeltaker(
+                deltaker = deltaker,
+                ansatte = ansatte,
+                vedtakSistEndretAvEnhet = navEnhet,
+                digitalBruker = true,
+                forslag = emptyList(),
             )
+
+            bodyAsText() shouldBe objectMapper.writeValueAsString(expected)
         }
     }
 
@@ -201,7 +207,16 @@ class PameldingApiTest {
             .post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+
+                val expected = DeltakerResponse.fromDeltaker(
+                    deltaker = deltaker,
+                    ansatte = ansatte,
+                    vedtakSistEndretAvEnhet = enhet,
+                    digitalBruker = true,
+                    forslag = emptyList(),
+                )
+
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expected)
             }
     }
 
@@ -230,7 +245,16 @@ class PameldingApiTest {
             .post("/pamelding/${deltaker.id}") { postRequest(utkastRequest(deltaker.deltakelsesinnhold!!.innhold.toInnholdDto())) }
             .apply {
                 status shouldBe HttpStatusCode.OK
-                bodyAsText() shouldBe objectMapper.writeValueAsString(deltaker.toDeltakerResponse(ansatte, enhet, true, emptyList()))
+
+                val expected = DeltakerResponse.fromDeltaker(
+                    deltaker = deltaker,
+                    ansatte = ansatte,
+                    vedtakSistEndretAvEnhet = enhet,
+                    digitalBruker = true,
+                    forslag = emptyList(),
+                )
+
+                bodyAsText() shouldBe objectMapper.writeValueAsString(expected)
             }
     }
 

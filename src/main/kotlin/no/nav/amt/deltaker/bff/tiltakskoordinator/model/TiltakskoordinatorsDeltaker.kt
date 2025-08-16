@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.model
 
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
+import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringFeilkode
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering

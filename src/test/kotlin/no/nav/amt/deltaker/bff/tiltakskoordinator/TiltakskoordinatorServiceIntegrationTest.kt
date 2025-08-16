@@ -6,14 +6,15 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringFeilkode
+import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringResponse
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.DeltakerOppdateringFeilkode
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
-import no.nav.amt.deltaker.bff.deltaker.toDeltakeroppdateringResponse
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
@@ -29,14 +30,18 @@ import java.util.UUID
 
 class TiltakskoordinatorServiceIntegrationTest {
     init {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 
     private val amtDeltakerClient = mockk<AmtDeltakerClient>()
+    private val paameldingClient = mockk<PaameldingClient>()
+
     private val navEnhetService = mockk<NavEnhetService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val vurderingService = mockk<VurderingService>()
-    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService, mockk<ForslagService>())
+    private val deltakerService =
+        DeltakerService(DeltakerRepository(), amtDeltakerClient, paameldingClient, navEnhetService, mockk<ForslagService>())
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
     private val forslagService = mockk<ForslagService>()
     private val tiltakskoordinatorService = TiltakskoordinatorService(
@@ -69,7 +74,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.tildelPlass(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse())
+        } returns listOf(DeltakerOppdateringResponse.fromDeltaker(deltaker.copy(status = nyStatus)))
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -109,7 +114,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse())
+        } returns listOf(DeltakerOppdateringResponse.fromDeltaker(deltaker.copy(status = nyStatus)))
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -148,7 +153,12 @@ class TiltakskoordinatorServiceIntegrationTest {
 
         coEvery {
             amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(deltaker.copy(status = nyStatus).toDeltakeroppdateringResponse(feilkode = DeltakerOppdateringFeilkode.UKJENT))
+        } returns listOf(
+            DeltakerOppdateringResponse.fromDeltaker(
+                deltaker.copy(status = nyStatus),
+                feilkode = DeltakerOppdateringFeilkode.UKJENT,
+            ),
+        )
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),

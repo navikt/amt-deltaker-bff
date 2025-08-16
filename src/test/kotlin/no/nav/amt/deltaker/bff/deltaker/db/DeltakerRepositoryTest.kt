@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.db
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.deltaker.api.model.toKladdResponse
+import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -32,6 +32,7 @@ class DeltakerRepositoryTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
             repository = DeltakerRepository()
         }
@@ -123,7 +124,8 @@ class DeltakerRepositoryTest {
         TestRepository.insert(deltaker.navBruker)
         TestRepository.insert(deltaker.deltakerliste)
 
-        val kladd = deltaker.toKladdResponse()
+        val kladd = OpprettKladdResponse.fromDeltaker(deltaker)
+
         repository.create(kladd)
 
         sammenlignDeltakere(deltaker, repository.get(kladd.id).getOrThrow())
@@ -134,7 +136,7 @@ class DeltakerRepositoryTest {
         val deltaker = TestData.lagDeltakerKladd()
         TestRepository.insert(deltaker)
 
-        val kladd = deltaker.toKladdResponse()
+        val kladd = OpprettKladdResponse.fromDeltaker(deltaker)
 
         assertThrows(PSQLException::class.java) {
             repository.create(kladd)
