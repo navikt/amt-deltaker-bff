@@ -2,9 +2,6 @@ package no.nav.amt.deltaker.bff.apiclients.paamelding
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.delete
-import io.ktor.client.request.header
-import io.ktor.http.HttpHeaders
 import no.nav.amt.deltaker.bff.apiclients.ApiClientBase
 import no.nav.amt.deltaker.bff.apiclients.paamelding.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.apiclients.paamelding.request.OpprettKladdRequest
@@ -37,11 +34,8 @@ class PaameldingClient(
             .body()
 
     suspend fun slettKladd(deltakerId: UUID) {
-        val response = httpClient.delete("$baseUrl/pamelding/$deltakerId") {
-            header(HttpHeaders.Authorization, azureAdTokenClient.getMachineToMachineToken(scope))
-        }
-
-        response.failIfNotSuccess("Kunne ikke slette kladd i amt-deltaker.")
+        performDelete("pamelding/$deltakerId")
+            .failIfNotSuccess("Kunne ikke slette kladd i amt-deltaker.")
     }
 
     suspend fun avbrytUtkast(

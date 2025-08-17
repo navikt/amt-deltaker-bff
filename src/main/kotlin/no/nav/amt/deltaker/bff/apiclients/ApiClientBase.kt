@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.apiclients
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -35,6 +36,10 @@ abstract class ApiClientBase(
             contentType(ContentType.Application.Json)
             setBody(requestBody)
         }
+    }
+
+    protected suspend fun performDelete(urlSubPath: String): HttpResponse = httpClient.delete("$baseUrl/$urlSubPath") {
+        header(HttpHeaders.Authorization, azureAdTokenClient.getMachineToMachineToken(scope))
     }
 
     protected suspend fun HttpResponse.failIfNotSuccess(errorDescription: String): HttpResponse = if (!this.status.isSuccess()) {
