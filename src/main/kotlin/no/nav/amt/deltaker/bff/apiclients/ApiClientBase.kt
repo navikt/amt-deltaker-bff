@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.apiclients
 
 import io.ktor.client.HttpClient
+import io.ktor.client.request.accept
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -9,6 +10,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.auth.exceptions.AuthenticationException
 import no.nav.amt.deltaker.bff.auth.exceptions.AuthorizationException
@@ -22,8 +24,9 @@ abstract class ApiClientBase(
 ) {
     protected suspend fun performPost(urlSubPath: String, requestBody: Any?): HttpResponse = httpClient.post("$baseUrl/$urlSubPath") {
         header(HttpHeaders.Authorization, azureAdTokenClient.getMachineToMachineToken(scope))
+        accept(ContentType.Application.Json)
         if (requestBody != null) {
-            header(HttpHeaders.ContentType, ContentType.Application.Json)
+            contentType(ContentType.Application.Json)
             setBody(requestBody)
         }
     }
