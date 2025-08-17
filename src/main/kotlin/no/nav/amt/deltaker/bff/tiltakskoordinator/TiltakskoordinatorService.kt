@@ -8,7 +8,6 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
@@ -55,16 +54,16 @@ class TiltakskoordinatorService(
         endring: EndringFraTiltakskoordinator.Endring,
         endretAv: String,
     ): List<TiltakskoordinatorsDeltaker> {
-        val oppdaterteDeltakereResponse = when (endring) {
+        val oppdaterteDeltakereResponses = when (endring) {
             EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
             EndringFraTiltakskoordinator.TildelPlass -> amtDeltakerClient.tildelPlass(deltakerIder, endretAv)
             is EndringFraTiltakskoordinator.Avslag -> throw NotImplementedError("Batch håndtering for avslag er ikke støttet")
         }
-        val deltakerOppdatering = oppdaterteDeltakereResponse.toDeltakerOppdatering()
-        deltakerService.oppdaterDeltakere(deltakerOppdatering)
+        val deltakerOppdateringer = oppdaterteDeltakereResponses.map { it.toDeltakerOppdatering() }
+        deltakerService.oppdaterDeltakere(deltakerOppdateringer)
 
-        return oppdaterteDeltakereResponse.toTiltakskoordinatorsDeltakere()
+        return oppdaterteDeltakereResponses.toTiltakskoordinatorsDeltakere()
     }
 
     suspend fun giAvslag(request: AvslagRequest, endretAv: String): TiltakskoordinatorsDeltaker {
@@ -171,20 +170,4 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     feilkode = feilkode,
     ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
     forslag = forslag,
-)
-
-private fun List<DeltakerOppdateringResponse>.toDeltakerOppdatering() = this.map { it.toDeltakerOppdatering() }
-
-private fun DeltakerOppdateringResponse.toDeltakerOppdatering() = Deltakeroppdatering(
-    id = id,
-    startdato = startdato,
-    sluttdato = sluttdato,
-    dagerPerUke = dagerPerUke,
-    deltakelsesprosent = deltakelsesprosent,
-    bakgrunnsinformasjon = bakgrunnsinformasjon,
-    deltakelsesinnhold = deltakelsesinnhold,
-    status = status,
-    historikk = historikk,
-    sistEndret = sistEndret,
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
 )
