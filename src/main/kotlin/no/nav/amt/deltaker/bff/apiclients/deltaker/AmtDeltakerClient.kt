@@ -8,7 +8,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import no.nav.amt.deltaker.bff.apiclients.AbstractDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.ApiClientBase
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.DeltakelsesmengdeRequest
@@ -42,7 +42,7 @@ class AmtDeltakerClient(
     scope: String,
     httpClient: HttpClient,
     azureAdTokenClient: AzureAdTokenClient,
-) : AbstractDeltakerClient(
+) : ApiClientBase(
         baseUrl = baseUrl,
         scope = scope,
         httpClient = httpClient,

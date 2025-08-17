@@ -6,7 +6,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
-import no.nav.amt.deltaker.bff.apiclients.AbstractDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.ApiClientBase
 import no.nav.amt.deltaker.bff.apiclients.paamelding.request.AvbrytUtkastRequest
 import no.nav.amt.deltaker.bff.apiclients.paamelding.request.OpprettKladdRequest
 import no.nav.amt.deltaker.bff.apiclients.paamelding.request.UtkastRequest
@@ -21,7 +21,7 @@ class PaameldingClient(
     scope: String,
     httpClient: HttpClient,
     azureAdTokenClient: AzureAdTokenClient,
-) : AbstractDeltakerClient(
+) : ApiClientBase(
         baseUrl = baseUrl,
         scope = scope,
         httpClient = httpClient,

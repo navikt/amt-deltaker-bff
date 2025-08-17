@@ -6,8 +6,6 @@ import io.kotest.matchers.string.shouldStartWith
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
-import no.nav.amt.deltaker.bff.auth.exceptions.AuthenticationException
-import no.nav.amt.deltaker.bff.auth.exceptions.AuthorizationException
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.testdata.OpprettTestDeltakelseRequest
 import no.nav.amt.deltaker.bff.testdata.TestdataService.Companion.lagUtkast
@@ -33,7 +31,7 @@ class PaameldingClientTest {
             { client -> client.opprettKladd(deltakerlisteId = UUID.randomUUID(), personIdent = "~personident~") }
 
         @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClientTest#failureCases")
+        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
         fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
             val (statusCode, expectedExceptionType) = testCase
             runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, opprettKladdLambda)
@@ -71,7 +69,7 @@ class PaameldingClientTest {
             { client -> client.utkast(utkast) }
 
         @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClientTest#failureCases")
+        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
         fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
             val (statusCode, expectedExceptionType) = testCase
             runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, utkastLambda)
@@ -90,7 +88,7 @@ class PaameldingClientTest {
         val slettKladdLambda: suspend (PaameldingClient) -> Unit = { client -> client.slettKladd(deltakerInTest.id) }
 
         @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClientTest#failureCases")
+        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
         fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
             val (statusCode, expectedExceptionType) = testCase
             runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, slettKladdLambda)
@@ -116,7 +114,7 @@ class PaameldingClientTest {
             }
 
         @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClientTest#failureCases")
+        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
         fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
             val (statusCode, expectedExceptionType) = testCase
             runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, avbrytUtkastLambda)
@@ -136,7 +134,7 @@ class PaameldingClientTest {
             { client -> client.innbyggerGodkjennUtkast(deltakerInTest.id) }
 
         @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClientTest#failureCases")
+        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
         fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
             val (statusCode, expectedExceptionType) = testCase
             runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, innbyggerGodkjennUtkastLambda)
@@ -152,15 +150,6 @@ class PaameldingClientTest {
         private const val DELTAKER_BASE_URL = "http://amt-deltaker"
         private val deltakerInTest = TestData.lagDeltaker()
         private val deltakerOppdateringInTest = deltakerInTest.toDeltakeroppdatering()
-
-        @JvmStatic
-        fun failureCases() = listOf(
-            Pair(HttpStatusCode.Unauthorized, AuthenticationException::class),
-            Pair(HttpStatusCode.Forbidden, AuthorizationException::class),
-            Pair(HttpStatusCode.BadRequest, IllegalArgumentException::class),
-            Pair(HttpStatusCode.NotFound, NoSuchElementException::class),
-            Pair(HttpStatusCode.InternalServerError, IllegalStateException::class),
-        )
 
         private fun runFailureTest(
             exceptionType: KClass<out Throwable>,

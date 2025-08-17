@@ -14,7 +14,7 @@ import no.nav.amt.deltaker.bff.auth.exceptions.AuthenticationException
 import no.nav.amt.deltaker.bff.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 
-abstract class AbstractDeltakerClient(
+abstract class ApiClientBase(
     protected val baseUrl: String,
     protected val scope: String,
     protected val httpClient: HttpClient,
