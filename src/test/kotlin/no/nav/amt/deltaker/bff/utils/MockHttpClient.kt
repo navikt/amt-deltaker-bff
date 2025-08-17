@@ -12,12 +12,12 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 import io.ktor.utils.io.ByteReadChannel
+import no.nav.amt.deltaker.bff.apiclients.arrangor.AmtArrangorClient
+import no.nav.amt.deltaker.bff.apiclients.arrangor.ArrangorDto
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
-import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
-import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData

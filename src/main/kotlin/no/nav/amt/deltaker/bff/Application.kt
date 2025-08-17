@@ -12,6 +12,7 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
+import no.nav.amt.deltaker.bff.apiclients.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
@@ -19,7 +20,6 @@ import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
-import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService

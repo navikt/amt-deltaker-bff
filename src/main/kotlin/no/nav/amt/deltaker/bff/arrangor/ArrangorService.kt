@@ -1,5 +1,7 @@
 package no.nav.amt.deltaker.bff.arrangor
 
+import no.nav.amt.deltaker.bff.apiclients.arrangor.AmtArrangorClient
+
 class ArrangorService(
     private val repository: ArrangorRepository,
     private val amtArrangorClient: AmtArrangorClient,
