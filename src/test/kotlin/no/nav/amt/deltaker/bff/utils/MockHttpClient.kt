@@ -13,7 +13,7 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 import io.ktor.utils.io.ByteReadChannel
 import no.nav.amt.deltaker.bff.apiclients.arrangor.AmtArrangorClient
-import no.nav.amt.deltaker.bff.apiclients.arrangor.ArrangorDto
+import no.nav.amt.deltaker.bff.apiclients.arrangor.ArrangorResponse
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
@@ -99,7 +99,7 @@ fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArran
         TestData.lagArrangor(id = arrangor.overordnetArrangorId)
     }
 
-    val response = ArrangorDto(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
+    val response = ArrangorResponse(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
     return AmtArrangorClient(
         baseUrl = "https://amt-arrangor",
         scope = "amt.arrangor.scope",

@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.apiclients.arrangor
 import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import java.util.UUID
 
-data class ArrangorDto(
+data class ArrangorResponse(
     val id: UUID,
     val navn: String,
     val organisasjonsnummer: String,

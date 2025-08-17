@@ -21,7 +21,7 @@ class AmtArrangorClientTest {
     inner class HentArrangorByOrgnummer {
         val expectedUrl = "$ARRANGOR_BASE_URL/api/service/arrangor/organisasjonsnummer/$orgnrInTest"
         val expectedErrorMessage = "Kunne ikke hente arrangør med orgnummer $orgnrInTest"
-        val hentArrangorLambda: suspend (AmtArrangorClient) -> ArrangorDto =
+        val hentArrangorLambda: suspend (AmtArrangorClient) -> ArrangorResponse =
             { client -> client.hentArrangor(orgnrInTest) }
 
         @ParameterizedTest
@@ -45,7 +45,7 @@ class AmtArrangorClientTest {
     inner class HentArrangorById {
         val expectedUrl = "$ARRANGOR_BASE_URL/api/service/arrangor/$arrangorIdInTest"
         val expectedErrorMessage = "Kunne ikke hente arrangør med id $arrangorIdInTest"
-        val hentArrangorLambda: suspend (AmtArrangorClient) -> ArrangorDto =
+        val hentArrangorLambda: suspend (AmtArrangorClient) -> ArrangorResponse =
             { client -> client.hentArrangor(arrangorIdInTest) }
 
         @ParameterizedTest
@@ -73,7 +73,7 @@ class AmtArrangorClientTest {
         val overordnetArrangor = lagArrangor()
         val arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor.id)
         val expectedArrangor =
-            ArrangorDto(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
+            ArrangorResponse(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
 
         private fun runFailureTest(
             exceptionType: KClass<out Throwable>,
@@ -92,8 +92,8 @@ class AmtArrangorClientTest {
 
         private fun runHappyPathTest(
             expectedUrl: String,
-            expectedResponse: ArrangorDto,
-            block: suspend (AmtArrangorClient) -> ArrangorDto,
+            expectedResponse: ArrangorResponse,
+            block: suspend (AmtArrangorClient) -> ArrangorResponse,
         ) = runBlocking {
             val arrangorClient = createArrangorClient(expectedUrl, HttpStatusCode.OK, expectedResponse)
 
@@ -103,7 +103,7 @@ class AmtArrangorClientTest {
         private fun createArrangorClient(
             expectedUrl: String,
             statusCode: HttpStatusCode = HttpStatusCode.OK,
-            responseBody: ArrangorDto? = null,
+            responseBody: ArrangorResponse? = null,
         ) = AmtArrangorClient(
             baseUrl = ARRANGOR_BASE_URL,
             scope = "scope",
