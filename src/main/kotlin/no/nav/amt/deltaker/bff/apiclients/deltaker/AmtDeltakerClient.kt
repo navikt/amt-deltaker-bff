@@ -2,12 +2,7 @@ package no.nav.amt.deltaker.bff.apiclients.deltaker
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.accept
-import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import no.nav.amt.deltaker.bff.apiclients.ApiClientBase
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.AvsluttDeltakelseRequest
@@ -61,16 +56,9 @@ class AmtDeltakerClient(
         DeltakereRequest(deltakerIder, endretAv),
     ).failIfNotSuccess("Kunne ikke sette på venteliste i amt-deltaker.").body()
 
-    suspend fun getDeltaker(deltakerId: UUID): DeltakerMedStatusResponse {
-        val response = httpClient.get("$baseUrl/deltaker/$deltakerId") {
-            header(HttpHeaders.Authorization, azureAdTokenClient.getMachineToMachineToken(scope))
-            accept(ContentType.Application.Json)
-        }
-
-        return response
-            .failIfNotSuccess("Fant ikke deltaker $deltakerId i amt-deltaker.")
-            .body()
-    }
+    suspend fun getDeltaker(deltakerId: UUID): DeltakerMedStatusResponse = performGet("deltaker/$deltakerId")
+        .failIfNotSuccess("Fant ikke deltaker $deltakerId i amt-deltaker.")
+        .body()
 
     suspend fun endreBakgrunnsinformasjon(
         deltakerId: UUID,

@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.apiclients
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.accept
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -22,6 +23,11 @@ abstract class ApiClientBase(
     protected val httpClient: HttpClient,
     protected val azureAdTokenClient: AzureAdTokenClient,
 ) {
+    protected suspend fun performGet(urlSubPath: String): HttpResponse = httpClient.get("$baseUrl/$urlSubPath") {
+        header(HttpHeaders.Authorization, azureAdTokenClient.getMachineToMachineToken(scope))
+        accept(ContentType.Application.Json)
+    }
+
     protected suspend fun performPost(urlSubPath: String, requestBody: Any?): HttpResponse = httpClient.post("$baseUrl/$urlSubPath") {
         header(HttpHeaders.Authorization, azureAdTokenClient.getMachineToMachineToken(scope))
         accept(ContentType.Application.Json)
