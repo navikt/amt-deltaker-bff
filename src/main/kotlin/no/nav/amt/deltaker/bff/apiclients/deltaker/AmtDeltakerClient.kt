@@ -4,7 +4,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.isSuccess
-import no.nav.amt.deltaker.bff.apiclients.ApiClientBase
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.deltaker.bff.apiclients.deltaker.request.DeltakelsesmengdeRequest
@@ -24,6 +23,8 @@ import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringR
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
+import no.nav.amt.lib.ktor.clients.ApiClientBase
+import no.nav.amt.lib.ktor.clients.failIfNotSuccess
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator

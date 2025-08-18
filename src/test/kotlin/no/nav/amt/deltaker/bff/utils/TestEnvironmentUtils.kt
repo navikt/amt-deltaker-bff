@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.utils
 
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.auth.PreAuthorizedApp
+import no.nav.amt.lib.ktor.auth.PreAuthorizedApp
 import no.nav.amt.lib.utils.objectMapper
 import java.nio.file.Paths
 import java.util.UUID

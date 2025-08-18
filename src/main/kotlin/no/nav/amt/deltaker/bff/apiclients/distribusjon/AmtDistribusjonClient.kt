@@ -4,8 +4,9 @@ import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import no.nav.amt.deltaker.bff.apiclients.ApiClientBase
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
+import no.nav.amt.lib.ktor.clients.ApiClientBase
+import no.nav.amt.lib.ktor.clients.failIfNotSuccess
 import java.time.Duration
 
 class AmtDistribusjonClient(

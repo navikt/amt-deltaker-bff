@@ -12,17 +12,17 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 import io.ktor.utils.io.ByteReadChannel
-import no.nav.amt.deltaker.bff.apiclients.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.apiclients.arrangor.ArrangorResponse
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
+import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
+import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
@@ -95,9 +95,7 @@ fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
 }
 
 fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArrangorClient {
-    val overordnetArrangor = arrangor.overordnetArrangorId?.let {
-        TestData.lagArrangor(id = arrangor.overordnetArrangorId)
-    }
+    val overordnetArrangor = arrangor.overordnetArrangorId?.let { TestData.lagArrangor(id = it) }
 
     val response = ArrangorResponse(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
     return AmtArrangorClient(

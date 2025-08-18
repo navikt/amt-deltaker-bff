@@ -1,8 +1,8 @@
 package no.nav.amt.deltaker.bff.apiclients
 
 import io.ktor.http.HttpStatusCode
-import no.nav.amt.deltaker.bff.auth.exceptions.AuthenticationException
-import no.nav.amt.deltaker.bff.auth.exceptions.AuthorizationException
+import no.nav.amt.lib.ktor.auth.exceptions.AuthenticationException
+import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 
 @Suppress("unused")
 object ApiClientTestUtils {

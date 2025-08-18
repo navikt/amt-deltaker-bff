@@ -8,8 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.auth.exceptions.AuthorizationException
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

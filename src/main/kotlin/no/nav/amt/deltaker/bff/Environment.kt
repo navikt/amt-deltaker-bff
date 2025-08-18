@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.deltaker.bff.auth.PreAuthorizedApp
+import no.nav.amt.lib.ktor.auth.PreAuthorizedApp
 import no.nav.amt.lib.utils.database.DatabaseConfig
 import no.nav.amt.lib.utils.getEnvVar
 import no.nav.amt.lib.utils.objectMapper
