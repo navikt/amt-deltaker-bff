@@ -1,7 +1,7 @@
 create table ulest_hendelse
 (
     id                uuid                                               not null primary key,
-    deltaker_id       uuid                                               not null references deltaker,
+    deltaker_id       uuid                                               not null,
     opprettet         timestamp with time zone                           not null,
     ansvarlig         jsonb                                              not null,
     hendelse          jsonb                                              not null,
