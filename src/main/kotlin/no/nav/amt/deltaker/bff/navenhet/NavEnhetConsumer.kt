@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.navenhet
 
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.utils.buildManagedKafkaConsumer
+import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.models.person.dto.NavEnhetDto
 import no.nav.amt.lib.utils.objectMapper
