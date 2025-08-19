@@ -3,7 +3,8 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
-import no.nav.amt.deltaker.bff.utils.buildManagedKafkaConsumer
+import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.AUTO_OFFSET_RESET_LATEST
+import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.models.hendelse.Hendelse
 import no.nav.amt.lib.models.hendelse.HendelseDeltaker.Deltakerliste.Oppstartstype
@@ -19,6 +20,7 @@ class HendelseConsumer(
 
     private val consumer = buildManagedKafkaConsumer(
         topic = Environment.DELTAKER_HENDELSE_TOPIC,
+        kafkaAutoOffsetReset = AUTO_OFFSET_RESET_LATEST,
         consumeFunc = ::consume,
     )
 
