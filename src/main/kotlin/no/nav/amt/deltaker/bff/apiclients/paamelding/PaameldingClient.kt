@@ -2,15 +2,16 @@ package no.nav.amt.deltaker.bff.apiclients.paamelding
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import no.nav.amt.deltaker.bff.apiclients.paamelding.request.AvbrytUtkastRequest
-import no.nav.amt.deltaker.bff.apiclients.paamelding.request.OpprettKladdRequest
-import no.nav.amt.deltaker.bff.apiclients.paamelding.request.UtkastRequest
-import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
+import no.nav.amt.deltaker.bff.apiclients.DtoMappers.utkastRequestFromUtkast
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import no.nav.amt.lib.ktor.clients.ApiClientBase
 import no.nav.amt.lib.ktor.clients.failIfNotSuccess
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.request.AvbrytUtkastRequest
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.request.OpprettKladdRequest
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.UtkastResponse
 import java.util.UUID
 
 class PaameldingClient(
@@ -29,10 +30,9 @@ class PaameldingClient(
             .failIfNotSuccess("Kunne ikke opprette kladd i amt-deltaker.")
             .body()
 
-    suspend fun utkast(utkast: Utkast): Deltakeroppdatering =
-        performPost("pamelding/${utkast.deltakerId}", UtkastRequest.fromUtkast(utkast))
-            .failIfNotSuccess("Kunne ikke oppdatere utkast i amt-deltaker.")
-            .body()
+    suspend fun utkast(utkast: Utkast): UtkastResponse = performPost("pamelding/${utkast.deltakerId}", utkastRequestFromUtkast(utkast))
+        .failIfNotSuccess("Kunne ikke oppdatere utkast i amt-deltaker.")
+        .body()
 
     suspend fun slettKladd(deltakerId: UUID) {
         performDelete("pamelding/$deltakerId")

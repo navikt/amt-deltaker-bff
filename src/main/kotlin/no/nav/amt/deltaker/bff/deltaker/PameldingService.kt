@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker
 
+import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -46,7 +47,7 @@ class PameldingService(
 
     suspend fun upsertUtkast(utkast: Utkast): Deltaker {
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(utkast.pamelding.endretAvEnhet)
-        val deltakeroppdatering = paameldingClient.utkast(utkast)
+        val deltakeroppdatering = paameldingClient.utkast(utkast).toDeltakerOppdatering()
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
         return deltakerService.get(utkast.deltakerId).getOrThrow()

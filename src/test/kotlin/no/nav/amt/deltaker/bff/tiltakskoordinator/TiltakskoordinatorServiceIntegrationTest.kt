@@ -6,11 +6,11 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.apiclients.DtoMappers.deltakerOppdateringResponseFromDeltaker
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringFeilkode
-import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringResponse
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
+import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDelta
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringFeilkode
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
@@ -36,6 +37,7 @@ class TiltakskoordinatorServiceIntegrationTest {
 
     private val amtDeltakerClient = mockk<AmtDeltakerClient>()
     private val paameldingClient = mockk<PaameldingClient>()
+    private val tiltaksKoordinatorClient = mockk<TiltaksKoordinatorClient>()
 
     private val navEnhetService = mockk<NavEnhetService>()
     private val navAnsattService = mockk<NavAnsattService>()
@@ -45,7 +47,7 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
     private val forslagService = mockk<ForslagService>()
     private val tiltakskoordinatorService = TiltakskoordinatorService(
-        amtDeltakerClient,
+        tiltaksKoordinatorClient,
         deltakerService,
         mockk<TiltakskoordinatorTilgangRepository>(),
         vurderingService,
@@ -73,8 +75,8 @@ class TiltakskoordinatorServiceIntegrationTest {
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTER_PA_OPPSTART, null, LocalDateTime.now(), null, LocalDateTime.now())
 
         coEvery {
-            amtDeltakerClient.tildelPlass(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(DeltakerOppdateringResponse.fromDeltaker(deltaker.copy(status = nyStatus)))
+            tiltaksKoordinatorClient.tildelPlass(listOf(deltaker.id), navAnsatt.navIdent)
+        } returns listOf(deltakerOppdateringResponseFromDeltaker(deltaker.copy(status = nyStatus)))
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -113,8 +115,8 @@ class TiltakskoordinatorServiceIntegrationTest {
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTELISTE, null, LocalDateTime.now(), null, LocalDateTime.now())
 
         coEvery {
-            amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
-        } returns listOf(DeltakerOppdateringResponse.fromDeltaker(deltaker.copy(status = nyStatus)))
+            tiltaksKoordinatorClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
+        } returns listOf(deltakerOppdateringResponseFromDeltaker(deltaker.copy(status = nyStatus)))
 
         val resultatFraAmtDeltaker = tiltakskoordinatorService.endreDeltakere(
             listOf(deltaker.id),
@@ -152,9 +154,9 @@ class TiltakskoordinatorServiceIntegrationTest {
             DeltakerStatus(UUID.randomUUID(), DeltakerStatus.Type.VENTELISTE, null, LocalDateTime.now(), null, LocalDateTime.now())
 
         coEvery {
-            amtDeltakerClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
+            tiltaksKoordinatorClient.settPaaVenteliste(listOf(deltaker.id), navAnsatt.navIdent)
         } returns listOf(
-            DeltakerOppdateringResponse.fromDeltaker(
+            deltakerOppdateringResponseFromDeltaker(
                 deltaker.copy(status = nyStatus),
                 feilkode = DeltakerOppdateringFeilkode.UKJENT,
             ),

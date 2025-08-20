@@ -1,9 +1,8 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator
 
-import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringFeilkode
-import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringResponse
+import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
@@ -17,13 +16,15 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDelta
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringFeilkode
+import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringResponse
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
 class TiltakskoordinatorService(
-    private val amtDeltakerClient: AmtDeltakerClient,
+    private val tiltaksKoordinatorClient: TiltaksKoordinatorClient,
     private val deltakerService: DeltakerService,
     private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
     private val vurderingService: VurderingService,
@@ -55,9 +56,9 @@ class TiltakskoordinatorService(
         endretAv: String,
     ): List<TiltakskoordinatorsDeltaker> {
         val oppdaterteDeltakereResponses = when (endring) {
-            EndringFraTiltakskoordinator.SettPaaVenteliste -> amtDeltakerClient.settPaaVenteliste(deltakerIder, endretAv)
-            EndringFraTiltakskoordinator.DelMedArrangor -> amtDeltakerClient.delMedArrangor(deltakerIder, endretAv)
-            EndringFraTiltakskoordinator.TildelPlass -> amtDeltakerClient.tildelPlass(deltakerIder, endretAv)
+            EndringFraTiltakskoordinator.SettPaaVenteliste -> tiltaksKoordinatorClient.settPaaVenteliste(deltakerIder, endretAv)
+            EndringFraTiltakskoordinator.DelMedArrangor -> tiltaksKoordinatorClient.delMedArrangor(deltakerIder, endretAv)
+            EndringFraTiltakskoordinator.TildelPlass -> tiltaksKoordinatorClient.tildelPlass(deltakerIder, endretAv)
             is EndringFraTiltakskoordinator.Avslag -> throw NotImplementedError("Batch håndtering for avslag er ikke støttet")
         }
         val deltakerOppdateringer = oppdaterteDeltakereResponses.map { it.toDeltakerOppdatering() }
@@ -67,7 +68,7 @@ class TiltakskoordinatorService(
     }
 
     suspend fun giAvslag(request: AvslagRequest, endretAv: String): TiltakskoordinatorsDeltaker {
-        val deltakeroppdatering = amtDeltakerClient.giAvslag(request, endretAv)
+        val deltakeroppdatering = tiltaksKoordinatorClient.giAvslag(request, endretAv)
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
 

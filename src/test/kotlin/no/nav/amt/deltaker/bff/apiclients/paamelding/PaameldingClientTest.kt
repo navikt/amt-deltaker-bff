@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
+import no.nav.amt.deltaker.bff.apiclients.DtoMappers.opprettKladdResponseFromDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.testdata.OpprettTestDeltakelseRequest
 import no.nav.amt.deltaker.bff.testdata.TestdataService.Companion.lagUtkast
@@ -13,6 +13,9 @@ import no.nav.amt.deltaker.bff.utils.createMockHttpClient
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.deltaker.bff.utils.toDeltakeroppdatering
+import no.nav.amt.deltaker.bff.utils.toUtkastResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.UtkastResponse
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -41,7 +44,7 @@ class PaameldingClientTest {
         fun `skal returnere KladdResponse`() {
             runHappyPathTest(
                 expectedUrl,
-                OpprettKladdResponse.fromDeltaker(deltakerInTest),
+                opprettKladdResponseFromDeltaker(deltakerInTest),
                 opprettKladdLambda,
             )
         }
@@ -65,7 +68,7 @@ class PaameldingClientTest {
 
         val utkast = lagUtkast(deltakerInTest.id, deltakerListe, opprettTestDeltakelseRequest)
 
-        val utkastLambda: suspend (PaameldingClient) -> Deltakeroppdatering =
+        val utkastLambda: suspend (PaameldingClient) -> UtkastResponse =
             { client -> client.utkast(utkast) }
 
         @ParameterizedTest
@@ -76,8 +79,8 @@ class PaameldingClientTest {
         }
 
         @Test
-        fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, utkastLambda)
+        fun `skal returnere UtkastResponse`() {
+            runHappyPathTest(expectedUrl, utkastResponseInTest, utkastLambda)
         }
     }
 
@@ -150,6 +153,7 @@ class PaameldingClientTest {
         private const val DELTAKER_BASE_URL = "http://amt-deltaker"
         private val deltakerInTest = TestData.lagDeltaker()
         private val deltakerOppdateringInTest = deltakerInTest.toDeltakeroppdatering()
+        private val utkastResponseInTest = deltakerInTest.toUtkastResponse()
 
         private fun runFailureTest(
             exceptionType: KClass<out Throwable>,

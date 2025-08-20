@@ -6,18 +6,16 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerMedStatusResponse
-import no.nav.amt.deltaker.bff.apiclients.deltaker.response.DeltakerOppdateringResponse
-import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.deltaker.bff.utils.createMockHttpClient
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
-import no.nav.amt.deltaker.bff.utils.toDeltakeroppdatering
+import no.nav.amt.deltaker.bff.utils.toDeltakerEndringResponse
 import no.nav.amt.deltaker.bff.utils.withLogCapture
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
-import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerEndringResponse
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerMedStatusResponse
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -28,51 +26,6 @@ import java.time.ZonedDateTime
 import kotlin.reflect.KClass
 
 class AmtDeltakerClientTest {
-    @Nested
-    inner class TildelPlass {
-        val expectedUrl = "$DELTAKER_BASE_URL/tiltakskoordinator/deltakere/tildel-plass"
-        val expectedErrorMessage = "Kunne ikke tildele plass i amt-deltaker"
-        val tildelPlassLambda: suspend (AmtDeltakerClient) -> List<DeltakerOppdateringResponse> =
-            { client -> client.tildelPlass(listOf(deltakerInTest.id), "~endretAv~") }
-
-        @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
-        fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
-            val (statusCode, expectedExceptionType) = testCase
-            runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, tildelPlassLambda)
-        }
-
-        @Test
-        fun `skal returnere DeltakerOppdateringResponse liste`() {
-            val expectedResponse = listOf(DeltakerOppdateringResponse.fromDeltaker(deltakerInTest))
-            runHappyPathTest(expectedUrl, expectedResponse, tildelPlassLambda)
-        }
-    }
-
-    @Nested
-    inner class SettPaaVenteliste {
-        val expectedUrl = "$DELTAKER_BASE_URL/tiltakskoordinator/deltakere/sett-paa-venteliste"
-        val expectedErrorMessage = "Kunne ikke sette på venteliste i amt-deltaker."
-        val settPaaVentelisteLambda: suspend (AmtDeltakerClient) -> List<DeltakerOppdateringResponse> =
-            { client -> client.settPaaVenteliste(deltakerIder = listOf(deltakerInTest.id), endretAv = "~endretAv~") }
-
-        @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
-        fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
-            val (statusCode, expectedExceptionType) = testCase
-            runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, settPaaVentelisteLambda)
-        }
-
-        @Test
-        fun `skal returnere DeltakerOppdateringResponse liste`() {
-            runHappyPathTest(
-                expectedUrl = expectedUrl,
-                expectedResponse = listOf(DeltakerOppdateringResponse.fromDeltaker(deltakerInTest)),
-                block = settPaaVentelisteLambda,
-            )
-        }
-    }
-
     @Nested
     inner class GetDeltaker {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}"
@@ -101,7 +54,7 @@ class AmtDeltakerClientTest {
     inner class EndreBakgrunnsinformasjon {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/bakgrunnsinformasjon"
         val expectedErrorMessage = "Kunne ikke endre bakgrunnsinformasjon i amt-deltaker."
-        val endreBakgrunnsinformasjonLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val endreBakgrunnsinformasjonLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.endreBakgrunnsinformasjon(
                     deltakerId = deltakerInTest.id,
@@ -122,7 +75,7 @@ class AmtDeltakerClientTest {
         fun `skal returnere Deltakeroppdatering`() {
             runHappyPathTest(
                 expectedUrl = expectedUrl,
-                expectedResponse = deltakerOppdateringInTest,
+                expectedResponse = deltakerEndringResponseInTest,
                 block = endreBakgrunnsinformasjonLambda,
             )
         }
@@ -133,7 +86,7 @@ class AmtDeltakerClientTest {
         val innhold = Deltakelsesinnhold(null, emptyList())
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/innhold"
         val expectedErrorMessage = "Kunne ikke endre innhold i amt-deltaker."
-        val endreInnholdLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val endreInnholdLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.endreInnhold(
                     deltakerId = deltakerInTest.id,
@@ -154,7 +107,7 @@ class AmtDeltakerClientTest {
         fun `skal returnere Deltakeroppdatering`() {
             runHappyPathTest(
                 expectedUrl = expectedUrl,
-                expectedResponse = deltakerOppdateringInTest,
+                expectedResponse = deltakerEndringResponseInTest,
                 block = endreInnholdLambda,
             )
         }
@@ -164,7 +117,7 @@ class AmtDeltakerClientTest {
     inner class EndreDeltakelsesmengde {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/deltakelsesmengde"
         val expectedErrorMessage = "Kunne ikke endre deltakelsesmengde i amt-deltaker."
-        val endreDeltakelsesmengdeLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val endreDeltakelsesmengdeLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.endreDeltakelsesmengde(
                     deltakerId = deltakerInTest.id,
@@ -189,7 +142,7 @@ class AmtDeltakerClientTest {
         fun `skal returnere Deltakeroppdatering`() {
             runHappyPathTest(
                 expectedUrl = expectedUrl,
-                expectedResponse = deltakerOppdateringInTest,
+                expectedResponse = deltakerEndringResponseInTest,
                 block = endreDeltakelsesmengdeLambda,
             )
         }
@@ -199,7 +152,7 @@ class AmtDeltakerClientTest {
     inner class EndreStartdato {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/startdato"
         val expectedErrorMessage = "Kunne ikke endre startdato i amt-deltaker."
-        val endreStartdatoLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val endreStartdatoLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.endreStartdato(
                     deltakerId = deltakerInTest.id,
@@ -223,7 +176,7 @@ class AmtDeltakerClientTest {
         fun `skal returnere Deltakeroppdatering`() {
             runHappyPathTest(
                 expectedUrl = expectedUrl,
-                expectedResponse = deltakerOppdateringInTest,
+                expectedResponse = deltakerEndringResponseInTest,
                 block = endreStartdatoLambda,
             )
         }
@@ -233,7 +186,7 @@ class AmtDeltakerClientTest {
     inner class EndreSluttdato {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/sluttdato"
         val expectedErrorMessage = "Kunne ikke endre sluttdato i amt-deltaker."
-        val endreSluttdatoLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val endreSluttdatoLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.endreSluttdato(
                     deltakerId = deltakerInTest.id,
@@ -254,7 +207,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl = expectedUrl, expectedResponse = deltakerOppdateringInTest, endreSluttdatoLambda)
+            runHappyPathTest(expectedUrl = expectedUrl, expectedResponse = deltakerEndringResponseInTest, endreSluttdatoLambda)
         }
     }
 
@@ -262,7 +215,7 @@ class AmtDeltakerClientTest {
     inner class EndreSluttaarsak {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/sluttarsak"
         val expectedErrorMessage = "Kunne ikke endre sluttarsak i amt-deltaker."
-        val endreSluttaarsakLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val endreSluttaarsakLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.endreSluttaarsak(
                     deltakerId = deltakerInTest.id,
@@ -286,7 +239,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl = expectedUrl, expectedResponse = deltakerOppdateringInTest, endreSluttaarsakLambda)
+            runHappyPathTest(expectedUrl = expectedUrl, expectedResponse = deltakerEndringResponseInTest, endreSluttaarsakLambda)
         }
     }
 
@@ -294,7 +247,7 @@ class AmtDeltakerClientTest {
     inner class ForlengDeltakelse {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/forleng"
         val expectedErrorMessage = "Kunne ikke endre forleng i amt-deltaker."
-        val forlengDeltakelseLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val forlengDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.forlengDeltakelse(
                     deltakerId = deltakerInTest.id,
@@ -315,7 +268,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl = expectedUrl, expectedResponse = deltakerOppdateringInTest, forlengDeltakelseLambda)
+            runHappyPathTest(expectedUrl = expectedUrl, expectedResponse = deltakerEndringResponseInTest, forlengDeltakelseLambda)
         }
     }
 
@@ -323,7 +276,7 @@ class AmtDeltakerClientTest {
     inner class IkkeAktuell {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/ikke-aktuell"
         val expectedErrorMessage = "Kunne ikke endre ikke-aktuell i amt-deltaker."
-        val ikkeAktuellLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val ikkeAktuellLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.ikkeAktuell(
                     deltakerId = deltakerInTest.id,
@@ -347,7 +300,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, ikkeAktuellLambda)
+            runHappyPathTest(expectedUrl, deltakerEndringResponseInTest, ikkeAktuellLambda)
         }
     }
 
@@ -355,7 +308,7 @@ class AmtDeltakerClientTest {
     inner class ReaktiverDeltakelse {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/reaktiver"
         val expectedErrorMessage = "Kunne ikke endre reaktiver i amt-deltaker."
-        val reaktiverDeltakelseLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val reaktiverDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.reaktiverDeltakelse(
                     deltakerId = deltakerInTest.id,
@@ -374,7 +327,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, reaktiverDeltakelseLambda)
+            runHappyPathTest(expectedUrl, deltakerEndringResponseInTest, reaktiverDeltakelseLambda)
         }
     }
 
@@ -382,7 +335,7 @@ class AmtDeltakerClientTest {
     inner class AvsluttDeltakelse {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/avslutt"
         val expectedErrorMessage = "Kunne ikke endre avslutt i amt-deltaker."
-        val avsluttDeltakelseLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val avsluttDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.avsluttDeltakelse(
                     deltakerId = deltakerInTest.id,
@@ -407,7 +360,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, avsluttDeltakelseLambda)
+            runHappyPathTest(expectedUrl, deltakerEndringResponseInTest, avsluttDeltakelseLambda)
         }
     }
 
@@ -415,7 +368,7 @@ class AmtDeltakerClientTest {
     inner class AvbrytDeltakelse {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/avbryt"
         val expectedErrorMessage = "Kunne ikke endre avbryt i amt-deltaker."
-        val avbrytDeltakelseLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val avbrytDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.avbrytDeltakelse(
                     deltakerId = deltakerInTest.id,
@@ -440,7 +393,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, avbrytDeltakelseLambda)
+            runHappyPathTest(expectedUrl, deltakerEndringResponseInTest, avbrytDeltakelseLambda)
         }
     }
 
@@ -448,7 +401,7 @@ class AmtDeltakerClientTest {
     inner class FjernOppstartsdato {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/fjern-oppstartsdato"
         val expectedErrorMessage = "Kunne ikke endre fjern-oppstartsdato i amt-deltaker."
-        val fjernOppstartsdatoLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
+        val fjernOppstartsdatoLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
                 client.fjernOppstartsdato(
                     deltakerId = deltakerInTest.id,
@@ -468,66 +421,7 @@ class AmtDeltakerClientTest {
 
         @Test
         fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, fjernOppstartsdatoLambda)
-        }
-    }
-
-    @Nested
-    inner class DelMedArrangor {
-        val expectedUrl = "$DELTAKER_BASE_URL/tiltakskoordinator/deltakere/del-med-arrangor"
-        val expectedErrorMessage = "Kunne ikke dele-med-arrangor i amt-deltaker."
-        val delMedArrangorLambda: suspend (AmtDeltakerClient) -> List<DeltakerOppdateringResponse> =
-            { client ->
-                client.delMedArrangor(
-                    deltakerIder = listOf(deltakerInTest.id),
-                    endretAv = "~endretAv~",
-                )
-            }
-
-        @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
-        fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
-            val (statusCode, expectedExceptionType) = testCase
-            runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, delMedArrangorLambda)
-        }
-
-        @Test
-        fun `skal returnere liste med DeltakeroppdateringResponse`() {
-            runHappyPathTest(
-                expectedUrl,
-                listOf(DeltakerOppdateringResponse.fromDeltaker(deltakerInTest)),
-                delMedArrangorLambda,
-            )
-        }
-    }
-
-    @Nested
-    inner class GiAvslag {
-        val expectedUrl = "$DELTAKER_BASE_URL/tiltakskoordinator/deltakere/gi-avslag"
-        val expectedErrorMessage = "Kunne ikke gi avslag i amt-deltaker."
-        val avslagRequest = AvslagRequest(
-            deltakerId = deltakerInTest.id,
-            EndringFraTiltakskoordinator.Avslag.Aarsak(EndringFraTiltakskoordinator.Avslag.Aarsak.Type.ANNET, null),
-            null,
-        )
-        val giAvslagLambda: suspend (AmtDeltakerClient) -> Deltakeroppdatering =
-            { client ->
-                client.giAvslag(
-                    avslagRequest,
-                    endretAv = "~endretAv~",
-                )
-            }
-
-        @ParameterizedTest
-        @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
-        fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
-            val (statusCode, expectedExceptionType) = testCase
-            runFailureTest(expectedExceptionType, statusCode, expectedUrl, expectedErrorMessage, giAvslagLambda)
-        }
-
-        @Test
-        fun `skal returnere Deltakeroppdatering`() {
-            runHappyPathTest(expectedUrl, deltakerOppdateringInTest, giAvslagLambda)
+            runHappyPathTest(expectedUrl, deltakerEndringResponseInTest, fjernOppstartsdatoLambda)
         }
     }
 
@@ -561,8 +455,8 @@ class AmtDeltakerClientTest {
 
     companion object {
         private const val DELTAKER_BASE_URL = "http://amt-deltaker"
-        private val deltakerInTest = TestData.lagDeltaker()
-        private val deltakerOppdateringInTest = deltakerInTest.toDeltakeroppdatering()
+        private val deltakerInTest = lagDeltaker()
+        private val deltakerEndringResponseInTest = deltakerInTest.toDeltakerEndringResponse()
 
         private fun runFailureTest(
             exceptionType: KClass<out Throwable>,

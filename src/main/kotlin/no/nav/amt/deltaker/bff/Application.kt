@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
+import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
@@ -152,6 +153,13 @@ fun Application.module(): suspend () -> Unit {
         azureAdTokenClient = azureAdTokenClient,
     )
 
+    val tiltakskoordinatorClient = TiltaksKoordinatorClient(
+        baseUrl = environment.amtDeltakerUrl,
+        scope = environment.amtDeltakerScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
+    )
+
     val amtDistribusjonClient = AmtDistribusjonClient(
         baseUrl = environment.amtDistribusjonUrl,
         scope = environment.amtDistribusjonScope,
@@ -221,7 +229,7 @@ fun Application.module(): suspend () -> Unit {
     val innbyggerService = InnbyggerService(deltakerService, paameldingClient)
 
     val tiltakskoordinatorService = TiltakskoordinatorService(
-        amtDeltakerClient,
+        tiltakskoordinatorClient,
         deltakerService,
         tiltakskoordinatorTilgangRepository,
         vurderingService,

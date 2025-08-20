@@ -15,7 +15,6 @@ import io.ktor.utils.io.ByteReadChannel
 import no.nav.amt.deltaker.bff.apiclients.arrangor.ArrangorResponse
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
-import no.nav.amt.deltaker.bff.apiclients.paamelding.response.OpprettKladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -24,6 +23,10 @@ import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
 import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
 import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerEndringResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.UtkastResponse
+import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringResponse
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.person.dto.NavEnhetDto
@@ -281,4 +284,42 @@ fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     status,
     historikk,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+)
+
+fun Deltaker.toDeltakerEndringResponse() = DeltakerEndringResponse(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    deltakelsesinnhold,
+    status,
+    historikk,
+)
+
+fun Deltaker.toDeltakeroppdateringResponse() = DeltakerOppdateringResponse(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    deltakelsesinnhold,
+    status,
+    historikk,
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+    feilkode = null,
+)
+
+fun Deltaker.toUtkastResponse() = UtkastResponse(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    deltakelsesinnhold,
+    status,
+    historikk,
 )
