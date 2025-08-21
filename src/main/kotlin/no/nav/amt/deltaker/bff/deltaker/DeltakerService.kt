@@ -295,9 +295,9 @@ class DeltakerService(
         )
     }
 
-    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering) {
+    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering, isSynchronousInvocation: Boolean = true) {
         laasTidligereDeltakelser(deltakeroppdatering)
-        deltakerRepository.update(deltakeroppdatering)
+        deltakerRepository.update(deltaker = deltakeroppdatering, isSynchronousInvocation = isSynchronousInvocation)
 
         if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
@@ -337,7 +337,7 @@ class DeltakerService(
     }
 
     private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
-        val currentStatus = deltakerRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
+        val currentStatus: DeltakerStatus = deltakerRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
         return currentStatus.type != deltakeroppdatering.status.type
     }
 

@@ -49,6 +49,7 @@ class DeltakerV2Consumer(
             log.info("Oppdaterer deltaker med id ${deltakerV2.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
+                isSynchronousInvocation = false,
             )
             vurderingService.upsert(deltakerV2.vurderingerFraArrangor.orEmpty())
             lagretDeltaker?.navBruker?.let {
