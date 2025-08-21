@@ -20,6 +20,7 @@ import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerRepository {
@@ -372,10 +373,18 @@ class DeltakerRepository {
     }
 
     fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+        val eksisterendeDeltaker = get(deltaker.id).getOrNull()
+        val skalOppdatereStatus: Boolean = eksisterendeDeltaker?.let {
+            deltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >=
+                eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
+        } ?: true
+
         session.transaction { tx ->
             tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
-            tx.update(insertStatusQuery(deltaker.status, deltaker.id))
-            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            if (skalOppdatereStatus) {
+                tx.update(insertStatusQuery(deltaker.status, deltaker.id))
+                tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            }
         }
     }
 
