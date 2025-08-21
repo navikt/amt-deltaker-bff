@@ -372,12 +372,15 @@ class DeltakerRepository {
         }
     }
 
-    fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+    fun update(deltaker: Deltakeroppdatering, isSynchronousInvocation: Boolean = true) = Database.query { session ->
         val eksisterendeDeltaker = get(deltaker.id).getOrNull()
-        val skalOppdatereStatus: Boolean = eksisterendeDeltaker?.let {
-            deltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >=
-                eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
-        } ?: true
+
+        val skalOppdatereStatus: Boolean = isSynchronousInvocation ||
+            (
+                eksisterendeDeltaker?.let {
+                    deltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >= it.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
+                } ?: true
+            )
 
         session.transaction { tx ->
             tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
