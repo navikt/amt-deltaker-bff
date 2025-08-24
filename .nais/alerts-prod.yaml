@@ -34,3 +34,15 @@ spec:
           labels:
             namespace: amt
             severity: warning
+
+        # NB: Denne regelen omfatter alle consumer-grupper som starter med amt-
+        - alert: ConsumerLag
+          expr: sum(kafka_consumergroup_group_lag{group=~"^amt-.*"}) by (group, topic) > 100
+          for: 5m
+          annotations:
+            summary: "Høy Kafka consumer lag for {{ $labels.group }}"
+            consequence: "Consumer group *{{ $labels.group }}* har akkumulert mer enn 100 meldinger i kø på topic *{{ $labels.topic }}*."
+            action: "Undersøk hvorfor applikasjonen ikke prosesserer meldinger raskt nok. Sjekk loggene og vurder ressursbruk eller feil i meldingshåndtering."
+          labels:
+            namespace: amt
+            severity: warning
