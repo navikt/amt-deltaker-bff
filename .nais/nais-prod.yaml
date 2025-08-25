@@ -30,10 +30,9 @@ spec:
     cpuThresholdPercentage: 75
   resources:
     limits:
-      cpu: "1"
       memory: 2048Mi
     requests:
-      cpu: 100m
+      cpu: 50m
       memory: 256Mi
   envFrom:
     - secret: amt-deltaker-bff-unleash-api-token
