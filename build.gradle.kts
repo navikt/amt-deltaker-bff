@@ -5,7 +5,7 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    val kotlinVersion = "2.2.0"
+    val kotlinVersion = "2.2.10"
 
     kotlin("jvm") version kotlinVersion
     id("io.ktor.plugin") version "3.2.3"
@@ -25,18 +25,18 @@ val prometeusVersion = "1.15.3"
 val ktlintVersion = "1.6.0"
 val jacksonVersion = "2.19.2"
 val logstashEncoderVersion = "8.1"
-val commonVersion = "3.2025.06.23_14.50-3af3985d8555"
+val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val kotestVersion = "5.9.1"
-val flywayVersion = "11.10.5"
-val hikariVersion = "7.0.1"
+val flywayVersion = "11.11.2"
+val hikariVersion = "7.0.2"
 val kotliqueryVersion = "1.9.1"
 val postgresVersion = "42.7.7"
 val caffeineVersion = "3.2.2"
 val mockkVersion = "1.14.5"
-val nimbusVersion = "10.4.1"
-val amtLibVersion = "1.2025.08.12_09.57-61d1b79c30eb"
-val unleashVersion = "11.0.2"
+val nimbusVersion = "10.4.2"
+val amtLibVersion = "1.2025.08.18_15.37-cebd08454799"
+val unleashVersion = "11.1.0"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
