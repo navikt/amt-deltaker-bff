@@ -57,6 +57,9 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.testdata.TestdataService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka.HendelseConsumer
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
@@ -71,8 +74,12 @@ import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 import org.slf4j.LoggerFactory
+import org.slf4j.bridge.SLF4JBridgeHandler
 
 fun main() {
+    SLF4JBridgeHandler.removeHandlersForRootLogger()
+    SLF4JBridgeHandler.install()
+
     var shutdownConsumers: suspend () -> Unit = {}
     val server = embeddedServer(Netty, port = 8080) {
         shutdownConsumers = module()
@@ -215,6 +222,9 @@ fun Application.module(): suspend () -> Unit {
     val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
     val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, arrangorMeldingProducer)
 
+    val ulestHendelseRepository = UlestHendelseRepository()
+    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
+
     val vurderingRepository = VurderingRepository()
     val vurderingService = VurderingService(vurderingRepository)
     val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, paameldingClient, navEnhetService, forslagService)
@@ -266,6 +276,7 @@ fun Application.module(): suspend () -> Unit {
         TiltakstypeConsumer(tiltakstypeRepository),
         DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle),
         ArrangorMeldingConsumer(forslagService),
+        HendelseConsumer(ulestHendelseService),
         NavEnhetConsumer(navEnhetService),
     )
     consumers.forEach { it.start() }

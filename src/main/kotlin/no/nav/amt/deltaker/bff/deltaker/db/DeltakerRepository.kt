@@ -20,6 +20,7 @@ import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerRepository {
@@ -371,11 +372,22 @@ class DeltakerRepository {
         }
     }
 
-    fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+    fun update(deltaker: Deltakeroppdatering, isSynchronousInvocation: Boolean = true) = Database.query { session ->
+        val eksisterendeDeltaker = get(deltaker.id).getOrNull()
+
+        val skalOppdatereStatus: Boolean = isSynchronousInvocation ||
+            (
+                eksisterendeDeltaker?.let {
+                    deltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >= it.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
+                } ?: true
+            )
+
         session.transaction { tx ->
             tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
-            tx.update(insertStatusQuery(deltaker.status, deltaker.id))
-            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            if (skalOppdatereStatus) {
+                tx.update(insertStatusQuery(deltaker.status, deltaker.id))
+                tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            }
         }
     }
 
@@ -445,7 +457,7 @@ class DeltakerRepository {
         val params = mapOf("deltakerliste_id" to deltakerlisteId)
         session.run(
             queryOf(
-                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null and d.kan_endres = true"),
+                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"),
                 params,
             ).map(::rowMapper).asList,
         )

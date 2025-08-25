@@ -11,7 +11,7 @@ class InnbyggerService(
 ) {
     suspend fun godkjennUtkast(deltaker: Deltaker): Deltaker {
         require(deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
-            "Deltaker har ikke status ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}"
+            "Deltaker ${deltaker.id} har ikke status ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}"
         }
 
         val oppdatering = paameldingClient.innbyggerGodkjennUtkast(deltaker.id)
