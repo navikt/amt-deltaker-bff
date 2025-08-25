@@ -72,8 +72,12 @@ import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
 import org.slf4j.LoggerFactory
+import org.slf4j.bridge.SLF4JBridgeHandler
 
 fun main() {
+    SLF4JBridgeHandler.removeHandlersForRootLogger()
+    SLF4JBridgeHandler.install()
+
     var shutdownConsumers: suspend () -> Unit = {}
     val server = embeddedServer(Netty, port = 8080) {
         shutdownConsumers = module()
