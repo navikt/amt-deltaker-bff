@@ -18,8 +18,8 @@
         <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
-    <root level="${ROOT_LOG_LEVEL:-INFO}">
-        <appender-ref ref="stdout_json_masked"/>
+    <root level="INFO">
+        <appender-ref ref="consoleAppender"/>
     </root>
 
     <!-- Logger cookies dersom den ikke parses riktig, noe vi ikke ønsker -->
