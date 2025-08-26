@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtArrangorClient
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
@@ -46,7 +47,9 @@ class DeltakerlisteConsumerTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
+
             repository = DeltakerlisteRepository()
             tiltakstypeRepository = TiltakstypeRepository()
             navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
@@ -55,14 +58,15 @@ class DeltakerlisteConsumerTest {
             deltakerService = DeltakerService(
                 deltakerRepository = DeltakerRepository(),
                 amtDeltakerClient = mockAmtDeltakerClient(),
+                paameldingClient = mockPaameldingClient(),
                 navEnhetService = navEnhetService,
                 forslagService = mockk(relaxed = true),
             )
             pameldingService = PameldingService(
                 deltakerService = deltakerService,
                 navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-                amtDeltakerClient = mockAmtDeltakerClient(),
                 navEnhetService = navEnhetService,
+                paameldingClient = mockPaameldingClient(),
             )
         }
     }

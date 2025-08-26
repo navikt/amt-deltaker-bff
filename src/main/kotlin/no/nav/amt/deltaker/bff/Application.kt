@@ -12,11 +12,14 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.Environment.Companion.HTTP_CLIENT_TIMEOUT_MS
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
+import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureMonitoring
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
-import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
 import no.nav.amt.deltaker.bff.arrangor.ArrangorConsumer
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
@@ -26,8 +29,6 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
@@ -65,6 +66,7 @@ import no.nav.amt.lib.kafka.config.KafkaConfigImpl
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
+import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
 import no.nav.amt.lib.ktor.routing.isReadyKey
 import no.nav.amt.lib.utils.applicationConfig
 import no.nav.amt.lib.utils.database.Database
@@ -151,6 +153,20 @@ fun Application.module(): suspend () -> Unit {
         azureAdTokenClient = azureAdTokenClient,
     )
 
+    val paameldingClient = PaameldingClient(
+        baseUrl = environment.amtDeltakerUrl,
+        scope = environment.amtDeltakerScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
+    )
+
+    val tiltakskoordinatorClient = TiltaksKoordinatorClient(
+        baseUrl = environment.amtDeltakerUrl,
+        scope = environment.amtDeltakerScope,
+        httpClient = httpClient,
+        azureAdTokenClient = azureAdTokenClient,
+    )
+
     val amtDistribusjonClient = AmtDistribusjonClient(
         baseUrl = environment.amtDistribusjonUrl,
         scope = environment.amtDistribusjonScope,
@@ -186,7 +202,7 @@ fun Application.module(): suspend () -> Unit {
     )
 
     val arrangorService = ArrangorService(arrangorRepository, amtArrangorClient)
-    val deltakerlisteService = DeltakerlisteService(deltakerlisteRepository, amtPersonServiceClient)
+    val deltakerlisteService = DeltakerlisteService(deltakerlisteRepository)
 
     val poaoTilgangCachedClient = PoaoTilgangCachedClient.createDefaultCacheClient(
         PoaoTilgangHttpClient(
@@ -211,19 +227,19 @@ fun Application.module(): suspend () -> Unit {
 
     val vurderingRepository = VurderingRepository()
     val vurderingService = VurderingService(vurderingRepository)
-    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, navEnhetService, forslagService)
+    val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, paameldingClient, navEnhetService, forslagService)
 
     val pameldingService = PameldingService(
         deltakerService = deltakerService,
         navBrukerService = navBrukerService,
-        amtDeltakerClient = amtDeltakerClient,
         navEnhetService = navEnhetService,
+        paameldingClient = paameldingClient,
     )
 
-    val innbyggerService = InnbyggerService(amtDeltakerClient, deltakerService)
+    val innbyggerService = InnbyggerService(deltakerService, paameldingClient)
 
     val tiltakskoordinatorService = TiltakskoordinatorService(
-        amtDeltakerClient,
+        tiltakskoordinatorClient,
         deltakerService,
         tiltakskoordinatorTilgangRepository,
         vurderingService,

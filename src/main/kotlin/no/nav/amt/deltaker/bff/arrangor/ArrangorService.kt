@@ -1,5 +1,8 @@
 package no.nav.amt.deltaker.bff.arrangor
 
+import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
+import no.nav.amt.lib.models.deltaker.Arrangor
+
 class ArrangorService(
     private val repository: ArrangorRepository,
     private val amtArrangorClient: AmtArrangorClient,
@@ -11,7 +14,7 @@ class ArrangorService(
     private suspend fun opprettArrangor(orgnr: String): Arrangor {
         val arrangor = amtArrangorClient.hentArrangor(orgnr)
 
-        if (arrangor.overordnetArrangor != null) repository.upsert(arrangor.overordnetArrangor)
+        arrangor.overordnetArrangor?.let { repository.upsert(it) }
         repository.upsert(arrangor.toModel())
 
         return arrangor.toModel()

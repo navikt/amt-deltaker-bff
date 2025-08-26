@@ -23,7 +23,9 @@ class ArrangorMeldingConsumerTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
+
             repository = ForslagRepository()
             service = ForslagService(repository, mockk(), mockk(), mockk())
         }

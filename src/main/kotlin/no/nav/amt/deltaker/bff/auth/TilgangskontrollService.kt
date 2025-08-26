@@ -1,10 +1,10 @@
 package no.nav.amt.deltaker.bff.auth
 
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
+import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.poao_tilgang.client.Decision
@@ -153,7 +153,11 @@ class TilgangskontrollService(
             ),
         )
 
-        tilgang.onSuccess { tiltakskoordinatorsDeltakerlisteProducer.produce(it.toDto(navIdent)) }
+        tilgang.onSuccess {
+            tiltakskoordinatorsDeltakerlisteProducer.produce(
+                TiltakskoordinatorsDeltakerlisteDto.fromModel(it, navIdent),
+            )
+        }
 
         return tilgang
     }

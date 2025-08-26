@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -25,12 +26,19 @@ import java.time.LocalDate
 
 class DeltakerServiceTest {
     init {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val forslagService = mockk<ForslagService>()
-    private val service = DeltakerService(DeltakerRepository(), mockAmtDeltakerClient(), navEnhetService, forslagService)
+    private val service = DeltakerService(
+        DeltakerRepository(),
+        mockAmtDeltakerClient(),
+        mockPaameldingClient(),
+        navEnhetService,
+        forslagService,
+    )
 
     @Test
     fun `oppdaterDeltaker(endring) - kaller client og returnerer deltaker`(): Unit = runBlocking {
@@ -140,6 +148,7 @@ class DeltakerServiceTest {
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak?.toDeltakerStatusAarsak()
                     oppdatertDeltaker.sluttdato shouldBe endring.sluttdato
                 }
+
                 is DeltakerEndring.Endring.EndreAvslutning -> {
                     if (endring.harFullfort) {
                         oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.FULLFORT
@@ -148,6 +157,7 @@ class DeltakerServiceTest {
                     }
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak?.toDeltakerStatusAarsak()
                 }
+
                 is DeltakerEndring.Endring.AvbrytDeltakelse -> {
                     oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT
                     oppdatertDeltaker.status.aarsak shouldBe endring.aarsak.toDeltakerStatusAarsak()

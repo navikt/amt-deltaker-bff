@@ -11,7 +11,7 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.auth.principal
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.auth.AuthenticationException
+import no.nav.amt.lib.ktor.auth.exceptions.AuthenticationException
 import java.net.URI
 import java.util.UUID
 import java.util.concurrent.TimeUnit

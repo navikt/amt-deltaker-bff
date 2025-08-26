@@ -32,9 +32,9 @@ data class EndreAvslutningRequest(
         }
     }
 
-    fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt == true
+    fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt
 
-    fun harFullfort(): Boolean = harFullfort == null || harFullfort == true
+    fun harFullfort(): Boolean = harFullfort == null || harFullfort
 
     private fun deltakerErEndret(deltaker: Deltaker): Boolean = (deltaker.status.type === DeltakerStatus.Type.AVBRUTT && harFullfort()) ||
         (deltaker.status.type === DeltakerStatus.Type.FULLFORT && !harFullfort()) ||

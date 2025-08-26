@@ -13,18 +13,15 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.auth.AuthenticationException
-import no.nav.amt.deltaker.bff.auth.AuthorizationException
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdistribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
-import no.nav.amt.deltaker.bff.deltakerliste.DeltakerForUngException
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
@@ -40,6 +37,8 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinator
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
+import no.nav.amt.lib.ktor.auth.exceptions.AuthenticationException
+import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.ktor.routing.registerHealthApi
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -67,7 +66,7 @@ fun Application.configureRouting(
             call.respondText(text = "400: ${cause.message}", status = HttpStatusCode.BadRequest)
         }
         exception<AuthenticationException> { call, cause ->
-            StatusPageLogger.log(HttpStatusCode.Forbidden, call, cause)
+            StatusPageLogger.log(HttpStatusCode.Unauthorized, call, cause)
             call.respondText(text = "401: ${cause.message}", status = HttpStatusCode.Unauthorized)
         }
         exception<AuthorizationException> { call, cause ->
@@ -85,10 +84,6 @@ fun Application.configureRouting(
         exception<Throwable> { call, cause ->
             StatusPageLogger.log(HttpStatusCode.InternalServerError, call, cause)
             call.respondText(text = "500: ${cause.message}", status = HttpStatusCode.InternalServerError)
-        }
-        exception<DeltakerForUngException> { call, cause ->
-            StatusPageLogger.log(HttpStatusCode.BadRequest, call, cause)
-            call.respondText(text = "DELTAKER_FOR_UNG", status = HttpStatusCode.BadRequest)
         }
     }
     routing {
@@ -113,7 +108,6 @@ fun Application.configureRouting(
             navEnhetService,
             forslagService,
             amtDistribusjonClient,
-            deltakerlisteService,
         )
 
         registerInnbyggerApi(

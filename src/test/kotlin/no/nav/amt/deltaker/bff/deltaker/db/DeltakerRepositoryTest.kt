@@ -3,10 +3,11 @@ package no.nav.amt.deltaker.bff.deltaker.db
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.deltaker.api.model.toKladdResponse
+import no.nav.amt.deltaker.bff.apiclients.DtoMappers.opprettKladdResponseFromDeltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerKladd
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.lib.models.arrangor.melding.Forslag
@@ -32,6 +33,7 @@ class DeltakerRepositoryTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
             repository = DeltakerRepository()
         }
@@ -119,11 +121,12 @@ class DeltakerRepositoryTest {
 
     @Test
     fun `create - ny kladd - oppretter ny deltaker`() {
-        val deltaker = TestData.lagDeltakerKladd()
+        val deltaker = lagDeltakerKladd()
         TestRepository.insert(deltaker.navBruker)
         TestRepository.insert(deltaker.deltakerliste)
 
-        val kladd = deltaker.toKladdResponse()
+        val kladd = opprettKladdResponseFromDeltaker(deltaker)
+
         repository.create(kladd)
 
         sammenlignDeltakere(deltaker, repository.get(kladd.id).getOrThrow())
@@ -131,10 +134,10 @@ class DeltakerRepositoryTest {
 
     @Test
     fun `create - deltaker eksisterer - feiler`() {
-        val deltaker = TestData.lagDeltakerKladd()
+        val deltaker = lagDeltakerKladd()
         TestRepository.insert(deltaker)
 
-        val kladd = deltaker.toKladdResponse()
+        val kladd = opprettKladdResponseFromDeltaker(deltaker)
 
         assertThrows(PSQLException::class.java) {
             repository.create(kladd)
@@ -167,7 +170,7 @@ class DeltakerRepositoryTest {
 
     @Test
     fun `update - deltakerstatus er endret - oppdaterer`() {
-        val deltaker = TestData.lagDeltakerKladd()
+        val deltaker = lagDeltakerKladd()
         TestRepository.insert(deltaker)
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
@@ -270,9 +273,9 @@ class DeltakerRepositoryTest {
 
     @Test
     fun `getUtdaterteKladder - finnes en utdatert kladd - returnerer utdatert kladd`() {
-        val kladd = TestData.lagDeltakerKladd(sistEndret = LocalDateTime.now().minusDays(2))
+        val kladd = lagDeltakerKladd(sistEndret = LocalDateTime.now().minusDays(2))
         TestRepository.insert(kladd)
-        val utdatertKladd = TestData.lagDeltakerKladd(sistEndret = LocalDateTime.now().minusDays(20))
+        val utdatertKladd = lagDeltakerKladd(sistEndret = LocalDateTime.now().minusDays(20))
         TestRepository.insert(utdatertKladd)
 
         val utdaterteKladder = repository.getUtdaterteKladder(LocalDateTime.now().minusWeeks(2))

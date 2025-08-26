@@ -2,9 +2,9 @@ package no.nav.amt.deltaker.bff.deltakerliste
 
 import kotliquery.Row
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.prefixColumn
+import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -89,7 +89,7 @@ class DeltakerlisteRepository {
                     "tiltakstype_id" to deltakerliste.tiltak.id,
                     "start_dato" to deltakerliste.startDato,
                     "slutt_dato" to deltakerliste.sluttDato,
-                    "oppstart" to deltakerliste.oppstart?.name,
+                    "oppstart" to deltakerliste.oppstart.name,
                     "apent_for_pamelding" to deltakerliste.apentForPamelding,
                     "antall_plasser" to deltakerliste.antallPlasser,
                 ),

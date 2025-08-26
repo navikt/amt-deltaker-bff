@@ -1,7 +1,6 @@
-package no.nav.amt.deltaker.bff.deltaker.amtdistribusjon
+package no.nav.amt.deltaker.bff.apiclients.distribusjon
 
 import com.github.benmanes.caffeine.cache.Cache
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
 import io.ktor.http.HttpStatusCode
@@ -9,18 +8,26 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.utils.createMockHttpClient
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
 import no.nav.amt.lib.testing.utils.CountingCache
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import kotlin.reflect.KClass
 
 class AmtDistribusjonClientTest {
-    @Test
-    fun `digitalBruker skal kaste feil nar respons med feilkode`(): Unit = runBlocking {
-        val distribusjonClient = createAmtDistribusjonClient(HttpStatusCode.BadRequest)
+    @ParameterizedTest
+    @MethodSource("no.nav.amt.deltaker.bff.apiclients.ApiClientTestUtils#failureCases")
+    fun `skal kaste riktig exception ved feilrespons`(testCase: Pair<HttpStatusCode, KClass<out Throwable>>) {
+        val (statusCode, expectedExceptionType) = testCase
 
-        val thrown = shouldThrow<IllegalStateException> {
-            distribusjonClient.digitalBruker("~personident~")
-        }
+        val digitalBrukertLambda: suspend (AmtDistribusjonClient) -> Boolean =
+            { client -> client.digitalBruker("~personident~") }
 
-        thrown.message shouldStartWith "Kunne ikke hente om bruker er digital fra amt-distribusjon."
+        runFailureTest(
+            exceptionType = expectedExceptionType,
+            statusCode = statusCode,
+            digitalBrukertLambda,
+        )
     }
 
     @Test
@@ -53,6 +60,19 @@ class AmtDistribusjonClientTest {
     }
 
     companion object {
+        private fun runFailureTest(
+            exceptionType: KClass<out Throwable>,
+            statusCode: HttpStatusCode,
+            block: suspend (AmtDistribusjonClient) -> Any,
+        ) {
+            val thrown = Assertions.assertThrows(exceptionType.java) {
+                runBlocking {
+                    block(createAmtDistribusjonClient(statusCode))
+                }
+            }
+            thrown.message shouldStartWith "Kunne ikke hente om bruker er digital fra amt-distribusjon."
+        }
+
         private fun createAmtDistribusjonClient(
             statusCode: HttpStatusCode = HttpStatusCode.OK,
             responseBody: DigitalBrukerResponse? = null,
