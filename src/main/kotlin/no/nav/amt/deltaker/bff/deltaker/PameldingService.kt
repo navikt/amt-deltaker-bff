@@ -9,6 +9,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class PameldingService(
@@ -17,7 +18,18 @@ class PameldingService(
     private val paameldingClient: PaameldingClient,
     private val navEnhetService: NavEnhetService,
 ) {
+    private val log = LoggerFactory.getLogger(javaClass)
+
     suspend fun opprettDeltaker(deltakerlisteId: UUID, personIdent: String): Deltaker {
+        val eksisterendeDeltaker = deltakerService
+            .getDeltakelser(personIdent, deltakerlisteId)
+            .firstOrNull { !it.harSluttet() }
+
+        if (eksisterendeDeltaker != null) {
+            log.warn("Deltakeren ${eksisterendeDeltaker.id} er allerede opprettet og deltar fortsatt")
+            return eksisterendeDeltaker
+        }
+
         val kladdResponse = paameldingClient.opprettKladd(
             personIdent = personIdent,
             deltakerlisteId = deltakerlisteId,
