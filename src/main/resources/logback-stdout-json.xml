@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<included>
+<included scan="true" scanPeriod="30 seconds">
     <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
 
     <appender name="stdout_json_masked" class="no.nav.common.log.MaskingAppender">
@@ -24,7 +23,7 @@
         </encoder>
     </appender>
 
-    <root level="${ROOT_LOG_LEVEL:-INFO}">
+    <root level="INFO">
         <appender-ref ref="stdout_json_masked"/>
     </root>
 
