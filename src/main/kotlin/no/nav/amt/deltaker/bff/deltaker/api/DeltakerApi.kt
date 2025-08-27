@@ -128,6 +128,7 @@ fun Routing.registerDeltakerApi(
 
     authenticate(AuthLevel.VEILEDER.name) {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
+            throw IllegalStateException("Dette er en test\n".repeat(4))
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
             handleEndring(call, request) {
                 DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon)
