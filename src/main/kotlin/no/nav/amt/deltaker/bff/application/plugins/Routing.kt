@@ -171,7 +171,7 @@ object StatusPageLogger {
         cause: Throwable,
     ) {
         val msg = "${statusCode.value} ${statusCode.description}: " +
-            "${call.request.httpMethod.value} ${call.request.path()}\n" +
+            "${call.request.httpMethod.value} ${call.request.path()} " +
             "Error: ${cause.message}"
 
         when (statusCode.value) {
