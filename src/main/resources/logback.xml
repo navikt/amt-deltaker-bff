@@ -1,5 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="true">
-    <include resource="logback-stdout-json.xml"/>
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
+
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>2</maxDepthPerThrowable>
+                <maxLength>256</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <appender name="MASKED_JSON" class="no.nav.common.log.MaskingAppender">
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator>
+                <expression>
+                    return level != ERROR &amp;&amp; (logger.contains("org.apache.cxf") || logger.contains("no.nav.common.cxf"));
+                </expression>
+            </evaluator>
+            <onMatch>DENY</onMatch>
+            <onMismatch>NEUTRAL</onMismatch>
+        </filter>
+        <appender-ref ref="JSON_CONSOLE"/>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="MASKED_JSON"/>
+    </root>
+
+    <logger name="org.apache.tomcat.util.http.parser.Cookie" level="OFF"/>
+    <logger name="org.apache" level="INFO"/>
+    <logger name="org.apache.cxf" level="ERROR"/>
+    <logger name="no.nav.common.cxf" level="ERROR"/>
+    <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR"/>
+    <logger name="org.apache.wss4j.common.crypto.CryptoBase" level="ERROR"/>
+    <logger name="no.nav" level="INFO"/>
+    <logger name="org.apache.kafka" level="WARN"/>
+    <logger name="com.zaxxer.hikari.pool" level="INFO"/>
+    <logger name="io.ktor.auth" level="TRACE"/>
+
     <include resource="no/nav/common/audit_log/logback-naudit.xml"/>
 </configuration>
