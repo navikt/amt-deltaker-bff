@@ -133,6 +133,6 @@ tasks.jar {
 }
 
 tasks.shadowJar {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     mergeServiceFiles()
 }
