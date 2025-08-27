@@ -108,7 +108,7 @@ spec:
 
   observability:
       autoInstrumentation:
-        enabled: true
+        enabled: false
         runtime: java
       logging:
         destinations:
