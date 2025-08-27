@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
-
-    <appender name="stdout_json" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <provider class="net.logstash.logback.composite.loggingevent.ArgumentsJsonProvider" />
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>2</maxDepthPerThrowable>
+                <maxLength>256</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+            </throwableConverter>
         </encoder>
     </appender>
 
-    <root level="${ROOT_LOG_LEVEL:-INFO}">
-        <appender-ref ref="stdout_json"/>
+    <root level="INFO">
+        <appender-ref ref="consoleAppender"/>
     </root>
-
-    <!-- Logger cookies dersom den ikke parses riktig, noe vi ikke ønsker -->
-    <logger name="org.apache.tomcat.util.http.parser.Cookie" level="OFF" />
-
-    <logger name="org.apache" level="INFO"/>
-    <logger name="org.apache.cxf" level="ERROR"/>
-    <logger name="no.nav.common.cxf" level="ERROR"/>
-    <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR"/>
-    <logger name="org.apache.wss4j.common.crypto.CryptoBase" level="ERROR"/>
 </configuration>
+
