@@ -15,7 +15,13 @@
         <appender-ref ref="consoleAppender"/>
     </appender>
     <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>2</maxDepthPerThrowable>
+                <maxLength>256</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+            </throwableConverter>
+        </encoder>
     </appender>
 
     <root level="${ROOT_LOG_LEVEL:-INFO}">
@@ -34,5 +40,4 @@
     <logger name="org.apache.kafka" level="WARN" />
     <logger name="com.zaxxer.hikari.pool" level="INFO" />
     <logger name="io.ktor.auth" level="TRACE" />
-
 </included>
