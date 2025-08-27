@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+<configuration debug="true">
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
                 <maxDepthPerThrowable>2</maxDepthPerThrowable>
@@ -11,7 +11,7 @@
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="consoleAppender"/>
+        <appender-ref ref="JSON_CONSOLE"/>
     </root>
 </configuration>
 
