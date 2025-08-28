@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka.HendelseConsumer
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.toUlestHendelse
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
@@ -42,7 +43,14 @@ class HendelseConsumerTest {
         )
         val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)
-        val hendelse = TestData.lagHendelse(deltaker = deltaker)
+        val hendelse = TestData.lagHendelse(
+            deltaker = deltaker,
+            payload = HendelseType.FjernOppstartsdato(
+                begrunnelseFraNav = "",
+                begrunnelseFraArrangor = "",
+                endringFraForslag = null,
+            ),
+        )
 
         consumer.consume(
             hendelse.id,
@@ -86,7 +94,7 @@ class HendelseConsumerTest {
         TestRepository.insert(deltaker)
         val hendelse = TestData.lagHendelse(deltaker = deltaker)
 
-        repository.upsert(hendelse)
+        hendelse.toUlestHendelse()?.let { repository.upsert(it) }
 
         consumer.consume(
             hendelse.id,
