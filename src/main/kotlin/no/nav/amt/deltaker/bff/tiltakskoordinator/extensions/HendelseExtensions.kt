@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.extensions
+package no.nav.amt.deltaker.bff.tiltakskoordinator.extensions
 
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.hendelse.Hendelse

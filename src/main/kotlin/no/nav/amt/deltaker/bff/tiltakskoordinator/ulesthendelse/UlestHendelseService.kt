@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse
 
-import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.extensions.toUlestHendelse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.hendelse.Hendelse
 import org.slf4j.LoggerFactory
@@ -11,23 +11,22 @@ class UlestHendelseService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun delete(id: UUID) {
-        ulestHendelseRepository.delete(id)
-        log.info("Slettet ulest hendelse $id")
-    }
-
     fun lagreUlestHendelse(hendelse: Hendelse) {
-        val ulestHendelse = hendelse.toUlestHendelse()
-        if (ulestHendelse != null) {
-            ulestHendelseRepository.upsert(ulestHendelse)
-            log.info("Lagret ulest hendelse ${hendelse.id} for deltaker ${hendelse.deltaker.id}")
-        } else {
-            log.warn("Ikke lagret ulest hendelse ${hendelse.id} for deltaker ${hendelse.deltaker.id}")
-        }
+        hendelse
+            .toUlestHendelse()
+            ?.also { ulestHendelse ->
+                ulestHendelseRepository.upsert(ulestHendelse)
+                log.info("Lagret ulest hendelse ${hendelse.id} for deltaker ${hendelse.deltaker.id}")
+            } ?: { log.warn("Ikke lagret ulest hendelse ${hendelse.id} for deltaker ${hendelse.deltaker.id}") }
     }
 
-    fun getUlessteHendelserForDeltaker(deltaker_id: UUID): List<UlestHendelse> = ulestHendelseRepository.getForDeltaker(deltaker_id)
+    fun getUlesteHendelserForDeltaker(deltakerId: UUID): List<UlestHendelse> = ulestHendelseRepository.getForDeltaker(deltakerId)
 
-    fun getUlessteHendelserForDeltakere(deltaker_ider: List<UUID>): List<UlestHendelse> =
-        ulestHendelseRepository.getForDeltakere(deltaker_ider)
+    fun getUlesteHendelserForDeltakere(deltakerIdList: List<UUID>): List<UlestHendelse> =
+        ulestHendelseRepository.getForDeltakere(deltakerIdList)
+
+    fun delete(hendelseId: UUID) {
+        ulestHendelseRepository.delete(hendelseId)
+        log.info("Slettet ulest hendelse $hendelseId")
+    }
 }
