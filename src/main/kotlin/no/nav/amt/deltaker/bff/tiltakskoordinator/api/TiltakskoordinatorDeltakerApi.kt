@@ -125,5 +125,6 @@ fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerD
             .filter { f ->
                 f.status == Forslag.Status.VenterPaSvar
             }.map { f -> f.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
+        ulesteHendelser = emptyList(), // TODO hent fra UlestHendelseService
     )
 }
