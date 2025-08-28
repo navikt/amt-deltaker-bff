@@ -139,6 +139,7 @@ fun Application.configureRouting(
             deltakerlisteService,
             tilgangskontrollService,
             sporbarhetsloggService,
+            ulestHendelseService,
         )
 
         registerTiltakskoordinatorDeltakerlisteApi(

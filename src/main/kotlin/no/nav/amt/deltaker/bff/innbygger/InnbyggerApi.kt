@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
-import no.nav.amt.deltaker.bff.application.plugins.getPersonident
+import no.nav.amt.deltaker.bff.application.plugins.getPersonIdent
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
@@ -47,7 +47,7 @@ fun Routing.registerInnbyggerApi(
 
     authenticate(AuthLevel.INNBYGGER.name) {
         get("/innbygger/{id}") {
-            val innbygger = call.getPersonident()
+            val innbygger = call.getPersonIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
@@ -57,7 +57,7 @@ fun Routing.registerInnbyggerApi(
         }
 
         post("/innbygger/{id}/godkjenn-utkast") {
-            val innbygger = call.getPersonident()
+            val innbygger = call.getPersonIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
@@ -73,7 +73,7 @@ fun Routing.registerInnbyggerApi(
         }
 
         get("/innbygger/{id}/historikk") {
-            val innbygger = call.getPersonident()
+            val innbygger = call.getPersonIdent()
             val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 

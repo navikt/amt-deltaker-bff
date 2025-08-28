@@ -19,12 +19,9 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerDetaljerResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.VurderingResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.toResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
-import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
@@ -36,29 +33,42 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
     sporbarhetsloggService: SporbarhetsloggService,
+    ulesteHendelserService: UlestHendelseService,
 ) {
     val apiPath = "/tiltakskoordinator/deltaker/{id}"
 
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
         get(apiPath) {
             val deltakerId = UUID.fromString(call.parameters["id"])
-            val tiltakskoordinatorsDeltaker = tiltakskoordinatorService.get(deltakerId)
-            val deltakerlisteId = tiltakskoordinatorsDeltaker.deltakerliste.id
-            val navAnsattAzureId = call.getNavAnsattAzureId()
             val navIdent = call.getNavIdent()
+            val navAnsattAzureId = call.getNavAnsattAzureId()
+
+            val tiltakskoordinatorsDeltaker = tiltakskoordinatorService.get(deltakerId)
+            val deltakerListeId = tiltakskoordinatorsDeltaker.deltakerliste.id
+
             sporbarhetsloggService.sendAuditLog(
                 navIdent = navIdent,
                 deltakerPersonIdent = tiltakskoordinatorsDeltaker.navBruker.personident,
             )
 
-            val tilgangTilBruker = tilgangskontrollService.harKoordinatorTilgangTilPerson(
-                navAnsattAzureId,
-                tiltakskoordinatorsDeltaker.navBruker,
+            val harTilgangTilBruker = tilgangskontrollService.harKoordinatorTilgangTilPerson(
+                navAnsattAzureId = navAnsattAzureId,
+                navBruker = tiltakskoordinatorsDeltaker.navBruker,
             )
 
-            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId)
-            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteId)
-            call.respond(tiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker))
+            tilgangskontrollService.verifiserTiltakskoordinatorTilgang(
+                navIdent = navIdent,
+                deltakerlisteId = deltakerListeId,
+            )
+
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerListeId)
+
+            val responseBody = tiltakskoordinatorsDeltaker.toResponse(
+                harTilgangTilBruker,
+                ulesteHendelserService.getUlesteHendelserForDeltaker(deltakerId),
+            )
+
+            call.respond(responseBody)
         }
 
         get("$apiPath/historikk") {
@@ -94,37 +104,4 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
             call.respondText(json, ContentType.Application.Json)
         }
     }
-}
-
-fun TiltakskoordinatorsDeltaker.toResponse(tilgangTilBruker: Boolean): DeltakerDetaljerResponse {
-    val (fornavn, mellomnavn, etternavn) = navBruker.getVisningsnavn(tilgangTilBruker)
-    val personident = if (tilgangTilBruker) navBruker.personident else null
-
-    return DeltakerDetaljerResponse(
-        id = id,
-        fornavn = fornavn,
-        mellomnavn = mellomnavn,
-        etternavn = etternavn,
-        fodselsnummer = personident,
-        status = status.toResponse(),
-        startdato = startdato,
-        sluttdato = sluttdato,
-        navEnhet = navEnhet,
-        navVeileder = navVeileder,
-        beskyttelsesmarkering = beskyttelsesmarkering,
-        vurdering = vurdering?.let {
-            VurderingResponse(
-                type = vurdering.vurderingstype,
-                begrunnelse = vurdering.begrunnelse,
-            )
-        },
-        innsatsgruppe = innsatsgruppe,
-        tiltakskode = deltakerliste.tiltak.tiltakskode,
-        tilgangTilBruker = tilgangTilBruker,
-        aktiveForslag = forslag
-            .filter { f ->
-                f.status == Forslag.Status.VenterPaSvar
-            }.map { f -> f.toResponse(deltakerliste.arrangor.getArrangorNavn()) },
-        ulesteHendelser = emptyList(), // TODO hent fra UlestHendelseService
-    )
 }

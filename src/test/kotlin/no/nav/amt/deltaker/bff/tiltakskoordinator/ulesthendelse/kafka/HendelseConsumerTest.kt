@@ -2,9 +2,9 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
