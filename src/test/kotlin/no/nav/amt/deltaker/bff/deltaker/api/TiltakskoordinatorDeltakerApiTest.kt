@@ -809,6 +809,7 @@ class TiltakskoordinatorDeltakerApiTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                mockk(),
             )
         }
     }

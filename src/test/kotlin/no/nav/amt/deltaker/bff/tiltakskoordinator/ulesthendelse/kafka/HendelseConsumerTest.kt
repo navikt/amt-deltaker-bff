@@ -1,11 +1,10 @@
-package no.nav.amt.deltaker.bff.tiltakskoordinator.hendelse
+package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
-import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka.HendelseConsumer
-import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.toUlestHendelse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
@@ -17,19 +16,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class HendelseConsumerTest {
-    companion object {
-        lateinit var repository: UlestHendelseRepository
-        lateinit var service: UlestHendelseService
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            SingletonPostgres16Container
-            repository = UlestHendelseRepository()
-            service = UlestHendelseService(repository)
-        }
-    }
-
     @BeforeEach
     fun cleanDatabase() {
         TestRepository.cleanDatabase()
@@ -103,5 +89,19 @@ class HendelseConsumerTest {
 
         val ulestHendelseFraDb = repository.getForDeltaker(deltaker.id)
         ulestHendelseFraDb.size shouldBe 0
+    }
+
+    companion object {
+        private lateinit var repository: UlestHendelseRepository
+        private lateinit var service: UlestHendelseService
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            @Suppress("UnusedExpression")
+            SingletonPostgres16Container
+            repository = UlestHendelseRepository()
+            service = UlestHendelseService(repository)
+        }
     }
 }
