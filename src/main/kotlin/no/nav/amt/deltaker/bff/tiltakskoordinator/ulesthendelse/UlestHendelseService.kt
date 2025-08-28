@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse
 
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.toUlestHendelse
 import no.nav.amt.lib.models.hendelse.Hendelse
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -11,7 +11,7 @@ class UlestHendelseService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun delete(id: java.util.UUID) {
+    fun delete(id: UUID) {
         ulestHendelseRepository.delete(id)
         log.info("Slettet ulest hendelse $id")
     }

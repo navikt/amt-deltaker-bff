@@ -218,9 +218,6 @@ fun Application.module(): suspend () -> Unit {
     val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
     val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, arrangorMeldingProducer)
 
-    val ulestHendelseRepository = UlestHendelseRepository()
-    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
-
     val vurderingRepository = VurderingRepository()
     val vurderingService = VurderingService(vurderingRepository)
     val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, paameldingClient, navEnhetService, forslagService)
@@ -244,6 +241,9 @@ fun Application.module(): suspend () -> Unit {
         amtDistribusjonClient,
         forslagService,
     )
+
+    val ulestHendelseRepository = UlestHendelseRepository()
+    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
 
     val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,
@@ -293,6 +293,7 @@ fun Application.module(): suspend () -> Unit {
         deltakerlisteService,
         unleash,
         tiltakskoordinatorService,
+        ulestHendelseService,
         testdataService,
     )
     configureMonitoring()

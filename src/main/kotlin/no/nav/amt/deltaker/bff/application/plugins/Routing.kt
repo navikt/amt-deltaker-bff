@@ -35,6 +35,8 @@ import no.nav.amt.deltaker.bff.testdata.registerTestdataApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerUlestHendelseApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import no.nav.amt.lib.ktor.auth.exceptions.AuthenticationException
@@ -58,6 +60,7 @@ fun Application.configureRouting(
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
     tiltakskoordinatorService: TiltakskoordinatorService,
+    ulestHendelseService: UlestHendelseService,
     testdataService: TestdataService,
 ) {
     install(StatusPages) {
@@ -128,12 +131,6 @@ fun Application.configureRouting(
             unleash,
         )
 
-        registerTiltakskoordinatorDeltakerlisteApi(
-            deltakerlisteService,
-            tilgangskontrollService,
-            tiltakskoordinatorService,
-        )
-
         registerTiltakskoordinatorDeltakerApi(
             tiltakskoordinatorService,
             deltakerService,
@@ -143,6 +140,14 @@ fun Application.configureRouting(
             tilgangskontrollService,
             sporbarhetsloggService,
         )
+
+        registerTiltakskoordinatorDeltakerlisteApi(
+            deltakerlisteService,
+            tilgangskontrollService,
+            tiltakskoordinatorService,
+        )
+
+        registerUlestHendelseApi(ulestHendelseService)
 
         if (!Environment.isProd()) {
             registerTestdataApi(testdataService)
