@@ -14,7 +14,7 @@ data class UlestHendelse(
     val id: UUID,
     val opprettet: LocalDateTime,
     val deltakerId: UUID,
-    val ansvarlig: HendelseAnsvarlig,
+    val ansvarlig: HendelseAnsvarlig, // TODO lage egen klasse for ansvarlig og?
     val hendelse: UlestHendelseType,
 )
 
