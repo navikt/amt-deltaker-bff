@@ -7,6 +7,6 @@ data class UlestHendelse(
     val id: UUID,
     val opprettet: LocalDateTime,
     val deltakerId: UUID,
-    val ansvarlig: AnsvarligNavnOgEnhet,
+    val ansvarlig: AnsvarligNavnOgEnhet?,
     val hendelse: UlestHendelseType,
 )
