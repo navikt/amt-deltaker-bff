@@ -2,11 +2,10 @@ package no.nav.amt.deltaker.bff.innbygger
 
 import io.kotest.matchers.shouldBe
 import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
@@ -73,9 +72,7 @@ class InnbyggerApiTest {
     )
 
     @BeforeEach
-    fun setup() {
-        configureEnvForAuthentication()
-    }
+    fun setup() = configureEnvForAuthentication()
 
     @Test
     fun `skal teste tilgangskontroll - har ikke tilgang - returnerer 403`() = testApplication {
@@ -83,7 +80,7 @@ class InnbyggerApiTest {
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
-        coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        coEvery { deltakerService.getDeltaker(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
@@ -93,7 +90,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `skal teste tilgangskontroll - mangler token - returnerer 401`() = testApplication {
-        coEvery { deltakerService.get(any()) } returns Result.success(TestData.lagDeltaker())
+        coEvery { deltakerService.getDeltaker(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
@@ -121,7 +118,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `get id - deltaker finnes ikke - returnerer 404`() = testApplication {
-        coEvery { deltakerService.get(any()) } returns Result.failure(NoSuchElementException())
+        coEvery { deltakerService.getDeltaker(any()) } returns Result.failure(NoSuchElementException())
 
         setUpTestApplication()
         val res = client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }
@@ -140,7 +137,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `godkjenn-utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
-        coEvery { deltakerService.get(any()) } returns Result.failure(NoSuchElementException())
+        coEvery { deltakerService.getDeltaker(any()) } returns Result.failure(NoSuchElementException())
 
         setUpTestApplication()
         val res = client.get("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }
@@ -172,7 +169,7 @@ class InnbyggerApiTest {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
 
         val historikk = deltaker.getDeltakerHistorikkForVisning()
         val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
@@ -193,12 +190,7 @@ class InnbyggerApiTest {
         }
     }
 
-    private fun HttpRequestBuilder.noBodyRequest() {
-        header(
-            HttpHeaders.Authorization,
-            "Bearer ${tokenXToken("personident", Environment())}",
-        )
-    }
+    private fun HttpRequestBuilder.noBodyRequest() = bearerAuth("${tokenXToken("personident", Environment())}")
 
     private fun ApplicationTestBuilder.setUpTestApplication() {
         application {
@@ -221,6 +213,7 @@ class InnbyggerApiTest {
                 mockk(),
                 mockk(),
                 mockk(),
+                mockk(),
             )
         }
     }
@@ -231,7 +224,7 @@ class InnbyggerApiTest {
         forslag: List<Forslag> = emptyList(),
     ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.get(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
 
         return if (oppdatertDeltaker == null) {

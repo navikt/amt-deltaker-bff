@@ -91,7 +91,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
-        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
@@ -131,7 +131,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
-        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
@@ -177,7 +177,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
-        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())

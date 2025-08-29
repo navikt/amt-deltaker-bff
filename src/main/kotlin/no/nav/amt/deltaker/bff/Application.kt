@@ -56,6 +56,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.testdata.TestdataService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.SporbarhetOgTilgangskontrollSvc
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
@@ -254,6 +255,12 @@ fun Application.module(): suspend () -> Unit {
         deltakerlisteService,
     )
 
+    val sporbarhetOgTilgangskontrollSvc = SporbarhetOgTilgangskontrollSvc(
+        sporbarhetsloggService = sporbarhetsloggService,
+        tilgangskontrollService,
+        deltakerlisteService,
+    )
+
     val tiltakstypeRepository = TiltakstypeRepository()
 
     val testdataService = TestdataService(
@@ -292,6 +299,7 @@ fun Application.module(): suspend () -> Unit {
         amtDeltakerClient,
         deltakerlisteService,
         unleash,
+        sporbarhetOgTilgangskontrollSvc,
         tiltakskoordinatorService,
         ulestHendelseService,
         testdataService,

@@ -1,9 +1,8 @@
 package no.nav.amt.deltaker.bff.application.plugins
 
+import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.auth.authenticate
@@ -44,9 +43,7 @@ class AuthenticationTest {
     )
 
     @BeforeEach
-    fun setup() {
-        configureEnvForAuthentication()
-    }
+    fun setup() = configureEnvForAuthentication()
 
     @Test
     fun `testAuthentication - gyldig token, ansatt har tilgang - returnerer 200`() = testApplication {
@@ -54,10 +51,7 @@ class AuthenticationTest {
         setUpTestApplication()
         client
             .get("/fnr/12345678910") {
-                header(
-                    HttpHeaders.Authorization,
-                    "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
-                )
+                bearerAuth(generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff"))
             }.apply {
                 assertEquals(HttpStatusCode.OK, status)
                 assertEquals("Veileder har tilgang!", bodyAsText())
@@ -73,10 +67,7 @@ class AuthenticationTest {
         setUpTestApplication()
         client
             .get("/fnr/12345678910") {
-                header(
-                    HttpHeaders.Authorization,
-                    "Bearer ${generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff")}",
-                )
+                bearerAuth(generateJWT("frontend-clientid", UUID.randomUUID().toString(), "deltaker-bff"))
             }.apply {
                 assertEquals(HttpStatusCode.Forbidden, status)
             }
@@ -88,17 +79,7 @@ class AuthenticationTest {
         setUpTestApplication()
         client
             .get("/fnr/12345678910") {
-                header(
-                    HttpHeaders.Authorization,
-                    "Bearer ${
-                        generateJWT(
-                            "frontend-clientid",
-                            UUID.randomUUID().toString(),
-                            "deltaker-bff",
-                            issuer = "annenIssuer",
-                        )
-                    }",
-                )
+                bearerAuth(generateJWT("frontend-clientid", UUID.randomUUID().toString(), "feilIssuer"))
             }.apply {
                 assertEquals(HttpStatusCode.Unauthorized, status)
             }
@@ -110,6 +91,7 @@ class AuthenticationTest {
             configureAuthentication(Environment())
             configureRouting(
                 tilgangskontrollService,
+                mockk(),
                 mockk(),
                 mockk(),
                 mockk(),

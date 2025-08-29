@@ -48,7 +48,7 @@ fun Routing.registerInnbyggerApi(
     authenticate(AuthLevel.INNBYGGER.name) {
         get("/innbygger/{id}") {
             val innbygger = call.getPersonIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
             scope.launch { deltakerService.oppdaterSistBesokt(deltaker) }
@@ -58,7 +58,7 @@ fun Routing.registerInnbyggerApi(
 
         post("/innbygger/{id}/godkjenn-utkast") {
             val innbygger = call.getPersonIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
             require(deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
@@ -74,7 +74,7 @@ fun Routing.registerInnbyggerApi(
 
         get("/innbygger/{id}/historikk") {
             val innbygger = call.getPersonIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["id"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
             val historikk = deltaker.getDeltakerHistorikkForVisning()

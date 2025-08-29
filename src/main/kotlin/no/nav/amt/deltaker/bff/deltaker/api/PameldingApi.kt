@@ -72,7 +72,7 @@ fun Routing.registerPameldingApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<KladdRequest>().sanitize()
 
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
@@ -103,7 +103,7 @@ fun Routing.registerPameldingApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<UtkastRequest>()
 
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
             request.valider(deltaker, digitalBruker)
 
@@ -136,7 +136,7 @@ fun Routing.registerPameldingApi(
 
         post("/pamelding/{deltakerId}/avbryt") {
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -156,7 +156,7 @@ fun Routing.registerPameldingApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
 
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
@@ -194,7 +194,7 @@ fun Routing.registerPameldingApi(
         delete("/pamelding/{deltakerId}") {
             val navIdent = call.getNavIdent()
             val deltakerId = UUID.fromString(call.parameters["deltakerId"])
-            val deltaker = deltakerService.get(deltakerId).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(deltakerId).getOrThrow()
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 

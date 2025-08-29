@@ -5,7 +5,10 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
-import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagHendelse
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.models.hendelse.HendelseType
@@ -17,19 +20,18 @@ import org.junit.jupiter.api.Test
 
 class HendelseConsumerTest {
     @BeforeEach
-    fun cleanDatabase() {
-        TestRepository.cleanDatabase()
-    }
+    fun cleanDatabase() = TestRepository.cleanDatabase()
 
     @Test
     fun `consume - hendelse InnbyggerGodkjennUtkast - lagrer`(): Unit = runBlocking {
         val consumer = HendelseConsumer(service)
-        val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+        val deltakerliste = lagDeltakerliste(
+            tiltak = lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
         )
-        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
+        val deltaker = lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)
-        val hendelse = TestData.lagHendelse(
+
+        val hendelse = lagHendelse(
             deltaker = deltaker,
             payload = HendelseType.FjernOppstartsdato(
                 begrunnelseFraNav = "",
@@ -51,12 +53,12 @@ class HendelseConsumerTest {
     @Test
     fun `consume - hendelse vi ikke bryr oss om - lagrer ikke`(): Unit = runBlocking {
         val consumer = HendelseConsumer(service)
-        val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+        val deltakerliste = lagDeltakerliste(
+            tiltak = lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
         )
-        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
+        val deltaker = lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)
-        val hendelse = TestData.lagHendelse(
+        val hendelse = lagHendelse(
             deltaker = deltaker,
             payload = HendelseType.TildelPlass,
         )
@@ -73,12 +75,12 @@ class HendelseConsumerTest {
     @Test
     fun `consume - hendelse tombstone - sletter`(): Unit = runBlocking {
         val consumer = HendelseConsumer(service)
-        val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+        val deltakerliste = lagDeltakerliste(
+            tiltak = lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
         )
-        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste)
+        val deltaker = lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)
-        val hendelse = TestData.lagHendelse(deltaker = deltaker)
+        val hendelse = lagHendelse(deltaker = deltaker)
 
         hendelse.toUlestHendelse()?.let { repository.upsert(it) }
 

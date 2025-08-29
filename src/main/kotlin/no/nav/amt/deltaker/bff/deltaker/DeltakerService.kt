@@ -29,7 +29,7 @@ class DeltakerService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun get(id: UUID) = deltakerRepository.get(id)
+    fun getDeltaker(id: UUID) = deltakerRepository.get(id)
 
     fun getMany(ider: List<UUID>) = deltakerRepository.getMany(ider)
 

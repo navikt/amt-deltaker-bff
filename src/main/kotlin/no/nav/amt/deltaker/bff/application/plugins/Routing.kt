@@ -32,6 +32,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.testdata.TestdataService
 import no.nav.amt.deltaker.bff.testdata.registerTestdataApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.SporbarhetOgTilgangskontrollSvc
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
@@ -59,6 +60,7 @@ fun Application.configureRouting(
     amtDeltakerClient: AmtDeltakerClient,
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
+    sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc,
     tiltakskoordinatorService: TiltakskoordinatorService,
     ulestHendelseService: UlestHendelseService,
     testdataService: TestdataService,
@@ -132,13 +134,11 @@ fun Application.configureRouting(
         )
 
         registerTiltakskoordinatorDeltakerApi(
+            sporbarhetOgTilgangskontrollSvc,
             tiltakskoordinatorService,
             deltakerService,
             navAnsattService,
             navEnhetService,
-            deltakerlisteService,
-            tilgangskontrollService,
-            sporbarhetsloggService,
             ulestHendelseService,
         )
 
