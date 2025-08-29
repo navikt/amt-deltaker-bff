@@ -60,7 +60,7 @@ class TestdataService(
 
         delay(100)
 
-        return deltakerService.get(deltakerId).getOrThrow()
+        return deltakerService.getDeltaker(deltakerId).getOrThrow()
     }
 
     private fun deltakerFinnesAllerede(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest) {

@@ -29,7 +29,7 @@ fun generateJWT(
     subject: String = "subject",
     issuer: String = "issuer",
     groups: List<String> = emptyList(),
-): String? {
+): String {
     val now = Date()
     val key = getDefaultRSAKey()
     val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())
@@ -61,7 +61,7 @@ fun generateSystemJWT(
     subject: String = "subject",
     issuer: String = "issuer",
     groups: List<String> = emptyList(),
-): String? {
+): String {
     val now = Date()
     val key = getDefaultRSAKey()
     val alg = Algorithm.RSA256(key.toRSAPublicKey(), key.toRSAPrivateKey())

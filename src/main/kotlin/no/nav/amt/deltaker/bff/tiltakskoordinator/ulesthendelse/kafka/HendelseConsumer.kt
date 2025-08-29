@@ -37,23 +37,24 @@ class HendelseConsumer(
         }
 
         when (hendelse.payload) {
-            is HendelseType.NavGodkjennUtkast,
             is HendelseType.InnbyggerGodkjennUtkast,
-            is HendelseType.EndreBakgrunnsinformasjon,
-            is HendelseType.EndreDeltakelsesmengde,
-            is HendelseType.EndreInnhold,
-            is HendelseType.EndreStartdato,
-            is HendelseType.EndreSluttdato,
-            is HendelseType.ForlengDeltakelse,
-            is HendelseType.AvsluttDeltakelse,
-            is HendelseType.EndreAvslutning,
-            is HendelseType.AvbrytDeltakelse,
-            is HendelseType.IkkeAktuell,
+            is HendelseType.NavGodkjennUtkast,
             is HendelseType.LeggTilOppstartsdato,
             is HendelseType.FjernOppstartsdato,
-            is HendelseType.EndreSluttarsak,
+            is HendelseType.EndreStartdato,
+            is HendelseType.IkkeAktuell,
+            is HendelseType.AvsluttDeltakelse,
+            is HendelseType.AvbrytDeltakelse,
             is HendelseType.ReaktiverDeltakelse,
             -> ulestHendelseService.lagreUlestHendelse(hendelse)
+
+            is HendelseType.ForlengDeltakelse,
+            is HendelseType.EndreSluttdato,
+            is HendelseType.EndreSluttarsak,
+            is HendelseType.EndreAvslutning,
+            is HendelseType.EndreDeltakelsesmengde,
+            is HendelseType.EndreBakgrunnsinformasjon,
+            is HendelseType.EndreInnhold,
 
             is HendelseType.OpprettUtkast,
             is HendelseType.AvbrytUtkast,

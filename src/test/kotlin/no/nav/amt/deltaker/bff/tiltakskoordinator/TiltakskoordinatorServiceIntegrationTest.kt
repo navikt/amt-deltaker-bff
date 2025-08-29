@@ -18,6 +18,7 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -91,7 +92,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
-        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
@@ -131,7 +132,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
-        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())
@@ -177,7 +178,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
-        val deltakerFraDb = tiltakskoordinatorService.get(deltaker.id)
+        val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
             .copy(status = nyStatus)
             .toTiltakskoordinatorsDeltaker(null, navEnhet, navAnsatt, null, false, emptyList())

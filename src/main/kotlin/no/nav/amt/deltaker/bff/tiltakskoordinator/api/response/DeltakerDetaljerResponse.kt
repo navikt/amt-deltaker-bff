@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.models.person.Beskyttelsesmarkering
@@ -25,4 +26,5 @@ data class DeltakerDetaljerResponse(
     val tiltakskode: Tiltakstype.Tiltakskode,
     val tilgangTilBruker: Boolean,
     val aktiveForslag: List<ForslagResponse>,
+    val ulesteHendelser: List<UlestHendelse>,
 )

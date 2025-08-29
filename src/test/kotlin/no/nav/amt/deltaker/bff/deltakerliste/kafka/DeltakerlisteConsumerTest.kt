@@ -156,8 +156,8 @@ class DeltakerlisteConsumerTest {
             )
 
             repository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste
-            deltakerService.get(kladd.id).getOrNull() shouldBe null
-            deltakerService.get(deltaker.id).getOrNull() shouldNotBe null
+            deltakerService.getDeltaker(kladd.id).getOrNull() shouldBe null
+            deltakerService.getDeltaker(deltaker.id).getOrNull() shouldNotBe null
         }
     }
 }

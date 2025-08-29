@@ -56,6 +56,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.testdata.TestdataService
+import no.nav.amt.deltaker.bff.tiltakskoordinator.SporbarhetOgTilgangskontrollSvc
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
@@ -218,9 +219,6 @@ fun Application.module(): suspend () -> Unit {
     val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
     val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, arrangorMeldingProducer)
 
-    val ulestHendelseRepository = UlestHendelseRepository()
-    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
-
     val vurderingRepository = VurderingRepository()
     val vurderingService = VurderingService(vurderingRepository)
     val deltakerService = DeltakerService(deltakerRepository, amtDeltakerClient, paameldingClient, navEnhetService, forslagService)
@@ -245,12 +243,21 @@ fun Application.module(): suspend () -> Unit {
         forslagService,
     )
 
+    val ulestHendelseRepository = UlestHendelseRepository()
+    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
+
     val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,
         navAnsattService,
         tiltakskoordinatorTilgangRepository,
         tiltakskoordinatorsDeltakerlisteProducer,
         tiltakskoordinatorService,
+        deltakerlisteService,
+    )
+
+    val sporbarhetOgTilgangskontrollSvc = SporbarhetOgTilgangskontrollSvc(
+        sporbarhetsloggService = sporbarhetsloggService,
+        tilgangskontrollService,
         deltakerlisteService,
     )
 
@@ -292,7 +299,9 @@ fun Application.module(): suspend () -> Unit {
         amtDeltakerClient,
         deltakerlisteService,
         unleash,
+        sporbarhetOgTilgangskontrollSvc,
         tiltakskoordinatorService,
+        ulestHendelseService,
         testdataService,
     )
     configureMonitoring()

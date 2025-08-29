@@ -198,7 +198,7 @@ class DeltakerServiceTest {
         MockResponseHandler.addSlettKladdResponse(deltakerKladd.id)
         every { forslagService.deleteForDeltaker(deltakerKladd.id) } returns Unit
 
-        service.get(deltakerKladd.id).isFailure shouldBe false
+        service.getDeltaker(deltakerKladd.id).isFailure shouldBe false
         service.oppdaterDeltaker(
             deltaker,
             endring,
@@ -206,9 +206,9 @@ class DeltakerServiceTest {
             navEnhet.enhetsnummer,
         )
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
-        service.get(deltakerKladd.id).isFailure shouldBe true
+        service.getDeltaker(deltakerKladd.id).isFailure shouldBe true
     }
 
     @Test
@@ -230,7 +230,7 @@ class DeltakerServiceTest {
 
         service.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
     }
 
@@ -259,7 +259,7 @@ class DeltakerServiceTest {
 
         service.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.ANNET
         deltakerFraDb.status.aarsak?.beskrivelse shouldBe "Oppdatert"
@@ -294,10 +294,10 @@ class DeltakerServiceTest {
 
         service.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
 
-        val gammelDeltakerFraDb = service.get(gammelDeltaker.id).getOrThrow()
+        val gammelDeltakerFraDb = service.getDeltaker(gammelDeltaker.id).getOrThrow()
         gammelDeltakerFraDb.kanEndres shouldBe false
     }
 
@@ -331,10 +331,10 @@ class DeltakerServiceTest {
 
         service.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.DELTAR
 
-        val gammelDeltakerFraDb = service.get(gammelDeltaker.id).getOrThrow()
+        val gammelDeltakerFraDb = service.getDeltaker(gammelDeltaker.id).getOrThrow()
         gammelDeltakerFraDb.kanEndres shouldBe true
     }
 
@@ -357,7 +357,7 @@ class DeltakerServiceTest {
 
         service.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.FEILREGISTRERT
         deltakerFraDb.kanEndres shouldBe false
     }
@@ -389,7 +389,7 @@ class DeltakerServiceTest {
 
         service.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.get(deltaker.id).getOrThrow()
+        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         deltakerFraDb.kanEndres shouldBe false
