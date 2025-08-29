@@ -42,23 +42,6 @@ class UlestHendelseRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
-    fun getForDeltakere(deltakerIder: List<UUID>) = Database.query {
-        val query = queryOf(
-            """
-            SELECT 
-                uh.id as "uh.id",
-                uh.deltaker_id as "uh.deltaker_id",
-                uh.opprettet as "uh.opprettet",
-                uh.ansvarlig as "uh.ansvarlig",
-                uh.hendelse as "uh.hendelse"
-            FROM ulest_hendelse uh
-            WHERE uh.deltaker_id = any(:deltaker_ider);
-            """.trimIndent(),
-            mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
-        )
-        it.run(query.map(::rowMapper).asList)
-    }
-
     fun get(id: UUID) = Database.query {
         val query = queryOf(
             """
