@@ -5,10 +5,10 @@ import no.nav.amt.lib.models.hendelse.Hendelse
 
 fun Hendelse.toUlestHendelse() = this.payload.toUlestHendelseType()?.let {
     UlestHendelse(
-        this.id,
-        this.opprettet,
-        this.deltaker.id,
-        this.ansvarlig,
-        it,
+        id = this.id,
+        opprettet = this.opprettet,
+        deltakerId = this.deltaker.id,
+        ansvarlig = this.ansvarlig.toAnsvarligNavnOgEnhet(),
+        hendelse = it,
     )
 }
