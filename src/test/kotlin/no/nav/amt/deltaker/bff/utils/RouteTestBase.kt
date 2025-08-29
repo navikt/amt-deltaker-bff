@@ -31,31 +31,31 @@ import no.nav.amt.lib.utils.applicationConfig
 import org.junit.jupiter.api.BeforeEach
 
 abstract class RouteTestBase {
-    val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
-    val deltakerService: DeltakerService = mockk(relaxed = true)
-    val pameldingService: PameldingService = mockk(relaxed = true)
-    val navAnsattService: NavAnsattService = mockk(relaxed = true)
-    val navEnhetService: NavEnhetService = mockk(relaxed = true)
-    val innbyggerService: InnbyggerService = mockk(relaxed = true)
-    val forslagService: ForslagService = mockk(relaxed = true)
-    val amtDistribusjonClient: AmtDistribusjonClient = mockk(relaxed = true)
-    val sporbarhetsloggService: SporbarhetsloggService = mockk(relaxed = true)
-    val deltakerRepository: DeltakerRepository = mockk(relaxed = true)
-    val amtDeltakerClient: AmtDeltakerClient = mockk(relaxed = true)
-    val deltakerlisteService: DeltakerlisteService = mockk(relaxed = true)
-    val unleash: Unleash = mockk(relaxed = true)
-    val sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc = mockk(relaxed = true)
-    val tiltakskoordinatorService: TiltakskoordinatorService = mockk(relaxed = true)
-    val ulestHendelseService: UlestHendelseService = mockk(relaxed = true)
-    val testdataService: TestdataService = mockk(relaxed = true)
+    protected val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
+    protected val deltakerService: DeltakerService = mockk(relaxed = true)
+    protected val pameldingService: PameldingService = mockk(relaxed = true)
+    protected val navAnsattService: NavAnsattService = mockk(relaxed = true)
+    protected val navEnhetService: NavEnhetService = mockk(relaxed = true)
+    protected val innbyggerService: InnbyggerService = mockk(relaxed = true)
+    protected val forslagService: ForslagService = mockk(relaxed = true)
+    protected val amtDistribusjonClient: AmtDistribusjonClient = mockk(relaxed = true)
+    protected val sporbarhetsloggService: SporbarhetsloggService = mockk(relaxed = true)
+    protected val deltakerRepository: DeltakerRepository = mockk(relaxed = true)
+    protected val amtDeltakerClient: AmtDeltakerClient = mockk(relaxed = true)
+    protected val deltakerlisteService: DeltakerlisteService = mockk(relaxed = true)
+    protected val unleash: Unleash = mockk(relaxed = true)
+    protected val sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc = mockk(relaxed = true)
+    protected val tiltakskoordinatorService: TiltakskoordinatorService = mockk(relaxed = true)
+    protected val ulestHendelseService: UlestHendelseService = mockk(relaxed = true)
+    protected val testdataService: TestdataService = mockk(relaxed = true)
 
     @BeforeEach
-    fun init() {
+    protected fun init() {
         clearAllMocks()
         configureEnvForAuthentication()
     }
 
-    fun <T : Any> withTestApplicationContext(block: suspend (HttpClient) -> T): T {
+    protected fun <T : Any> withTestApplicationContext(block: suspend (HttpClient) -> T): T {
         lateinit var result: T
 
         testApplication {
