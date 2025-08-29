@@ -22,9 +22,6 @@ class UlestHendelseService(
 
     fun getUlesteHendelserForDeltaker(deltakerId: UUID): List<UlestHendelse> = ulestHendelseRepository.getForDeltaker(deltakerId)
 
-    fun getUlesteHendelserForDeltakere(deltakerIdList: List<UUID>): List<UlestHendelse> =
-        ulestHendelseRepository.getForDeltakere(deltakerIdList)
-
     fun delete(hendelseId: UUID) {
         ulestHendelseRepository.delete(hendelseId)
         log.info("Slettet ulest hendelse $hendelseId")

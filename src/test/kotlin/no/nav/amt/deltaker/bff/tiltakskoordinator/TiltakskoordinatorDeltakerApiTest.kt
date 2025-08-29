@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerDetaljerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.utils.RouteTestBase
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
