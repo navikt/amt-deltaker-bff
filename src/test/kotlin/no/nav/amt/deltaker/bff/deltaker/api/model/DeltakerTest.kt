@@ -28,9 +28,9 @@ class DeltakerTest {
 
                 Tiltakstype.Tiltakskode.AVKLARING,
                 Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-                -> it.maxVarighet shouldBe weeks(16)
+                -> it.maxVarighet shouldBe weeks(17)
 
-                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(12)
+                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(13)
                 Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> it.maxVarighet shouldBe years(4)
 
                 Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,

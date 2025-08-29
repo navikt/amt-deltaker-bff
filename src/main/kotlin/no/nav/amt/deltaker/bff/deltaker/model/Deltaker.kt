@@ -169,7 +169,7 @@ data class Deltaker(
     )
 }
 
-const val FERIETILLEGG = 4L
+const val FERIETILLEGG = 5L
 
 fun years(n: Long): Duration = Duration.of(n * 365, ChronoUnit.DAYS)
 
