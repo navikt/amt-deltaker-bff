@@ -99,7 +99,7 @@ fun Routing.registerDeltakerApi(
         endring: (deltaker: Deltaker) -> DeltakerEndring.Endring,
     ) {
         val navIdent = call.getNavIdent()
-        val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+        val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
         val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
         tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -246,7 +246,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<DeltakerRequest>()
             val deltakerId = call.parameters["deltakerId"]
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerService.get(UUID.fromString(deltakerId)).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(deltakerId)).getOrThrow()
 
             if (request.personident != deltaker.navBruker.personident) {
                 log.warn("$deltakerId ble forsøkt lest med en annen navbruker i kontekst.")
@@ -261,7 +261,7 @@ fun Routing.registerDeltakerApi(
 
         get("/deltaker/{deltakerId}/historikk") {
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerService.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
@@ -280,7 +280,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<AvvisForslagRequest>()
             val forslag = forslagService.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
-            val deltaker = deltakerService.get(forslag.deltakerId).getOrThrow()
+            val deltaker = deltakerService.getDeltaker(forslag.deltakerId).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)

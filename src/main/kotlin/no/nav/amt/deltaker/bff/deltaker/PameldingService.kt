@@ -62,7 +62,7 @@ class PameldingService(
         val deltakeroppdatering = paameldingClient.utkast(utkast).toDeltakerOppdatering()
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
-        return deltakerService.get(utkast.deltakerId).getOrThrow()
+        return deltakerService.getDeltaker(utkast.deltakerId).getOrThrow()
     }
 
     suspend fun slettKladd(deltaker: Deltaker) = deltakerService.slettKladd(deltaker)

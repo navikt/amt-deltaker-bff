@@ -35,8 +35,8 @@ class TiltakskoordinatorService(
 ) {
     suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
 
-    suspend fun get(deltakerId: UUID): TiltakskoordinatorsDeltaker {
-        val deltaker = deltakerService.get(deltakerId).getOrThrow()
+    suspend fun getDeltaker(deltakerId: UUID): TiltakskoordinatorsDeltaker {
+        val deltaker = deltakerService.getDeltaker(deltakerId).getOrThrow()
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
@@ -72,7 +72,7 @@ class TiltakskoordinatorService(
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        return deltakerService.get(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
+        return deltakerService.getDeltaker(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
     }
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)

@@ -43,7 +43,7 @@ class DeltakerV2Consumer(
             return
         }
 
-        val lagretDeltaker = deltakerService.get(deltakerV2.id).getOrNull()
+        val lagretDeltaker = deltakerService.getDeltaker(deltakerV2.id).getOrNull()
         val deltakerFinnes = lagretDeltaker != null
         if (deltakerFinnes || deltakerV2.kilde == DeltakerV2Dto.Kilde.KOMET) {
             log.info("Oppdaterer deltaker med id ${deltakerV2.id}")
