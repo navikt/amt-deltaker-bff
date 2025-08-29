@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.deltaker.bff.auth.PreAuthorizedApp
+import no.nav.amt.lib.ktor.auth.PreAuthorizedApp
 import no.nav.amt.lib.utils.database.DatabaseConfig
 import no.nav.amt.lib.utils.getEnvVar
 import no.nav.amt.lib.utils.objectMapper
@@ -44,6 +44,7 @@ data class Environment(
         const val TILTAKSTYPE_TOPIC = "team-mulighetsrommet.siste-tiltakstyper-v3"
 
         const val ARRANGOR_MELDING_TOPIC = "amt.arrangor-melding-v1"
+        const val DELTAKER_HENDELSE_TOPIC = "amt.deltaker-hendelse-v1"
 
         const val AMT_ARRANGOR_TOPIC = "amt.arrangor-v1"
         const val AMT_ARRANGOR_URL_KEY = "AMT_ARRANGOR_URL"

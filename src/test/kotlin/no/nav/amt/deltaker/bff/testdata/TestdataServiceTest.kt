@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
+import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -40,15 +41,16 @@ class TestdataServiceTest {
         private val deltakerService = DeltakerService(
             deltakerRepository = DeltakerRepository(),
             amtDeltakerClient = mockAmtDeltakerClient(),
+            paameldingClient = mockPaameldingClient(),
             navEnhetService = navEnhetService,
             forslagService = mockk(),
         )
-        private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository(), mockAmtPersonServiceClient())
+        private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
         private var pameldingService = PameldingService(
             deltakerService = deltakerService,
             navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-            amtDeltakerClient = mockAmtDeltakerClient(),
             navEnhetService = navEnhetService,
+            paameldingClient = mockPaameldingClient(),
         )
         private val arrangorMeldingProducer = mockk<ArrangorMeldingProducer>(relaxed = true)
         private val testdataService = TestdataService(
@@ -61,6 +63,7 @@ class TestdataServiceTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
         }
     }

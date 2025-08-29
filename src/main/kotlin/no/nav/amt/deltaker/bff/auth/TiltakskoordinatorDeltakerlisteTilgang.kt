@@ -1,4 +1,4 @@
-package no.nav.amt.deltaker.bff.auth.model
+package no.nav.amt.deltaker.bff.auth
 
 import java.time.LocalDateTime
 import java.util.UUID

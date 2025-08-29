@@ -72,9 +72,15 @@ data class Deltaker(
 
     fun harSluttet(): Boolean = status.type in AVSLUTTENDE_STATUSER
 
-    fun harSluttetForMindreEnnToMndSiden(): Boolean = harSluttet() &&
-        sluttdato?.isAfter(LocalDate.now().minusMonths(2))
-            ?: status.gyldigFra.toLocalDate().isAfter(LocalDate.now().minusMonths(2))
+    fun harSluttetForMindreEnnToMndSiden(): Boolean {
+        if (!harSluttet()) return false
+
+        val nyesteDato = listOfNotNull(sluttdato, status.gyldigFra.toLocalDate())
+            .maxOrNull() ?: return false
+
+        val toMndSiden = LocalDate.now().minusMonths(2)
+        return nyesteDato.isAfter(toMndSiden)
+    }
 
     fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
         this.deltakerliste.deltakerAdresseDeles()
@@ -150,6 +156,17 @@ data class Deltaker(
             Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             -> null
         }
+
+    fun oppdater(oppdatering: Deltakeroppdatering) = this.copy(
+        startdato = oppdatering.startdato,
+        sluttdato = oppdatering.sluttdato,
+        dagerPerUke = oppdatering.dagerPerUke,
+        deltakelsesprosent = oppdatering.deltakelsesprosent,
+        bakgrunnsinformasjon = oppdatering.bakgrunnsinformasjon,
+        deltakelsesinnhold = oppdatering.deltakelsesinnhold,
+        status = oppdatering.status,
+        historikk = oppdatering.historikk,
+    )
 }
 
 const val FERIETILLEGG = 4L

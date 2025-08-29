@@ -25,6 +25,7 @@ class NavAnsattServiceTest {
         @JvmStatic
         @BeforeAll
         fun setup() {
+            @Suppress("UnusedExpression")
             SingletonPostgres16Container
             repository = NavAnsattRepository()
             service = NavAnsattService(repository, mockk())

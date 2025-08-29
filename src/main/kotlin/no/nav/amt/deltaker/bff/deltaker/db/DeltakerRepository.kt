@@ -5,7 +5,6 @@ import kotliquery.Query
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
 import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerIdOgStatus
@@ -14,12 +13,14 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerRepository {
@@ -334,7 +335,7 @@ class DeltakerRepository {
         session.run(query)
     }
 
-    fun create(kladd: KladdResponse) = Database.query {
+    fun create(kladd: OpprettKladdResponse) = Database.query {
         val sql =
             """
             insert into deltaker(
@@ -366,11 +367,22 @@ class DeltakerRepository {
         }
     }
 
-    fun update(deltaker: Deltakeroppdatering) = Database.query { session ->
+    fun update(deltaker: Deltakeroppdatering, isSynchronousInvocation: Boolean = true) = Database.query { session ->
+        val eksisterendeDeltaker = get(deltaker.id).getOrNull()
+
+        val skalOppdatereStatus: Boolean = isSynchronousInvocation ||
+            (
+                eksisterendeDeltaker?.let {
+                    deltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS) >= it.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
+                } ?: true
+            )
+
         session.transaction { tx ->
             tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
-            tx.update(insertStatusQuery(deltaker.status, deltaker.id))
-            tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            if (skalOppdatereStatus) {
+                tx.update(insertStatusQuery(deltaker.status, deltaker.id))
+                tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
+            }
         }
     }
 
@@ -450,7 +462,7 @@ class DeltakerRepository {
         val params = mapOf("deltakerliste_id" to deltakerlisteId)
         session.run(
             queryOf(
-                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null and d.kan_endres = true"),
+                getDeltakerSql("where dl.id = :deltakerliste_id and ds.gyldig_til is null"),
                 params,
             ).map(::rowMapper).asList,
         )

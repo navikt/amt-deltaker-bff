@@ -24,6 +24,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
 
       - name: Setup Gradle to generate and submit dependency graphs
         uses: gradle/actions/setup-gradle@v4
@@ -31,7 +32,7 @@ jobs:
           dependency-graph: generate-and-submit
 
       - name: Build artifacts
-        run: ./gradlew build  --no-daemon
+        run: ./gradlew clean build --no-build-cache --no-configuration-cache --no-daemon
 
       - name: docker-build-push
         uses: nais/docker-build-push@v0

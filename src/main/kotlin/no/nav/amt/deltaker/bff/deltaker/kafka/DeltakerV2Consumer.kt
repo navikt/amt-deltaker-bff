@@ -7,7 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
-import no.nav.amt.deltaker.bff.utils.buildManagedKafkaConsumer
+import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
@@ -49,6 +49,7 @@ class DeltakerV2Consumer(
             log.info("Oppdaterer deltaker med id ${deltakerV2.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
+                isSynchronousInvocation = false,
             )
             vurderingService.upsert(deltakerV2.vurderingerFraArrangor.orEmpty())
             lagretDeltaker?.navBruker?.let {

@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.utils.data
 
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -13,6 +12,7 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
+import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
@@ -25,6 +25,10 @@ import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.hendelse.Hendelse
+import no.nav.amt.lib.models.hendelse.HendelseAnsvarlig
+import no.nav.amt.lib.models.hendelse.HendelseDeltaker
+import no.nav.amt.lib.models.hendelse.HendelseType
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.NavEnhet
@@ -336,7 +340,14 @@ object TestData {
         navn: String = "Veileder Veiledersen",
         epost: String = "veileder.veiledersen@nav.no",
         telefon: String = "12345678",
-    ) = NavAnsatt(id = id, navIdent = navIdent, navn = navn, epost = epost, telefon = telefon, navEnhetId = null)
+    ) = NavAnsatt(
+        id = id,
+        navIdent = navIdent,
+        navn = navn,
+        epost = epost,
+        telefon = telefon,
+        navEnhetId = null,
+    )
 
     private val navEnhetCache = mutableMapOf<String, NavEnhet>()
 
@@ -506,6 +517,57 @@ object TestData {
         endretAv = endretAv,
         endretAvEnhet = endretAvEnhet,
         endret = endret,
+    )
+
+    fun lagHendelse(
+        id: UUID = UUID.randomUUID(),
+        deltaker: Deltaker,
+        opprettet: LocalDateTime = LocalDateTime.now(),
+        ansvarlig: HendelseAnsvarlig = HendelseAnsvarlig.NavVeileder(
+            id = UUID.randomUUID(),
+            navn = UUID.randomUUID().toString(),
+            navIdent = UUID.randomUUID().toString(),
+            enhet = HendelseAnsvarlig.NavVeileder.Enhet(id = UUID.randomUUID(), enhetsnummer = randomEnhetsnummer()),
+        ),
+        payload: HendelseType = HendelseType.EndreBakgrunnsinformasjon(
+            bakgrunnsinformasjon = "Ny bakgrunnsinformasjon",
+        ),
+    ) = Hendelse(
+        id = id,
+        opprettet = opprettet,
+        deltaker = HendelseDeltaker(
+            id = deltaker.id,
+            personident = randomIdent(),
+            deltakerliste = HendelseDeltaker.Deltakerliste(
+                id = deltaker.deltakerliste.id,
+                navn = deltaker.deltakerliste.navn,
+                arrangor = HendelseDeltaker.Deltakerliste.Arrangor(
+                    id = deltaker.deltakerliste.arrangor.arrangor.id,
+                    organisasjonsnummer = deltaker.deltakerliste.arrangor.arrangor.organisasjonsnummer,
+                    navn = deltaker.deltakerliste.arrangor.arrangor.navn,
+                    overordnetArrangor = null,
+                ),
+                tiltak = HendelseDeltaker.Deltakerliste.Tiltak(
+                    navn = deltaker.deltakerliste.navn,
+                    type = deltaker.deltakerliste.tiltak.arenaKode,
+                    ledetekst = "ledetekst",
+                    tiltakskode = deltaker.deltakerliste.tiltak.tiltakskode,
+                ),
+                startdato = deltaker.deltakerliste.startDato,
+                sluttdato = deltaker.deltakerliste.sluttDato,
+                oppstartstype = if (deltaker.deltakerliste.oppstart ==
+                    Deltakerliste.Oppstartstype.FELLES
+                ) {
+                    HendelseDeltaker.Deltakerliste.Oppstartstype.FELLES
+                } else {
+                    HendelseDeltaker.Deltakerliste.Oppstartstype.LOPENDE
+                },
+            ),
+            forsteVedtakFattet = LocalDate.now(),
+            opprettetDato = LocalDate.now(),
+        ),
+        ansvarlig = ansvarlig,
+        payload = payload,
     )
 }
 

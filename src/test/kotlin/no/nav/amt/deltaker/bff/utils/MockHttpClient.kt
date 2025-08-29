@@ -12,17 +12,21 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.jackson.jackson
 import io.ktor.utils.io.ByteReadChannel
-import no.nav.amt.deltaker.bff.arrangor.AmtArrangorClient
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
-import no.nav.amt.deltaker.bff.arrangor.ArrangorDto
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.amtdeltaker.response.KladdResponse
+import no.nav.amt.deltaker.bff.apiclients.arrangor.ArrangorResponse
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
+import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
+import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
+import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerEndringResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
+import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.UtkastResponse
+import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringResponse
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.person.dto.NavEnhetDto
@@ -94,11 +98,9 @@ fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
 }
 
 fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArrangorClient {
-    val overordnetArrangor = arrangor.overordnetArrangorId?.let {
-        TestData.lagArrangor(id = arrangor.overordnetArrangorId)
-    }
+    val overordnetArrangor = arrangor.overordnetArrangorId?.let { TestData.lagArrangor(id = it) }
 
-    val response = ArrangorDto(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
+    val response = ArrangorResponse(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
     return AmtArrangorClient(
         baseUrl = "https://amt-arrangor",
         scope = "amt.arrangor.scope",
@@ -108,6 +110,13 @@ fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArran
 }
 
 fun mockAmtDeltakerClient() = AmtDeltakerClient(
+    baseUrl = AMT_DELTAKER_URL,
+    scope = "amt.deltaker.scope",
+    httpClient = mockHttpClient(),
+    azureAdTokenClient = mockAzureAdClient(),
+)
+
+fun mockPaameldingClient() = PaameldingClient(
     baseUrl = AMT_DELTAKER_URL,
     scope = "amt.deltaker.scope",
     httpClient = mockHttpClient(),
@@ -153,7 +162,7 @@ object MockResponseHandler {
         val api = Pair(url, method)
 
         responses[api] = Response(
-            if (responseBody is String) responseBody else objectMapper.writeValueAsString(responseBody),
+            responseBody as? String ?: objectMapper.writeValueAsString(responseBody),
             responseCode,
         )
     }
@@ -166,7 +175,7 @@ object MockResponseHandler {
             addResponse(
                 url = url,
                 method = HttpMethod.Post,
-                responseBody = KladdResponse(
+                responseBody = OpprettKladdResponse(
                     id = deltaker.id,
                     navBruker = deltaker.navBruker,
                     deltakerlisteId = deltaker.deltakerliste.id,
@@ -275,4 +284,42 @@ fun Deltaker.toDeltakeroppdatering() = Deltakeroppdatering(
     status,
     historikk,
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+)
+
+fun Deltaker.toDeltakerEndringResponse() = DeltakerEndringResponse(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    deltakelsesinnhold,
+    status,
+    historikk,
+)
+
+fun Deltaker.toDeltakeroppdateringResponse() = DeltakerOppdateringResponse(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    deltakelsesinnhold,
+    status,
+    historikk,
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+    feilkode = null,
+)
+
+fun Deltaker.toUtkastResponse() = UtkastResponse(
+    id,
+    startdato,
+    sluttdato,
+    dagerPerUke,
+    deltakelsesprosent,
+    bakgrunnsinformasjon,
+    deltakelsesinnhold,
+    status,
+    historikk,
 )

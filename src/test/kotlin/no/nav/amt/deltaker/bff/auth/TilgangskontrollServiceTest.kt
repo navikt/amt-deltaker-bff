@@ -12,6 +12,7 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
+import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.testing.SingletonKafkaProvider
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.poao_tilgang.client.Decision
@@ -44,6 +45,7 @@ class TilgangskontrollServiceTest {
     )
 
     init {
+        @Suppress("UnusedExpression")
         SingletonPostgres16Container
     }
 
@@ -84,7 +86,9 @@ class TilgangskontrollServiceTest {
         with(TiltakskoordinatorTilgangContext()) {
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
-            assertProduced(resultat.getOrThrow().toDto(navAnsatt.navIdent))
+
+            val expected = TiltakskoordinatorsDeltakerlisteDto.fromModel(resultat.getOrThrow(), navAnsatt.navIdent)
+            assertProduced(expected)
         }
     }
 
@@ -94,7 +98,9 @@ class TilgangskontrollServiceTest {
             medInaktivTilgang()
             val resultat = tilgangskontrollService.leggTilTiltakskoordinatorTilgang(navAnsatt.navIdent, deltakerliste.id)
             resultat.isSuccess shouldBe true
-            assertProduced(resultat.getOrThrow().toDto(navAnsatt.navIdent))
+
+            val expected = TiltakskoordinatorsDeltakerlisteDto.fromModel(resultat.getOrThrow(), navAnsatt.navIdent)
+            assertProduced(expected)
         }
     }
 

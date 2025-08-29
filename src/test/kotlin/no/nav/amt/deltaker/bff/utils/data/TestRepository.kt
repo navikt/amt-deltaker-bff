@@ -1,12 +1,12 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import kotliquery.queryOf
-import no.nav.amt.deltaker.bff.arrangor.Arrangor
-import no.nav.amt.deltaker.bff.auth.model.TiltakskoordinatorDeltakerlisteTilgang
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetDbo
+import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
@@ -24,6 +24,7 @@ object TestRepository {
     fun cleanDatabase() = Database.query { session ->
         val tables = listOf(
             "tiltakskoordinator_deltakerliste_tilgang",
+            "ulest_hendelse",
             "forslag",
             "vurdering",
             "deltaker_status",

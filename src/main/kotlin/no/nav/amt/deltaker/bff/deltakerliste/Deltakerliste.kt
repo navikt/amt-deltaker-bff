@@ -17,7 +17,7 @@ data class Deltakerliste(
     val antallPlasser: Int,
 ) {
     data class Arrangor(
-        val arrangor: no.nav.amt.deltaker.bff.arrangor.Arrangor,
+        val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
         val overordnetArrangorNavn: String?,
     )
 
