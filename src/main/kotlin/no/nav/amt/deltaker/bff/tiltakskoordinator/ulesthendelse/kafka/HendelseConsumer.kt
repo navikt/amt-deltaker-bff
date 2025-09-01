@@ -39,31 +39,13 @@ class HendelseConsumer(
         when (hendelse.payload) {
             is HendelseType.InnbyggerGodkjennUtkast,
             is HendelseType.NavGodkjennUtkast,
-            is HendelseType.LeggTilOppstartsdato,
-            is HendelseType.FjernOppstartsdato,
-            is HendelseType.EndreStartdato,
             is HendelseType.IkkeAktuell,
             is HendelseType.AvsluttDeltakelse,
             is HendelseType.AvbrytDeltakelse,
             is HendelseType.ReaktiverDeltakelse,
             -> ulestHendelseService.lagreUlestHendelse(hendelse)
 
-            is HendelseType.ForlengDeltakelse,
-            is HendelseType.EndreSluttdato,
-            is HendelseType.EndreSluttarsak,
-            is HendelseType.EndreAvslutning,
-            is HendelseType.EndreDeltakelsesmengde,
-            is HendelseType.EndreBakgrunnsinformasjon,
-            is HendelseType.EndreInnhold,
-
-            is HendelseType.OpprettUtkast,
-            is HendelseType.AvbrytUtkast,
-            is HendelseType.EndreUtkast,
-            is HendelseType.DeltakerSistBesokt,
-            is HendelseType.Avslag,
-            is HendelseType.SettPaaVenteliste,
-            is HendelseType.TildelPlass,
-            -> { }
+            else -> Unit
         }
     }
 

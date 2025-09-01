@@ -17,6 +17,7 @@ import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 class HendelseConsumerTest {
     @BeforeEach
@@ -33,9 +34,11 @@ class HendelseConsumerTest {
 
         val hendelse = lagHendelse(
             deltaker = deltaker,
-            payload = HendelseType.FjernOppstartsdato(
-                begrunnelseFraNav = "",
-                begrunnelseFraArrangor = "",
+            payload = HendelseType.AvbrytDeltakelse(
+                aarsak = null,
+                sluttdato = LocalDate.now(),
+                begrunnelseFraNav = null,
+                begrunnelseFraArrangor = null,
                 endringFraForslag = null,
             ),
         )

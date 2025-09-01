@@ -7,22 +7,6 @@ fun HendelseType.toUlestHendelseType() = when (val hendelseType = this) {
     is HendelseType.InnbyggerGodkjennUtkast -> UlestHendelseType.InnbyggerGodkjennUtkast
     is HendelseType.NavGodkjennUtkast -> UlestHendelseType.NavGodkjennUtkast
 
-    is HendelseType.LeggTilOppstartsdato -> UlestHendelseType.LeggTilOppstartsdato(
-        hendelseType.startdato,
-        hendelseType.sluttdato,
-    )
-    is HendelseType.FjernOppstartsdato -> UlestHendelseType.FjernOppstartsdato(
-        hendelseType.begrunnelseFraNav,
-        hendelseType.begrunnelseFraArrangor,
-        hendelseType.endringFraForslag,
-    )
-    is HendelseType.EndreStartdato -> UlestHendelseType.EndreStartdato(
-        hendelseType.startdato,
-        hendelseType.sluttdato,
-        hendelseType.begrunnelseFraNav,
-        hendelseType.begrunnelseFraArrangor,
-        hendelseType.endringFraForslag,
-    )
     is HendelseType.IkkeAktuell -> UlestHendelseType.IkkeAktuell(
         hendelseType.aarsak,
         hendelseType.begrunnelseFraNav,
