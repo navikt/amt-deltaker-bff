@@ -232,6 +232,9 @@ fun Application.module(): suspend () -> Unit {
 
     val innbyggerService = InnbyggerService(deltakerService, paameldingClient)
 
+    val ulestHendelseRepository = UlestHendelseRepository()
+    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
+
     val tiltakskoordinatorService = TiltakskoordinatorService(
         tiltakskoordinatorClient,
         deltakerService,
@@ -241,10 +244,8 @@ fun Application.module(): suspend () -> Unit {
         navAnsattService,
         amtDistribusjonClient,
         forslagService,
+        ulestHendelseService,
     )
-
-    val ulestHendelseRepository = UlestHendelseRepository()
-    val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
 
     val tilgangskontrollService = TilgangskontrollService(
         poaoTilgangCachedClient,

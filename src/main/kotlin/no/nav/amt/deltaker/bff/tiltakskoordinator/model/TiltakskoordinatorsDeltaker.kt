@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.model
 
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -28,4 +29,5 @@ data class TiltakskoordinatorsDeltaker(
     val feilkode: DeltakerOppdateringFeilkode? = null,
     val ikkeDigitalOgManglerAdresse: Boolean,
     val forslag: List<Forslag>,
+    val ulesteHendelser: List<UlestHendelse>,
 )

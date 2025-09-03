@@ -21,6 +21,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusRes
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelseType
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
@@ -170,6 +171,16 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         feilkode = feilkode,
         ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
         harAktiveForslag = forslag.any { f -> f.status == Forslag.Status.VenterPaSvar },
+        harOppdateringFraNav = ulesteHendelser.any {
+            it.hendelse is UlestHendelseType.InnbyggerGodkjennUtkast ||
+                it.hendelse is UlestHendelseType.NavGodkjennUtkast
+        },
+        erNyDeltaker = ulesteHendelser.any {
+            it.hendelse is UlestHendelseType.IkkeAktuell ||
+                it.hendelse is UlestHendelseType.AvsluttDeltakelse ||
+                it.hendelse is UlestHendelseType.AvbrytDeltakelse ||
+                it.hendelse is UlestHendelseType.ReaktiverDeltakelse
+        },
         kanEndres = kanEndres,
     )
 }

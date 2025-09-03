@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator.extensions
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringFeilkode
@@ -16,6 +17,7 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     feilkode: DeltakerOppdateringFeilkode? = null,
     ikkeDigitalOgManglerAdresse: Boolean,
     forslag: List<Forslag>,
+    ulesteHendelser: List<UlestHendelse>,
 ) = TiltakskoordinatorsDeltaker(
     id = id,
     navBruker = navBruker,
@@ -37,4 +39,5 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     feilkode = feilkode,
     ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
     forslag = forslag,
+    ulesteHendelser = ulesteHendelser,
 )

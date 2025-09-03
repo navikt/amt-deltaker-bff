@@ -13,6 +13,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringResponse
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
@@ -27,6 +28,7 @@ class TiltakskoordinatorService(
     private val navAnsattService: NavAnsattService,
     private val amtDistribusjonClient: AmtDistribusjonClient,
     private val forslagService: ForslagService,
+    private val ulesteHendelseService: UlestHendelseService,
 ) {
     suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
 
@@ -36,13 +38,22 @@ class TiltakskoordinatorService(
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
         val forslag = forslagService.getForDeltaker(deltaker.id)
+        val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(deltakerId)
 
         if (deltaker.navBruker.adresse == null) {
             val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-            return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, !digitalBruker, forslag)
+            return deltaker.toTiltakskoordinatorsDeltaker(
+                sisteVurdering,
+                navEnhet,
+                navVeileder,
+                null,
+                !digitalBruker,
+                forslag,
+                ulesteHendelser,
+            )
         }
 
-        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false, forslag)
+        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false, forslag, ulesteHendelser)
     }
 
     suspend fun endreDeltakere(
@@ -102,6 +113,8 @@ class TiltakskoordinatorService(
                     ikkeDigitalOgManglerAdresse = !amtDistribusjonClient.digitalBruker(it.navBruker.personident)
                 }
 
+                val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(it.id)
+
                 it.toTiltakskoordinatorsDeltaker(
                     sisteVurdering,
                     navEnheter[it.navBruker.navEnhetId],
@@ -109,6 +122,7 @@ class TiltakskoordinatorService(
                     null,
                     ikkeDigitalOgManglerAdresse,
                     forslag.filter { forslag -> forslag.deltakerId == it.id },
+                    ulesteHendelser,
                 )
             }.filterNot { it.skalSkjules() }
     }
@@ -126,6 +140,7 @@ class TiltakskoordinatorService(
                 if (deltaker.navBruker.adresse == null) {
                     ikkeDigitalOgManglerAdresse = !amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
                 }
+                val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(deltaker.id)
                 deltaker.toTiltakskoordinatorsDeltaker(
                     sisteVurdering,
                     navEnheter[deltaker.navBruker.navEnhetId],
@@ -133,6 +148,7 @@ class TiltakskoordinatorService(
                     first { it.id == deltaker.id }.feilkode,
                     ikkeDigitalOgManglerAdresse,
                     forslag.filter { forslag -> forslag.deltakerId == deltaker.id },
+                    ulesteHendelser,
                 )
             }.filterNot { it.skalSkjules() }
     }

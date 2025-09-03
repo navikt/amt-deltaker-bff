@@ -153,6 +153,7 @@ class TiltakskoordinatorDeltakerApiTest : RouteTestBase() {
                 feilkode = null,
                 ikkeDigitalOgManglerAdresse = false,
                 forslag = emptyList(),
+                ulesteHendelser = emptyList(),
             )
 
         private val bearerTokenInTest = generateJWT(
