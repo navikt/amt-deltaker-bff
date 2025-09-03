@@ -171,11 +171,11 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
         feilkode = feilkode,
         ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
         harAktiveForslag = forslag.any { f -> f.status == Forslag.Status.VenterPaSvar },
-        harOppdateringFraNav = ulesteHendelser.any {
+        erNyDeltaker = ulesteHendelser.any {
             it.hendelse is UlestHendelseType.InnbyggerGodkjennUtkast ||
                 it.hendelse is UlestHendelseType.NavGodkjennUtkast
         },
-        erNyDeltaker = ulesteHendelser.any {
+        harOppdateringFraNav = ulesteHendelser.any {
             it.hendelse is UlestHendelseType.IkkeAktuell ||
                 it.hendelse is UlestHendelseType.AvsluttDeltakelse ||
                 it.hendelse is UlestHendelseType.AvbrytDeltakelse ||
