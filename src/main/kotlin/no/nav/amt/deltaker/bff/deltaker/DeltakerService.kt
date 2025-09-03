@@ -292,6 +292,11 @@ class DeltakerService(
     }
 
     fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
+        // emergency-fix for å åpne opp lock på Kafka partition
+        if (deltakeroppdatering.id.toString() == "e2b04c65-32c0-467e-aa69-553925eac9fc") {
+            return
+        }
+
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
             val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
             deltakerRepository.settKanEndres(tidligereDeltakelser, false)
