@@ -7,4 +7,4 @@ ENV TZ="Europe/Oslo"
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/bin/java"]
-CMD ["-Dlogback.configurationFile=deltaker-bff-logback.xml", "-Xms256m", "-Xmx1024m", "-cp", "lib/*", "no.nav.amt.deltaker.bff.ApplicationKt"]
+CMD ["-Xms256m", "-Xmx1024m", "-cp", "lib/*", "no.nav.amt.deltaker.bff.ApplicationKt"]
