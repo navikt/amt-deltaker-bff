@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.model
 
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 
-val AVSLUTTENDE_STATUSER = listOf(
+val AVSLUTTENDE_STATUSER = setOf(
     DeltakerStatus.Type.HAR_SLUTTET,
     DeltakerStatus.Type.IKKE_AKTUELL,
     DeltakerStatus.Type.FEILREGISTRERT,
@@ -11,7 +11,7 @@ val AVSLUTTENDE_STATUSER = listOf(
     DeltakerStatus.Type.AVBRUTT_UTKAST,
 )
 
-val AKTIVE_STATUSER = listOf(
+val AKTIVE_STATUSER = setOf(
     DeltakerStatus.Type.UTKAST_TIL_PAMELDING,
     DeltakerStatus.Type.VENTER_PA_OPPSTART,
     DeltakerStatus.Type.DELTAR,

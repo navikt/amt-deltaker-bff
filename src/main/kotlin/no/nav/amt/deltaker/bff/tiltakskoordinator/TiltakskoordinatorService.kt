@@ -11,15 +11,11 @@ import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.AvslagRequest
-import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
-import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringFeilkode
 import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringResponse
-import no.nav.amt.lib.models.person.NavAnsatt
-import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
@@ -32,22 +28,32 @@ class TiltakskoordinatorService(
     private val navAnsattService: NavAnsattService,
     private val amtDistribusjonClient: AmtDistribusjonClient,
     private val forslagService: ForslagService,
+    private val ulesteHendelseService: UlestHendelseService,
 ) {
     suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
 
-    suspend fun get(deltakerId: UUID): TiltakskoordinatorsDeltaker {
-        val deltaker = deltakerService.get(deltakerId).getOrThrow()
+    suspend fun getDeltaker(deltakerId: UUID): TiltakskoordinatorsDeltaker {
+        val deltaker = deltakerService.getDeltaker(deltakerId).getOrThrow()
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
         val forslag = forslagService.getForDeltaker(deltaker.id)
+        val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(deltakerId)
 
         if (deltaker.navBruker.adresse == null) {
             val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
-            return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, !digitalBruker, forslag)
+            return deltaker.toTiltakskoordinatorsDeltaker(
+                sisteVurdering,
+                navEnhet,
+                navVeileder,
+                null,
+                !digitalBruker,
+                forslag,
+                ulesteHendelser,
+            )
         }
 
-        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false, forslag)
+        return deltaker.toTiltakskoordinatorsDeltaker(sisteVurdering, navEnhet, navVeileder, null, false, forslag, ulesteHendelser)
     }
 
     suspend fun endreDeltakere(
@@ -72,7 +78,7 @@ class TiltakskoordinatorService(
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        return deltakerService.get(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
+        return deltakerService.getDeltaker(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
     }
 
     fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
@@ -107,6 +113,8 @@ class TiltakskoordinatorService(
                     ikkeDigitalOgManglerAdresse = !amtDistribusjonClient.digitalBruker(it.navBruker.personident)
                 }
 
+                val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(it.id)
+
                 it.toTiltakskoordinatorsDeltaker(
                     sisteVurdering,
                     navEnheter[it.navBruker.navEnhetId],
@@ -114,6 +122,7 @@ class TiltakskoordinatorService(
                     null,
                     ikkeDigitalOgManglerAdresse,
                     forslag.filter { forslag -> forslag.deltakerId == it.id },
+                    ulesteHendelser,
                 )
             }.filterNot { it.skalSkjules() }
     }
@@ -131,6 +140,7 @@ class TiltakskoordinatorService(
                 if (deltaker.navBruker.adresse == null) {
                     ikkeDigitalOgManglerAdresse = !amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
                 }
+                val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(deltaker.id)
                 deltaker.toTiltakskoordinatorsDeltaker(
                     sisteVurdering,
                     navEnheter[deltaker.navBruker.navEnhetId],
@@ -138,37 +148,8 @@ class TiltakskoordinatorService(
                     first { it.id == deltaker.id }.feilkode,
                     ikkeDigitalOgManglerAdresse,
                     forslag.filter { forslag -> forslag.deltakerId == deltaker.id },
+                    ulesteHendelser,
                 )
             }.filterNot { it.skalSkjules() }
     }
 }
-
-fun Deltaker.toTiltakskoordinatorsDeltaker(
-    sisteVurdering: Vurdering?,
-    navEnhet: NavEnhet?,
-    navVeileder: NavAnsatt?,
-    feilkode: DeltakerOppdateringFeilkode? = null,
-    ikkeDigitalOgManglerAdresse: Boolean,
-    forslag: List<Forslag>,
-) = TiltakskoordinatorsDeltaker(
-    id = id,
-    navBruker = navBruker,
-    status = status,
-    startdato = startdato,
-    sluttdato = sluttdato,
-    navEnhet = navEnhet?.navn,
-    navVeileder = NavVeileder(
-        navn = navVeileder?.navn,
-        telefonnummer = navVeileder?.telefon,
-        epost = navVeileder?.epost,
-    ),
-    beskyttelsesmarkering = navBruker.beskyttelsesmarkeringer,
-    vurdering = sisteVurdering,
-    innsatsgruppe = navBruker.innsatsgruppe,
-    deltakerliste = deltakerliste,
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-    kanEndres = kanEndres,
-    feilkode = feilkode,
-    ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
-    forslag = forslag,
-)

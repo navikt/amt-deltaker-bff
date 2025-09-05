@@ -6,8 +6,8 @@ import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
+import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
-import no.nav.amt.deltaker.bff.tiltakskoordinator.toTiltakskoordinatorsDeltaker
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
@@ -185,7 +185,11 @@ object TestData {
         return if (innsoktDatoFraArena != null) {
             deltaker.copy(historikk = lagArenaDeltakerHistorikk(deltaker, innsoktDatoFraArena))
         } else if (historikk) {
-            deltaker.copy(historikk = lagDeltakerHistorikk(deltaker))
+            deltaker.copy(
+                historikk = lagDeltakerHistorikk(
+                    deltaker = deltaker,
+                ),
+            )
         } else {
             deltaker
         }
@@ -204,6 +208,7 @@ object TestData {
         navVeileder = navVeileder,
         null,
         false,
+        emptyList(),
         emptyList(),
     )
 
@@ -243,7 +248,12 @@ object TestData {
     )
 
     private fun lagDeltakerHistorikk(deltaker: Deltaker): List<DeltakerHistorikk> {
-        val vedtak = lagVedtak(deltakerVedVedtak = deltaker, fattet = LocalDateTime.now())
+        val vedtak = lagVedtak(
+            deltakerVedVedtak = deltaker,
+            fattet = LocalDateTime.now(),
+            opprettetAv = deltaker.navBruker.navVeilederId!!,
+            opprettetAvEnhet = deltaker.navBruker.navEnhetId!!,
+        )
         return listOf(DeltakerHistorikk.Vedtak(vedtak))
     }
 

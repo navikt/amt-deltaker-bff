@@ -116,7 +116,7 @@ class NavBrukerConsumerTest {
         }
 
         navBrukerService.get(navBruker.personId).getOrNull() shouldBe oppdatertNavBruker
-        deltakerService.get(kladd.id).getOrNull() shouldBe null
+        deltakerService.getDeltaker(kladd.id).getOrNull() shouldBe null
     }
 }
 

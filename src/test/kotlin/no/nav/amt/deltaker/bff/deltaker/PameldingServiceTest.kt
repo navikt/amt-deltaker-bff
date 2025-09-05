@@ -173,12 +173,12 @@ class PameldingServiceTest {
             )
             deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
 
-            deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+            deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
             MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
             pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
 
-            val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
+            val gammelDeltakerFraDb = deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow()
             gammelDeltakerFraDb.kanEndres shouldBe true
         }
 
@@ -214,13 +214,13 @@ class PameldingServiceTest {
 
             deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
 
-            deltakerService.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+            deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
             MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
 
             pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
 
-            val gammelDeltakerFraDb = deltakerService.get(gammelDeltaker.id).getOrThrow()
+            val gammelDeltakerFraDb = deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow()
             gammelDeltakerFraDb.kanEndres shouldBe false
         }
     }
