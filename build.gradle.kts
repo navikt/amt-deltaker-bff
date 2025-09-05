@@ -110,6 +110,8 @@ ktlint {
 tasks.test {
     useJUnitPlatform()
 
+    environment("TESTCONTAINERS_RYUK_DISABLED", "true")
+
     jvmArgs(
         "-Xshare:off",
         "-XX:+EnableDynamicAgentLoading",
