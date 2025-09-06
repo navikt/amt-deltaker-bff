@@ -20,8 +20,8 @@ spec:
     path: /internal/health/liveness
     initialDelay: 30
   replicas:
-    min: 0
-    max: 0
+    min: 2
+    max: 3
     scalingStrategy:
       cpu:
         thresholdPercentage: 100
@@ -91,7 +91,6 @@ spec:
       value: http://amt-distribusjon
     - name: AD_ROLLE_TILTAKSKOORDINATOR
       value: {{ad_rolle_tiltak_koordinator}}
-
 
   gcp:
     sqlInstances:
