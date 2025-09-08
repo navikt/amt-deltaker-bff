@@ -19,7 +19,7 @@ class UlestHendelseRepository {
                 id = row.uuid(col("id")),
                 opprettet = row.localDateTime(col("opprettet")),
                 deltakerId = row.uuid(col("deltaker_id")),
-                ansvarlig = objectMapper.readValue(row.string(col("ansvarlig"))),
+                ansvarlig = row.stringOrNull(col("ansvarlig"))?.let { objectMapper.readValue(it) },
                 hendelse = objectMapper.readValue(row.string(col("hendelse"))),
             )
         }
