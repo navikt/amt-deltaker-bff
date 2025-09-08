@@ -19,21 +19,23 @@ data class AvsluttDeltakelseRequest(
     val begrunnelse: String?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
-    private val kanAvslutteDeltakelse =
-        listOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.FULLFORT)
+    fun harDeltatt(): Boolean = harDeltatt ?: true
+
+    fun harFullfort(): Boolean = harFullfort ?: true
 
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak?.beskrivelse)
         validerBegrunnelse(begrunnelse)
         validerDeltakerKanEndres(deltaker)
-        require(deltaker.status.type in kanAvslutteDeltakelse) {
-            "Kan ikke avslutte deltakelse for deltaker som ikke har status DELTAR eller HAR_SLUTTET"
-        }
+
+        require(deltaker.status.type in kanAvslutteDeltakelse) { statusTypeErrorText }
+
         if (harDeltatt()) {
             require(sluttdato != null) {
                 "Må angi sluttdato for deltaker som har deltatt"
             }
         } else {
+            // TODO: Denne else skal bort
             require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
                 "Deltaker som ikke har status DELTAR må ha deltatt"
             }
@@ -45,11 +47,15 @@ data class AvsluttDeltakelseRequest(
         }
     }
 
-    fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt
-
-    fun harFullfort(): Boolean = harFullfort == null || harFullfort
-
     private fun deltakerErEndret(deltaker: Deltaker): Boolean = deltaker.status.type != DeltakerStatus.Type.HAR_SLUTTET ||
         deltaker.sluttdato != sluttdato ||
         harEndretSluttaarsak(deltaker.status.aarsak, aarsak)
+
+    companion object {
+        private val kanAvslutteDeltakelse =
+            setOf(DeltakerStatus.Type.DELTAR, DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.FULLFORT)
+
+        private val statusTypeErrorText =
+            "Avslutte deltakelse for deltaker krever en av følgende statuser: ${kanAvslutteDeltakelse.joinToString(", ")}"
+    }
 }

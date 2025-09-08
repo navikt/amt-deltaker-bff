@@ -85,7 +85,7 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.ARENA, listOf(vurdering))),
             )
 
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val oppdatertDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             oppdatertDeltaker.startdato shouldBe startdato
             oppdatertDeltaker.sluttdato shouldBe sluttdato
             oppdatertDeltaker.sistEndret shouldBeCloseTo sistEndret
@@ -117,7 +117,7 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
             )
 
-            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
             lagretDeltaker.sistEndret shouldBeCloseTo sistEndret
@@ -150,11 +150,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
             )
 
-            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerService.get(tidligereDeltakelse.id).getOrThrow()
+            val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe false
         }
     }
@@ -184,11 +184,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
             )
 
-            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe false
 
-            val lagretNyereDeltaker = deltakerService.get(nyereDeltakelse.id).getOrThrow()
+            val lagretNyereDeltaker = deltakerService.getDeltaker(nyereDeltakelse.id).getOrThrow()
             lagretNyereDeltaker.kanEndres shouldBe true
         }
     }
@@ -220,11 +220,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
             )
 
-            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerService.get(tidligereDeltakelse.id).getOrThrow()
+            val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe false
         }
     }
@@ -256,11 +256,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
             )
 
-            val lagretDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe false
 
-            val lagretTidligereDeltaker = deltakerService.get(tidligereDeltakelse.id).getOrThrow()
+            val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe true
         }
     }
@@ -287,7 +287,7 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.KOMET)),
             )
 
-            val oppdatertDeltaker = deltakerService.get(deltaker.id).getOrThrow()
+            val oppdatertDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
             oppdatertDeltaker.startdato shouldBe startdato
             oppdatertDeltaker.sluttdato shouldBe sluttdato
         }
@@ -304,7 +304,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(deltaker.id, null)
 
-            deltakerService.get(deltaker.id).getOrNull() shouldBe null
+            deltakerService.getDeltaker(deltaker.id).getOrNull() shouldBe null
         }
     }
 }

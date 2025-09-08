@@ -6,7 +6,6 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.db.toPGObject
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.deltaker.bff.utils.prefixColumn
-import no.nav.amt.lib.models.hendelse.Hendelse
 import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
@@ -43,23 +42,6 @@ class UlestHendelseRepository {
         it.run(query.map(::rowMapper).asList)
     }
 
-    fun getForDeltakere(deltakerIder: List<UUID>) = Database.query {
-        val query = queryOf(
-            """
-            SELECT 
-                uh.id as "uh.id",
-                uh.deltaker_id as "uh.deltaker_id",
-                uh.opprettet as "uh.opprettet",
-                uh.ansvarlig as "uh.ansvarlig",
-                uh.hendelse as "uh.hendelse"
-            FROM ulest_hendelse uh
-            WHERE uh.deltaker_id = any(:deltaker_ider);
-            """.trimIndent(),
-            mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
-        )
-        it.run(query.map(::rowMapper).asList)
-    }
-
     fun get(id: UUID) = Database.query {
         val query = queryOf(
             """
@@ -78,7 +60,7 @@ class UlestHendelseRepository {
             ?: Result.failure(NoSuchElementException("Ingen ulest hendelse med id $id"))
     }
 
-    fun upsert(hendelse: Hendelse) = Database.query {
+    fun upsert(ulestHendelse: UlestHendelse) = Database.query {
         val sql =
             """
             INSERT INTO ulest_hendelse(
@@ -104,11 +86,11 @@ class UlestHendelseRepository {
             queryOf(
                 sql,
                 mapOf(
-                    "id" to hendelse.id,
-                    "deltaker_id" to hendelse.deltaker.id,
-                    "opprettet" to hendelse.opprettet,
-                    "ansvarlig" to toPGObject(hendelse.ansvarlig),
-                    "hendelse" to toPGObject(hendelse.payload),
+                    "id" to ulestHendelse.id,
+                    "deltaker_id" to ulestHendelse.deltakerId,
+                    "opprettet" to ulestHendelse.opprettet,
+                    "ansvarlig" to toPGObject(ulestHendelse.ansvarlig),
+                    "hendelse" to toPGObject(ulestHendelse.hendelse),
                 ),
             ),
         )

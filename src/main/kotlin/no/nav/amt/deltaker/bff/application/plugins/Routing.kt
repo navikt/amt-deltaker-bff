@@ -32,9 +32,12 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.bff.testdata.TestdataService
 import no.nav.amt.deltaker.bff.testdata.registerTestdataApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.SporbarhetOgTilgangskontrollSvc
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerUlestHendelseApi
+import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import no.nav.amt.lib.ktor.auth.exceptions.AuthenticationException
@@ -57,7 +60,9 @@ fun Application.configureRouting(
     amtDeltakerClient: AmtDeltakerClient,
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
+    sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc,
     tiltakskoordinatorService: TiltakskoordinatorService,
+    ulestHendelseService: UlestHendelseService,
     testdataService: TestdataService,
 ) {
     install(StatusPages) {
@@ -128,21 +133,22 @@ fun Application.configureRouting(
             unleash,
         )
 
+        registerTiltakskoordinatorDeltakerApi(
+            sporbarhetOgTilgangskontrollSvc,
+            tiltakskoordinatorService,
+            deltakerService,
+            navAnsattService,
+            navEnhetService,
+            ulestHendelseService,
+        )
+
         registerTiltakskoordinatorDeltakerlisteApi(
             deltakerlisteService,
             tilgangskontrollService,
             tiltakskoordinatorService,
         )
 
-        registerTiltakskoordinatorDeltakerApi(
-            tiltakskoordinatorService,
-            deltakerService,
-            navAnsattService,
-            navEnhetService,
-            deltakerlisteService,
-            tilgangskontrollService,
-            sporbarhetsloggService,
-        )
+        registerUlestHendelseApi(ulestHendelseService)
 
         if (!Environment.isProd()) {
             registerTestdataApi(testdataService)

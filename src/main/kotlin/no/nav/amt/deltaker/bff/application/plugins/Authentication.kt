@@ -126,7 +126,7 @@ fun ApplicationCall.getNavIdent(): String = this
     ?.get("NAVident")
     ?: throw AuthenticationException("NAVident mangler i JWTPrincipal")
 
-fun ApplicationCall.getPersonident(): String = this
+fun ApplicationCall.getPersonIdent(): String = this
     .principal<JWTPrincipal>()
     ?.get("pid")
     ?: throw AuthenticationException("Pid mangler i JWTPrincipal")
