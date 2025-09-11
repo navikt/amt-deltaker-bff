@@ -34,11 +34,6 @@ data class AvsluttDeltakelseRequest(
             require(sluttdato != null) {
                 "Må angi sluttdato for deltaker som har deltatt"
             }
-        } else {
-            // TODO: Denne else skal bort
-            require(deltaker.status.type == DeltakerStatus.Type.DELTAR) {
-                "Deltaker som ikke har status DELTAR må ha deltatt"
-            }
         }
         sluttdato?.let { validerSluttdatoForDeltaker(it, deltaker.startdato, deltaker) }
 
