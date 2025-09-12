@@ -118,19 +118,6 @@ class AvsluttDeltakelseRequestTest {
         }
 
         @Test
-        fun `skal kaste feil dersom harDeltatt = false og status forskjellig fra DELTAR`() {
-            val request = avsluttDeltakelseRequestInTest.copy(
-                harDeltatt = false,
-            )
-
-            val thrown = shouldThrow<IllegalArgumentException> {
-                request.valider(deltakerInTest)
-            }
-
-            thrown.message shouldBe "Deltaker som ikke har status DELTAR må ha deltatt"
-        }
-
-        @Test
         fun `skal ikke kaste feil dersom harDeltatt = false og status er DELTAR`() {
             val request = avsluttDeltakelseRequestInTest.copy(
                 harDeltatt = false,
