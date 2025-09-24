@@ -130,7 +130,21 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
         post("$apiPath/tilgang/legg-til") {
             val deltakerlisteId = getDeltakerlisteId()
 
-            tilgangskontrollService.leggTilTiltakskoordinatorTilgang(call.getNavIdent(), deltakerlisteId).getOrThrow()
+            tilgangskontrollService
+                .leggTilTiltakskoordinatorTilgang(
+                    navIdent = call.getNavIdent(),
+                    deltakerlisteId = deltakerlisteId,
+                ).getOrThrow()
+
+            call.respond(HttpStatusCode.OK)
+        }
+
+        post("$apiPath/tilgang/fjern") {
+            tilgangskontrollService
+                .fjernTiltakskoordinatorTilgang(
+                    call.getNavIdent(),
+                    getDeltakerlisteId(),
+                ).getOrThrow()
 
             call.respond(HttpStatusCode.OK)
         }
