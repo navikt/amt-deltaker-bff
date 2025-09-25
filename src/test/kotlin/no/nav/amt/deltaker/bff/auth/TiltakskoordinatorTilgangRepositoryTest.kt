@@ -1,20 +1,25 @@
 package no.nav.amt.deltaker.bff.auth
 
+import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
-import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakskoordinatorTilgang
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -76,21 +81,74 @@ class TiltakskoordinatorTilgangRepositoryTest {
         }
     }
 
-    @Test
-    fun `hentKoordinatorer - deltakerliste har ikke koordinatorer - returnerer tom liste`() {
-        with(TiltakskoordinatorTilgangContext()) {
-            medAktivTilgang()
-            repository.hentKoordinatorer(UUID.randomUUID()) shouldBe emptyList()
+    @Nested
+    inner class HentKoordinatorer {
+        @Test
+        fun `deltakerliste har ingen koordinatorer - returnerer tom liste`() {
+            with(TiltakskoordinatorTilgangContext()) {
+                medAktivTilgang()
+                val koordinatorer = repository.hentKoordinatorer(UUID.randomUUID())
+                koordinatorer.shouldBeEmpty()
+            }
         }
-    }
 
-    @Test
-    fun `hentKoordinatorer - deltakerliste har koordinatorer - returnerer nav ansatte`() {
-        with(TiltakskoordinatorTilgangContext()) {
-            medAktivTilgang()
-            val navAnsatte = repository.hentKoordinatorer(deltakerliste.id)
-            navAnsatte shouldHaveSize 1
-            navAnsatte.first().navn shouldBeEqual "Veileder Veiledersen"
+        @Test
+        fun `deltakerliste har aktiv koordinator - skal returnere aktiv koordinator`() {
+            with(TiltakskoordinatorTilgangContext()) {
+                medAktivTilgang()
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+                koordinatorer shouldHaveSize 1
+
+                assertSoftly(koordinatorer.first()) {
+                    navn shouldBe "Veileder Veiledersen"
+                    erAktiv shouldBe true
+                }
+            }
+        }
+
+        @Test
+        fun `deltakerliste har aktiv og inaktiv koordinator - returnerer begge koordinatorer`() {
+            with(TiltakskoordinatorTilgangContext()) {
+                medAktivTilgang()
+                medInaktivTilgang()
+
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+
+                koordinatorer shouldHaveSize 2
+
+                koordinatorer.count { it.erAktiv } shouldBe 1
+                koordinatorer.count { !it.erAktiv } shouldBe 1
+            }
+        }
+
+        @Test
+        fun `deltakerliste har kun inaktiv koordinator - returnerer inaktiv koordinator`() {
+            with(TiltakskoordinatorTilgangContext()) {
+                medInaktivTilgang()
+
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+
+                koordinatorer shouldHaveSize 1
+                koordinatorer.first().erAktiv shouldBe false
+            }
+        }
+
+        @Test
+        fun `samme koordinator finnes som inaktiv og aktiv - returnerer aktiv koordinator`() {
+            with(TiltakskoordinatorTilgangContext()) {
+                medAktivTilgang()
+                TestRepository.insert(
+                    secondTilgang.copy(
+                        navAnsattId = navAnsatt.id,
+                        gyldigTil = LocalDateTime.now(),
+                    ),
+                )
+
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+
+                koordinatorer shouldHaveSize 1
+                koordinatorer.first().erAktiv shouldBe true
+            }
         }
     }
 
@@ -138,13 +196,18 @@ fun sammenlignTilganger(tilgang1: TiltakskoordinatorDeltakerlisteTilgang, tilgan
 }
 
 data class TiltakskoordinatorTilgangContext(
-    val navAnsatt: NavAnsatt = TestData.lagNavAnsatt(),
-    var deltakerliste: Deltakerliste = TestData.lagDeltakerliste(),
-    var tilgang: TiltakskoordinatorDeltakerlisteTilgang = TestData.lagTiltakskoordinatorTilgang(
+    val navAnsatt: NavAnsatt = lagNavAnsatt(),
+    val secondNavAnsatt: NavAnsatt = lagNavAnsatt(navn = "Nav Navesen"),
+    var deltakerliste: Deltakerliste = lagDeltakerliste(),
+    var tilgang: TiltakskoordinatorDeltakerlisteTilgang = lagTiltakskoordinatorTilgang(
         deltakerliste = deltakerliste,
         navAnsatt = navAnsatt,
     ),
-    var deltaker: Deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste),
+    var secondTilgang: TiltakskoordinatorDeltakerlisteTilgang = lagTiltakskoordinatorTilgang(
+        deltakerliste = deltakerliste,
+        navAnsatt = secondNavAnsatt,
+    ),
+    var deltaker: Deltaker = lagDeltaker(deltakerliste = deltakerliste),
 ) {
     val deltakerRepository = DeltakerRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
@@ -155,6 +218,7 @@ data class TiltakskoordinatorTilgangContext(
         SingletonPostgres16Container
 
         TestRepository.insert(navAnsatt)
+        TestRepository.insert(secondNavAnsatt)
         TestRepository.insert(deltakerliste)
         TestRepository.insert(deltaker)
     }
@@ -164,8 +228,7 @@ data class TiltakskoordinatorTilgangContext(
     }
 
     fun medInaktivTilgang() {
-        tilgang = tilgang.copy(gyldigTil = LocalDateTime.now())
-        TestRepository.insert(tilgang)
+        TestRepository.insert(secondTilgang.copy(gyldigTil = LocalDateTime.now()))
     }
 
     fun medSkjermetDeltaker() {

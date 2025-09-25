@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.tiltakskoordinator
 import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
-import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -22,7 +21,6 @@ import java.util.UUID
 class TiltakskoordinatorService(
     private val tiltaksKoordinatorClient: TiltaksKoordinatorClient,
     private val deltakerService: DeltakerService,
-    private val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
     private val vurderingService: VurderingService,
     private val navEnhetService: NavEnhetService,
     private val navAnsattService: NavAnsattService,
@@ -80,8 +78,6 @@ class TiltakskoordinatorService(
 
         return deltakerService.getDeltaker(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
     }
-
-    fun hentKoordinatorer(deltakerlisteId: UUID) = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
     suspend fun hentDeltakereForDeltakerliste(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
         val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)

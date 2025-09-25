@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
 import no.nav.amt.deltaker.bff.application.plugins.configureSerialization
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -46,6 +47,7 @@ abstract class RouteTestBase {
     protected val unleash: Unleash = mockk(relaxed = true)
     protected val sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc = mockk(relaxed = true)
     protected val tiltakskoordinatorService: TiltakskoordinatorService = mockk(relaxed = true)
+    protected val tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository = mockk(relaxed = true)
     protected val ulestHendelseService: UlestHendelseService = mockk(relaxed = true)
     protected val testdataService: TestdataService = mockk(relaxed = true)
 
@@ -78,6 +80,7 @@ abstract class RouteTestBase {
                     unleash,
                     sporbarhetOgTilgangskontrollSvc,
                     tiltakskoordinatorService,
+                    tiltakskoordinatorTilgangRepository,
                     ulestHendelseService,
                     testdataService,
                 )
