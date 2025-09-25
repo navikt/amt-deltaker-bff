@@ -12,6 +12,7 @@ import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
@@ -19,11 +20,10 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusAarsakResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
-import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.KoordinatorResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelseType
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
@@ -31,6 +31,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
     deltakerlisteService: DeltakerlisteService,
     tilgangskontrollService: TilgangskontrollService,
     tiltakskoordinatorService: TiltakskoordinatorService,
+    tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
@@ -38,7 +39,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
         get(apiPath) {
             val deltakerlisteId = getDeltakerlisteId()
             val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
-            val koordinatorer = tiltakskoordinatorService.hentKoordinatorer(deltakerlisteId)
+            val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
 
             call.respond(deltakerliste.toResponse(koordinatorer))
         }
@@ -128,12 +129,10 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
         }
 
         post("$apiPath/tilgang/legg-til") {
-            val deltakerlisteId = getDeltakerlisteId()
-
             tilgangskontrollService
                 .leggTilTiltakskoordinatorTilgang(
                     navIdent = call.getNavIdent(),
-                    deltakerlisteId = deltakerlisteId,
+                    deltakerlisteId = getDeltakerlisteId(),
                 ).getOrThrow()
 
             call.respond(HttpStatusCode.OK)
@@ -216,13 +215,13 @@ fun RoutingContext.getDeltakerlisteId(): UUID {
     }
 }
 
-fun Deltakerliste.toResponse(koordinatorer: List<NavAnsatt>) = DeltakerlisteResponse(
-    this.id,
-    this.navn,
-    this.tiltak.tiltakskode,
-    this.startDato,
-    this.sluttDato,
-    this.apentForPamelding,
-    this.antallPlasser,
-    koordinatorer.map { KoordinatorResponse(id = it.id, navn = it.navn) },
+fun Deltakerliste.toResponse(koordinatorer: List<Tiltakskoordinator>) = DeltakerlisteResponse(
+    id = this.id,
+    navn = this.navn,
+    tiltakskode = this.tiltak.tiltakskode,
+    startdato = this.startDato,
+    sluttdato = this.sluttDato,
+    apentForPamelding = this.apentForPamelding,
+    antallPlasser = this.antallPlasser,
+    koordinatorer = koordinatorer,
 )

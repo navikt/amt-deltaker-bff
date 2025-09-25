@@ -92,7 +92,7 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
         val expectedResponseBody = objectMapper.writeValueAsString(deltakerlisteInTest.toResponse(emptyList()))
 
         every { deltakerlisteService.hentMedFellesOppstart(deltakerlisteInTest.id) } returns Result.success(deltakerlisteInTest)
-        every { tiltakskoordinatorService.hentKoordinatorer(any()) } returns emptyList()
+        every { tiltakskoordinatorTilgangRepository.hentKoordinatorer(any()) } returns emptyList()
 
         withTestApplicationContext { client ->
             val response = client.get("/tiltakskoordinator/deltakerliste/${deltakerlisteInTest.id}") {

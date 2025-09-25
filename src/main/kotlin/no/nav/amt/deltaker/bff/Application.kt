@@ -231,7 +231,6 @@ fun Application.module() {
     val tiltakskoordinatorService = TiltakskoordinatorService(
         tiltakskoordinatorClient,
         deltakerService,
-        tiltakskoordinatorTilgangRepository,
         vurderingService,
         navEnhetService,
         navAnsattService,
@@ -295,6 +294,7 @@ fun Application.module() {
         unleash,
         sporbarhetOgTilgangskontrollSvc,
         tiltakskoordinatorService,
+        tiltakskoordinatorTilgangRepository,
         ulestHendelseService,
         testdataService,
     )

@@ -272,7 +272,7 @@ class TilgangskontrollServiceTest {
     fun `stengTiltakskoordinatorTilgang - ikke aktiv tilgang - tilgang stenges ikke pa nytt`() {
         with(TiltakskoordinatorTilgangContext()) {
             medInaktivTilgang()
-            val resultat = tilgangskontrollService.stengTiltakskoordinatorTilgang(tilgang.id)
+            val resultat = tilgangskontrollService.stengTiltakskoordinatorTilgang(secondTilgang.id)
 
             resultat.isFailure shouldBe true
         }
