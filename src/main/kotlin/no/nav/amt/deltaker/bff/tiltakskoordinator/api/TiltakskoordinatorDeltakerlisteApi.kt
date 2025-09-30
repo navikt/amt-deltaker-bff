@@ -15,6 +15,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerStatusAarsakResponse
@@ -32,6 +33,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
     tilgangskontrollService: TilgangskontrollService,
     tiltakskoordinatorService: TiltakskoordinatorService,
     tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
+    navAnsattService: NavAnsattService,
 ) {
     val apiPath = "/tiltakskoordinator/deltakerliste/{id}"
 
@@ -39,7 +41,13 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
         get(apiPath) {
             val deltakerlisteId = getDeltakerlisteId()
             val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
-            val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerlisteId)
+
+            val paaloggetNavAnsatt = navAnsattService.hentNavAnsatt(call.getNavIdent())
+
+            val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(
+                deltakerlisteId = deltakerlisteId,
+                paaloggetNavAnsattId = paaloggetNavAnsatt.id,
+            )
 
             call.respond(deltakerliste.toResponse(koordinatorer))
         }

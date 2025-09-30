@@ -149,6 +149,7 @@ fun Application.configureRouting(
             tilgangskontrollService,
             tiltakskoordinatorService,
             tiltakskoordinatorTilgangRepository,
+            navAnsattService,
         )
 
         registerUlestHendelseApi(ulestHendelseService)

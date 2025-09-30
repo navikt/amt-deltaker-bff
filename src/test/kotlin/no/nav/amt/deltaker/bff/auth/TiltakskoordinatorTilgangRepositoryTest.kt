@@ -87,7 +87,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         fun `deltakerliste har ingen koordinatorer - returnerer tom liste`() {
             with(TiltakskoordinatorTilgangContext()) {
                 medAktivTilgang()
-                val koordinatorer = repository.hentKoordinatorer(UUID.randomUUID())
+                val koordinatorer = repository.hentKoordinatorer(UUID.randomUUID(), UUID.randomUUID())
                 koordinatorer.shouldBeEmpty()
             }
         }
@@ -96,7 +96,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         fun `deltakerliste har aktiv koordinator - skal returnere aktiv koordinator`() {
             with(TiltakskoordinatorTilgangContext()) {
                 medAktivTilgang()
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
                 koordinatorer shouldHaveSize 1
 
                 assertSoftly(koordinatorer.first()) {
@@ -112,7 +112,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
                 medAktivTilgang()
                 medInaktivTilgang()
 
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
 
                 koordinatorer shouldHaveSize 2
 
@@ -126,7 +126,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
             with(TiltakskoordinatorTilgangContext()) {
                 medInaktivTilgang()
 
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
 
                 koordinatorer shouldHaveSize 1
                 koordinatorer.first().erAktiv shouldBe false
@@ -144,7 +144,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
                     ),
                 )
 
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id)
+                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
 
                 koordinatorer shouldHaveSize 1
                 koordinatorer.first().erAktiv shouldBe true

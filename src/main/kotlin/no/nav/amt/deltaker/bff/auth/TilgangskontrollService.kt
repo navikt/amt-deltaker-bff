@@ -161,8 +161,8 @@ class TilgangskontrollService(
 
         return if (aktivTilgang.isSuccess) {
             upsertTilgang(
-                navIdent,
-                aktivTilgang
+                navIdent = navIdent,
+                tilgang = aktivTilgang
                     .getOrThrow()
                     .copy(gyldigTil = LocalDateTime.now()),
             )
