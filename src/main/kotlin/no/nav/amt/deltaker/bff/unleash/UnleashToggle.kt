@@ -6,24 +6,25 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 class UnleashToggle(
     private val unleashClient: Unleash,
 ) {
-    private val tiltakstyperKometErMasterFor = listOf(
+    private val tiltakstyperKometErMasterFor = setOf(
         ArenaKode.ARBFORB,
         ArenaKode.INDOPPFAG,
         ArenaKode.AVKLARAG,
         ArenaKode.ARBRRHDAG,
         ArenaKode.DIGIOPPARB,
         ArenaKode.VASV,
-    )
-
-    private val tiltakstyperKometKanLese = listOf(
         ArenaKode.GRUPPEAMO,
         ArenaKode.JOBBK,
         ArenaKode.GRUFAGYRKE,
     )
 
-    private val tiltakstyperKometSkalLese = emptyList<ArenaKode>()
+    private val tiltakstyperKometKanLese = setOf(
+        ArenaKode.ENKELAMO,
+        ArenaKode.ENKFAGYRKE,
+        ArenaKode.HOYEREUTD
+    )
 
-    private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometSkalLese
+    private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometKanLese
 
     fun erKometMasterForTiltakstype(tiltakstype: ArenaKode): Boolean = tiltakstype in tiltakstyperKometErMasterFor ||
         (unleashClient.isEnabled("amt.enable-komet-deltakere") && tiltakstype in tiltakstyperKometKanskjeErMasterFor)
