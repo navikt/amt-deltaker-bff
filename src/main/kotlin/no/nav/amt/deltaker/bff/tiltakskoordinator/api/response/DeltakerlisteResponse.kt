@@ -1,13 +1,13 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlisteResponse(
     val id: UUID,
     val navn: String,
-    val tiltakskode: Tiltakstype.Tiltakskode,
+    val tiltakskode: Tiltakskode,
     val startdato: LocalDate,
     val sluttdato: LocalDate?,
     val apentForPamelding: Boolean,

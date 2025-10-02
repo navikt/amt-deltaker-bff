@@ -17,7 +17,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.systemPostRequest
 import no.nav.amt.deltaker.bff.utils.configureEnvForAuthentication
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,7 +40,7 @@ class TestdataApiTest {
     @Test
     fun `opprett testdata - har tilgang, ugyldig request - returnerer BadRequest`() = testApplication {
         val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
         )
         val startdato = LocalDate.now().minusDays(1)
         val opprettTestDeltakelseRequest = OpprettTestDeltakelseRequest(
@@ -61,7 +61,7 @@ class TestdataApiTest {
     @Test
     fun `opprett testdata - har tilgang, gyldig request - returnerer deltaker`() = testApplication {
         val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
         )
         val startdato = LocalDate.now().minusDays(1)
         val deltaker = TestData.lagDeltaker(

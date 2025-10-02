@@ -11,7 +11,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import java.time.LocalDate
@@ -53,7 +53,7 @@ data class InnbyggerDeltakerResponse(
     data class DeltakerlisteDto(
         val deltakerlisteId: UUID,
         val deltakerlisteNavn: String,
-        val tiltakstype: Tiltakstype.ArenaKode,
+        val tiltakstype: ArenaKode,
         val arrangorNavn: String,
         val oppstartstype: Deltakerliste.Oppstartstype,
         val startdato: LocalDate,

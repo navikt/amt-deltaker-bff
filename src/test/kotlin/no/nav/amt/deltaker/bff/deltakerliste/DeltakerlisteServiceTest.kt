@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltakerliste
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -21,7 +21,7 @@ class DeltakerlisteServiceTest {
 
     @Test
     fun `hentDeltakerlisteMedFellesOppstart - deltakerliste har lopende oppstart - returnere failure`() {
-        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
+        with(DeltakerlisteContext(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
             val result = deltakerlisteService.hentMedFellesOppstart(deltakerliste.id)
 
             result.isFailure shouldBe true
@@ -38,7 +38,7 @@ class DeltakerlisteServiceTest {
 
     @Test
     fun `verifiserTilgjengeligDeltakerliste - deltakerliste har lopende oppstart - kaster exception`() {
-        with(DeltakerlisteContext(Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
+        with(DeltakerlisteContext(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
             assertThrows<NoSuchElementException> {
                 deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
             }
@@ -64,10 +64,15 @@ class DeltakerlisteServiceTest {
 }
 
 data class DeltakerlisteContext(
-    val tiltak: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+    val tiltak: Tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
     var deltakerliste: Deltakerliste = TestData.lagDeltakerliste(
         tiltak = TestData.lagTiltakstype(tiltakskode = tiltak),
-        oppstart = if (tiltak.erKurs()) {
+        oppstart = if (tiltak in setOf(
+                Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.JOBBKLUBB,
+            )
+        ) {
             Deltakerliste.Oppstartstype.FELLES
         } else {
             Deltakerliste.Oppstartstype.LOPENDE

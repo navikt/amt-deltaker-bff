@@ -22,8 +22,10 @@ import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import no.nav.amt.lib.models.hendelse.Hendelse
 import no.nav.amt.lib.models.hendelse.HendelseAnsvarlig
@@ -87,12 +89,12 @@ object TestData {
         antallPlasser,
     )
 
-    private val tiltakstypeCache = mutableMapOf<Tiltakstype.Tiltakskode, Tiltakstype>()
+    private val tiltakstypeCache = mutableMapOf<Tiltakskode, Tiltakstype>()
 
     fun lagTiltakstype(
         id: UUID = UUID.randomUUID(),
-        tiltakskode: Tiltakstype.Tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
-        arenaKode: Tiltakstype.ArenaKode = tiltakskode.toArenaKode(),
+        tiltakskode: Tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+        arenaKode: ArenaKode = tiltakskode.toArenaKode(),
         navn: String = "Test tiltak $arenaKode",
         innsatsgrupper: Set<Innsatsgruppe> = setOf(Innsatsgruppe.STANDARD_INNSATS),
         innhold: DeltakerRegistreringInnhold? = lagDeltakerRegistreringInnhold(),
@@ -437,10 +439,10 @@ object TestData {
         sluttdato,
     )
 
-    private fun finnOppstartstype(type: Tiltakstype.ArenaKode) = when (type) {
-        Tiltakstype.ArenaKode.JOBBK,
-        Tiltakstype.ArenaKode.GRUPPEAMO,
-        Tiltakstype.ArenaKode.GRUFAGYRKE,
+    private fun finnOppstartstype(type: ArenaKode) = when (type) {
+        ArenaKode.JOBBK,
+        ArenaKode.GRUPPEAMO,
+        ArenaKode.GRUFAGYRKE,
         -> Deltakerliste.Oppstartstype.FELLES
 
         else -> Deltakerliste.Oppstartstype.LOPENDE

@@ -25,7 +25,8 @@ import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.amt.lib.utils.objectMapper
@@ -58,14 +59,14 @@ class DeltakerV2ConsumerTest {
     @BeforeEach
     fun setup() {
         TestRepository.cleanDatabase()
-        every { unleashToggle.erKometMasterForTiltakstype(Tiltakstype.ArenaKode.ARBFORB) } returns true
+        every { unleashToggle.erKometMasterForTiltakstype(ArenaKode.ARBFORB) } returns true
     }
 
     @Test
     fun `consume - kilde er ARENA, deltaker finnes - konsumerer melding, oppdaterer`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
             TestRepository.insert(deltaker)
@@ -99,7 +100,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - kilde er ARENA, deltaker finnes ikke, ingen andre deltakelser - konsumerer melding, lagrer`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             TestRepository.insert(deltakerliste)
             val navbruker = TestData.lagNavBruker()
@@ -129,7 +130,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - kilde ARENA, finnes ikke, en tidligere deltakelse - lagrer, tidligere deltaker kan ikke endres`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val navbruker = TestData.lagNavBruker()
             val tidligereDeltakelse = TestData.lagDeltaker(
@@ -163,7 +164,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - kilde ARENA, finnes ikke, nyere deltakelse - lagrer, kan ikke endres`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val navbruker = TestData.lagNavBruker()
             val nyereDeltakelse = TestData.lagDeltaker(
@@ -197,7 +198,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - kilde ARENA, finnes ikke, avsluttet, en avsluttet deltakelse - lagrer, tidligere deltaker kan ikke endres`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val navbruker = TestData.lagNavBruker()
             val statusdato = LocalDateTime.now().minusMonths(2)
@@ -233,7 +234,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - kilde ARENA, finnes ikke, avsluttet, en nyere avsluttet deltakelse - lagrer, eldste deltaker kan ikke endres`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val navbruker = TestData.lagNavBruker()
             val statusdato = LocalDateTime.now().minusDays(2)
@@ -269,7 +270,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - kilde er KOMET, deltaker finnes - konsumerer melding, oppdaterer`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
             TestRepository.insert(deltaker)
@@ -297,7 +298,7 @@ class DeltakerV2ConsumerTest {
     fun `consume - tombstone - sletter deltaker`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
             TestRepository.insert(deltaker)

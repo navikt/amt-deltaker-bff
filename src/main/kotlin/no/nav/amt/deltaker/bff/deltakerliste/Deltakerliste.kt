@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
@@ -50,8 +51,8 @@ data class Deltakerliste(
 }
 
 private val tiltakUtenDeltakerAdresset = setOf(
-    Tiltakstype.ArenaKode.DIGIOPPARB,
-    Tiltakstype.ArenaKode.JOBBK,
-    Tiltakstype.ArenaKode.GRUPPEAMO,
-    Tiltakstype.ArenaKode.GRUFAGYRKE,
+    ArenaKode.DIGIOPPARB,
+    ArenaKode.JOBBK,
+    ArenaKode.GRUPPEAMO,
+    ArenaKode.GRUFAGYRKE,
 )
