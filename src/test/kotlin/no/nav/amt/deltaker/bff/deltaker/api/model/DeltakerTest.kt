@@ -6,14 +6,14 @@ import no.nav.amt.deltaker.bff.deltaker.model.weeks
 import no.nav.amt.deltaker.bff.deltaker.model.years
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class DeltakerTest {
     @Test
     fun `maxVarighetDato - skal kalkulere riktig max varighet basert tiltakstype`() {
-        val deltakere = Tiltakstype.Tiltakskode.entries.map {
+        val deltakere = Tiltakskode.entries.map {
             TestData.lagDeltaker(
                 startdato = LocalDate.now(),
                 deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = it)),
@@ -22,22 +22,25 @@ class DeltakerTest {
 
         deltakere.forEach {
             when (it.deltakerliste.tiltak.tiltakskode) {
-                Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-                Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+                Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
                 -> it.maxVarighet shouldBe years(3)
 
-                Tiltakstype.Tiltakskode.AVKLARING,
-                Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+                Tiltakskode.AVKLARING,
+                Tiltakskode.ARBEIDSRETTET_REHABILITERING,
                 -> it.maxVarighet shouldBe weeks(17)
 
-                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(13)
-                Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> it.maxVarighet shouldBe years(4)
+                Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(13)
+                Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> it.maxVarighet shouldBe years(4)
 
-                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-                Tiltakstype.Tiltakskode.JOBBKLUBB,
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.JOBBKLUBB,
+                Tiltakskode.AMO,
+                Tiltakskode.FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.HOYERE_UTDANNING,
                 -> it.maxVarighet shouldBe null
 
-                Tiltakstype.Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
+                Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
                     Innsatsgruppe.SITUASJONSBESTEMT_INNSATS -> it.maxVarighet shouldBe years(1)
                     Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                     Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
@@ -53,11 +56,11 @@ class DeltakerTest {
     @Test
     fun `maxVarighetDato - skal kalkulere riktig max varighet basert på innsatsgruppe for oppfølging`() {
         val deltakerStandardInnsats = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS),
         )
         val deltakerSituasjonsbestemt = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.SITUASJONSBESTEMT_INNSATS),
         )
         val andreInnsatsgrupper = listOf(
@@ -67,7 +70,7 @@ class DeltakerTest {
         ).map {
             TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING),
+                    tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING),
                 ),
                 navBruker = TestData.lagNavBruker(innsatsgruppe = it),
             )
@@ -81,11 +84,11 @@ class DeltakerTest {
     @Test
     fun `softVarighetDato - skal kalkulere riktig varighet basert på innsatsgruppe for oppfølging`() {
         val deltakerStandardInnsats = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS),
         )
         val deltakerSituasjonsbestemt = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.SITUASJONSBESTEMT_INNSATS),
         )
         val andreInnsatsgrupper = listOf(
@@ -95,7 +98,7 @@ class DeltakerTest {
         ).map {
             TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.OPPFOLGING),
+                    tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING),
                 ),
                 navBruker = TestData.lagNavBruker(innsatsgruppe = it),
             )
@@ -108,7 +111,7 @@ class DeltakerTest {
 
     @Test
     fun `softMaxVarighetDato - skal kalkulere riktig varighet basert tiltakstype`() {
-        val deltakere = Tiltakstype.Tiltakskode.entries.map {
+        val deltakere = Tiltakskode.entries.map {
             TestData.lagDeltaker(
                 startdato = LocalDate.now(),
                 deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = it)),
@@ -117,8 +120,8 @@ class DeltakerTest {
 
         deltakere.forEach {
             when (it.deltakerliste.tiltak.tiltakskode) {
-                Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> it.softMaxVarighet shouldBe years(2)
-                Tiltakstype.Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
+                Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> it.softMaxVarighet shouldBe years(2)
+                Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
                     Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                     Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                     Innsatsgruppe.VARIG_TILPASSET_INNSATS,
@@ -127,15 +130,18 @@ class DeltakerTest {
                     else -> it.maxVarighet shouldBe null
                 }
 
-                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+                Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
                 -> it.softMaxVarighet shouldBe weeks(8)
-                Tiltakstype.Tiltakskode.AVKLARING,
-                Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+                Tiltakskode.AVKLARING,
+                Tiltakskode.ARBEIDSRETTET_REHABILITERING,
                 -> it.softMaxVarighet shouldBe weeks(12)
-                Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
-                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-                Tiltakstype.Tiltakskode.JOBBKLUBB,
-                Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.JOBBKLUBB,
+                Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.HOYERE_UTDANNING,
+                Tiltakskode.AMO,
+                Tiltakskode.FAG_OG_YRKESOPPLAERING,
                 -> it.softMaxVarighet shouldBe null
             }
         }

@@ -7,7 +7,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavBruker
 import java.time.Duration
 import java.time.LocalDate
@@ -95,8 +95,8 @@ data class Deltaker(
      */
     val softMaxVarighet: Duration?
         get() = when (deltakerliste.tiltak.tiltakskode) {
-            Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
-            Tiltakstype.Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
+            Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
+            Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
                 Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                 Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                 Innsatsgruppe.VARIG_TILPASSET_INNSATS,
@@ -108,16 +108,18 @@ data class Deltaker(
                 -> null
             }
 
-            Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-            Tiltakstype.Tiltakskode.AVKLARING,
+            Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+            Tiltakskode.AVKLARING,
             -> weeks(12)
 
-            Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
-
-            Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-            Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
-            Tiltakstype.Tiltakskode.JOBBKLUBB,
-            Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
+            Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+            Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.JOBBKLUBB,
+            Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            Tiltakskode.AMO,
+            Tiltakskode.HOYERE_UTDANNING,
+            Tiltakskode.FAG_OG_YRKESOPPLAERING,
             -> null
         }
 
@@ -131,18 +133,18 @@ data class Deltaker(
      */
     val maxVarighet: Duration?
         get() = when (deltakerliste.tiltak.tiltakskode) {
-            Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
-            Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+            Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+            Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
             -> years(3)
 
-            Tiltakstype.Tiltakskode.ARBEIDSRETTET_REHABILITERING,
-            Tiltakstype.Tiltakskode.AVKLARING,
+            Tiltakskode.ARBEIDSRETTET_REHABILITERING,
+            Tiltakskode.AVKLARING,
             -> weeks(12 + FERIETILLEGG)
 
-            Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8 + FERIETILLEGG)
-            Tiltakstype.Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> years(4)
+            Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8 + FERIETILLEGG)
+            Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> years(4)
 
-            Tiltakstype.Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
+            Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS -> years(1)
                 Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                 Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
@@ -152,8 +154,11 @@ data class Deltaker(
                 else -> null
             }
 
-            Tiltakstype.Tiltakskode.JOBBKLUBB,
-            Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            Tiltakskode.JOBBKLUBB,
+            Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+            Tiltakskode.AMO,
+            Tiltakskode.HOYERE_UTDANNING,
+            Tiltakskode.FAG_OG_YRKESOPPLAERING,
             -> null
         }
 

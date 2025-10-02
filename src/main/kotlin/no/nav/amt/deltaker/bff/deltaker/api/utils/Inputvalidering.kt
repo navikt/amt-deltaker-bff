@@ -8,7 +8,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -28,8 +28,8 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
     }
 }
 
-fun validerAnnetInnhold(tekst: String?, tiltakstype: Tiltakstype.Tiltakskode) {
-    if (tiltakstype != Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
+fun validerAnnetInnhold(tekst: String?, tiltakstype: Tiltakskode) {
+    if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
         require(tekst != null && tekst != "") {
             "Innhold med innholdskode: ${annetInnholdselement.innholdskode} må ha en beskrivelse"
         }
@@ -134,10 +134,10 @@ fun validerSluttdatoForDeltaker(
 fun validerDeltakelsesinnhold(
     innhold: List<InnholdDto>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
-    tiltakstype: Tiltakstype.Tiltakskode,
+    tiltakstype: Tiltakskode,
 ) {
     validerInnhold(tiltakstype, innhold, tiltaksinnhold) { innholdskoder ->
-        if (tiltakstype != Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
+        if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
             require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
         }
         innhold.forEach {
@@ -167,7 +167,7 @@ private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aar
 fun validerKladdInnhold(
     innhold: List<InnholdDto>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
-    tiltakstype: Tiltakstype.Tiltakskode,
+    tiltakstype: Tiltakskode,
 ) {
     validerInnhold(tiltakstype, innhold, tiltaksinnhold) { innholdskoder ->
         innhold.forEach {
@@ -201,7 +201,7 @@ private fun validerVarighet(
 }
 
 private fun validerInnhold(
-    tiltakstype: Tiltakstype.Tiltakskode,
+    tiltakstype: Tiltakskode,
     innhold: List<InnholdDto>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     valider: (innholdskoder: List<String>) -> Unit,

@@ -12,9 +12,10 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import java.time.LocalDate
@@ -91,7 +92,7 @@ data class DeltakerResponse(
     data class DeltakerlisteDto(
         val deltakerlisteId: UUID,
         val deltakerlisteNavn: String,
-        val tiltakstype: Tiltakstype.ArenaKode,
+        val tiltakstype: ArenaKode,
         val arrangorNavn: String,
         val oppstartstype: Deltakerliste.Oppstartstype,
         val startdato: LocalDate,
@@ -106,11 +107,10 @@ data class DeltakerResponse(
     ) {
         companion object {
             // litt spesiell konstruksjon med nullable innhold, undersøk nærmere
-            fun fromDeltakerRegistreringInnhold(innhold: DeltakerRegistreringInnhold?, tiltakstype: Tiltakstype.Tiltakskode) =
-                TilgjengeligInnhold(
-                    ledetekst = innhold?.ledetekst,
-                    innhold = innhold?.getInnholdselementerMedAnnet(tiltakstype).orEmpty(),
-                )
+            fun fromDeltakerRegistreringInnhold(innhold: DeltakerRegistreringInnhold?, tiltakstype: Tiltakskode) = TilgjengeligInnhold(
+                ledetekst = innhold?.ledetekst,
+                innhold = innhold?.getInnholdselementerMedAnnet(tiltakstype).orEmpty(),
+            )
         }
     }
 

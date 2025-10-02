@@ -9,7 +9,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.input
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -34,16 +34,16 @@ class InputvalideringTest {
         val ok = input(MAX_ANNET_INNHOLD_LENGDE - 1)
 
         shouldThrow<IllegalArgumentException> {
-            validerAnnetInnhold(forLang, Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
+            validerAnnetInnhold(forLang, Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerAnnetInnhold(ok, Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
+            validerAnnetInnhold(ok, Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
         }
         shouldThrow<IllegalArgumentException> {
-            validerAnnetInnhold(null, Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
+            validerAnnetInnhold(null, Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)
         }
         shouldNotThrow<IllegalArgumentException> {
-            validerAnnetInnhold(null, Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET)
+            validerAnnetInnhold(null, Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET)
         }
     }
 
@@ -99,7 +99,7 @@ class InputvalideringTest {
                 Innholdselement("Type", "type"),
             ),
         )
-        val tiltakstype = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
+        val tiltakstype = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
 
         shouldThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(listOf(InnholdDto("type", null)), null, tiltakstype)
@@ -147,21 +147,21 @@ class InputvalideringTest {
             validerDeltakelsesinnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for VTA")),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
-                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 emptyList(),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
-                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 emptyList(),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
-                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+                Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
             )
         }
     }
@@ -174,7 +174,7 @@ class InputvalideringTest {
                 annetInnholdselement,
             ),
         )
-        val tiltakstype = Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
+        val tiltakstype = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING
 
         shouldThrow<IllegalArgumentException> {
             validerKladdInnhold(listOf(InnholdDto("type", null)), null, tiltakstype)
@@ -222,21 +222,21 @@ class InputvalideringTest {
             validerDeltakelsesinnhold(
                 listOf(InnholdDto(annetInnholdselement.innholdskode, "annet er tillatt for VTA")),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
-                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 emptyList(),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
-                Tiltakstype.Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
+                Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             )
         }
         shouldNotThrow<IllegalArgumentException> {
             validerDeltakelsesinnhold(
                 emptyList(),
                 DeltakerRegistreringInnhold(emptyList(), "Ledetekst"),
-                Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+                Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
             )
         }
     }
@@ -326,7 +326,7 @@ class InputvalideringTest {
     fun `validerSluttdato - skal feile hvis sluttdato er utenfor max varighet`() {
         val deltaker = TestData.lagDeltaker(
             deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK),
+                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK),
             ),
         )
 
