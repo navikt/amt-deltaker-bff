@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.util.UUID
