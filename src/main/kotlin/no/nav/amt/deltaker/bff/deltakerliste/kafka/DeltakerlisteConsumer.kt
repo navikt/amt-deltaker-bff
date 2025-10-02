@@ -10,7 +10,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -45,7 +45,7 @@ class DeltakerlisteConsumer(
         if (!deltakerlisteDto.tiltakstype.erStottet()) return
 
         val arrangor = arrangorService.hentArrangor(deltakerlisteDto.virksomhetsnummer)
-        val tiltakstype = tiltakstypeRepository.get(Tiltakstype.ArenaKode.valueOf(deltakerlisteDto.tiltakstype.arenaKode)).getOrThrow()
+        val tiltakstype = tiltakstypeRepository.get(ArenaKode.valueOf(deltakerlisteDto.tiltakstype.arenaKode)).getOrThrow()
         val deltakerliste = deltakerlisteDto.toModel(arrangor, tiltakstype)
         repository.upsert(deltakerliste)
 

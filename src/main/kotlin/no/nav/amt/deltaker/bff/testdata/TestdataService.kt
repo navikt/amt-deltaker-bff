@@ -12,7 +12,7 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
@@ -96,7 +96,7 @@ class TestdataService(
             sluttdato: LocalDate,
             deltakerliste: Deltakerliste,
         ) {
-            if (deltakerliste.tiltak.tiltakskode != Tiltakstype.Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) {
+            if (deltakerliste.tiltak.tiltakskode != Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) {
                 throw IllegalArgumentException("Det er kun AFT som er støttet for testdeltakelser inntil videre")
             }
             if (startdato.isBefore(deltakerliste.startDato)) {

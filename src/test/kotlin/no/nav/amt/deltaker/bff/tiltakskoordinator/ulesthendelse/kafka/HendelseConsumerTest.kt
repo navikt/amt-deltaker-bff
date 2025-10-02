@@ -10,7 +10,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagHendelse
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.hendelse.HendelseType
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
@@ -27,7 +27,7 @@ class HendelseConsumerTest {
     fun `consume - hendelse InnbyggerGodkjennUtkast - lagrer`(): Unit = runBlocking {
         val consumer = HendelseConsumer(service)
         val deltakerliste = lagDeltakerliste(
-            tiltak = lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+            tiltak = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
         )
         val deltaker = lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)
@@ -57,7 +57,7 @@ class HendelseConsumerTest {
     fun `consume - hendelse vi ikke bryr oss om - lagrer ikke`(): Unit = runBlocking {
         val consumer = HendelseConsumer(service)
         val deltakerliste = lagDeltakerliste(
-            tiltak = lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+            tiltak = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
         )
         val deltaker = lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)
@@ -79,7 +79,7 @@ class HendelseConsumerTest {
     fun `consume - hendelse tombstone - sletter`(): Unit = runBlocking {
         val consumer = HendelseConsumer(service)
         val deltakerliste = lagDeltakerliste(
-            tiltak = lagTiltakstype(tiltakskode = Tiltakstype.Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
+            tiltak = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
         )
         val deltaker = lagDeltaker(deltakerliste = deltakerliste)
         TestRepository.insert(deltaker)

@@ -4,7 +4,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.Beskyttelsesmarkering
 import java.time.LocalDate
 import java.util.UUID
@@ -23,7 +23,7 @@ data class DeltakerDetaljerResponse(
     val beskyttelsesmarkering: List<Beskyttelsesmarkering>,
     val vurdering: VurderingResponse?,
     val innsatsgruppe: Innsatsgruppe?,
-    val tiltakskode: Tiltakstype.Tiltakskode,
+    val tiltakskode: Tiltakskode,
     val tilgangTilBruker: Boolean,
     val aktiveForslag: List<ForslagResponse>,
     val ulesteHendelser: List<UlestHendelse>,
