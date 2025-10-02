@@ -21,7 +21,7 @@ class UnleashToggle(
     private val tiltakstyperKometKanLese = setOf(
         ArenaKode.ENKELAMO,
         ArenaKode.ENKFAGYRKE,
-        ArenaKode.HOYEREUTD
+        ArenaKode.HOYEREUTD,
     )
 
     private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometKanLese
