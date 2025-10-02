@@ -1,9 +1,9 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator
 
 import io.kotest.matchers.shouldBe
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.mockk.coEvery
 import io.mockk.every
@@ -12,15 +12,17 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.createPostTiltakskoordinatorRe
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyTiltakskoordinatorRequest
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.DeltakerlisteResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toDeltakerResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.toResponse
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
 import no.nav.amt.deltaker.bff.utils.RouteTestBase
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakskoordinatorDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakskoordinatorTilgang
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
-import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
@@ -89,10 +91,15 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
 
     @Test
     fun `get deltakerliste - liste finnes - returnerer 200 og liste`() {
-        val expectedResponseBody = objectMapper.writeValueAsString(deltakerlisteInTest.toResponse(emptyList()))
+        val expectedResponse = deltakerlisteInTest.toResponse(listOf(tiltakskoordinatorInTest))
 
         every { deltakerlisteService.hentMedFellesOppstart(deltakerlisteInTest.id) } returns Result.success(deltakerlisteInTest)
-        every { tiltakskoordinatorService.hentKoordinatorer(any()) } returns emptyList()
+        every {
+            tiltakskoordinatorTilgangRepository.hentKoordinatorer(
+                deltakerlisteId = any(),
+                paaloggetNavAnsattId = any(),
+            )
+        } returns listOf(tiltakskoordinatorInTest)
 
         withTestApplicationContext { client ->
             val response = client.get("/tiltakskoordinator/deltakerliste/${deltakerlisteInTest.id}") {
@@ -100,7 +107,9 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
             }
 
             response.status shouldBe HttpStatusCode.OK
-            response.bodyAsText() shouldBe expectedResponseBody
+
+            val actualResponse = response.body<DeltakerlisteResponse>()
+            actualResponse shouldBe expectedResponse
         }
     }
 
@@ -160,11 +169,9 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
             .map { lagNavEnhet(it) }
             .associateBy { it.id }
 
-        val expectedResponseBody = objectMapper.writeValueAsString(
-            deltakere.map { deltaker ->
-                deltaker.toDeltakerResponse(true)
-            },
-        )
+        val expectedResponse = deltakere.map { deltaker ->
+            deltaker.toDeltakerResponse(true)
+        }
 
         every { navEnhetService.hentEnheter(any()) } returns navEnheter
         every { deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerlisteInTest.id) } returns deltakerlisteInTest
@@ -180,7 +187,9 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
             }
 
             response.status shouldBe HttpStatusCode.OK
-            response.bodyAsText() shouldBe expectedResponseBody
+
+            val actualResponse = response.body<List<DeltakerResponse>>()
+            actualResponse shouldBe expectedResponse
         }
     }
 
@@ -293,5 +302,12 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
 
     companion object {
         private val deltakerlisteInTest = lagDeltakerliste()
+
+        private val tiltakskoordinatorInTest = Tiltakskoordinator(
+            id = UUID.randomUUID(),
+            navn = "~navn~",
+            erAktiv = true,
+            kanFjernes = true,
+        )
     }
 }

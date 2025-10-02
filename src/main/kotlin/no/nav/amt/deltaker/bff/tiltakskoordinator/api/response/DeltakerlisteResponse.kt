@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.util.UUID
@@ -12,5 +13,5 @@ data class DeltakerlisteResponse(
     val sluttdato: LocalDate?,
     val apentForPamelding: Boolean,
     val antallPlasser: Int,
-    val koordinatorer: List<KoordinatorResponse>,
+    val koordinatorer: List<Tiltakskoordinator>,
 )

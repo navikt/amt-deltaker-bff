@@ -16,6 +16,7 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
+import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
@@ -62,6 +63,7 @@ fun Application.configureRouting(
     unleash: Unleash,
     sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc,
     tiltakskoordinatorService: TiltakskoordinatorService,
+    tiltakskoordinatorTilgangRepository: TiltakskoordinatorTilgangRepository,
     ulestHendelseService: UlestHendelseService,
     testdataService: TestdataService,
 ) {
@@ -146,6 +148,8 @@ fun Application.configureRouting(
             deltakerlisteService,
             tilgangskontrollService,
             tiltakskoordinatorService,
+            tiltakskoordinatorTilgangRepository,
+            navAnsattService,
         )
 
         registerUlestHendelseApi(ulestHendelseService)

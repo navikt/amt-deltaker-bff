@@ -135,31 +135,64 @@ class TilgangskontrollService(
         val koordinator = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
         val aktivTilgang = tiltakskoordinatorTilgangRepository.hentAktivTilgang(koordinator.id, deltakerlisteId)
 
-        if (aktivTilgang.isSuccess) {
+        return if (aktivTilgang.isSuccess) {
             log.error(
                 "Kan ikke legge til tilgang til deltakerliste $deltakerlisteId " +
                     "fordi nav-ansatt ${koordinator.id} har allerede tilgang fra før.",
             )
-            return Result.failure(IllegalArgumentException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
+            Result.failure(IllegalArgumentException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
+        } else {
+            upsertTilgang(
+                navIdent = navIdent,
+                TiltakskoordinatorDeltakerlisteTilgang(
+                    id = UUID.randomUUID(),
+                    navAnsattId = koordinator.id,
+                    deltakerlisteId = deltakerlisteId,
+                    gyldigFra = LocalDateTime.now(),
+                    gyldigTil = null,
+                ),
+            )
         }
+    }
 
-        val tilgang = tiltakskoordinatorTilgangRepository.upsert(
-            TiltakskoordinatorDeltakerlisteTilgang(
-                id = UUID.randomUUID(),
-                navAnsattId = koordinator.id,
-                deltakerlisteId = deltakerlisteId,
-                gyldigFra = LocalDateTime.now(),
-                gyldigTil = null,
-            ),
-        )
+    suspend fun fjernTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
+        val koordinator = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
+        val aktivTilgang = tiltakskoordinatorTilgangRepository.hentAktivTilgang(koordinator.id, deltakerlisteId)
 
-        tilgang.onSuccess {
+        return if (aktivTilgang.isSuccess) {
+            upsertTilgang(
+                navIdent = navIdent,
+                tilgang = aktivTilgang
+                    .getOrThrow()
+                    .copy(gyldigTil = LocalDateTime.now()),
+            )
+        } else {
+            log.error(
+                "Kan ikke fjerne tilgang til deltakerliste $deltakerlisteId " +
+                    "fordi nav-ansatt ${koordinator.id} ikke har tilgang fra før.",
+            )
+            Result.failure(
+                IllegalArgumentException("Nav-ansatt ${koordinator.id} har ikke tilgang til $deltakerlisteId"),
+            )
+        }
+    }
+
+    private fun upsertTilgang(
+        navIdent: String,
+        tilgang: TiltakskoordinatorDeltakerlisteTilgang,
+    ): Result<TiltakskoordinatorDeltakerlisteTilgang> {
+        val tilgangResult = tiltakskoordinatorTilgangRepository.upsert(tilgang)
+
+        tilgangResult.onSuccess { tilgang ->
             tiltakskoordinatorsDeltakerlisteProducer.produce(
-                TiltakskoordinatorsDeltakerlisteDto.fromModel(it, navIdent),
+                TiltakskoordinatorsDeltakerlisteDto.fromModel(
+                    model = tilgang,
+                    navIdent = navIdent,
+                ),
             )
         }
 
-        return tilgang
+        return tilgangResult
     }
 
     fun stengTiltakskoordinatorTilgang(id: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {

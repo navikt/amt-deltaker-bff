@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.auth
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
-import no.nav.amt.lib.models.person.NavAnsatt
+import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
 import no.nav.amt.lib.utils.database.Database
 import java.time.LocalDate
 import java.util.UUID
@@ -64,30 +64,47 @@ class TiltakskoordinatorTilgangRepository {
         )
     }
 
-    fun hentKoordinatorer(deltakerlisteId: UUID) = Database.query { session ->
+    /**
+     * Henter alle tiltakskoordinatorer som er knyttet til en gitt deltakerliste.
+     *
+     * Metoden slår opp i databasen etter koordinator-tilganger for deltakerlisten,
+     * og returnerer en liste med distinkte koordinatorer. Hver koordinator får
+     * et flagg som angir om tilgangen er aktiv, samt om vedkommende kan fjernes
+     * (satt dersom koordinatoren er den samme som den påloggede NAV-ansatte).
+     *
+     * @param deltakerlisteId ID til deltakerlisten koordinatorene skal hentes for
+     * @param paaloggetNavAnsattId ID til Nav-ansatt som er pålogget og gjør spørringen
+     * @return en liste av [Tiltakskoordinator]-objekter med tilhørende statusinformasjon
+     */
+    fun hentKoordinatorer(deltakerlisteId: UUID, paaloggetNavAnsattId: UUID) = Database.query { session ->
         val sql =
             """
-            select a.id, a.navn, a.nav_ident, a.telefon, a.epost
-            from tiltakskoordinator_deltakerliste_tilgang t
-              left join nav_ansatt a on a.id = t.nav_ansatt_id
-            where t.deltakerliste_id = :deltakerliste_id
-              and t.gyldig_til is null
+            SELECT DISTINCT ON (nav_ansatt.id)
+                nav_ansatt.id,
+                nav_ansatt.navn,
+                (tilgang.gyldig_til IS NULL) AS er_aktiv
+            FROM 
+                tiltakskoordinator_deltakerliste_tilgang tilgang
+                JOIN nav_ansatt ON nav_ansatt.id = tilgang.nav_ansatt_id
+            WHERE tilgang.deltakerliste_id = :deltakerliste_id
+            ORDER BY 
+                nav_ansatt.id, 
+                tilgang.gyldig_til DESC NULLS FIRST;
             """.trimIndent()
-        val params = mapOf(
-            "deltakerliste_id" to deltakerlisteId,
-        )
 
-        val query = queryOf(sql, params)
-            .map {
-                NavAnsatt(
-                    id = it.uuid("id"),
-                    navIdent = it.string("nav_ident"),
-                    navn = it.string("navn"),
-                    epost = it.stringOrNull("epost"),
-                    telefon = it.stringOrNull("telefon"),
-                    navEnhetId = null, // Should be same as amt-deltaker?
-                )
-            }.asList
+        val query = queryOf(
+            statement = sql,
+            paramMap = mapOf("deltakerliste_id" to deltakerlisteId),
+        ).map {
+            val navAnsattIdFraDb = it.uuid("id")
+
+            Tiltakskoordinator(
+                id = navAnsattIdFraDb,
+                navn = it.string("navn"),
+                erAktiv = it.boolean("er_aktiv"),
+                kanFjernes = (paaloggetNavAnsattId == navAnsattIdFraDb),
+            )
+        }.asList
         session.run(query)
     }
 

@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.navansatt
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -13,75 +14,98 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.UUID
 
 class NavAnsattServiceTest {
     companion object {
-        lateinit var repository: NavAnsattRepository
-        lateinit var service: NavAnsattService
+        lateinit var navAnsattRepository: NavAnsattRepository
+        lateinit var navAnsattService: NavAnsattService
 
         @JvmStatic
         @BeforeAll
         fun setup() {
             @Suppress("UnusedExpression")
             SingletonPostgres16Container
-            repository = NavAnsattRepository()
-            service = NavAnsattService(repository, mockk())
+            navAnsattRepository = NavAnsattRepository()
+            navAnsattService = NavAnsattService(repository = navAnsattRepository, amtPersonServiceClient = mockk())
         }
     }
 
-    @Test
-    fun `hentEllerOpprettNavAnsatt - navansatt finnes i db - henter fra db`() {
-        val navAnsatt = TestData.lagNavAnsatt()
-        repository.upsert(navAnsatt)
+    @Nested
+    inner class HentNavAnsatt {
+        @Test
+        fun `skal returnere Nav-ansatt nar den finnes i db`() {
+            val navAnsatt = TestData.lagNavAnsatt()
+            navAnsattRepository.upsert(navAnsatt)
 
-        runBlocking {
-            val navAnsattFraDb = service.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
+            val navAnsattFraDb = navAnsattService.hentNavAnsatt(navAnsatt.navIdent)
             navAnsattFraDb shouldBe navAnsatt
         }
+
+        @Test
+        fun `skal kaste exception nar Nav-ansatt ikke finnes i db`() {
+            shouldThrow<NoSuchElementException> {
+                navAnsattService.hentNavAnsatt("~nav-ident~")
+            }
+        }
     }
 
-    @Test
-    fun `hentEllerOpprettNavAnsatt - navansatt finnes ikke i db - henter fra personservice og lagrer`() {
-        val navAnsattResponse = TestData.lagNavAnsatt()
-        val httpClient = mockHttpClient(objectMapper.writeValueAsString(navAnsattResponse))
-        val amtPersonServiceClient = AmtPersonServiceClient(
-            baseUrl = "http://amt-person-service",
-            scope = "scope",
-            httpClient = httpClient,
-            azureAdTokenClient = mockAzureAdClient(),
-        )
-        val navAnsattService = NavAnsattService(repository, amtPersonServiceClient)
+    @Nested
+    inner class HentEllerOpprettNavAnsatt {
+        @Test
+        fun `navansatt finnes i db - henter fra db`() {
+            val navAnsatt = TestData.lagNavAnsatt()
+            navAnsattRepository.upsert(navAnsatt)
 
-        runBlocking {
-            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navIdent)
+            runBlocking {
+                val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
+                navAnsattFraDb shouldBe navAnsatt
+            }
+        }
 
-            navAnsatt shouldBe navAnsattResponse
-            repository.get(navAnsattResponse.id) shouldBe navAnsattResponse
+        @Test
+        fun `navansatt finnes ikke i db - henter fra personservice og lagrer`() {
+            val navAnsattResponse = TestData.lagNavAnsatt()
+            val httpClient = mockHttpClient(objectMapper.writeValueAsString(navAnsattResponse))
+            val amtPersonServiceClient = AmtPersonServiceClient(
+                baseUrl = "http://amt-person-service",
+                scope = "scope",
+                httpClient = httpClient,
+                azureAdTokenClient = mockAzureAdClient(),
+            )
+            val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
+
+            runBlocking {
+                val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navIdent)
+
+                navAnsatt shouldBe navAnsattResponse
+                navAnsattRepository.get(navAnsattResponse.id) shouldBe navAnsattResponse
+            }
         }
     }
 
     @Test
     fun `oppdaterNavAnsatt - navansatt finnes - blir oppdatert`() {
         val navAnsatt = TestData.lagNavAnsatt()
-        repository.upsert(navAnsatt)
+        navAnsattRepository.upsert(navAnsatt)
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
 
-        service.oppdaterNavAnsatt(oppdatertNavAnsatt)
+        navAnsattService.oppdaterNavAnsatt(oppdatertNavAnsatt)
 
-        repository.get(navAnsatt.id) shouldBe oppdatertNavAnsatt
+        navAnsattRepository.get(navAnsatt.id) shouldBe oppdatertNavAnsatt
     }
 
     @Test
     fun `slettNavAnsatt - navansatt blir slettet`() {
         val navAnsatt = TestData.lagNavAnsatt()
-        repository.upsert(navAnsatt)
+        navAnsattRepository.upsert(navAnsatt)
 
-        service.slettNavAnsatt(navAnsatt.id)
+        navAnsattService.slettNavAnsatt(navAnsatt.id)
 
-        repository.get(navAnsatt.id) shouldBe null
+        navAnsattRepository.get(navAnsatt.id) shouldBe null
     }
 
     @Test
@@ -92,7 +116,7 @@ class NavAnsattServiceTest {
         ansatte.forEach { TestRepository.insert(it) }
         TestRepository.insert(deltaker)
 
-        val faktiskeAnsatte = service.hentAnsatteForDeltaker(deltaker)
+        val faktiskeAnsatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         faktiskeAnsatte.size shouldBe ansatte.size
 
         faktiskeAnsatte.toList().map { it.second }.containsAll(ansatte) shouldBe true
@@ -127,7 +151,7 @@ class NavAnsattServiceTest {
         ansatte.forEach { TestRepository.insert(it) }
         TestRepository.insert(deltaker)
 
-        val faktiskeAnsatte = service.hentAnsatteForHistorikk(historikk)
+        val faktiskeAnsatte = navAnsattService.hentAnsatteForHistorikk(historikk)
         faktiskeAnsatte.size shouldBe ansatte.size
 
         faktiskeAnsatte.toList().map { it.second }.containsAll(ansatte) shouldBe true
