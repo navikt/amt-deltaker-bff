@@ -45,7 +45,7 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
 
     @Test
     fun `skal teste autentisering - mangler AD rolle - returnerer 401`() {
-        every { deltakerlisteService.hentMedFellesOppstart(deltakerlisteInTest.id) } returns Result.success(deltakerlisteInTest)
+        every { deltakerlisteService.get(deltakerlisteInTest.id) } returns Result.success(deltakerlisteInTest)
 
         withTestApplicationContext { client ->
             client
@@ -77,7 +77,7 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
     @Test
     fun `get deltakerliste - liste finnes ikke - returnerer 404`() {
         every {
-            deltakerlisteService.hentMedFellesOppstart(any())
+            deltakerlisteService.get(any())
         } returns Result.failure(NoSuchElementException())
 
         val response = withTestApplicationContext { client ->
@@ -93,7 +93,7 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
     fun `get deltakerliste - liste finnes - returnerer 200 og liste`() {
         val expectedResponse = deltakerlisteInTest.toResponse(listOf(tiltakskoordinatorInTest))
 
-        every { deltakerlisteService.hentMedFellesOppstart(deltakerlisteInTest.id) } returns Result.success(deltakerlisteInTest)
+        every { deltakerlisteService.get(deltakerlisteInTest.id) } returns Result.success(deltakerlisteInTest)
         every {
             tiltakskoordinatorTilgangRepository.hentKoordinatorer(
                 deltakerlisteId = any(),
