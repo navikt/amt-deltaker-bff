@@ -1,6 +1,8 @@
 package no.nav.amt.deltaker.bff.kafka.utils
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.assertions.assertSoftly
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
@@ -34,7 +36,7 @@ fun assertProduced(forslag: Forslag) {
     consumer.stop()
 }
 
-fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto) {
+fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto, tombstoneExpected: Boolean = false) {
     val cache = mutableMapOf<UUID, TiltakskoordinatorsDeltakerlisteDto?>()
 
     val consumer = stringStringConsumer(Environment.AMT_TILTAKSKOORDINATORS_DELTAKERLISTE_TOPIC) { k, v ->
@@ -44,10 +46,17 @@ fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto) {
     consumer.start()
 
     AsyncUtils.eventually {
-        val cachedTilgang = cache[tilgang.id]!!
-        cachedTilgang.id shouldBe tilgang.id
-        cachedTilgang.gjennomforingId shouldBe tilgang.gjennomforingId
-        cachedTilgang.navIdent shouldBe tilgang.navIdent
+        cache.keys.contains(tilgang.id) shouldBe true
+
+        if (tombstoneExpected) {
+            cache[tilgang.id] shouldBe null
+        } else {
+            assertSoftly(cache[tilgang.id].shouldNotBeNull()) {
+                id shouldBe tilgang.id
+                gjennomforingId shouldBe tilgang.gjennomforingId
+                navIdent shouldBe tilgang.navIdent
+            }
+        }
     }
 
     consumer.stop()

@@ -129,7 +129,7 @@ class TilgangskontrollServiceTest {
                 actual.isSuccess shouldBe true
 
                 val expected = TiltakskoordinatorsDeltakerlisteDto.fromModel(model = actual.getOrThrow(), navIdent = navAnsatt.navIdent)
-                assertProduced(expected)
+                assertProduced(tilgang = expected, tombstoneExpected = true)
             }
         }
 
