@@ -175,15 +175,13 @@ class TilgangskontrollService(
         tilgang: TiltakskoordinatorDeltakerlisteTilgang,
     ): Result<TiltakskoordinatorDeltakerlisteTilgang> = tiltakskoordinatorTilgangRepository
         .upsert(tilgang)
-        .also { tilgangResult ->
-            tilgangResult.onSuccess { tilgang ->
-                tiltakskoordinatorsDeltakerlisteProducer.produce(
-                    TiltakskoordinatorsDeltakerlisteDto.fromModel(
-                        model = tilgang,
-                        navIdent = navIdent,
-                    ),
-                )
-            }
+        .onSuccess { tilgang ->
+            tiltakskoordinatorsDeltakerlisteProducer.produce(
+                TiltakskoordinatorsDeltakerlisteDto.fromModel(
+                    model = tilgang,
+                    navIdent = navIdent,
+                ),
+            )
         }
 
     fun stengTiltakskoordinatorTilgang(id: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
@@ -197,11 +195,9 @@ class TilgangskontrollService(
     ): Result<TiltakskoordinatorDeltakerlisteTilgang> = if (tilgang.gyldigTil == null) {
         tiltakskoordinatorTilgangRepository
             .upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
-            .also { stengtTilgangResult ->
-                stengtTilgangResult.onSuccess {
-                    log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
-                    tiltakskoordinatorsDeltakerlisteProducer.produceTombstone(tilgang.id)
-                }
+            .onSuccess { tilgang ->
+                log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
+                tiltakskoordinatorsDeltakerlisteProducer.produceTombstone(tilgang.id)
             }
     } else {
         log.warn("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}")
