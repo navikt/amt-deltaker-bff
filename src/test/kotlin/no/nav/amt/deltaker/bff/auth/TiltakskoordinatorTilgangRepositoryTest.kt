@@ -154,7 +154,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Disabled test under opprydding")
     fun `hentUtdaterteTilganger - deltakerlisten er avsluttet og stengt - returnerer utdatert tilgang`() {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
