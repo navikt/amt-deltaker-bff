@@ -130,15 +130,21 @@ class TiltakskoordinatorTilgangRepository {
         val grense = LocalDate.now().minus(DeltakerlisteService.tiltakskoordinatorGraceperiode)
         val sql =
             """
-            select
+            SELECT
                 t.id,
                 t.nav_ansatt_id,
                 t.deltakerliste_id,
                 t.gyldig_fra,
                 t.gyldig_til
-            from tiltakskoordinator_deltakerliste_tilgang t 
-                join deltakerliste dl on t.deltakerliste_id = dl.id
-            where t.gyldig_til is null and dl.slutt_dato < :grense 
+            FROM 
+                tiltakskoordinator_deltakerliste_tilgang t 
+                JOIN deltakerliste dl ON t.deltakerliste_id = dl.id
+            WHERE 
+                (
+                t.gyldig_til IS NULL 
+                AND dl.slutt_dato < :grense
+                )
+                OR t.gyldig_til < CURRENT_TIMESTAMP
             """.trimIndent()
 
         val params = mapOf("grense" to grense)

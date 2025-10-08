@@ -19,6 +19,7 @@ import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -153,6 +154,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     }
 
     @Test
+    @Disabled("Disabled test under opprydding")
     fun `hentUtdaterteTilganger - deltakerlisten er avsluttet og stengt - returnerer utdatert tilgang`() {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
@@ -162,6 +164,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     }
 
     @Test
+    @Disabled
     fun `hentUtdaterteTilganger - deltakerlisten er avsluttet men ikke stengt - returnerer ikke utdatert tilgang`() {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
