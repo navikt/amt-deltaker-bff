@@ -156,34 +156,26 @@ class TilgangskontrollService(
     }
 
     suspend fun fjernTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
-        val koordinator = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
-        val aktivTilgang = tiltakskoordinatorTilgangRepository.hentAktivTilgang(koordinator.id, deltakerlisteId)
+        val koordinatorAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navIdent)
 
-        return if (aktivTilgang.isSuccess) {
-            upsertTilgang(
-                navIdent = navIdent,
-                tilgang = aktivTilgang
-                    .getOrThrow()
-                    .copy(gyldigTil = LocalDateTime.now()),
-            )
-        } else {
-            log.error(
-                "Kan ikke fjerne tilgang til deltakerliste $deltakerlisteId " +
-                    "fordi nav-ansatt ${koordinator.id} ikke har tilgang fra før.",
-            )
-            Result.failure(
-                IllegalArgumentException("Nav-ansatt ${koordinator.id} har ikke tilgang til $deltakerlisteId"),
-            )
-        }
+        val tilgang = tiltakskoordinatorTilgangRepository
+            .hentAktivTilgang(koordinatorAnsatt.id, deltakerlisteId)
+            .getOrElse {
+                log.error("Ingen aktiv tilgang funnet for ${koordinatorAnsatt.id} / $deltakerlisteId", it)
+                return Result.failure(
+                    IllegalArgumentException("Nav-ansatt ${koordinatorAnsatt.id} har ikke tilgang til $deltakerlisteId"),
+                )
+            }
+
+        return stengTiltakskoordinatorTilgang(tilgang)
     }
 
     private fun upsertTilgang(
         navIdent: String,
         tilgang: TiltakskoordinatorDeltakerlisteTilgang,
-    ): Result<TiltakskoordinatorDeltakerlisteTilgang> {
-        val tilgangResult = tiltakskoordinatorTilgangRepository.upsert(tilgang)
-
-        tilgangResult.onSuccess { tilgang ->
+    ): Result<TiltakskoordinatorDeltakerlisteTilgang> = tiltakskoordinatorTilgangRepository
+        .upsert(tilgang)
+        .onSuccess { tilgang ->
             tiltakskoordinatorsDeltakerlisteProducer.produce(
                 TiltakskoordinatorsDeltakerlisteDto.fromModel(
                     model = tilgang,
@@ -191,9 +183,6 @@ class TilgangskontrollService(
                 ),
             )
         }
-
-        return tilgangResult
-    }
 
     fun stengTiltakskoordinatorTilgang(id: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> {
         val tilgang = tiltakskoordinatorTilgangRepository.get(id).getOrThrow()
@@ -203,20 +192,18 @@ class TilgangskontrollService(
 
     private fun stengTiltakskoordinatorTilgang(
         tilgang: TiltakskoordinatorDeltakerlisteTilgang,
-    ): Result<TiltakskoordinatorDeltakerlisteTilgang> {
-        if (tilgang.gyldigTil != null) {
-            log.warn("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}")
-            return Result.failure(
-                IllegalArgumentException("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}"),
-            )
-        }
-
-        val stengtTilgang = tiltakskoordinatorTilgangRepository.upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
-
-        stengtTilgang.onSuccess { tiltakskoordinatorsDeltakerlisteProducer.produceTombstone(tilgang.id) }
-        log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
-
-        return stengtTilgang
+    ): Result<TiltakskoordinatorDeltakerlisteTilgang> = if (tilgang.gyldigTil == null) {
+        tiltakskoordinatorTilgangRepository
+            .upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
+            .onSuccess { tilgang ->
+                log.info("Stengte tiltakskoordinators tilgang ${tilgang.id}")
+                tiltakskoordinatorsDeltakerlisteProducer.produceTombstone(tilgang.id)
+            }
+    } else {
+        log.warn("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}")
+        Result.failure(
+            IllegalArgumentException("Kan ikke stenge tiltakskoordinatortilgang som allerede er stengt ${tilgang.id}"),
+        )
     }
 
     suspend fun verifiserTiltakskoordinatorTilgang(navIdent: String, deltakerlisteId: UUID) {
