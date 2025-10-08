@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltakerliste
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
@@ -73,9 +74,9 @@ data class DeltakerlisteContext(
                 Tiltakskode.JOBBKLUBB,
             )
         ) {
-            Deltakerliste.Oppstartstype.FELLES
+            Oppstartstype.FELLES
         } else {
-            Deltakerliste.Oppstartstype.LOPENDE
+            Oppstartstype.LOPENDE
         },
     ),
 ) {

@@ -2,6 +2,7 @@ package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.deltaker.Arrangor
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
@@ -15,7 +16,7 @@ data class DeltakerlisteDto(
     val sluttDato: LocalDate? = null,
     val status: String,
     val virksomhetsnummer: String,
-    val oppstart: Deltakerliste.Oppstartstype,
+    val oppstart: Oppstartstype,
     val apentForPamelding: Boolean = false,
     val antallPlasser: Int,
 ) {

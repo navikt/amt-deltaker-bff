@@ -6,7 +6,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Consumer
-import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Dto
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -24,8 +23,16 @@ import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.DeltakerStatusDto
+import no.nav.amt.lib.models.deltaker.Deltakerliste
+import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
+import no.nav.amt.lib.models.deltaker.Navn
+import no.nav.amt.lib.models.deltaker.Personalia
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
@@ -83,7 +90,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.ARENA, listOf(vurdering))),
+                objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.ARENA, listOf(vurdering), deltakerliste)),
             )
 
             val oppdatertDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -115,7 +122,7 @@ class DeltakerV2ConsumerTest {
             TestRepository.insert(navbruker)
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
             val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -148,7 +155,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
             val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -182,7 +189,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
             val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -218,7 +225,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
             val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -254,7 +261,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toV2(DeltakerV2Dto.Kilde.ARENA)),
+                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
             val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -285,7 +292,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(
                 deltaker.id,
-                objectMapper.writeValueAsString(mottattDeltaker.toV2(DeltakerV2Dto.Kilde.KOMET)),
+                objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.KOMET, deltakerliste = deltakerliste)),
             )
 
             val oppdatertDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
@@ -310,11 +317,23 @@ class DeltakerV2ConsumerTest {
     }
 }
 
-private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde, vurderinger: List<Vurdering> = emptyList()) = DeltakerV2Dto(
+private fun Deltaker.toKafkaPayload(
+    kilde: Kilde,
+    vurderinger: List<Vurdering> = emptyList(),
+    deltakerliste: no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste,
+) = DeltakerKafkaPayload(
     id = id,
     deltakerlisteId = deltakerliste.id,
-    personalia = DeltakerV2Dto.DeltakerPersonaliaDto(navBruker.personident),
-    status = DeltakerV2Dto.DeltakerStatusDto(
+    personalia = Personalia(
+        navBruker.personId,
+        personident = navBruker.personident,
+        navn = Navn(navBruker.fornavn, navBruker.mellomnavn, navBruker.etternavn),
+        kontaktinformasjon = Kontaktinformasjon(epost = navBruker.epost, telefonnummer = navBruker.telefon),
+        skjermet = navBruker.erSkjermet,
+        adresse = navBruker.adresse,
+        adressebeskyttelse = navBruker.adressebeskyttelse,
+    ),
+    status = DeltakerStatusDto(
         id = status.id,
         type = status.type,
         aarsak = status.aarsak?.type,
@@ -332,4 +351,27 @@ private fun Deltaker.toV2(kilde: DeltakerV2Dto.Kilde, vurderinger: List<Vurderin
     historikk = historikk,
     vurderingerFraArrangor = vurderinger,
     sistEndret = sistEndret,
+    deltakerliste = Deltakerliste(
+        id = deltakerliste.id,
+        navn = deltakerliste.navn,
+        tiltak = Tiltak(
+            navn = "trallas",
+            arenaKode = deltakerliste.tiltak.arenaKode,
+            tiltakskode = deltakerliste.tiltak.tiltakskode,
+        ),
+        startdato = deltakerliste.startDato,
+        sluttdato = deltakerliste.sluttDato,
+        oppstartstype = deltakerliste.oppstart,
+    ),
+    innsoktDato = LocalDate.now(),
+    forsteVedtakFattet = LocalDate.now(),
+    erManueltDeltMedArrangor = false,
+    sisteEndring = null,
+    navKontor = null,
+    navVeileder = null,
+    deltarPaKurs = false,
+    oppfolgingsperioder = emptyList(),
+    sistEndretAv = null,
+    sistEndretAvEnhet = null,
+    forcedUpdate = null,
 )

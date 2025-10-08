@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
@@ -13,6 +12,7 @@ import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.InnsokPaaFellesOppstart
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.VurderingFraArrangorData
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
@@ -96,7 +96,7 @@ fun List<DeltakerHistorikk>.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     arrangornavn: String,
     enheter: Map<UUID, NavEnhet>,
-    oppstartstype: Deltakerliste.Oppstartstype,
+    oppstartstype: Oppstartstype,
 ): List<DeltakerHistorikkResponse> = this.map {
     when (it) {
         is DeltakerHistorikk.Endring -> it.endring.toResponse(ansatte, enheter, arrangornavn, oppstartstype)
@@ -114,7 +114,7 @@ fun DeltakerEndring.toResponse(
     ansatte: Map<UUID, NavAnsatt>,
     enheter: Map<UUID, NavEnhet>,
     arrangornavn: String,
-    oppstartstype: Deltakerliste.Oppstartstype,
+    oppstartstype: Oppstartstype,
 ) = DeltakerEndringResponse(
     endring = DeltakerEndringEndringDto.fromEndring(endring, oppstartstype),
     endretAv = ansatte[endretAv]!!.navn,

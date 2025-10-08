@@ -3,14 +3,22 @@ package no.nav.amt.deltaker.bff.deltaker.kafka
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
+import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
+import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
+import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
+import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.Kilde
+import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerV2Consumer(
@@ -34,8 +42,8 @@ class DeltakerV2Consumer(
             return
         }
 
-        val deltakerV2 = objectMapper.readValue<DeltakerV2Dto>(value)
-        val deltakerliste = deltakerlisteRepository.get(deltakerV2.deltakerlisteId).getOrThrow()
+        val deltakerPayload = objectMapper.readValue<DeltakerKafkaPayload>(value)
+        val deltakerliste = deltakerlisteRepository.get(deltakerPayload.deltakerliste.id).getOrThrow()
         val tiltakstype = deltakerliste.tiltak.arenaKode
 
         if (!unleashToggle.erKometMasterForTiltakstype(tiltakstype) && !unleashToggle.skalLeseArenaDeltakereForTiltakstype(tiltakstype)) {
@@ -43,31 +51,81 @@ class DeltakerV2Consumer(
             return
         }
 
-        val lagretDeltaker = deltakerService.getDeltaker(deltakerV2.id).getOrNull()
+        val lagretDeltaker = deltakerService.getDeltaker(deltakerPayload.id).getOrNull()
         val deltakerFinnes = lagretDeltaker != null
-        if (deltakerFinnes || deltakerV2.kilde == DeltakerV2Dto.Kilde.KOMET) {
-            log.info("Oppdaterer deltaker med id ${deltakerV2.id}")
+        if (deltakerFinnes || deltakerPayload.kilde == Kilde.KOMET) {
+            log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
             deltakerService.oppdaterDeltaker(
-                deltakeroppdatering = deltakerV2.toDeltakerOppdatering(),
+                deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
                 isSynchronousInvocation = false,
             )
-            vurderingService.upsert(deltakerV2.vurderingerFraArrangor.orEmpty())
+            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
             lagretDeltaker?.navBruker?.let {
                 if (it.adresse == null) {
-                    log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerV2.id}")
+                    log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerPayload.id}")
                     navBrukerService.update(it.personident)
                 }
             }
         } else {
-            log.info("Inserter ny $tiltakstype deltaker med id ${deltakerV2.id}")
-            val navBruker = navBrukerService.getOrCreate(deltakerV2.personalia.personident).getOrThrow()
-            val deltaker = deltakerV2.toDeltaker(navBruker, deltakerliste)
+            log.info("Inserter ny $tiltakstype deltaker med id ${deltakerPayload.id}")
+            val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
+            val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
             deltakerService.opprettArenaDeltaker(deltaker)
-            vurderingService.upsert(deltakerV2.vurderingerFraArrangor.orEmpty())
+            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
         }
     }
 
     override fun start() = consumer.start()
 
     override suspend fun close() = consumer.close()
+}
+
+fun DeltakerKafkaPayload.toDeltaker(navBruker: NavBruker, deltakerliste: Deltakerliste) = Deltaker(
+    id = id,
+    navBruker = navBruker,
+    deltakerliste = deltakerliste,
+    startdato = oppstartsdato,
+    sluttdato = sluttdato,
+    dagerPerUke = dagerPerUke,
+    deltakelsesprosent = prosentStilling?.toFloat(),
+    bakgrunnsinformasjon = bestillingTekst,
+    deltakelsesinnhold = innhold,
+    status = DeltakerStatus(
+        id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
+        type = status.type,
+        aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
+        gyldigFra = status.gyldigFra,
+        gyldigTil = null,
+        opprettet = status.opprettetDato,
+    ),
+    historikk = historikk.orEmpty(),
+    kanEndres = true,
+    sistEndret = sistEndret ?: LocalDateTime.now(),
+    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+)
+
+fun DeltakerKafkaPayload.toDeltakerOppdatering(): Deltakeroppdatering {
+    require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
+
+    return Deltakeroppdatering(
+        id = id,
+        startdato = oppstartsdato,
+        sluttdato = sluttdato,
+        dagerPerUke = dagerPerUke,
+        deltakelsesprosent = prosentStilling?.toFloat(),
+        bakgrunnsinformasjon = bestillingTekst,
+        deltakelsesinnhold = innhold,
+        status = DeltakerStatus(
+            id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
+            type = status.type,
+            aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
+            gyldigFra = status.gyldigFra,
+            gyldigTil = null,
+            opprettet = status.opprettetDato,
+        ),
+        historikk = historikk.orEmpty(),
+        sistEndret = sistEndret ?: LocalDateTime.now(),
+        erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+        forcedUpdate = forcedUpdate,
+    )
 }

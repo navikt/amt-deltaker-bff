@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
@@ -21,11 +22,6 @@ data class Deltakerliste(
         val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
         val overordnetArrangorNavn: String?,
     )
-
-    enum class Oppstartstype {
-        LOPENDE,
-        FELLES,
-    }
 
     enum class Status {
         GJENNOMFORES,
