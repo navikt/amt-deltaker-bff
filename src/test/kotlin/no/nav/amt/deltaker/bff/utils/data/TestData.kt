@@ -22,6 +22,7 @@ import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
@@ -73,7 +74,7 @@ object TestData {
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
-        oppstart: Deltakerliste.Oppstartstype = finnOppstartstype(tiltak.arenaKode),
+        oppstart: Oppstartstype = finnOppstartstype(tiltak.arenaKode),
         apentForPamelding: Boolean = true,
         antallPlasser: Int = 42,
     ) = Deltakerliste(
@@ -443,9 +444,9 @@ object TestData {
         ArenaKode.JOBBK,
         ArenaKode.GRUPPEAMO,
         ArenaKode.GRUFAGYRKE,
-        -> Deltakerliste.Oppstartstype.FELLES
+        -> Oppstartstype.FELLES
 
-        else -> Deltakerliste.Oppstartstype.LOPENDE
+        else -> Oppstartstype.LOPENDE
     }
 
     fun lagNavAnsatteForDeltaker(deltaker: Deltaker) = listOfNotNull(
@@ -568,7 +569,7 @@ object TestData {
                 startdato = deltaker.deltakerliste.startDato,
                 sluttdato = deltaker.deltakerliste.sluttDato,
                 oppstartstype = if (deltaker.deltakerliste.oppstart ==
-                    Deltakerliste.Oppstartstype.FELLES
+                    Oppstartstype.FELLES
                 ) {
                     HendelseDeltaker.Deltakerliste.Oppstartstype.FELLES
                 } else {

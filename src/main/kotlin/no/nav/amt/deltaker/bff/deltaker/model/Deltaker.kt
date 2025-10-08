@@ -7,6 +7,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavBruker
 import java.time.Duration
@@ -66,7 +67,7 @@ data class Deltaker(
 
     fun getDeltakerHistorikkForVisning() = historikk
         .filterNot {
-            deltakerliste.getOppstartstype() == Deltakerliste.Oppstartstype.FELLES &&
+            deltakerliste.getOppstartstype() == Oppstartstype.FELLES &&
                 it is DeltakerHistorikk.Vedtak
         }.sortedByDescending { it.sistEndret }
 
@@ -117,9 +118,9 @@ data class Deltaker(
             Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
             Tiltakskode.JOBBKLUBB,
             Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-            Tiltakskode.AMO,
+            Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.HOYERE_UTDANNING,
-            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
             -> null
         }
 
@@ -156,9 +157,9 @@ data class Deltaker(
 
             Tiltakskode.JOBBKLUBB,
             Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-            Tiltakskode.AMO,
+            Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.HOYERE_UTDANNING,
-            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
             -> null
         }
 
