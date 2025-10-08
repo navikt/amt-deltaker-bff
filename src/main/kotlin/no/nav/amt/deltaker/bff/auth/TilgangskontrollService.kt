@@ -192,7 +192,7 @@ class TilgangskontrollService(
 
     private fun stengTiltakskoordinatorTilgang(
         tilgang: TiltakskoordinatorDeltakerlisteTilgang,
-    ): Result<TiltakskoordinatorDeltakerlisteTilgang> = if (tilgang.gyldigTil == null) {
+    ): Result<TiltakskoordinatorDeltakerlisteTilgang> = if (tilgang.gyldigTil == null || tilgang.gyldigTil < LocalDateTime.now()) {
         tiltakskoordinatorTilgangRepository
             .upsert(tilgang.copy(gyldigTil = LocalDateTime.now()))
             .onSuccess { tilgang ->
