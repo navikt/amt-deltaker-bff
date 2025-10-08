@@ -35,8 +35,8 @@ class DeltakerTest {
 
                 Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
                 Tiltakskode.JOBBKLUBB,
-                Tiltakskode.AMO,
-                Tiltakskode.FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
                 Tiltakskode.HOYERE_UTDANNING,
                 -> it.maxVarighet shouldBe null
 
@@ -140,8 +140,8 @@ class DeltakerTest {
                 Tiltakskode.JOBBKLUBB,
                 Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.HOYERE_UTDANNING,
-                Tiltakskode.AMO,
-                Tiltakskode.FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
                 -> it.softMaxVarighet shouldBe null
             }
         }

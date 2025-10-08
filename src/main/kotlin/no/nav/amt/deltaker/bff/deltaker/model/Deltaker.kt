@@ -117,9 +117,9 @@ data class Deltaker(
             Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
             Tiltakskode.JOBBKLUBB,
             Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-            Tiltakskode.AMO,
+            Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.HOYERE_UTDANNING,
-            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
             -> null
         }
 
@@ -156,9 +156,9 @@ data class Deltaker(
 
             Tiltakskode.JOBBKLUBB,
             Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
-            Tiltakskode.AMO,
+            Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.HOYERE_UTDANNING,
-            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
             -> null
         }
 
