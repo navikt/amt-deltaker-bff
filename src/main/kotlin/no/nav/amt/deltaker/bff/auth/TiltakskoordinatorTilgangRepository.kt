@@ -50,7 +50,7 @@ class TiltakskoordinatorTilgangRepository {
             from tiltakskoordinator_deltakerliste_tilgang
             where nav_ansatt_id = :nav_ansatt_id
               and deltakerliste_id = :deltakerliste_id
-              and gyldig_til is null
+              and (gyldig_til is null OR gyldig_til < CURRENT_TIMESTAMP)
             """.trimIndent()
         val params = mapOf(
             "nav_ansatt_id" to navAnsattId,
