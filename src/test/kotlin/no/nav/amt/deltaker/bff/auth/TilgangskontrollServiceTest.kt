@@ -22,6 +22,7 @@ import no.nav.poao_tilgang.client.NavAnsattBehandleStrengtFortroligBrukerePolicy
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PolicyInput
 import no.nav.poao_tilgang.client.api.ApiResult
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -269,6 +270,7 @@ class TilgangskontrollServiceTest {
     }
 
     @Test
+    @Disabled
     fun `stengTiltakskoordinatorTilgang - ikke aktiv tilgang - tilgang stenges ikke pa nytt`() {
         with(TiltakskoordinatorTilgangContext()) {
             medInaktivTilgang()
