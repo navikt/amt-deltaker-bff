@@ -40,7 +40,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
     authenticate(AuthLevel.TILTAKSKOORDINATOR.name) {
         get(apiPath) {
             val deltakerlisteId = getDeltakerlisteId()
-            val deltakerliste = deltakerlisteService.hentMedFellesOppstart(deltakerlisteId).getOrThrow()
+            val deltakerliste = deltakerlisteService.get(deltakerlisteId).getOrThrow()
 
             val paaloggetNavAnsatt = navAnsattService.hentNavAnsatt(call.getNavIdent())
 
@@ -229,6 +229,7 @@ fun Deltakerliste.toResponse(koordinatorer: List<Tiltakskoordinator>) = Deltaker
     tiltakskode = this.tiltak.tiltakskode,
     startdato = this.startDato,
     sluttdato = this.sluttDato,
+    oppstartstype = this.getOppstartstype(),
     apentForPamelding = this.apentForPamelding,
     antallPlasser = this.antallPlasser,
     koordinatorer = koordinatorer,
