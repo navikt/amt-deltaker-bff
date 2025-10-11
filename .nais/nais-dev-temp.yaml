@@ -9,7 +9,7 @@ spec:
   image: {{image}}
   port: 8080
   ingresses:
-    - https://amt-deltaker-bff.intern.dev.nav.no
+    - https://amt-deltaker-bff-temp.intern.dev.nav.no
   prometheus:
     enabled: true
     path: /internal/prometheus
