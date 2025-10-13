@@ -14,19 +14,18 @@ class DeltakerlisteServiceTest {
     private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
 
     @Test
-    fun `hentDeltakerlisteMedFellesOppstart - deltakerliste har felles oppstart - returnere success`() {
+    fun `get - deltakerliste har felles oppstart - returnere success`() {
         with(DeltakerlisteContext()) {
-            deltakerlisteService.hentMedFellesOppstart(deltakerliste.id).isSuccess shouldBe true
+            deltakerlisteService.get(deltakerliste.id).isSuccess shouldBe true
         }
     }
 
     @Test
-    fun `hentDeltakerlisteMedFellesOppstart - deltakerliste har lopende oppstart - returnere failure`() {
+    fun `get - deltakerliste har lopende oppstart - returnere success`() {
         with(DeltakerlisteContext(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
-            val result = deltakerlisteService.hentMedFellesOppstart(deltakerliste.id)
+            val result = deltakerlisteService.get(deltakerliste.id)
 
-            result.isFailure shouldBe true
-            result.exceptionOrNull()?.javaClass shouldBe NoSuchElementException::class.java
+            result.isSuccess shouldBe true
         }
     }
 
@@ -38,11 +37,9 @@ class DeltakerlisteServiceTest {
     }
 
     @Test
-    fun `verifiserTilgjengeligDeltakerliste - deltakerliste har lopende oppstart - kaster exception`() {
+    fun `verifiserTilgjengeligDeltakerliste - deltakerliste har lopende oppstart - kaster ikke exception`() {
         with(DeltakerlisteContext(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING)) {
-            assertThrows<NoSuchElementException> {
-                deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
-            }
+            deltakerlisteService.verifiserTilgjengeligDeltakerliste(deltakerliste.id)
         }
     }
 
