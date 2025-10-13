@@ -266,7 +266,22 @@ fun Application.module() {
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
-        DeltakerlisteConsumer(deltakerlisteRepository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService),
+        DeltakerlisteConsumer(
+            repository = deltakerlisteRepository,
+            arrangorService = arrangorService,
+            tiltakstypeRepository = tiltakstypeRepository,
+            pameldingService = pameldingService,
+            tilgangskontrollService = tilgangskontrollService,
+            topic = Environment.DELTAKERLISTE_V1_TOPIC,
+        ),
+        DeltakerlisteConsumer(
+            repository = deltakerlisteRepository,
+            arrangorService = arrangorService,
+            tiltakstypeRepository = tiltakstypeRepository,
+            pameldingService = pameldingService,
+            tilgangskontrollService = tilgangskontrollService,
+            topic = Environment.DELTAKERLISTE_V2_TOPIC,
+        ),
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerService, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),

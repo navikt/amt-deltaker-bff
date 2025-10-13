@@ -82,7 +82,7 @@ class PameldingServiceTest {
                     tiltak.arenaKode shouldBe deltakerListeInTest.tiltak.arenaKode
                     it.arrangor.arrangor shouldBe arrangorInTest
                     it.arrangor.overordnetArrangorNavn shouldBe overordnetArrangorInTest.navn
-                    it.getOppstartstype() shouldBe deltakerListeInTest.getOppstartstype()
+                    it.oppstart shouldBe deltakerListeInTest.oppstart
                 }
             }
         }

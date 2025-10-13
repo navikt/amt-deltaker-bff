@@ -10,7 +10,8 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltaker.Arrangor
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -21,11 +22,12 @@ class DeltakerlisteConsumer(
     private val tiltakstypeRepository: TiltakstypeRepository,
     private val pameldingService: PameldingService,
     private val tilgangskontrollService: TilgangskontrollService,
+    private val topic: String,
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val consumer = buildManagedKafkaConsumer(
-        topic = Environment.DELTAKERLISTE_TOPIC,
+        topic = topic,
         consumeFunc = ::consume,
     )
 
@@ -41,12 +43,16 @@ class DeltakerlisteConsumer(
         }
     }
 
-    private suspend fun handterDeltakerliste(deltakerlisteDto: DeltakerlisteDto) {
-        if (!deltakerlisteDto.tiltakstype.erStottet()) return
+    private suspend fun handterDeltakerliste(deltakerlistePayload: DeltakerlistePayload) {
+        if (!deltakerlistePayload.tiltakstype.erStottet()) return
 
-        val arrangor = arrangorService.hentArrangor(deltakerlisteDto.virksomhetsnummer)
-        val tiltakstype = tiltakstypeRepository.get(ArenaKode.valueOf(deltakerlisteDto.tiltakstype.arenaKode)).getOrThrow()
-        val deltakerliste = deltakerlisteDto.toModel(arrangor, tiltakstype)
+        val tiltakskode = Tiltakskode.valueOf(deltakerlistePayload.tiltakstype.tiltakskode)
+
+        val deltakerliste = deltakerlistePayload.toModel(
+            arrangor = hentArrangor(deltakerlistePayload),
+            tiltakstype = tiltakstypeRepository.get(tiltakskode).getOrThrow(),
+        )
+
         repository.upsert(deltakerliste)
 
         if (deltakerliste.status == Deltakerliste.Status.AVLYST || deltakerliste.status == Deltakerliste.Status.AVBRUTT) {
@@ -59,4 +65,11 @@ class DeltakerlisteConsumer(
             tilgangskontrollService.stengTilgangerTilDeltakerliste(deltakerliste.id)
         }
     }
+
+    private suspend fun hentArrangor(deltakerlistePayload: DeltakerlistePayload): Arrangor = arrangorService.hentArrangor(
+        when (topic) {
+            Environment.DELTAKERLISTE_V1_TOPIC -> deltakerlistePayload.virksomhetsnummer
+            else -> deltakerlistePayload.arrangor?.organisasjonsnummer
+        } ?: throw IllegalStateException("Virksomhetsnummer mangler"),
+    )
 }

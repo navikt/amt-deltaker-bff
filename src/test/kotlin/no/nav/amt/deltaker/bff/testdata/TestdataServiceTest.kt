@@ -79,7 +79,7 @@ class TestdataServiceTest {
         val arrangor = TestData.lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(
             arrangor = arrangor,
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
         )
         val opprettetAv = TestData.lagNavAnsatt(navIdent = TESTVEILEDER)
         val opprettetAvEnhet = TestData.lagNavEnhet(enhetsnummer = TESTENHET)

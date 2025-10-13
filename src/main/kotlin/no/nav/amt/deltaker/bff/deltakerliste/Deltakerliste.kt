@@ -10,13 +10,13 @@ data class Deltakerliste(
     val id: UUID,
     val tiltak: Tiltakstype,
     val navn: String,
-    val status: Status,
-    val startDato: LocalDate,
+    val status: Status?,
+    val startDato: LocalDate?,
     val sluttDato: LocalDate? = null,
-    val oppstart: Oppstartstype,
+    val oppstart: Oppstartstype?,
     val arrangor: Arrangor,
     val apentForPamelding: Boolean,
-    val antallPlasser: Int,
+    val antallPlasser: Int?,
 ) {
     data class Arrangor(
         val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
@@ -40,8 +40,6 @@ data class Deltakerliste(
             }
         }
     }
-
-    fun getOppstartstype(): Oppstartstype = oppstart
 
     fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.arenaKode)
 }

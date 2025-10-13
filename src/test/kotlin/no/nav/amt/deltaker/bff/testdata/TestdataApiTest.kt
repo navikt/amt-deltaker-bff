@@ -40,7 +40,7 @@ class TestdataApiTest {
     @Test
     fun `opprett testdata - har tilgang, ugyldig request - returnerer BadRequest`() = testApplication {
         val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
         )
         val startdato = LocalDate.now().minusDays(1)
         val opprettTestDeltakelseRequest = OpprettTestDeltakelseRequest(
@@ -61,7 +61,7 @@ class TestdataApiTest {
     @Test
     fun `opprett testdata - har tilgang, gyldig request - returnerer deltaker`() = testApplication {
         val deltakerliste = TestData.lagDeltakerliste(
-            tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
         )
         val startdato = LocalDate.now().minusDays(1)
         val deltaker = TestData.lagDeltaker(

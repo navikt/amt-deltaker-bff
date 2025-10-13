@@ -74,7 +74,7 @@ class TiltakstypeRepository {
         log.info("Upsertet tiltakstype med id ${tiltakstype.id}")
     }
 
-    fun get(kode: ArenaKode) = Database.query {
+    fun get(tiltakskode: Tiltakskode) = Database.query {
         val query = queryOf(
             """
             SELECT id,
@@ -84,12 +84,12 @@ class TiltakstypeRepository {
                innsatsgrupper,
                innhold
             FROM tiltakstype
-            WHERE type = :type
+            WHERE tiltakskode = :tiltakskode
             """.trimIndent(),
-            mapOf("type" to kode.name),
+            mapOf("tiltakskode" to tiltakskode.name),
         ).map(::rowMapper).asSingle
 
         it.run(query)?.let { t -> Result.success(t) }
-            ?: Result.failure(NoSuchElementException("Fant ikke tiltakstype ${kode.name}"))
+            ?: Result.failure(NoSuchElementException("Fant ikke tiltakstype ${tiltakskode.name}"))
     }
 }

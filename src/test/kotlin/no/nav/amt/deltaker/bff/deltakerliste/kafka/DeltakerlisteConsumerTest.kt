@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -82,12 +83,19 @@ class DeltakerlisteConsumerTest {
         val deltakerliste = TestData.lagDeltakerliste(arrangor = arrangor)
         TestRepository.insert(tiltakstype = deltakerliste.tiltak)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
+        val consumer = DeltakerlisteConsumer(
+            repository,
+            arrangorService,
+            tiltakstypeRepository,
+            pameldingService,
+            tilgangskontrollService,
+            Environment.DELTAKERLISTE_V1_TOPIC,
+        )
 
         runBlocking {
             consumer.consume(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, deltakerliste)),
+                objectMapper.writeValueAsString(TestData.lagDeltakerlistePayload(arrangor, deltakerliste)),
             )
 
             repository.get(deltakerliste.id).getOrThrow() shouldBe deltakerliste
@@ -101,14 +109,21 @@ class DeltakerlisteConsumerTest {
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
         TestRepository.insert(deltakerliste)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
+        val consumer = DeltakerlisteConsumer(
+            repository,
+            arrangorService,
+            tiltakstypeRepository,
+            pameldingService,
+            tilgangskontrollService,
+            Environment.DELTAKERLISTE_V1_TOPIC,
+        )
 
         val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now())
 
         runBlocking {
             consumer.consume(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, oppdatertDeltakerliste)),
+                objectMapper.writeValueAsString(TestData.lagDeltakerlistePayload(arrangor, oppdatertDeltakerliste)),
             )
 
             repository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste
@@ -122,7 +137,14 @@ class DeltakerlisteConsumerTest {
 
         TestRepository.insert(deltakerliste)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
+        val consumer = DeltakerlisteConsumer(
+            repository,
+            arrangorService,
+            tiltakstypeRepository,
+            pameldingService,
+            tilgangskontrollService,
+            Environment.DELTAKERLISTE_V1_TOPIC,
+        )
 
         runBlocking {
             consumer.consume(deltakerliste.id, null)
@@ -145,14 +167,21 @@ class DeltakerlisteConsumerTest {
         TestRepository.insert(deltaker)
         MockResponseHandler.addSlettKladdResponse(kladd.id)
 
-        val consumer = DeltakerlisteConsumer(repository, arrangorService, tiltakstypeRepository, pameldingService, tilgangskontrollService)
+        val consumer = DeltakerlisteConsumer(
+            repository,
+            arrangorService,
+            tiltakstypeRepository,
+            pameldingService,
+            tilgangskontrollService,
+            Environment.DELTAKERLISTE_V1_TOPIC,
+        )
 
         val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now(), status = Deltakerliste.Status.AVBRUTT)
 
         runBlocking {
             consumer.consume(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(TestData.lagDeltakerlisteDto(arrangor, oppdatertDeltakerliste)),
+                objectMapper.writeValueAsString(TestData.lagDeltakerlistePayload(arrangor, oppdatertDeltakerliste)),
             )
 
             repository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste

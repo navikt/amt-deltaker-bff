@@ -4,7 +4,7 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlisteDto
+import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlistePayload
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
@@ -69,17 +69,17 @@ object TestData {
         id: UUID = UUID.randomUUID(),
         overordnetArrangor: Arrangor? = null,
         arrangor: Arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor?.id),
-        tiltak: Tiltakstype = lagTiltakstype(),
-        navn: String = "Test Deltakerliste ${tiltak.arenaKode}",
+        tiltakstype: Tiltakstype = lagTiltakstype(),
+        navn: String = "Test Deltakerliste ${tiltakstype.arenaKode}",
         status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
-        oppstart: Oppstartstype = finnOppstartstype(tiltak.arenaKode),
+        oppstart: Oppstartstype = finnOppstartstype(tiltakstype.arenaKode),
         apentForPamelding: Boolean = true,
         antallPlasser: Int = 42,
     ) = Deltakerliste(
         id,
-        tiltak,
+        tiltakstype,
         navn,
         status,
         startDato,
@@ -112,17 +112,16 @@ object TestData {
         ledetekst: String = "Beskrivelse av tilaket",
     ) = DeltakerRegistreringInnhold(innholdselementer, ledetekst)
 
-    fun lagDeltakerlisteDto(arrangor: Arrangor = lagArrangor(), deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor)) =
-        DeltakerlisteDto(
+    fun lagDeltakerlistePayload(arrangor: Arrangor = lagArrangor(), deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor)) =
+        DeltakerlistePayload(
             id = deltakerliste.id,
-            tiltakstype = DeltakerlisteDto.TiltakstypeDto(
-                deltakerliste.tiltak.navn,
-                deltakerliste.tiltak.arenaKode.name,
+            tiltakstype = DeltakerlistePayload.TiltakstypeDto(
+                deltakerliste.tiltak.tiltakskode.name,
             ),
             navn = deltakerliste.navn,
             startDato = deltakerliste.startDato,
             sluttDato = deltakerliste.sluttDato,
-            status = deltakerliste.status.name,
+            status = deltakerliste.status?.name,
             virksomhetsnummer = arrangor.organisasjonsnummer,
             oppstart = deltakerliste.oppstart,
             apentForPamelding = deltakerliste.apentForPamelding,
