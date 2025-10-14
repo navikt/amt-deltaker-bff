@@ -8,7 +8,7 @@ plugins {
     val kotlinVersion = "2.2.20"
 
     kotlin("jvm") version kotlinVersion
-    id("io.ktor.plugin") version "3.3.0"
+    id("io.ktor.plugin") version "3.3.1"
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
     application
@@ -20,7 +20,7 @@ repositories {
     maven { setUrl("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
 }
 
-val ktorVersion = "3.3.0"
+val ktorVersion = "3.3.1"
 val logbackVersion = "1.5.19"
 val prometeusVersion = "1.15.5"
 val ktlintVersion = "1.6.0"
@@ -29,7 +29,7 @@ val logstashEncoderVersion = "8.1"
 val commonVersion = "3.2025.08.18_11.44-04fe318bd185"
 val poaoTilgangVersion = "2025.07.04_08.56-814fa50f6740"
 val kotestVersion = "6.0.3"
-val flywayVersion = "11.13.2"
+val flywayVersion = "11.14.0"
 val hikariVersion = "7.0.2"
 val kotliqueryVersion = "1.9.1"
 val postgresVersion = "42.7.8"
@@ -37,7 +37,7 @@ val caffeineVersion = "3.2.2"
 val mockkVersion = "1.14.6"
 val nimbusVersion = "10.5"
 val amtLibVersion = "1.2025.10.08_09.09-4d8d4f2abb10"
-val unleashVersion = "11.1.0"
+val unleashVersion = "11.1.1"
 
 dependencies {
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
