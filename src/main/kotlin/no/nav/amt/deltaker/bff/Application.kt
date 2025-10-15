@@ -267,7 +267,7 @@ fun Application.module() {
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(
-            repository = deltakerlisteRepository,
+            deltakerlisteRepository = deltakerlisteRepository,
             arrangorService = arrangorService,
             tiltakstypeRepository = tiltakstypeRepository,
             pameldingService = pameldingService,
@@ -275,7 +275,7 @@ fun Application.module() {
             topic = Environment.DELTAKERLISTE_V1_TOPIC,
         ),
         DeltakerlisteConsumer(
-            repository = deltakerlisteRepository,
+            deltakerlisteRepository = deltakerlisteRepository,
             arrangorService = arrangorService,
             tiltakstypeRepository = tiltakstypeRepository,
             pameldingService = pameldingService,

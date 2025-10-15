@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class DeltakerlisteConsumer(
-    private val repository: DeltakerlisteRepository,
+    private val deltakerlisteRepository: DeltakerlisteRepository,
     private val arrangorService: ArrangorService,
     private val tiltakstypeRepository: TiltakstypeRepository,
     private val pameldingService: PameldingService,
@@ -35,7 +35,7 @@ class DeltakerlisteConsumer(
 
     override suspend fun consume(key: UUID, value: String?) {
         if (value == null) {
-            repository.delete(key)
+            deltakerlisteRepository.delete(key)
         } else {
             handterDeltakerliste(objectMapper.readValue(value))
         }
@@ -51,7 +51,7 @@ class DeltakerlisteConsumer(
             tiltakstype = tiltakstypeRepository.get(tiltakskode).getOrThrow(),
         )
 
-        repository.upsert(deltakerliste)
+        deltakerlisteRepository.upsert(deltakerliste)
 
         if (deltakerliste.status == Deltakerliste.Status.AVLYST || deltakerliste.status == Deltakerliste.Status.AVBRUTT) {
             val kladderSomSkalSlettes = pameldingService.getKladderForDeltakerliste(deltakerliste.id)

@@ -1,17 +1,16 @@
 package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlistePayload(
     val type: String? = null, // finnes kun for v2, kan fjernes etter overgang til v2
     val id: UUID,
-    val tiltakstype: TiltakstypeDto,
+    val tiltakstype: Tiltakstype,
     val navn: String? = null, // finnes kun for gruppetiltak
     val startDato: LocalDate? = null, // finnes kun for gruppetiltak
     val sluttDato: LocalDate? = null, // finnes kun for gruppetiltak
@@ -19,19 +18,20 @@ data class DeltakerlistePayload(
     val oppstart: Oppstartstype? = null, // finnes kun for gruppetiltak
     val apentForPamelding: Boolean = true, // finnes kun for gruppetiltak
     val virksomhetsnummer: String? = null, // finnes kun for v1
-    val arrangor: ArrangorDto? = null, // finnes kun for v2
+    val arrangor: Arrangor? = null, // finnes kun for v2
     val antallPlasser: Int? = null, // finnes kun for gruppetiltak
 ) {
-    data class TiltakstypeDto(
+    data class Tiltakstype(
         val tiltakskode: String,
     ) {
         fun erStottet() = Tiltakskode.entries.any { it.name == tiltakskode }
     }
 
-    data class ArrangorDto(
+    data class Arrangor(
         val organisasjonsnummer: String,
     )
 
+    @get:JsonIgnore
     val organisasjonsnummer: String
         get() = when {
             type in setOf(
@@ -42,7 +42,10 @@ data class DeltakerlistePayload(
             else -> virksomhetsnummer
         } ?: throw IllegalStateException("Virksomhetsnummer mangler")
 
-    fun toModel(arrangor: Arrangor, tiltakstype: Tiltakstype) = Deltakerliste(
+    fun toModel(
+        arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
+        tiltakstype: no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype,
+    ) = Deltakerliste(
         id = this.id,
         tiltak = tiltakstype,
         navn = this.navn ?: tiltakstype.navn,

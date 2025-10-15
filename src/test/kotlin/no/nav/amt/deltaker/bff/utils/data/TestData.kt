@@ -115,7 +115,7 @@ object TestData {
     fun lagDeltakerlistePayload(arrangor: Arrangor = lagArrangor(), deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor)) =
         DeltakerlistePayload(
             id = deltakerliste.id,
-            tiltakstype = DeltakerlistePayload.TiltakstypeDto(
+            tiltakstype = DeltakerlistePayload.Tiltakstype(
                 deltakerliste.tiltak.tiltakskode.name,
             ),
             navn = deltakerliste.navn,
