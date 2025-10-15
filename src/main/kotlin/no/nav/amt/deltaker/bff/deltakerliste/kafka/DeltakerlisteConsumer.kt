@@ -1,7 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste.kafka
 
 import com.fasterxml.jackson.module.kotlin.readValue
-import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
@@ -10,7 +9,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
-import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
@@ -49,7 +47,7 @@ class DeltakerlisteConsumer(
         val tiltakskode = Tiltakskode.valueOf(deltakerlistePayload.tiltakstype.tiltakskode)
 
         val deltakerliste = deltakerlistePayload.toModel(
-            arrangor = hentArrangor(deltakerlistePayload),
+            arrangor = arrangorService.hentArrangor(deltakerlistePayload.organisasjonsnummer),
             tiltakstype = tiltakstypeRepository.get(tiltakskode).getOrThrow(),
         )
 
@@ -65,11 +63,4 @@ class DeltakerlisteConsumer(
             tilgangskontrollService.stengTilgangerTilDeltakerliste(deltakerliste.id)
         }
     }
-
-    private suspend fun hentArrangor(deltakerlistePayload: DeltakerlistePayload): Arrangor = arrangorService.hentArrangor(
-        when (topic) {
-            Environment.DELTAKERLISTE_V1_TOPIC -> deltakerlistePayload.virksomhetsnummer
-            else -> deltakerlistePayload.arrangor?.organisasjonsnummer
-        } ?: throw IllegalStateException("Virksomhetsnummer mangler"),
-    )
 }

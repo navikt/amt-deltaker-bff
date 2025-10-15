@@ -9,6 +9,7 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlistePayload(
+    val type: String? = null, // finnes kun for v2, kan fjernes etter overgang til v2
     val id: UUID,
     val tiltakstype: TiltakstypeDto,
     val navn: String? = null, // finnes kun for gruppetiltak
@@ -31,6 +32,16 @@ data class DeltakerlistePayload(
         val organisasjonsnummer: String,
     )
 
+    val organisasjonsnummer: String
+        get() = when {
+            type in setOf(
+                ENKELTPLASS_V2_TYPE,
+                GRUPPE_V2_TYPE,
+            ) -> arrangor?.organisasjonsnummer
+
+            else -> virksomhetsnummer
+        } ?: throw IllegalStateException("Virksomhetsnummer mangler")
+
     fun toModel(arrangor: Arrangor, tiltakstype: Tiltakstype) = Deltakerliste(
         id = this.id,
         tiltak = tiltakstype,
@@ -46,4 +57,9 @@ data class DeltakerlistePayload(
         apentForPamelding = this.apentForPamelding,
         antallPlasser = this.antallPlasser,
     )
+
+    companion object {
+        const val ENKELTPLASS_V2_TYPE = "TiltaksgjennomforingV2.Enkeltplass"
+        const val GRUPPE_V2_TYPE = "TiltaksgjennomforingV2.Gruppe"
+    }
 }
