@@ -272,6 +272,7 @@ fun Application.module() {
             tiltakstypeRepository = tiltakstypeRepository,
             pameldingService = pameldingService,
             tilgangskontrollService = tilgangskontrollService,
+            unleashToggle = unleashToggle,
             topic = Environment.DELTAKERLISTE_V1_TOPIC,
         ),
         DeltakerlisteConsumer(
@@ -280,6 +281,7 @@ fun Application.module() {
             tiltakstypeRepository = tiltakstypeRepository,
             pameldingService = pameldingService,
             tilgangskontrollService = tilgangskontrollService,
+            unleashToggle = unleashToggle,
             topic = Environment.DELTAKERLISTE_V2_TOPIC,
         ),
         NavAnsattConsumer(navAnsattService),
