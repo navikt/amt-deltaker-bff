@@ -88,6 +88,7 @@ class DeltakerlisteConsumerTest {
         TestRepository.cleanDatabase()
         clearAllMocks()
         every { unleashToggle.skalLeseGjennomforingerV2() } returns true
+        every { unleashToggle.skalLeseArenaDataForTiltakstype(any<String>()) } returns true
     }
 
     @Test
