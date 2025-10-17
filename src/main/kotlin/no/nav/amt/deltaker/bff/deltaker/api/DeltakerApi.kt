@@ -83,7 +83,7 @@ fun Routing.registerDeltakerApi(
             throw ForbiddenException("Kan ikke endre låst deltaker ${deltaker.id}")
         }
 
-        if (!unleashToggle.erKometMasterForTiltakstype(deltaker.deltakerliste.tiltak.arenaKode)) {
+        if (!unleashToggle.erKometMasterForTiltakstype(deltaker.deltakerliste.tiltak.tiltakskode)) {
             throw ForbiddenException("Kan ikke utføre endring på deltaker ${deltaker.id}")
         }
 

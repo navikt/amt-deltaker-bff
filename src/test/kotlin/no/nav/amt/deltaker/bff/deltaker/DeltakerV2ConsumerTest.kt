@@ -31,7 +31,6 @@ import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.Kontaktinformasjon
 import no.nav.amt.lib.models.deltaker.Navn
 import no.nav.amt.lib.models.deltaker.Personalia
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltak
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
@@ -66,7 +65,7 @@ class DeltakerV2ConsumerTest {
     @BeforeEach
     fun setup() {
         TestRepository.cleanDatabase()
-        every { unleashToggle.erKometMasterForTiltakstype(ArenaKode.ARBFORB) } returns true
+        every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true
     }
 
     @Test
