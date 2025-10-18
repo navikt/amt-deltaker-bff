@@ -3,7 +3,6 @@ package no.nav.amt.deltaker.bff.deltakerliste.kafka
 import com.fasterxml.jackson.annotation.JsonIgnore
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
 import java.util.UUID
 
@@ -23,9 +22,7 @@ data class DeltakerlistePayload(
 ) {
     data class Tiltakstype(
         val tiltakskode: String,
-    ) {
-        fun erStottet() = Tiltakskode.entries.any { it.name == tiltakskode }
-    }
+    )
 
     data class Arrangor(
         val organisasjonsnummer: String,

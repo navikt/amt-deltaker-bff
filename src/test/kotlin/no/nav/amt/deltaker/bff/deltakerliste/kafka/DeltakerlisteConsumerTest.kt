@@ -88,12 +88,54 @@ class DeltakerlisteConsumerTest {
         TestRepository.cleanDatabase()
         clearAllMocks()
         every { unleashToggle.skalLeseGjennomforingerV2() } returns true
-        every { unleashToggle.skalLeseArenaDataForTiltakstype(any<String>()) } returns true
+        every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns true
     }
 
     @Test
     fun `unleashToggle er ikke enabled for gjennomforingV2 - lagrer ikke deltakerliste`() {
         every { unleashToggle.skalLeseGjennomforingerV2() } returns false
+
+        val tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)
+        TestRepository.insert(tiltakstype)
+
+        val arrangor = lagArrangor()
+        val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
+
+        val consumer =
+            DeltakerlisteConsumer(
+                deltakerlisteRepository = deltakerlisteRepository,
+                arrangorService = arrangorService,
+                tiltakstypeRepository = tiltakstypeRepository,
+                pameldingService = pameldingService,
+                tilgangskontrollService = tilgangskontrollService,
+                unleashToggle = unleashToggle,
+                topic = Environment.DELTAKERLISTE_V2_TOPIC,
+            )
+
+        val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
+        val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
+            type = GRUPPE_V2_TYPE,
+            virksomhetsnummer = null,
+            arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
+        )
+
+        runBlocking {
+            consumer.consume(
+                deltakerlistePayload.id,
+                objectMapper.writeValueAsString(deltakerlistePayload),
+            )
+
+            val thrown = shouldThrow<NoSuchElementException> {
+                deltakerlisteRepository.get(expectedDeltakerliste.id).getOrThrow()
+            }
+
+            thrown.message shouldBe "Fant ikke deltakerliste med id ${expectedDeltakerliste.id}"
+        }
+    }
+
+    @Test
+    fun `unleashToggle er ikke enabled for tiltakstype - lagrer ikke deltakerliste`() {
+        every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns false
 
         val tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)
         TestRepository.insert(tiltakstype)

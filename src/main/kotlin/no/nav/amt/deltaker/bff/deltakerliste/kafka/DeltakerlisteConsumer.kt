@@ -49,7 +49,7 @@ class DeltakerlisteConsumer(
     }
 
     private suspend fun handterDeltakerliste(deltakerlistePayload: DeltakerlistePayload) {
-        if (!unleashToggle.skalLeseArenaDataForTiltakstype(deltakerlistePayload.tiltakstype.tiltakskode)) {
+        if (!unleashToggle.erKometMasterForTiltakstype(deltakerlistePayload.tiltakstype.tiltakskode)) {
             return
         }
 
