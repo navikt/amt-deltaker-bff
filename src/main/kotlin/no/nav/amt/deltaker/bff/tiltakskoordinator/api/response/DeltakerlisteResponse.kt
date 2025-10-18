@@ -10,10 +10,10 @@ data class DeltakerlisteResponse(
     val id: UUID,
     val navn: String,
     val tiltakskode: Tiltakskode,
-    val startdato: LocalDate,
+    val startdato: LocalDate?,
     val sluttdato: LocalDate?,
-    val oppstartstype: Oppstartstype,
+    val oppstartstype: Oppstartstype?,
     val apentForPamelding: Boolean,
-    val antallPlasser: Int,
+    val antallPlasser: Int?,
     val koordinatorer: List<Tiltakskoordinator>,
 )

@@ -326,7 +326,7 @@ class InputvalideringTest {
     fun `validerSluttdato - skal feile hvis sluttdato er utenfor max varighet`() {
         val deltaker = TestData.lagDeltaker(
             deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK),
+                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK),
             ),
         )
 

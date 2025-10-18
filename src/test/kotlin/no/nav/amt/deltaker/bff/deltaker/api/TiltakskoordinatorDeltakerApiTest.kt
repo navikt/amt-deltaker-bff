@@ -64,7 +64,7 @@ import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.utils.objectMapper
@@ -118,7 +118,7 @@ class TiltakskoordinatorDeltakerApiTest {
             )
         } returns Result.success(TestData.lagDeltaker(navBruker = TestData.lagNavBruker(personident = "1234")))
         every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
-        every { unleashToggle.erKometMasterForTiltakstype(ArenaKode.ARBFORB) } returns true
+        every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true
         setUpTestApplication()
         client
             .post(
@@ -868,7 +868,7 @@ class TiltakskoordinatorDeltakerApiTest {
         every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         every { forslagService.getForDeltaker(deltaker.id) } returns forslag
-        every { unleashToggle.erKometMasterForTiltakstype(ArenaKode.ARBFORB) } returns true
+        every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true
 
         return if (oppdatertDeltaker != null) {
             coEvery {

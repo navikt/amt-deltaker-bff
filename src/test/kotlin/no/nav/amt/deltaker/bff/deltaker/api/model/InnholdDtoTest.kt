@@ -17,7 +17,7 @@ class InnholdDtoTest {
         val innholdselement = Innholdselement("Type", "type")
         val deltaker = TestData.lagDeltaker(
             deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(
+                tiltakstype = TestData.lagTiltakstype(
                     innhold = TestData.lagDeltakerRegistreringInnhold(
                         innholdselementer = listOf(innholdselement, annetInnholdselement),
                     ),
@@ -93,7 +93,7 @@ class InnholdDtoTest {
 
         val deltaker = TestData.lagDeltaker(
             deltakerliste = TestData.lagDeltakerliste(
-                tiltak = TestData.lagTiltakstype(
+                tiltakstype = TestData.lagTiltakstype(
                     innhold = deltakerlisteInnhold,
                 ),
             ),

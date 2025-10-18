@@ -64,7 +64,7 @@ class DeltakerlisteServiceTest {
 data class DeltakerlisteContext(
     val tiltak: Tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
     var deltakerliste: Deltakerliste = TestData.lagDeltakerliste(
-        tiltak = TestData.lagTiltakstype(tiltakskode = tiltak),
+        tiltakstype = TestData.lagTiltakstype(tiltakskode = tiltak),
         oppstart = if (tiltak in setOf(
                 Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,

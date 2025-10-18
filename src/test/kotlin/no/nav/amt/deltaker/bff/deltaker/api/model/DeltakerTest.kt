@@ -16,7 +16,7 @@ class DeltakerTest {
         val deltakere = Tiltakskode.entries.map {
             TestData.lagDeltaker(
                 startdato = LocalDate.now(),
-                deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = it)),
+                deltakerliste = TestData.lagDeltakerliste(tiltakstype = TestData.lagTiltakstype(tiltakskode = it)),
             )
         }
 
@@ -54,13 +54,13 @@ class DeltakerTest {
     }
 
     @Test
-    fun `maxVarighetDato - skal kalkulere riktig max varighet basert på innsatsgruppe for oppfølging`() {
+    fun `maxVarighetDato - skal kalkulere riktig max varighet basert pa innsatsgruppe for oppfolging`() {
         val deltakerStandardInnsats = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS),
         )
         val deltakerSituasjonsbestemt = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.SITUASJONSBESTEMT_INNSATS),
         )
         val andreInnsatsgrupper = listOf(
@@ -70,7 +70,7 @@ class DeltakerTest {
         ).map {
             TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING),
+                    tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING),
                 ),
                 navBruker = TestData.lagNavBruker(innsatsgruppe = it),
             )
@@ -82,13 +82,13 @@ class DeltakerTest {
     }
 
     @Test
-    fun `softVarighetDato - skal kalkulere riktig varighet basert på innsatsgruppe for oppfølging`() {
+    fun `softVarighetDato - skal kalkulere riktig varighet basert pa innsatsgruppe for oppfolging`() {
         val deltakerStandardInnsats = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.STANDARD_INNSATS),
         )
         val deltakerSituasjonsbestemt = TestData.lagDeltaker(
-            deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
+            deltakerliste = TestData.lagDeltakerliste(tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING)),
             navBruker = TestData.lagNavBruker(innsatsgruppe = Innsatsgruppe.SITUASJONSBESTEMT_INNSATS),
         )
         val andreInnsatsgrupper = listOf(
@@ -98,7 +98,7 @@ class DeltakerTest {
         ).map {
             TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING),
+                    tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.OPPFOLGING),
                 ),
                 navBruker = TestData.lagNavBruker(innsatsgruppe = it),
             )
@@ -114,7 +114,7 @@ class DeltakerTest {
         val deltakere = Tiltakskode.entries.map {
             TestData.lagDeltaker(
                 startdato = LocalDate.now(),
-                deltakerliste = TestData.lagDeltakerliste(tiltak = TestData.lagTiltakstype(tiltakskode = it)),
+                deltakerliste = TestData.lagDeltakerliste(tiltakstype = TestData.lagTiltakstype(tiltakskode = it)),
             )
         }
 
