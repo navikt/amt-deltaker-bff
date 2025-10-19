@@ -103,6 +103,7 @@ spec:
             envVarPrefix: DB
         diskAutoresize: true
         highAvailability: true
+        pointInTimeRecovery: true
         insights:
           enabled: true
 
