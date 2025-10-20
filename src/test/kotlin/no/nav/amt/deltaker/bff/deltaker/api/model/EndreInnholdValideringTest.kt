@@ -20,7 +20,7 @@ class EndreInnholdValideringTest {
             )
             val deltaker = TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(
+                    tiltakstype = TestData.lagTiltakstype(
                         innhold = tiltaksinnhold,
                     ),
                 ),
@@ -46,7 +46,7 @@ class EndreInnholdValideringTest {
             )
             val deltaker = TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(
+                    tiltakstype = TestData.lagTiltakstype(
                         innhold = tiltaksinnhold,
                     ),
                 ),
@@ -74,7 +74,7 @@ class EndreInnholdValideringTest {
             )
             val deltaker = TestData.lagDeltaker(
                 deltakerliste = TestData.lagDeltakerliste(
-                    tiltak = TestData.lagTiltakstype(
+                    tiltakstype = TestData.lagTiltakstype(
                         innhold = tiltaksinnhold,
                     ),
                 ),

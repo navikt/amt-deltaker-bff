@@ -21,10 +21,10 @@ class DeltakerlisteRepository {
                 id = row.uuid(col("id")),
                 tiltak = TiltakstypeRepository.rowMapper(row, "t"),
                 navn = row.string(col("navn")),
-                status = Deltakerliste.Status.valueOf(row.string(col("status"))),
-                startDato = row.localDate(col("start_dato")),
+                status = row.stringOrNull(col("status"))?.let { Deltakerliste.Status.valueOf(it) },
+                startDato = row.localDateOrNull(col("start_dato")),
                 sluttDato = row.localDateOrNull(col("slutt_dato")),
-                oppstart = Oppstartstype.valueOf(row.string(col("oppstart"))),
+                oppstart = row.stringOrNull(col("oppstart"))?.let { Oppstartstype.valueOf(it) },
                 arrangor = Deltakerliste.Arrangor(
                     arrangor = Arrangor(
                         id = row.uuid("a.id"),
@@ -36,7 +36,7 @@ class DeltakerlisteRepository {
                         row.string("oa.navn")
                     },
                 ),
-                antallPlasser = row.int(col("antall_plasser")),
+                antallPlasser = row.intOrNull(col("antall_plasser")),
                 apentForPamelding = row.boolean(col("apent_for_pamelding")),
             )
         }
@@ -85,12 +85,12 @@ class DeltakerlisteRepository {
                 mapOf(
                     "id" to deltakerliste.id,
                     "navn" to deltakerliste.navn,
-                    "status" to deltakerliste.status.name,
+                    "status" to deltakerliste.status?.name,
                     "arrangor_id" to deltakerliste.arrangor.arrangor.id,
                     "tiltakstype_id" to deltakerliste.tiltak.id,
                     "start_dato" to deltakerliste.startDato,
                     "slutt_dato" to deltakerliste.sluttDato,
-                    "oppstart" to deltakerliste.oppstart.name,
+                    "oppstart" to deltakerliste.oppstart?.name,
                     "apent_for_pamelding" to deltakerliste.apentForPamelding,
                     "antall_plasser" to deltakerliste.antallPlasser,
                 ),

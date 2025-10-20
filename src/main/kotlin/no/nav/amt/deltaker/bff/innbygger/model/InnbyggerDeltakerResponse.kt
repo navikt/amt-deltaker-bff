@@ -55,8 +55,8 @@ data class InnbyggerDeltakerResponse(
         val deltakerlisteNavn: String,
         val tiltakstype: ArenaKode,
         val arrangorNavn: String,
-        val oppstartstype: Oppstartstype,
-        val startdato: LocalDate,
+        val oppstartstype: Oppstartstype?,
+        val startdato: LocalDate?,
         val sluttdato: LocalDate?,
     )
 
@@ -83,7 +83,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         deltakerlisteNavn = deltakerliste.navn,
         tiltakstype = deltakerliste.tiltak.arenaKode,
         arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
-        oppstartstype = deltakerliste.getOppstartstype(),
+        oppstartstype = deltakerliste.oppstart,
         startdato = deltakerliste.startDato,
         sluttdato = deltakerliste.sluttDato,
     ),

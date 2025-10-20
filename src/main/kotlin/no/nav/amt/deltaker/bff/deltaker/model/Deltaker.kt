@@ -67,7 +67,7 @@ data class Deltaker(
 
     fun getDeltakerHistorikkForVisning() = historikk
         .filterNot {
-            deltakerliste.getOppstartstype() == Oppstartstype.FELLES &&
+            deltakerliste.oppstart == Oppstartstype.FELLES &&
                 it is DeltakerHistorikk.Vedtak
         }.sortedByDescending { it.sistEndret }
 

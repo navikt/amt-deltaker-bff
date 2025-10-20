@@ -44,10 +44,10 @@ class DeltakerV2Consumer(
 
         val deltakerPayload = objectMapper.readValue<DeltakerKafkaPayload>(value)
         val deltakerliste = deltakerlisteRepository.get(deltakerPayload.deltakerliste.id).getOrThrow()
-        val tiltakstype = deltakerliste.tiltak.arenaKode
+        val tiltakskode = deltakerliste.tiltak.tiltakskode
 
-        if (!unleashToggle.erKometMasterForTiltakstype(tiltakstype) && !unleashToggle.skalLeseArenaDeltakereForTiltakstype(tiltakstype)) {
-            log.info("Ignorerer deltaker $key på tiltakstype $tiltakstype som ikke er støttet enda")
+        if (!unleashToggle.erKometMasterForTiltakstype(tiltakskode) && !unleashToggle.skalLeseArenaDataForTiltakstype(tiltakskode)) {
+            log.info("Ignorerer deltaker $key på tiltakstype $tiltakskode som ikke er støttet enda")
             return
         }
 
@@ -67,7 +67,7 @@ class DeltakerV2Consumer(
                 }
             }
         } else {
-            log.info("Inserter ny $tiltakstype deltaker med id ${deltakerPayload.id}")
+            log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
             val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
             val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
             deltakerService.opprettArenaDeltaker(deltaker)
