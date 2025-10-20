@@ -34,6 +34,7 @@ data class InnbyggerDeltakerResponse(
     val importertFraArena: ImportertFraArenaDto?,
     val deltakelsesmengder: DeltakelsesmengderDto,
     val erManueltDeltMedArrangor: Boolean,
+    val erEnkeltplassUtenRammeavtale: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -106,6 +107,8 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.toDto(),
     ),
     erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+    // midlertidig løsning inntil vi vet ner om det foreligger rammeavtale eller ikke
+    erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
 )
 
 private fun Vedtak.toDto(ansatte: Map<UUID, NavAnsatt>, vedtakSistEndretEnhet: NavEnhet?) = InnbyggerDeltakerResponse.VedtaksinformasjonDto(
