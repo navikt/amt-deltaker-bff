@@ -203,6 +203,8 @@ fun TiltakskoordinatorsDeltaker.toDeltakerResponse(harTilgang: Boolean): Deltake
                 it.hendelse is UlestHendelseType.ReaktiverDeltakelse
         },
         kanEndres = kanEndres,
+        startdato = startdato,
+        sluttdato = sluttdato,
     )
 }
 
