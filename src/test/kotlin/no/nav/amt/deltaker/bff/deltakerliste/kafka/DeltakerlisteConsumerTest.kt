@@ -52,7 +52,7 @@ class DeltakerlisteConsumerTest {
         private val deltakerlisteRepository = DeltakerlisteRepository()
         private val tiltakstypeRepository = TiltakstypeRepository()
         private val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
-        private val unleashToggle: UnleashToggle = mockk(relaxed = true)
+        private val unleashToggle: UnleashToggle = mockk()
 
         lateinit var navEnhetService: NavEnhetService
         lateinit var deltakerService: DeltakerService
@@ -88,7 +88,7 @@ class DeltakerlisteConsumerTest {
         TestRepository.cleanDatabase()
         clearAllMocks()
         every { unleashToggle.skalLeseGjennomforingerV2() } returns true
-        every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns true
+        every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns false
     }
 
     @Test
@@ -135,7 +135,7 @@ class DeltakerlisteConsumerTest {
 
     @Test
     fun `unleashToggle er ikke enabled for tiltakstype - lagrer ikke deltakerliste`() {
-        every { unleashToggle.erKometMasterForTiltakstype(any<String>()) } returns false
+        every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns true
 
         val tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)
         TestRepository.insert(tiltakstype)
