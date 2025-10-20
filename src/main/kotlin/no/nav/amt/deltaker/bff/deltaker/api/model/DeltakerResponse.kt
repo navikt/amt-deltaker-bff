@@ -48,6 +48,7 @@ data class DeltakerResponse(
     val deltakelsesmengder: DeltakelsesmengderDto,
     val erUnderOppfolging: Boolean,
     val erManueltDeltMedArrangor: Boolean,
+    val erEnkeltplassUtenRammeavtale: Boolean,
 ) {
     data class VedtaksinformasjonDto(
         val fattet: LocalDateTime?,
@@ -190,6 +191,8 @@ data class DeltakerResponse(
                 ),
                 erUnderOppfolging = navBruker.harAktivOppfolgingsperiode,
                 erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+                // midlertidig løsning inntil vi vet ner om det foreligger rammeavtale eller ikke
+                erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
             )
         }
     }
