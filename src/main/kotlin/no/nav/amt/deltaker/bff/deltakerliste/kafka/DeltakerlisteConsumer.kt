@@ -23,12 +23,11 @@ class DeltakerlisteConsumer(
     private val pameldingService: PameldingService,
     private val tilgangskontrollService: TilgangskontrollService,
     private val unleashToggle: UnleashToggle,
-    private val topic: String,
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
 
     private val consumer = buildManagedKafkaConsumer(
-        topic = topic,
+        topic = Environment.DELTAKERLISTE_V2_TOPIC,
         consumeFunc = ::consume,
     )
 
@@ -37,10 +36,6 @@ class DeltakerlisteConsumer(
     override suspend fun close() = consumer.close()
 
     override suspend fun consume(key: UUID, value: String?) {
-        if (topic == Environment.DELTAKERLISTE_V2_TOPIC && !unleashToggle.skalLeseGjennomforingerV2()) {
-            return
-        }
-
         if (value == null) {
             deltakerlisteRepository.delete(key)
         } else {
