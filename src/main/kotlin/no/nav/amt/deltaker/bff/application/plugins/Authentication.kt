@@ -39,6 +39,7 @@ fun Application.configureAuthentication(environment: Environment) {
         val navAnsattGroups = getListClaim("groups", UUID::class)
         return navAnsattGroups.contains(rolle)
     }
+
     val adRolleTiltakskoordinator = UUID.fromString(environment.adRolleTiltakskoordinator)
 
     install(Authentication) {

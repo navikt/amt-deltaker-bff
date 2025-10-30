@@ -378,7 +378,7 @@ class DeltakerRepository {
             )
 
         session.transaction { tx ->
-            tx.update(queryOf(updateDeltakerSQL(), updateDeltakerParams(deltaker)))
+            tx.update(queryOf(updateDeltakerSQL(false), updateDeltakerParams(deltaker)))
             if (skalOppdatereStatus) {
                 tx.update(insertStatusQuery(deltaker.status, deltaker.id))
                 tx.update(deaktiverTidligereStatuserQuery(deltaker.status, deltaker.id))
@@ -576,7 +576,7 @@ class DeltakerRepository {
         "modified_at" to deltaker.sistEndret,
     )
 
-    private fun updateDeltakerSQL(erBatchUpdate: Boolean = false): String =
+    private fun updateDeltakerSQL(erBatchUpdate: Boolean): String =
         """
         update deltaker set 
             startdato            = :startdato,
