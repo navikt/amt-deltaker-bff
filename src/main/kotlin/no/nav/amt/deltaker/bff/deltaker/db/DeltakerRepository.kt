@@ -514,6 +514,7 @@ class DeltakerRepository {
                    dl.oppstart as "dl.oppstart",
                    dl.apent_for_pamelding as "dl.apent_for_pamelding",
                    dl.antall_plasser as "dl.antall_plasser",
+                   dl.oppmote_sted as "dl.oppmote_sted",
                    a.id as "a.id",
                    a.navn as "a.navn",
                    a.organisasjonsnummer as "a.organisasjonsnummer",

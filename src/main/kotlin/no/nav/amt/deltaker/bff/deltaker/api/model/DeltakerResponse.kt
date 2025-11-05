@@ -101,6 +101,7 @@ data class DeltakerResponse(
         val status: Deltakerliste.Status?,
         val tilgjengeligInnhold: TilgjengeligInnhold,
         val erEnkeltplassUtenRammeavtale: Boolean,
+        val oppmoteSted: String?,
     )
 
     data class TilgjengeligInnhold(
@@ -165,6 +166,7 @@ data class DeltakerResponse(
                     ),
                     // midlertidig løsning inntil vi vet ner om det foreligger rammeavtale eller ikke
                     erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
+                    oppmoteSted = deltakerliste.oppmoteSted,
                 ),
                 status = status,
                 startdato = startdato,

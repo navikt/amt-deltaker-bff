@@ -38,6 +38,7 @@ class DeltakerlisteRepository {
                 ),
                 antallPlasser = row.intOrNull(col("antall_plasser")),
                 apentForPamelding = row.boolean(col("apent_for_pamelding")),
+                oppmoteSted = row.stringOrNull(col("oppmote_sted")),
             )
         }
     }
@@ -55,7 +56,8 @@ class DeltakerlisteRepository {
                 slutt_dato, 
                 oppstart,
                 apent_for_pamelding,
-                antall_plasser)
+                antall_plasser,
+                oppmote_sted)
             VALUES (:id,
             		:navn,
             		:status,
@@ -65,7 +67,8 @@ class DeltakerlisteRepository {
             		:slutt_dato,
                     :oppstart,
                     :apent_for_pamelding,
-                    :antall_plasser)
+                    :antall_plasser,
+                    :oppmote_sted)
             ON CONFLICT (id) DO UPDATE SET
             		navn     				= :navn,
             		status					= :status,
@@ -76,7 +79,8 @@ class DeltakerlisteRepository {
                     oppstart                = :oppstart,
                     modified_at             = current_timestamp,
                     apent_for_pamelding     = :apent_for_pamelding,
-                    antall_plasser          = :antall_plasser
+                    antall_plasser          = :antall_plasser,
+                    oppmote_sted            = :oppmote_sted
             """.trimIndent()
 
         it.update(
@@ -93,6 +97,7 @@ class DeltakerlisteRepository {
                     "oppstart" to deltakerliste.oppstart?.name,
                     "apent_for_pamelding" to deltakerliste.apentForPamelding,
                     "antall_plasser" to deltakerliste.antallPlasser,
+                    "oppmote_sted" to deltakerliste.oppmoteSted,
                 ),
             ),
         )
@@ -114,29 +119,31 @@ class DeltakerlisteRepository {
         val query = queryOf(
             """
             SELECT 
-                   dl.id as "dl.id",
-                   dl.navn as "dl.navn",
-                   dl.status as "dl.status",
-                   dl.start_dato as "dl.start_dato",
-                   dl.slutt_dato as "dl.slutt_dato",
-                   dl.oppstart as "dl.oppstart",
-                   dl.apent_for_pamelding as "dl.apent_for_pamelding",
-                   dl.antall_plasser as "dl.antall_plasser",
-                   a.id as "a.id",
-                   a.navn as "a.navn",
-                   a.organisasjonsnummer as "a.organisasjonsnummer",
-                   a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
-                   oa.navn as "oa.navn",
-                   t.id as "t.id",
-                   t.navn as "t.navn",
-                   t.tiltakskode as "t.tiltakskode",
-                   t.type as "t.type",
-                   t.innsatsgrupper as "t.innsatsgrupper",
-                   t.innhold as "t.innhold"
-            FROM deltakerliste dl
-                     JOIN arrangor a ON a.id = dl.arrangor_id
-                     LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
-                     LEFT JOIN tiltakstype t ON dl.tiltakstype_id = t.id
+                dl.id as "dl.id",
+                dl.navn as "dl.navn",
+                dl.status as "dl.status",
+                dl.start_dato as "dl.start_dato",
+                dl.slutt_dato as "dl.slutt_dato",
+                dl.oppstart as "dl.oppstart",
+                dl.apent_for_pamelding as "dl.apent_for_pamelding",
+                dl.antall_plasser as "dl.antall_plasser",
+                dl.oppmote_sted as "dl.oppmote_sted",
+                a.id as "a.id",
+                a.navn as "a.navn",
+                a.organisasjonsnummer as "a.organisasjonsnummer",
+                a.overordnet_arrangor_id as "a.overordnet_arrangor_id",
+                oa.navn as "oa.navn",
+                t.id as "t.id",
+                t.navn as "t.navn",
+                t.tiltakskode as "t.tiltakskode",
+                t.type as "t.type",
+                t.innsatsgrupper as "t.innsatsgrupper",
+                t.innhold as "t.innhold"
+            FROM 
+                deltakerliste dl
+                JOIN arrangor a ON a.id = dl.arrangor_id
+                LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
+                LEFT JOIN tiltakstype t ON dl.tiltakstype_id = t.id
             WHERE dl.id = :id
             """.trimIndent(),
             mapOf("id" to id),

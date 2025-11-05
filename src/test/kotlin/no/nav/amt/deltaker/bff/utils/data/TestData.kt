@@ -77,17 +77,19 @@ object TestData {
         oppstart: Oppstartstype = finnOppstartstype(tiltakstype.arenaKode),
         apentForPamelding: Boolean = true,
         antallPlasser: Int = 42,
+        oppmoteSted: String = "~oppmoteSted~",
     ) = Deltakerliste(
-        id,
-        tiltakstype,
-        navn,
-        status,
-        startDato,
-        sluttDato,
-        oppstart,
-        Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
-        apentForPamelding,
-        antallPlasser,
+        id = id,
+        tiltak = tiltakstype,
+        navn = navn,
+        status = status,
+        startDato = startDato,
+        sluttDato = sluttDato,
+        oppstart = oppstart,
+        arrangor = Deltakerliste.Arrangor(arrangor, overordnetArrangor?.navn),
+        apentForPamelding = apentForPamelding,
+        antallPlasser = antallPlasser,
+        oppmoteSted = oppmoteSted,
     )
 
     private val tiltakstypeCache = mutableMapOf<Tiltakskode, Tiltakstype>()
@@ -126,6 +128,7 @@ object TestData {
             oppstart = deltakerliste.oppstart,
             apentForPamelding = deltakerliste.apentForPamelding,
             antallPlasser = deltakerliste.antallPlasser,
+            oppmoteSted = deltakerliste.oppmoteSted,
         )
 
     fun lagDeltakerKladd(

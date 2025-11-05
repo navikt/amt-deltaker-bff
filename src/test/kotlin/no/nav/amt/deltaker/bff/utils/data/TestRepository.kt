@@ -129,8 +129,8 @@ object TestRepository {
         Database.query {
             val sql =
                 """
-                INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltakstype_id, start_dato, slutt_dato, oppstart, antall_plasser, apent_for_pamelding)
-                VALUES (:id, :navn, :status, :arrangor_id, :tiltakstype_id, :start_dato, :slutt_dato, :oppstart, :antall_plasser, :apent_for_pamelding)
+                INSERT INTO deltakerliste(id, navn, status, arrangor_id, tiltakstype_id, start_dato, slutt_dato, oppstart, antall_plasser, apent_for_pamelding, oppmote_sted)
+                VALUES (:id, :navn, :status, :arrangor_id, :tiltakstype_id, :start_dato, :slutt_dato, :oppstart, :antall_plasser, :apent_for_pamelding, :oppmote_sted)
                 ON CONFLICT DO NOTHING
                 """.trimIndent()
 
@@ -148,6 +148,7 @@ object TestRepository {
                         "oppstart" to deltakerliste.oppstart?.name,
                         "antall_plasser" to deltakerliste.antallPlasser,
                         "apent_for_pamelding" to deltakerliste.apentForPamelding,
+                        "oppmote_sted" to deltakerliste.oppmoteSted,
                     ),
                 ),
             )
