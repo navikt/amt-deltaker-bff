@@ -17,6 +17,7 @@ data class Deltakerliste(
     val arrangor: Arrangor,
     val apentForPamelding: Boolean,
     val antallPlasser: Int?,
+    val oppmoteSted: String?,
 ) {
     data class Arrangor(
         val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,

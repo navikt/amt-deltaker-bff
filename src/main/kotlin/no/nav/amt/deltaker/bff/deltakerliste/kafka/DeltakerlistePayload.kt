@@ -19,6 +19,7 @@ data class DeltakerlistePayload(
     val virksomhetsnummer: String? = null, // finnes kun for v1
     val arrangor: Arrangor? = null, // finnes kun for v2
     val antallPlasser: Int? = null, // finnes kun for gruppetiltak
+    val oppmoteSted: String? = null,
 ) {
     data class Tiltakstype(
         val tiltakskode: String,
@@ -51,6 +52,7 @@ data class DeltakerlistePayload(
         ),
         apentForPamelding = this.apentForPamelding,
         antallPlasser = this.antallPlasser,
+        oppmoteSted = this.oppmoteSted,
     )
 
     companion object {
