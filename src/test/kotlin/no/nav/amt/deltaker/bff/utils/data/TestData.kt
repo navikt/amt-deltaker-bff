@@ -117,6 +117,7 @@ object TestData {
     fun lagDeltakerlistePayload(arrangor: Arrangor = lagArrangor(), deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor)) =
         DeltakerlistePayload(
             id = deltakerliste.id,
+            tiltakskode = deltakerliste.tiltak.tiltakskode.name,
             tiltakstype = DeltakerlistePayload.Tiltakstype(
                 deltakerliste.tiltak.tiltakskode.name,
             ),
@@ -124,11 +125,11 @@ object TestData {
             startDato = deltakerliste.startDato,
             sluttDato = deltakerliste.sluttDato,
             status = deltakerliste.status?.name,
-            virksomhetsnummer = arrangor.organisasjonsnummer,
             oppstart = deltakerliste.oppstart,
             apentForPamelding = deltakerliste.apentForPamelding,
             antallPlasser = deltakerliste.antallPlasser,
             oppmoteSted = deltakerliste.oppmoteSted,
+            arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
     fun lagDeltakerKladd(

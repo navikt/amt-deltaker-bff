@@ -47,41 +47,6 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 class DeltakerlisteConsumerTest {
-    companion object {
-        private val deltakerlisteRepository = DeltakerlisteRepository()
-        private val tiltakstypeRepository = TiltakstypeRepository()
-        private val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
-        private val unleashToggle: UnleashToggle = mockk()
-
-        lateinit var navEnhetService: NavEnhetService
-        lateinit var deltakerService: DeltakerService
-        lateinit var pameldingService: PameldingService
-        lateinit var navAnsattService: NavAnsattService
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-
-            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-            navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-            deltakerService = DeltakerService(
-                deltakerRepository = DeltakerRepository(),
-                amtDeltakerClient = mockAmtDeltakerClient(),
-                paameldingClient = mockPaameldingClient(),
-                navEnhetService = navEnhetService,
-                forslagService = mockk(relaxed = true),
-            )
-            pameldingService = PameldingService(
-                deltakerService = deltakerService,
-                navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-                navEnhetService = navEnhetService,
-                paameldingClient = mockPaameldingClient(),
-            )
-        }
-    }
-
     @BeforeEach
     fun cleanDatabase() {
         TestRepository.cleanDatabase()
@@ -112,7 +77,6 @@ class DeltakerlisteConsumerTest {
         val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
         val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
             type = GRUPPE_V2_TYPE,
-            virksomhetsnummer = null,
             arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
@@ -151,7 +115,6 @@ class DeltakerlisteConsumerTest {
         val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
         val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
             type = GRUPPE_V2_TYPE,
-            virksomhetsnummer = null,
             arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
@@ -193,7 +156,6 @@ class DeltakerlisteConsumerTest {
             sluttDato = null,
             status = null,
             oppstart = null,
-            virksomhetsnummer = null,
             arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
@@ -293,16 +255,20 @@ class DeltakerlisteConsumerTest {
 
     @Test
     fun `consumeDeltakerliste - avbrutt, finnes deltakere - oppdaterer deltakerliste, sletter kladd`() {
-        val arrangor = lagArrangor()
-        val deltakerliste = lagDeltakerliste(arrangor = arrangor)
+        val arrangorInTest = lagArrangor()
+        val deltakerlisteInTest = lagDeltakerliste(arrangor = arrangorInTest)
+
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
-        TestRepository.insert(deltakerliste)
-        val kladd = TestData.lagDeltakerKladd(deltakerliste = deltakerliste)
+        TestRepository.insert(deltakerlisteInTest)
+
+        val kladd = TestData.lagDeltakerKladd(deltakerliste = deltakerlisteInTest)
         TestRepository.insert(kladd)
+
         val deltaker = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
         )
         TestRepository.insert(deltaker)
+
         MockResponseHandler.addSlettKladdResponse(kladd.id)
 
         val consumer = DeltakerlisteConsumer(
@@ -314,17 +280,52 @@ class DeltakerlisteConsumerTest {
             unleashToggle = unleashToggle,
         )
 
-        val oppdatertDeltakerliste = deltakerliste.copy(sluttDato = LocalDate.now(), status = Deltakerliste.Status.AVBRUTT)
+        val mutatedDeltakerliste = deltakerlisteInTest.copy(sluttDato = LocalDate.now(), status = Deltakerliste.Status.AVBRUTT)
 
         runBlocking {
             consumer.consume(
-                deltakerliste.id,
-                objectMapper.writeValueAsString(lagDeltakerlistePayload(arrangor, oppdatertDeltakerliste)),
+                deltakerlisteInTest.id,
+                objectMapper.writeValueAsString(lagDeltakerlistePayload(arrangorInTest, mutatedDeltakerliste)),
             )
 
-            deltakerlisteRepository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste
+            deltakerlisteRepository.get(deltakerlisteInTest.id).getOrThrow() shouldBe mutatedDeltakerliste
             deltakerService.getDeltaker(kladd.id).getOrNull() shouldBe null
             deltakerService.getDeltaker(deltaker.id).getOrNull() shouldNotBe null
+        }
+    }
+
+    companion object {
+        private val deltakerlisteRepository = DeltakerlisteRepository()
+        private val tiltakstypeRepository = TiltakstypeRepository()
+        private val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
+        private val unleashToggle: UnleashToggle = mockk()
+
+        lateinit var navEnhetService: NavEnhetService
+        lateinit var deltakerService: DeltakerService
+        lateinit var pameldingService: PameldingService
+        lateinit var navAnsattService: NavAnsattService
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            @Suppress("UnusedExpression")
+            SingletonPostgres16Container
+
+            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+            navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+            deltakerService = DeltakerService(
+                deltakerRepository = DeltakerRepository(),
+                amtDeltakerClient = mockAmtDeltakerClient(),
+                paameldingClient = mockPaameldingClient(),
+                navEnhetService = navEnhetService,
+                forslagService = mockk(relaxed = true),
+            )
+            pameldingService = PameldingService(
+                deltakerService = deltakerService,
+                navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
+                navEnhetService = navEnhetService,
+                paameldingClient = mockPaameldingClient(),
+            )
         }
     }
 }
