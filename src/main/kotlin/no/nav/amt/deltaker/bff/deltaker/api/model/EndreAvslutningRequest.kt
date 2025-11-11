@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import java.time.LocalDate
 import java.util.UUID
 
 data class EndreAvslutningRequest(
@@ -14,21 +15,22 @@ data class EndreAvslutningRequest(
     val harDeltatt: Boolean? = true,
     val harFullfort: Boolean? = null,
     val begrunnelse: String?,
+    val sluttdato: LocalDate?,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
     private val kanEndreAvslutning =
-        listOf(DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.FULLFORT)
+        listOf(DeltakerStatus.Type.AVBRUTT, DeltakerStatus.Type.FULLFORT, DeltakerStatus.Type.HAR_SLUTTET, DeltakerStatus.Type.DELTAR)
 
     override fun valider(deltaker: Deltaker) {
         validerAarsaksBeskrivelse(aarsak?.beskrivelse)
         validerBegrunnelse(begrunnelse)
         validerDeltakerKanEndres(deltaker)
         require(deltaker.status.type in kanEndreAvslutning) {
-            "Kan ikke endre avslutning for deltaker som ikke har status AVBRUTT eller FULLFORT"
+            "Kan ikke endre avslutning for deltaker som ikke har status AVBRUTT, FULLFORT, HAR_SLUTTET eller DELTAR"
         }
 
         require(deltakerErEndret(deltaker)) {
-            "Kan ikke avslutte deltakelse med uendret avslutning og årsak"
+            "Kan ikke avslutte deltakelse med uendret avslutning, årsak eller sluttdato"
         }
     }
 
@@ -38,5 +40,6 @@ data class EndreAvslutningRequest(
 
     private fun deltakerErEndret(deltaker: Deltaker): Boolean = (deltaker.status.type === DeltakerStatus.Type.AVBRUTT && harFullfort()) ||
         (deltaker.status.type === DeltakerStatus.Type.FULLFORT && !harFullfort()) ||
-        harEndretSluttaarsak(deltaker.status.aarsak, aarsak)
+        harEndretSluttaarsak(deltaker.status.aarsak, aarsak) ||
+        deltaker.sluttdato != sluttdato
 }
