@@ -215,21 +215,6 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/endre-avslutning") {
             val request = call.receive<EndreAvslutningRequest>()
-            handleEndring(call, request) {
-                if (request.harDeltatt() && request.harFullfort()) {
-                    DeltakerEndring.Endring.EndreAvslutning(request.aarsak, true, request.begrunnelse)
-                } else if (request.harDeltatt() && !request.harFullfort()) {
-                    require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
-                    DeltakerEndring.Endring.EndreAvslutning(request.aarsak, false, request.begrunnelse)
-                } else {
-                    require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
-                    DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
-                }
-            }
-        }
-
-        post("/deltaker/{deltakerId}/endre-avslutning-v2") {
-            val request = call.receive<EndreAvslutningRequest>()
             handleEndring(call, request) { deltaker ->
                 val endreTilAvslutt = request.harDeltatt() && request.harFullfort()
                 val endreTilAvbrutt = request.harDeltatt() && !request.harFullfort()
@@ -248,9 +233,9 @@ fun Routing.registerDeltakerApi(
                 } else if (harIngenStatusEndring && request.aarsak != deltaker.status.aarsak && request.sluttdato == deltaker.sluttdato) {
                     require(request.aarsak != null) { "Årsak er påkrevd for å endre sluttårsak" }
                     DeltakerEndring.Endring.EndreSluttarsak(request.aarsak, request.begrunnelse)
-                } else if (request.harDeltatt() && request.harFullfort()) {
+                } else if (endreTilAvslutt) {
                     DeltakerEndring.Endring.EndreAvslutning(request.aarsak, true, request.begrunnelse)
-                } else if (request.harDeltatt() && !request.harFullfort()) {
+                } else if (endreTilAvbrutt) {
                     require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
                     DeltakerEndring.Endring.EndreAvslutning(request.aarsak, false, request.begrunnelse)
                 } else {
