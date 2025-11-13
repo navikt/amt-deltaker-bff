@@ -15,7 +15,7 @@ data class EndreAvslutningRequest(
     val harDeltatt: Boolean? = true,
     val harFullfort: Boolean? = null,
     val begrunnelse: String?,
-    val sluttdato: LocalDate?,
+    val sluttdato: LocalDate? = null,
     override val forslagId: UUID?,
 ) : EndringsforslagRequest {
     private val kanEndreAvslutning =
