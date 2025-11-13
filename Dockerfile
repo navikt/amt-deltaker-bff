@@ -3,7 +3,6 @@ WORKDIR /app
 COPY build/install/amt-deltaker-bff /app
 
 ENV TZ="Europe/Oslo"
-ENV JDK_JAVA_OPTIONS="-XX:MaxRAMPercentage=75.0"
 
 EXPOSE 8080
 ENTRYPOINT ["/usr/bin/java"]
