@@ -26,9 +26,9 @@ spec:
   resources:
     requests:
       cpu: 30m
-      memory: 512Mi
+      memory: 32Mi
     limits:
-      memory: 1024Mi
+      memory: 512Mi
   envFrom:
     - secret: amt-deltaker-bff-unleash-api-token
   azure:
@@ -68,6 +68,8 @@ spec:
       external:
         - host: amt-unleash-api.nav.cloud.nais.io
   env:
+    - name: JDK_JAVA_OPTIONS
+      value: "-XX:MaxRAMPercentage=60.0"
     - name: AMT_ARRANGOR_SCOPE
       value: api://dev-gcp.amt.amt-arrangor/.default
     - name: AMT_ARRANGOR_URL
