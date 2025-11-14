@@ -216,28 +216,13 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/endre-avslutning") {
             val request = call.receive<EndreAvslutningRequest>()
             handleEndring(call, request) { deltaker ->
-                val endreTilAvslutt = request.harDeltatt() && request.harFullfort()
-                val endreTilAvbrutt = request.harDeltatt() && !request.harFullfort()
-                val endreTilIkkeAktuell = !request.harDeltatt()
-                val harIngenStatusEndring = (deltaker.status.type == DeltakerStatus.Type.AVBRUTT && endreTilAvbrutt) ||
-                    (deltaker.status.type == DeltakerStatus.Type.FULLFORT && endreTilAvslutt) ||
-                    (deltaker.status.type == DeltakerStatus.Type.HAR_SLUTTET && endreTilAvslutt) ||
-                    (deltaker.status.type == DeltakerStatus.Type.IKKE_AKTUELL && endreTilIkkeAktuell)
-
-                if (harIngenStatusEndring &&
-                    request.sluttdato != deltaker.sluttdato &&
-                    request.aarsak == deltaker.status.aarsak
-                ) {
-                    require(request.sluttdato != null) { "Sluttdato er påkrevd for å endre sluttdato" }
-                    DeltakerEndring.Endring.EndreSluttdato(request.sluttdato, request.begrunnelse)
-                } else if (harIngenStatusEndring && request.aarsak != deltaker.status.aarsak && request.sluttdato == deltaker.sluttdato) {
-                    require(request.aarsak != null) { "Årsak er påkrevd for å endre sluttårsak" }
-                    DeltakerEndring.Endring.EndreSluttarsak(request.aarsak, request.begrunnelse)
-                } else if (endreTilAvslutt) {
-                    DeltakerEndring.Endring.EndreAvslutning(request.aarsak, true, request.begrunnelse)
-                } else if (endreTilAvbrutt) {
-                    require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
-                    DeltakerEndring.Endring.EndreAvslutning(request.aarsak, false, request.begrunnelse)
+                if (request.harDeltatt()) {
+                    DeltakerEndring.Endring.EndreAvslutning(
+                        aarsak = request.aarsak,
+                        harFullfort = request.harFullfort(),
+                        sluttdato = request.sluttdato,
+                        begrunnelse = request.begrunnelse,
+                    )
                 } else {
                     require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
                     DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)

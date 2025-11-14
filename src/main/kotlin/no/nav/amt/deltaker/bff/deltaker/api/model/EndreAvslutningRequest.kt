@@ -32,6 +32,11 @@ data class EndreAvslutningRequest(
         require(deltakerErEndret(deltaker)) {
             "Kan ikke avslutte deltakelse med uendret avslutning, årsak eller sluttdato"
         }
+
+        val endreTilAvbrutt = harDeltatt() && !harFullfort()
+        if (endreTilAvbrutt) {
+            require(aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
+        }
     }
 
     fun harDeltatt(): Boolean = harDeltatt == null || harDeltatt
