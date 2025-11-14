@@ -664,6 +664,7 @@ class TiltakskoordinatorDeltakerApiTest {
             harDeltatt = null,
             harFullfort = false,
             begrunnelse = "begrunnelse",
+            sluttdato = deltaker.sluttdato,
             forslagId = null,
         )
 
@@ -695,6 +696,7 @@ class TiltakskoordinatorDeltakerApiTest {
             harDeltatt = null,
             harFullfort = true,
             begrunnelse = "begrunnelse",
+            sluttdato = deltaker.sluttdato,
             forslagId = null,
         )
 
@@ -850,6 +852,7 @@ class TiltakskoordinatorDeltakerApiTest {
             harDeltatt = true,
             harFullfort = null,
             "begrunnelse",
+            sluttdato = null,
             null,
         )
     private val sluttdatoRequest = EndreSluttdatoRequest(LocalDate.now().minusDays(1), "begrunnelse", null)
