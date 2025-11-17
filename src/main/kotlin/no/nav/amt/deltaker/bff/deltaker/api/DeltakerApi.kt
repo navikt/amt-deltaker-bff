@@ -215,12 +215,16 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/endre-avslutning") {
             val request = call.receive<EndreAvslutningRequest>()
+
+            fun erSammeAarsak(a: DeltakerStatus.Aarsak?, b: DeltakerEndring.Aarsak?): Boolean = a?.type?.name == b?.type?.name ||
+                a?.beskrivelse == b?.beskrivelse
+
             handleEndring(call, request) { deltaker ->
                 if (request.harDeltatt()) {
                     DeltakerEndring.Endring.EndreAvslutning(
-                        aarsak = request.aarsak,
+                        aarsak = if (erSammeAarsak(deltaker.status.aarsak, request.aarsak)) null else request.aarsak,
                         harFullfort = request.harFullfort(),
-                        sluttdato = request.sluttdato,
+                        sluttdato = if (deltaker.sluttdato == request.sluttdato) null else request.sluttdato,
                         begrunnelse = request.begrunnelse,
                     )
                 } else {
