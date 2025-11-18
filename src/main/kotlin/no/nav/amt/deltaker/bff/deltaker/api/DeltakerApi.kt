@@ -222,9 +222,9 @@ fun Routing.registerDeltakerApi(
             handleEndring(call, request) { deltaker ->
                 if (request.harDeltatt()) {
                     DeltakerEndring.Endring.EndreAvslutning(
-                        aarsak = if (erSammeAarsak(deltaker.status.aarsak, request.aarsak)) null else request.aarsak,
+                        aarsak = request.aarsak,
                         harFullfort = request.harFullfort(),
-                        sluttdato = if (deltaker.sluttdato == request.sluttdato) null else request.sluttdato,
+                        sluttdato = request.sluttdato,
                         begrunnelse = request.begrunnelse,
                     )
                 } else {
