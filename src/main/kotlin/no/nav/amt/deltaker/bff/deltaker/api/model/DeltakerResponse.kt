@@ -93,7 +93,8 @@ data class DeltakerResponse(
     data class DeltakerlisteDto(
         val deltakerlisteId: UUID,
         val deltakerlisteNavn: String,
-        val tiltakstype: ArenaKode,
+        val tiltakskode: Tiltakskode, // ny, erstatter tiltakstype
+        val tiltakstype: ArenaKode, // skal fjernes senere
         val arrangorNavn: String,
         val oppstartstype: Oppstartstype?,
         val startdato: LocalDate?,
@@ -154,6 +155,7 @@ data class DeltakerResponse(
                 deltakerliste = DeltakerlisteDto(
                     deltakerlisteId = deltakerliste.id,
                     deltakerlisteNavn = deltakerliste.navn,
+                    tiltakskode = deltakerliste.tiltak.tiltakskode,
                     tiltakstype = deltakerliste.tiltak.arenaKode,
                     arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
                     oppstartstype = deltakerliste.oppstart,

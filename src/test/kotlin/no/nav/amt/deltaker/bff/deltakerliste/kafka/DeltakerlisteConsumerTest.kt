@@ -18,8 +18,6 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
-import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlistePayload.Companion.ENKELTPLASS_V2_TYPE
-import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlistePayload.Companion.GRUPPE_V2_TYPE
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -76,7 +74,6 @@ class DeltakerlisteConsumerTest {
 
         val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
         val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
-            type = GRUPPE_V2_TYPE,
             arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
@@ -114,7 +111,6 @@ class DeltakerlisteConsumerTest {
 
         val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
         val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
-            type = GRUPPE_V2_TYPE,
             arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
@@ -150,7 +146,6 @@ class DeltakerlisteConsumerTest {
             )
 
         val deltakerlistePayload = lagDeltakerlistePayload(arrangor, deltakerliste).copy(
-            type = ENKELTPLASS_V2_TYPE,
             navn = null,
             startDato = null,
             sluttDato = null,
@@ -166,7 +161,7 @@ class DeltakerlisteConsumerTest {
             )
 
             deltakerlisteRepository.get(deltakerliste.id).getOrThrow() shouldBe deltakerliste.copy(
-                navn = "Test tiltak ENKFAGYRKE",
+                navn = tiltakstype.navn,
                 status = null,
                 startDato = null,
                 sluttDato = null,

@@ -33,7 +33,7 @@ class TiltakstypeConsumerTest {
             id = tiltakstype.id,
             navn = tiltakstype.navn,
             tiltakskode = tiltakstype.tiltakskode,
-            arenaKode = tiltakstype.arenaKode.name,
+            arenaKode = tiltakstype.arenaKode.name, // skal fjernes senere
             innsatsgrupper = tiltakstype.innsatsgrupper.map { it.toV2() }.toSet(),
             deltakerRegistreringInnhold = tiltakstype.innhold,
         )
