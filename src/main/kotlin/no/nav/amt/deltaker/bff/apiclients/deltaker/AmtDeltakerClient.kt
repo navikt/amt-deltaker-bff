@@ -185,7 +185,7 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         aarsak: DeltakerEndring.Aarsak?,
         begrunnelse: String?,
-        harFullfort: Boolean,
+        harFullfort: Boolean?,
         sluttdato: LocalDate?,
         forslagId: UUID?,
     ) = postEndring(

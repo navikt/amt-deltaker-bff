@@ -220,7 +220,7 @@ fun Routing.registerDeltakerApi(
                 if (request.harDeltatt()) {
                     DeltakerEndring.Endring.EndreAvslutning(
                         aarsak = request.aarsak,
-                        harFullfort = request.harFullfort(),
+                        harFullfort = request.harFullfort,
                         sluttdato = request.sluttdato,
                         begrunnelse = request.begrunnelse,
                     )

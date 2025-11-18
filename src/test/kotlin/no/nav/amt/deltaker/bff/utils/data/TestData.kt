@@ -600,7 +600,7 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
 
         is DeltakerEndring.Endring.EndreAvslutning -> this.copy(
             status = TestData.lagDeltakerStatus(
-                type = if (endring.harFullfort) DeltakerStatus.Type.FULLFORT else DeltakerStatus.Type.AVBRUTT,
+                type = if (endring.harFullfort == true) DeltakerStatus.Type.FULLFORT else DeltakerStatus.Type.AVBRUTT,
                 aarsak = endring.aarsak?.toStatusAarsak()?.type,
                 beskrivelse = endring.aarsak?.beskrivelse,
             ),

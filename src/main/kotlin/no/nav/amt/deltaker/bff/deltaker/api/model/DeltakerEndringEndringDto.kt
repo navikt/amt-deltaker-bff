@@ -58,7 +58,7 @@ sealed class DeltakerEndringEndringDto {
         val aarsak: Aarsak?,
         val sluttdato: LocalDate?,
         val begrunnelse: String?,
-        val harFullfort: Boolean,
+        val harFullfort: Boolean?,
     ) : DeltakerEndringEndringDto()
 
     data class EndreSluttarsak(
