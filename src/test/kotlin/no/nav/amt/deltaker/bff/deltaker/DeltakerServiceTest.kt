@@ -150,7 +150,7 @@ class DeltakerServiceTest {
                 }
 
                 is DeltakerEndring.Endring.EndreAvslutning -> {
-                    if (endring.harFullfort) {
+                    if (endring.harFullfort == true) {
                         oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.FULLFORT
                     } else {
                         oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.AVBRUTT
