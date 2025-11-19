@@ -85,7 +85,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         deltakerlisteId = deltakerliste.id,
         deltakerlisteNavn = deltakerliste.navn,
         tiltakskode = deltakerliste.tiltak.tiltakskode, // ny, erstatter tiltakstype
-        tiltakstype = deltakerliste.tiltak.arenaKode, // skal fjernes senere
+        tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(), // skal fjernes senere
         arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
         oppstartstype = deltakerliste.oppstart,
         startdato = deltakerliste.startDato,

@@ -356,7 +356,6 @@ private fun Deltaker.toKafkaPayload(
         tiltak = Tiltak(
             navn = "trallas",
             tiltakskode = deltakerliste.tiltak.tiltakskode,
-            arenaKode = deltakerliste.tiltak.arenaKode, // skal fjernes senere
         ),
         startdato = deltakerliste.startDato,
         sluttdato = deltakerliste.sluttDato,

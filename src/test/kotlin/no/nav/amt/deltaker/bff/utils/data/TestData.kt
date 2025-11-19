@@ -104,7 +104,6 @@ object TestData {
             id = id,
             navn = navn,
             tiltakskode = tiltakskode,
-            arenaKode = tiltakskode.toArenaKode(),
             innsatsgrupper = innsatsgrupper,
             innhold = innhold,
         )
@@ -571,7 +570,6 @@ object TestData {
                 tiltak = HendelseDeltaker.Deltakerliste.Tiltak(
                     navn = deltaker.deltakerliste.navn,
                     tiltakskode = deltaker.deltakerliste.tiltak.tiltakskode,
-                    type = deltaker.deltakerliste.tiltak.arenaKode, // skal fjernes senere
                     ledetekst = "ledetekst",
                 ),
                 startdato = deltaker.deltakerliste.startDato,

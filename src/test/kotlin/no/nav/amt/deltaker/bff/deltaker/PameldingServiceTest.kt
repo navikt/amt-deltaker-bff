@@ -80,7 +80,6 @@ class PameldingServiceTest {
                     id shouldBe deltakerListeInTest.id
                     navn shouldBe deltakerListeInTest.navn
                     tiltak.tiltakskode shouldBe deltakerListeInTest.tiltak.tiltakskode
-                    tiltak.arenaKode shouldBe deltakerListeInTest.tiltak.arenaKode // skal fjernes senere
                     it.arrangor.arrangor shouldBe arrangorInTest
                     it.arrangor.overordnetArrangorNavn shouldBe overordnetArrangorInTest.navn
                     it.oppstart shouldBe deltakerListeInTest.oppstart

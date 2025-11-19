@@ -156,7 +156,7 @@ data class DeltakerResponse(
                     deltakerlisteId = deltakerliste.id,
                     deltakerlisteNavn = deltakerliste.navn,
                     tiltakskode = deltakerliste.tiltak.tiltakskode,
-                    tiltakstype = deltakerliste.tiltak.arenaKode,
+                    tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
                     arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
                     oppstartstype = deltakerliste.oppstart,
                     startdato = deltakerliste.startDato,
