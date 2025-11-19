@@ -185,11 +185,12 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         aarsak: DeltakerEndring.Aarsak?,
         begrunnelse: String?,
-        harFullfort: Boolean,
+        harFullfort: Boolean?,
+        sluttdato: LocalDate?,
         forslagId: UUID?,
     ) = postEndring(
         deltakerId,
-        EndreAvslutningRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse, harFullfort),
+        EndreAvslutningRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse, sluttdato, harFullfort),
         ENDRE_AVSLUTNING,
     )
 

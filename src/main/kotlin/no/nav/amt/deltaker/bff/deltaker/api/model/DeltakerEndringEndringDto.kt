@@ -56,8 +56,9 @@ sealed class DeltakerEndringEndringDto {
 
     data class EndreAvslutning(
         val aarsak: Aarsak?,
+        val sluttdato: LocalDate?,
         val begrunnelse: String?,
-        val harFullfort: Boolean,
+        val harFullfort: Boolean?,
     ) : DeltakerEndringEndringDto()
 
     data class EndreSluttarsak(
@@ -89,6 +90,7 @@ sealed class DeltakerEndringEndringDto {
                     aarsak = aarsak,
                     begrunnelse = begrunnelse,
                     harFullfort = harFullfort,
+                    sluttdato = sluttdato,
                 )
 
                 is DeltakerEndring.Endring.AvbrytDeltakelse -> AvsluttDeltakelse(
