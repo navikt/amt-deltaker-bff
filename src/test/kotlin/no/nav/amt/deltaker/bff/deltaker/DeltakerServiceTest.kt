@@ -11,6 +11,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerStatus
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
@@ -22,6 +23,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
 class DeltakerServiceTest {
@@ -393,6 +395,65 @@ class DeltakerServiceTest {
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         deltakerFraDb.kanEndres shouldBe false
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - ny deltaker - beholder låsing`() {
+        val deltaker = TestData.lagDeltaker()
+        TestRepository.insert(deltaker)
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
+        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste - låser den eldste`() {
+        val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET))
+        val deltaker2 = TestData.lagDeltaker(navBruker = deltaker.navBruker, deltakerliste = deltaker.deltakerliste)
+        TestRepository.insert(deltaker)
+        TestRepository.insert(deltaker2)
+
+        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
+        service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe true
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste, nyeste er feilregistrert - låser begge`() {
+        val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET))
+        val deltaker2 = TestData.lagDeltaker(
+            status = lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+            navBruker = deltaker.navBruker,
+            deltakerliste = deltaker.deltakerliste,
+        )
+        TestRepository.insert(deltaker)
+        TestRepository.insert(deltaker2)
+
+        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
+        service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe false
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste, den eldste er aktiv - kaster exception`() {
+        val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        val deltaker2 = TestData.lagDeltaker(
+            status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            navBruker = deltaker.navBruker,
+            deltakerliste = deltaker.deltakerliste,
+        )
+        TestRepository.insert(deltaker)
+        TestRepository.insert(deltaker2)
+
+        assertThrows<IllegalStateException> {
+            service.oppdaterDeltakerLaas(
+                deltaker.id,
+                deltaker.navBruker.personident,
+                deltaker.deltakerliste.id,
+            )
+        }
     }
 }
 

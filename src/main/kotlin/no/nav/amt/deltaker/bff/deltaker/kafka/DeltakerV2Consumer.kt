@@ -66,8 +66,6 @@ class DeltakerV2Consumer(
             deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
             vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
         } else {
-            // deltakerFinnes || deltakerPayload.kilde == Kilde.KOMET
-            // deltaker finnes, kilde er komet
             log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),

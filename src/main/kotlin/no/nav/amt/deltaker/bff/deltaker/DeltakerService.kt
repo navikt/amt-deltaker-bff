@@ -242,8 +242,6 @@ class DeltakerService(
         }
 
         val nyesteDeltakelse = deltakelserPaaPerson.first()
-        // TODO: .firstOrNull { it.paameldtDato != null } // Utkast har ikke påmeldt dato men skal tolkes som nyeste deltakelse
-
         val skalLaases = deltakelserPaaPerson
             .filter {
                 it.id != nyesteDeltakelse.id ||
