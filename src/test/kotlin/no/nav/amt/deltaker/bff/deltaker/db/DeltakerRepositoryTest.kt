@@ -140,7 +140,7 @@ class DeltakerRepositoryTest {
 
             val kladd = opprettKladdResponseFromDeltaker(deltaker)
 
-            deltakerRepository.create(kladd)
+            deltakerRepository.opprettKladd(kladd)
 
             sammenlignDeltakere(deltaker, deltakerRepository.get(kladd.id).getOrThrow())
         }
@@ -153,7 +153,7 @@ class DeltakerRepositoryTest {
             val kladd = opprettKladdResponseFromDeltaker(deltaker)
 
             assertThrows(PSQLException::class.java) {
-                deltakerRepository.create(kladd)
+                deltakerRepository.opprettKladd(kladd)
             }
         }
     }

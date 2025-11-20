@@ -53,25 +53,33 @@ class DeltakerV2Consumer(
 
         val lagretDeltaker = deltakerService.getDeltaker(deltakerPayload.id).getOrNull()
         val deltakerFinnes = lagretDeltaker != null
-        if (deltakerFinnes || deltakerPayload.kilde == Kilde.KOMET) {
+        val ukjentDeltaker = !deltakerFinnes || deltakerPayload.kilde == Kilde.ARENA
+
+        if (ukjentDeltaker) {
+            // Når deltakeren ikke finnes så skal det bety at det er ene arenadeltaker som kommer fra arena-acl
+            // kan muligens forekomme race condition med at et utkast kommer på kafka før vi rekker å lagre i databasen
+            log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
+            val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
+            val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
+
+            deltakerService.opprettDeltaker(deltaker)
+            deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
+        } else {
+            // deltakerFinnes || deltakerPayload.kilde == Kilde.KOMET
+            // deltaker finnes, kilde er komet
             log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
                 isSynchronousInvocation = false,
             )
             vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
-            lagretDeltaker?.navBruker?.let {
+            lagretDeltaker.navBruker.let {
                 if (it.adresse == null) {
                     log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerPayload.id}")
                     navBrukerService.update(it.personident)
                 }
             }
-        } else {
-            log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
-            val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
-            val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
-            deltakerService.opprettArenaDeltaker(deltaker)
-            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
         }
     }
 

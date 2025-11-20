@@ -48,8 +48,8 @@ class DeltakerService(
         forslagId: UUID? = null,
     ): Deltaker {
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
-        val oppdatertDeltaker = when (endring) {
-            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> endreDeltaker(deltaker) {
+        val deltakeroppdatering = when (endring) {
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon ->
                 amtDeltakerClient
                     .endreBakgrunnsinformasjon(
                         deltakerId = deltaker.id,
@@ -57,9 +57,8 @@ class DeltakerService(
                         endretAvEnhet = endretAvEnhet,
                         endring = endring,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreInnhold -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.EndreInnhold ->
                 amtDeltakerClient
                     .endreInnhold(
                         deltakerId = deltaker.id,
@@ -70,9 +69,8 @@ class DeltakerService(
                             innhold = endring.innhold,
                         ),
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.AvsluttDeltakelse -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.AvsluttDeltakelse ->
                 amtDeltakerClient
                     .avsluttDeltakelse(
                         deltakerId = deltaker.id,
@@ -83,9 +81,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreAvslutning -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.EndreAvslutning ->
                 amtDeltakerClient
                     .endreAvslutning(
                         deltakerId = deltaker.id,
@@ -96,9 +93,8 @@ class DeltakerService(
                         harFullfort = endring.harFullfort,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.AvbrytDeltakelse -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.AvbrytDeltakelse ->
                 amtDeltakerClient
                     .avbrytDeltakelse(
                         deltakerId = deltaker.id,
@@ -109,9 +105,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde ->
                 amtDeltakerClient
                     .endreDeltakelsesmengde(
                         deltakerId = deltaker.id,
@@ -123,9 +118,8 @@ class DeltakerService(
                         gyldigFra = endring.gyldigFra,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreSluttarsak -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.EndreSluttarsak ->
                 amtDeltakerClient
                     .endreSluttaarsak(
                         deltakerId = deltaker.id,
@@ -135,9 +129,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreSluttdato -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.EndreSluttdato ->
                 amtDeltakerClient
                     .endreSluttdato(
                         deltakerId = deltaker.id,
@@ -147,9 +140,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreStartdato -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.EndreStartdato ->
                 amtDeltakerClient
                     .endreStartdato(
                         deltakerId = deltaker.id,
@@ -160,9 +152,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.ForlengDeltakelse -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.ForlengDeltakelse ->
                 amtDeltakerClient
                     .forlengDeltakelse(
                         deltakerId = deltaker.id,
@@ -172,9 +163,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.IkkeAktuell -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.IkkeAktuell ->
                 amtDeltakerClient
                     .ikkeAktuell(
                         deltakerId = deltaker.id,
@@ -184,9 +174,8 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.ReaktiverDeltakelse -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.ReaktiverDeltakelse -> {
                 val response = amtDeltakerClient.reaktiverDeltakelse(
                     deltakerId = deltaker.id,
                     endretAv = endretAv,
@@ -197,7 +186,7 @@ class DeltakerService(
                 response.toDeltakeroppdatering()
             }
 
-            is DeltakerEndring.Endring.FjernOppstartsdato -> endreDeltaker(deltaker) {
+            is DeltakerEndring.Endring.FjernOppstartsdato ->
                 amtDeltakerClient
                     .fjernOppstartsdato(
                         deltakerId = deltaker.id,
@@ -206,13 +195,7 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
-            }
         }
-        return oppdatertDeltaker
-    }
-
-    private suspend fun endreDeltaker(deltaker: Deltaker, amtDeltakerKall: suspend () -> Deltakeroppdatering): Deltaker {
-        val deltakeroppdatering = amtDeltakerKall()
         oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)
     }
@@ -235,60 +218,60 @@ class DeltakerService(
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
-    fun opprettArenaDeltaker(deltaker: Deltaker) {
-        val deltakelserPaSammeTiltak =
-            getDeltakerIdOgStatusForDeltakelserPaTiltak(deltaker.navBruker.personident, deltaker.deltakerliste.id)
-        deltakerRepository.upsert(deltaker)
+    fun opprettDeltaker(deltaker: Deltaker) = deltakerRepository.upsert(deltaker)
 
-        if (deltakelserPaSammeTiltak.isNotEmpty()) {
-            // Det finnes tidligere deltakelser på samme tiltak
-            val avsluttedeDeltakelserPaSammeTiltak =
-                deltakelserPaSammeTiltak.filter { it.status.type in AVSLUTTENDE_STATUSER && it.kanEndres }
-            if (deltaker.status.type in AKTIVE_STATUSER) {
-                deltakerRepository.settKanEndres(avsluttedeDeltakelserPaSammeTiltak.map { it.id }, false)
-                log.info(
-                    "Har låst ${avsluttedeDeltakelserPaSammeTiltak.size} " +
-                        "deltakere for endringer pga nyere aktiv deltaker fra arena med id ${deltaker.id}",
-                )
-            } else { // deltakelsen er gammel(er avsluttet)
-                val aktiveDeltakelser = deltakelserPaSammeTiltak.filterNot { it.status.type in AVSLUTTENDE_STATUSER }
-                if (aktiveDeltakelser.isNotEmpty()) {
-                    deltakerRepository.settKanEndres(listOf(deltaker.id), false)
-                    log.info(
-                        "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere aktive deltakelser",
-                    )
-                } else {
-                    val nyereAvsluttetDeltakelse = avsluttedeDeltakelserPaSammeTiltak.find {
-                        it.status.opprettet.isAfter(
-                            deltaker.status.opprettet,
-                        )
-                    }
-                    if (nyereAvsluttetDeltakelse != null) {
-                        deltakerRepository.settKanEndres(listOf(deltaker.id), false)
-                        log.info(
-                            "Har låst deltaker med id: ${deltaker.id} for endringer pga nyere avsluttet deltakelse",
-                        )
-                    } else {
-                        val skalIkkeKunneEndres = avsluttedeDeltakelserPaSammeTiltak.filterNot {
-                            it.status.opprettet.isAfter(
-                                deltaker.status.opprettet,
-                            )
-                        }
-                        deltakerRepository.settKanEndres(skalIkkeKunneEndres.map { it.id }, false)
-                        log.info(
-                            "Har låst ${skalIkkeKunneEndres.size} " +
-                                "deltakere for endringer pga nyere avsluttet deltaker fra arena med id ${deltaker.id}",
-                        )
-                    }
-                }
-            }
+    fun oppdaterDeltakerLaas(
+        deltakerId: UUID,
+        personident: String,
+        deltakerlisteId: UUID,
+    ) {
+        /*
+            Denne funksjonen er ment til alle scenarioer hvor det er relevant med låsing av deltakere.
+            Skal kalles etter at databasen er oppdatert med ny/oppdatering av deltaker som gjør at den er vanskelig å gjenbruke noen steder
+            (flere steder så oppdateres ikke databasen med deltakerendringer før resultatet er mottatt på kafka)
+            Scenario 1: oppdatering av eksisterende deltakelser
+            Scenario 2: Import av data fra arena
+            Scenario 3: Avbryt utkast som i praksis vil ha en deltakelse uten påmeldtdato
+         */
+        val deltakelserPaaPerson = deltakerRepository
+            .getMany(personident, deltakerlisteId)
+            .sortedByDescending { it.paameldtDato }
+
+        if (deltakelserPaaPerson.none { it.id == deltakerId }) {
+            throw IllegalStateException("Den nye deltakelsen $deltakerId må være upsertet for å bruke denne funksjonen")
         }
 
-        if (deltaker.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
-            deltaker.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+        val nyesteDeltakelse = deltakelserPaaPerson.first()
+        // TODO: .firstOrNull { it.paameldtDato != null } // Utkast har ikke påmeldt dato men skal tolkes som nyeste deltakelse
+
+        val skalLaases = deltakelserPaaPerson
+            .filter {
+                it.id != nyesteDeltakelse.id ||
+                    nyesteDeltakelse.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
+                    nyesteDeltakelse.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+            }.filter { it.kanEndres }
+
+        if (deltakerId != nyesteDeltakelse.id) {
+            log.info("Fikk oppdatering på $deltakerId som skal låses fordi det er nyere deltakelse ${nyesteDeltakelse.id} på personen")
+        }
+
+        if (nyesteDeltakelse.status.type !in AKTIVE_STATUSER &&
+            !skalLaases.map { it.status.type }.all { it in AVSLUTTENDE_STATUSER }
         ) {
-            deltakerRepository.settKanEndres(listOf(deltaker.id), false)
+            val laasesMedAktivStatus = skalLaases.filter { it.status.type in AKTIVE_STATUSER }
+            throw IllegalStateException(
+                "ugyldig state. Nyeste deltaker ${nyesteDeltakelse.id} påmeldt ${nyesteDeltakelse.paameldtDato}" +
+                    "har avsluttende status ${nyesteDeltakelse.status.type}. " +
+                    "Eldre deltakelse(r) ${
+                        laasesMedAktivStatus.map {
+                            it.id
+                        }
+                    } har aktiv status ${laasesMedAktivStatus.map { it.status.type }}",
+            )
         }
+
+        log.info("Låser ${skalLaases.size} deltakere for endringer pga nyere aktiv deltaker med id ${nyesteDeltakelse.id}")
+        deltakerRepository.settKanEndres(skalLaases.map { it.id }, false)
     }
 
     fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
@@ -344,8 +327,8 @@ class DeltakerService(
         log.info("Upserter kladd for deltaker med id ${deltaker.id}")
     }
 
-    fun opprettDeltaker(kladd: OpprettKladdResponse): Result<Deltaker> {
-        deltakerRepository.create(kladd)
+    fun opprettKladd(kladd: OpprettKladdResponse): Result<Deltaker> {
+        deltakerRepository.opprettKladd(kladd)
         return deltakerRepository.get(kladd.id)
     }
 
@@ -359,9 +342,6 @@ class DeltakerService(
         amtDeltakerClient.sistBesokt(deltaker.id, sistBesokt)
         deltakerRepository.oppdaterSistBesokt(deltaker.id, sistBesokt)
     }
-
-    private fun getDeltakerIdOgStatusForDeltakelserPaTiltak(personident: String, deltakerlisteId: UUID) =
-        deltakerRepository.getDeltakerIdOgStatusForDeltakelser(personident, deltakerlisteId)
 
     fun getForDeltakerliste(deltakerlisteId: UUID) = deltakerRepository.getForDeltakerliste(deltakerlisteId)
 

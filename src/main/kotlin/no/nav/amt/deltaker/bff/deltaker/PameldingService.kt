@@ -36,7 +36,7 @@ class PameldingService(
         )
 
         navBrukerService.upsert(kladdResponse.navBruker)
-        val deltaker = deltakerService.opprettDeltaker(kladdResponse).getOrThrow()
+        val deltaker = deltakerService.opprettKladd(kladdResponse).getOrThrow()
 
         MetricRegister.OPPRETTET_KLADD.inc()
 
