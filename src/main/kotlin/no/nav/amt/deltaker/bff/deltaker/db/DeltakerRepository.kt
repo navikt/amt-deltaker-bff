@@ -285,7 +285,7 @@ class DeltakerRepository {
         val sql =
             """
             update deltaker
-            set kan_endres = :kan_endres
+            set kan_endres = :kan_endres, modified_at = CURRENT_TIMESTAMP
             where id =any (:ider);
             """.trimIndent()
         val parameters = mapOf(
@@ -335,7 +335,7 @@ class DeltakerRepository {
         session.run(query)
     }
 
-    fun create(kladd: OpprettKladdResponse) = Database.query {
+    fun opprettKladd(kladd: OpprettKladdResponse) = Database.query {
         val sql =
             """
             insert into deltaker(

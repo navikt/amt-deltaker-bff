@@ -38,6 +38,7 @@ import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -142,6 +143,7 @@ class DeltakerV2ConsumerTest {
             val tidligereDeltakelse = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
+                historikk = true,
                 status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
             )
             TestRepository.insert(tidligereDeltakelse)
@@ -149,6 +151,7 @@ class DeltakerV2ConsumerTest {
             val deltaker = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
+                historikk = true,
                 status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             )
 
@@ -167,7 +170,7 @@ class DeltakerV2ConsumerTest {
     }
 
     @Test
-    fun `consume - kilde ARENA, finnes ikke, nyere deltakelse - lagrer, kan ikke endres`() {
+    fun `consume - kilde ARENA, eldre deltakelse har aktiv status - kaster exception`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
                 tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
@@ -178,30 +181,24 @@ class DeltakerV2ConsumerTest {
                 navBruker = navbruker,
                 status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
             )
-            TestRepository.insert(nyereDeltakelse)
-
             val deltaker = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
                 status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             )
+            TestRepository.insert(nyereDeltakelse)
 
-            consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
-            )
-
-            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
-            lagretDeltaker.startdato shouldBe deltaker.startdato
-            lagretDeltaker.kanEndres shouldBe false
-
-            val lagretNyereDeltaker = deltakerService.getDeltaker(nyereDeltakelse.id).getOrThrow()
-            lagretNyereDeltaker.kanEndres shouldBe true
+            assertThrows<IllegalStateException> {
+                consumer.consume(
+                    deltaker.id,
+                    objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
+                )
+            }
         }
     }
 
     @Test
-    fun `consume - kilde ARENA, finnes ikke, avsluttet, en avsluttet deltakelse - lagrer, tidligere deltaker kan ikke endres`() {
+    fun `consume - kilde ARENA, finnes ikke, avsluttet, en avsluttet deltakelse - tidligere deltaker kan ikke endres`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
                 tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
@@ -211,6 +208,7 @@ class DeltakerV2ConsumerTest {
             val tidligereDeltakelse = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
+                historikk = true,
                 status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
             )
             TestRepository.insert(tidligereDeltakelse)
@@ -219,6 +217,7 @@ class DeltakerV2ConsumerTest {
             val deltaker = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
+                historikk = true,
                 status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
             )
 
@@ -237,38 +236,38 @@ class DeltakerV2ConsumerTest {
     }
 
     @Test
-    fun `consume - kilde ARENA, finnes ikke, avsluttet, en nyere avsluttet deltakelse - lagrer, eldste deltaker kan ikke endres`() {
+    fun `consume - kilde ARENA, leser inn eldste deltakelse først - eldste deltaker kan ikke endres`() {
         runBlocking {
             val deltakerliste = TestData.lagDeltakerliste(
                 tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
             )
             val navbruker = TestData.lagNavBruker()
-            val statusdato = LocalDateTime.now().minusDays(2)
-            val tidligereDeltakelse = TestData.lagDeltaker(
+            val eldsteDeltakelse = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                historikk = true,
             )
-            TestRepository.insert(tidligereDeltakelse)
 
-            val statusdato2 = LocalDateTime.now().minusMonths(3)
-            val deltaker = TestData.lagDeltaker(
+            val nyesteDeltakelse = TestData.lagDeltaker(
                 deltakerliste = deltakerliste,
                 navBruker = navbruker,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
+                historikk = true,
+                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
             )
+            TestRepository.insert(eldsteDeltakelse)
 
             consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
+                nyesteDeltakelse.id,
+                objectMapper.writeValueAsString(nyesteDeltakelse.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
-            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
-            lagretDeltaker.startdato shouldBe deltaker.startdato
-            lagretDeltaker.kanEndres shouldBe false
+            val lagretDeltaker = deltakerService.getDeltaker(nyesteDeltakelse.id).getOrThrow()
+            lagretDeltaker.startdato shouldBe nyesteDeltakelse.startdato
+            lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
-            lagretTidligereDeltaker.kanEndres shouldBe true
+            val lagretTidligereDeltaker = deltakerService.getDeltaker(eldsteDeltakelse.id).getOrThrow()
+            lagretTidligereDeltaker.kanEndres shouldBe false
         }
     }
 
