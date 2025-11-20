@@ -74,13 +74,11 @@ object TestRepository {
                     id, 
                     navn, 
                     tiltakskode,
-                    type,
                     innsatsgrupper,
                     innhold)
                 VALUES (:id,
                         :navn,
                         :tiltakskode,
-                        :type,
                         :innsatsgrupper,
                         :innhold)
                 ON CONFLICT (id) DO UPDATE SET
@@ -96,7 +94,6 @@ object TestRepository {
                         "id" to tiltakstype.id,
                         "navn" to tiltakstype.navn,
                         "tiltakskode" to tiltakstype.tiltakskode.name,
-                        "type" to tiltakstype.tiltakskode.toArenaKode().name,
                         "innsatsgrupper" to toPGObject(tiltakstype.innsatsgrupper),
                         "innhold" to toPGObject(tiltakstype.innhold),
                     ),
