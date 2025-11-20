@@ -7,7 +7,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 data class DeltakerlistePayload(
-    val type: String? = null, // finnes kun for v2, kan fjernes etter overgang til v2
     val id: UUID,
     val tiltakskode: String? = null, // skal gjøres non-nullable
     val tiltakstype: Tiltakstype? = null, // skal fjernes
@@ -54,9 +53,4 @@ data class DeltakerlistePayload(
         antallPlasser = this.antallPlasser,
         oppmoteSted = this.oppmoteSted,
     )
-
-    companion object {
-        const val ENKELTPLASS_V2_TYPE = "TiltaksgjennomforingV2.Enkeltplass"
-        const val GRUPPE_V2_TYPE = "TiltaksgjennomforingV2.Gruppe"
-    }
 }

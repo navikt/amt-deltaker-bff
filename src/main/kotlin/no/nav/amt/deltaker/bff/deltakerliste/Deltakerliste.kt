@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
+import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
 import java.time.LocalDate
 import java.util.UUID
@@ -42,12 +42,12 @@ data class Deltakerliste(
         }
     }
 
-    fun deltakerAdresseDeles() = !tiltakUtenDeltakerAdresset.contains(this.tiltak.arenaKode)
+    fun deltakerAdresseDeles() = tiltakUtenDeltakerAdresset.none { it == this.tiltak.tiltakskode }
 }
 
 private val tiltakUtenDeltakerAdresset = setOf(
-    ArenaKode.DIGIOPPARB,
-    ArenaKode.JOBBK,
-    ArenaKode.GRUPPEAMO,
-    ArenaKode.GRUFAGYRKE,
+    Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
+    Tiltakskode.JOBBKLUBB,
+    Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
+    Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
 )

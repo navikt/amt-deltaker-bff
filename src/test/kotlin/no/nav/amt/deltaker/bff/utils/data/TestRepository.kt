@@ -74,13 +74,11 @@ object TestRepository {
                     id, 
                     navn, 
                     tiltakskode,
-                    type, 
                     innsatsgrupper,
                     innhold)
                 VALUES (:id,
                         :navn,
                         :tiltakskode,
-                        :type,
                         :innsatsgrupper,
                         :innhold)
                 ON CONFLICT (id) DO UPDATE SET
@@ -96,7 +94,6 @@ object TestRepository {
                         "id" to tiltakstype.id,
                         "navn" to tiltakstype.navn,
                         "tiltakskode" to tiltakstype.tiltakskode.name,
-                        "type" to tiltakstype.arenaKode.name,
                         "innsatsgrupper" to toPGObject(tiltakstype.innsatsgrupper),
                         "innhold" to toPGObject(tiltakstype.innhold),
                     ),
@@ -111,7 +108,7 @@ object TestRepository {
         try {
             insert(deltakerliste.tiltak)
         } catch (_: Exception) {
-            log.warn("Tiltakstype  ${deltakerliste.tiltak.arenaKode} er allerede opprettet")
+            log.warn("Tiltakstype  ${deltakerliste.tiltak.tiltakskode} er allerede opprettet")
         }
         if (overordnetArrangor != null) {
             try {

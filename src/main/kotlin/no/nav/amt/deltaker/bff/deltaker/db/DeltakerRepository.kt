@@ -523,7 +523,6 @@ class DeltakerRepository {
                    t.id as "t.id",
                    t.navn as "t.navn",
                    t.tiltakskode as "t.tiltakskode",
-                   t.type as "t.type",
                    t.innsatsgrupper as "t.innsatsgrupper",
                    t.innhold as "t.innhold"
             from deltaker d 

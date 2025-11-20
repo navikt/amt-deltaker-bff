@@ -79,7 +79,7 @@ class PameldingServiceTest {
                 assertSoftly(deltakerListeInTest) {
                     id shouldBe deltakerListeInTest.id
                     navn shouldBe deltakerListeInTest.navn
-                    tiltak.arenaKode shouldBe deltakerListeInTest.tiltak.arenaKode
+                    tiltak.tiltakskode shouldBe deltakerListeInTest.tiltak.tiltakskode
                     it.arrangor.arrangor shouldBe arrangorInTest
                     it.arrangor.overordnetArrangorNavn shouldBe overordnetArrangorInTest.navn
                     it.oppstart shouldBe deltakerListeInTest.oppstart
