@@ -6,7 +6,6 @@ import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
-import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
@@ -229,7 +228,8 @@ class DeltakerService(
         /*
             Denne funksjonen er ment til alle scenarioer hvor det er relevant med låsing av deltakere.
             Skal kalles etter at databasen er oppdatert med ny/oppdatering av deltaker som gjør at den er vanskelig å gjenbruke noen steder
-            (flere steder så oppdateres ikke databasen med deltakerendringer før resultatet er mottatt på kafka)
+            (flere steder så oppdateres ikke databasen med deltakerendringer før resultatet er mottatt på kafka).
+            OBS: Flere deltakelser kan ha samme påmeldt dato(i tilfelle den ene er historisert).
             Scenario 1: oppdatering av eksisterende deltakelser
             Scenario 2: Import av data fra arena
             Scenario 3: Avbryt utkast som i praksis vil ha en deltakelse uten påmeldtdato
@@ -242,8 +242,11 @@ class DeltakerService(
             throw IllegalStateException("Den nye deltakelsen $deltakerId må være upsertet for å bruke denne funksjonen")
         }
 
-        val nyesteDeltakelse = deltakelserPaaPerson.first()
-        val skalLaases = deltakelserPaaPerson
+        val nyesteDeltakelse =
+            if (deltakelserPaaPerson.any { it.status.type in AKTIVE_STATUSER }) deltakelserPaaPerson.first { it.status.type in AKTIVE_STATUSER }
+            else deltakelserPaaPerson.first()
+
+        val deltakelserSomSkalLaases = deltakelserPaaPerson
             .filter {
                 it.id != nyesteDeltakelse.id ||
                     nyesteDeltakelse.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
@@ -254,23 +257,23 @@ class DeltakerService(
             log.info("Fikk oppdatering på $deltakerId som skal låses fordi det er nyere deltakelse ${nyesteDeltakelse.id} på personen")
         }
 
-        if (nyesteDeltakelse.status.type !in AKTIVE_STATUSER &&
-            !skalLaases.map { it.status.type }.all { it in AVSLUTTENDE_STATUSER }
-        ) {
-            val laasesMedAktivStatus = skalLaases.filter { it.status.type in AKTIVE_STATUSER }
+        val laasesMedAktivStatus = deltakelserSomSkalLaases
+            .filter { it.status.type in AKTIVE_STATUSER }
+
+        if (laasesMedAktivStatus.isNotEmpty()) {
             throw IllegalStateException(
-                "ugyldig state. Nyeste deltaker ${nyesteDeltakelse.id} påmeldt ${nyesteDeltakelse.paameldtDato}" +
-                    "har avsluttende status ${nyesteDeltakelse.status.type}. " +
-                    "Eldre deltakelse(r) ${
-                        laasesMedAktivStatus.map {
-                            it.id
-                        }
-                    } har aktiv status ${laasesMedAktivStatus.map { it.status.type }}",
+                "ugyldig state. Fant eldre deltakelser med aktiv status: " +
+                    "Nyeste deltaker ${nyesteDeltakelse.id} " +
+                    "påmeldt ${nyesteDeltakelse.paameldtDato} " +
+                    "har status ${nyesteDeltakelse.status.type}. " +
+                    "Eldre deltakelse(r) ${laasesMedAktivStatus.map { it.id }} " +
+                    "påmeldt ${laasesMedAktivStatus.map { it.paameldtDato }} " +
+                    "har status ${laasesMedAktivStatus.map { it.status.type }}. ",
             )
         }
 
-        log.info("Låser ${skalLaases.size} deltakere for endringer pga nyere aktiv deltaker med id ${nyesteDeltakelse.id}")
-        deltakerRepository.settKanEndres(skalLaases.map { it.id }, false)
+        log.info("Låser ${deltakelserSomSkalLaases.size} deltakere for endringer pga nyere aktiv deltaker med id ${nyesteDeltakelse.id}")
+        deltakerRepository.settKanEndres(deltakelserSomSkalLaases.map { it.id }, false)
     }
 
     fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
