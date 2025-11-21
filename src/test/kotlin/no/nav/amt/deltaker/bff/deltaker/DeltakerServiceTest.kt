@@ -440,14 +440,15 @@ class DeltakerServiceTest {
     fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste med samme reg dato - låser den med avsluttende status`() {
         val deltaker = TestData.lagDeltaker(
             status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-            historikk = true
-        )
-        val deltaker2 = TestData.lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
-            navBruker = deltaker.navBruker,
-            deltakerliste = deltaker.deltakerliste,
             historikk = true,
-        ).copy(historikk = deltaker.historikk)
+        )
+        val deltaker2 = TestData
+            .lagDeltaker(
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                navBruker = deltaker.navBruker,
+                deltakerliste = deltaker.deltakerliste,
+                historikk = true,
+            ).copy(historikk = deltaker.historikk)
 
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
@@ -457,18 +458,20 @@ class DeltakerServiceTest {
         service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
         service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe true
     }
+
     @Test
     fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste med samme reg dato - kaster exception`() {
         val deltaker = TestData.lagDeltaker(
             status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
-            historikk = true
-        )
-        val deltaker2 = TestData.lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
-            navBruker = deltaker.navBruker,
-            deltakerliste = deltaker.deltakerliste,
             historikk = true,
-        ).copy(historikk = deltaker.historikk)
+        )
+        val deltaker2 = TestData
+            .lagDeltaker(
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                navBruker = deltaker.navBruker,
+                deltakerliste = deltaker.deltakerliste,
+                historikk = true,
+            ).copy(historikk = deltaker.historikk)
 
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
@@ -477,11 +480,10 @@ class DeltakerServiceTest {
             service.oppdaterDeltakerLaas(
                 deltaker.id,
                 deltaker.navBruker.personident,
-                deltaker.deltakerliste.id
+                deltaker.deltakerliste.id,
             )
         }
     }
-
 }
 
 fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aarsak(

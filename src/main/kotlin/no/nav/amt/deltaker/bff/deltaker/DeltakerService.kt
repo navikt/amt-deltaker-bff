@@ -243,8 +243,14 @@ class DeltakerService(
         }
 
         val nyesteDeltakelse =
-            if (deltakelserPaaPerson.any { it.status.type in AKTIVE_STATUSER }) deltakelserPaaPerson.first { it.status.type in AKTIVE_STATUSER }
-            else deltakelserPaaPerson.first()
+            if (deltakelserPaaPerson.any { it.status.type in AKTIVE_STATUSER }) {
+                deltakelserPaaPerson.first {
+                    it.status.type in
+                        AKTIVE_STATUSER
+                }
+            } else {
+                deltakelserPaaPerson.first()
+            }
 
         val deltakelserSomSkalLaases = deltakelserPaaPerson
             .filter {
