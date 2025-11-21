@@ -437,13 +437,42 @@ class DeltakerServiceTest {
     }
 
     @Test
-    fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste, den eldste er aktiv - kaster exception`() {
-        val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
-        val deltaker2 = TestData.lagDeltaker(
+    fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste med samme reg dato - låser den med avsluttende status`() {
+        val deltaker = TestData.lagDeltaker(
             status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-            navBruker = deltaker.navBruker,
-            deltakerliste = deltaker.deltakerliste,
+            historikk = true,
         )
+        val deltaker2 = TestData
+            .lagDeltaker(
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                navBruker = deltaker.navBruker,
+                deltakerliste = deltaker.deltakerliste,
+                historikk = true,
+            ).copy(historikk = deltaker.historikk)
+
+        TestRepository.insert(deltaker)
+        TestRepository.insert(deltaker2)
+
+        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
+        service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe true
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste med samme reg dato - kaster exception`() {
+        val deltaker = TestData.lagDeltaker(
+            status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            historikk = true,
+        )
+        val deltaker2 = TestData
+            .lagDeltaker(
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                navBruker = deltaker.navBruker,
+                deltakerliste = deltaker.deltakerliste,
+                historikk = true,
+            ).copy(historikk = deltaker.historikk)
+
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
 

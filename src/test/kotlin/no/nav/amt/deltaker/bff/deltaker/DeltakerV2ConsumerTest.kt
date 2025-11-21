@@ -38,7 +38,6 @@ import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -166,34 +165,6 @@ class DeltakerV2ConsumerTest {
 
             val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe false
-        }
-    }
-
-    @Test
-    fun `consume - kilde ARENA, eldre deltakelse har aktiv status - kaster exception`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val navbruker = TestData.lagNavBruker()
-            val nyereDeltakelse = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
-            )
-            val deltaker = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
-            )
-            TestRepository.insert(nyereDeltakelse)
-
-            assertThrows<IllegalStateException> {
-                consumer.consume(
-                    deltaker.id,
-                    objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
-                )
-            }
         }
     }
 
