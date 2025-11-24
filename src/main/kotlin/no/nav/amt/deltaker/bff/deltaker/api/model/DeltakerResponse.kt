@@ -13,7 +13,6 @@ import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.ArenaKode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -93,8 +92,7 @@ data class DeltakerResponse(
     data class DeltakerlisteDto(
         val deltakerlisteId: UUID,
         val deltakerlisteNavn: String,
-        val tiltakskode: Tiltakskode, // ny, erstatter tiltakstype
-        val tiltakstype: ArenaKode, // skal fjernes senere
+        val tiltakskode: Tiltakskode,
         val arrangorNavn: String,
         val oppstartstype: Oppstartstype?,
         val startdato: LocalDate?,
@@ -156,7 +154,6 @@ data class DeltakerResponse(
                     deltakerlisteId = deltakerliste.id,
                     deltakerlisteNavn = deltakerliste.navn,
                     tiltakskode = deltakerliste.tiltak.tiltakskode,
-                    tiltakstype = deltakerliste.tiltak.tiltakskode.toArenaKode(),
                     arrangorNavn = deltakerliste.arrangor.getArrangorNavn(),
                     oppstartstype = deltakerliste.oppstart,
                     startdato = deltakerliste.startDato,
