@@ -79,7 +79,7 @@ fun Routing.registerPameldingApi(
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 
-            pameldingService.upsertKladd(
+            val nyKladd = pameldingService.upsertKladd(
                 kladd = Kladd(
                     opprinneligDeltaker = deltaker,
                     pamelding = Pamelding(
@@ -95,8 +95,13 @@ fun Routing.registerPameldingApi(
                     ),
                 ),
             )
+            if (nyKladd != null) {
+                call.respond(HttpStatusCode.OK)
+            }
+            else {
+                call.respond(HttpStatusCode.BadRequest, "Kladden ble ikke opprettet")
+            }
 
-            call.respond(HttpStatusCode.OK)
         }
 
         post("/pamelding/{deltakerId}") {

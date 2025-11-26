@@ -43,14 +43,17 @@ class PameldingService(
         return deltaker
     }
 
-    fun upsertKladd(kladd: Kladd) {
-        require(kladd.opprinneligDeltaker.status.type == DeltakerStatus.Type.KLADD) {
-            "Kan ikke upserte kladd for deltaker ${kladd.opprinneligDeltaker.id} " +
+    fun upsertKladd(kladd: Kladd): Deltaker? {
+        if (kladd.opprinneligDeltaker.status.type !== DeltakerStatus.Type.KLADD) {
+            // Dette kan skje når to brukere er inne på samme deltakelse samtidig
+            // eller når samme bruker har flere faner med samme deltakelse
+            log.warn("Kan ikke upserte kladd for deltaker ${kladd.opprinneligDeltaker.id} " +
                 "med status ${kladd.opprinneligDeltaker.status.type}," +
-                "status må være ${DeltakerStatus.Type.KLADD}."
+                "status må være ${DeltakerStatus.Type.KLADD}.")
+            return null
         }
 
-        deltakerService.oppdaterKladd(
+        return deltakerService.oppdaterKladd(
             kladd.opprinneligDeltaker,
             kladd.opprinneligDeltaker.status,
             kladd.pamelding,
