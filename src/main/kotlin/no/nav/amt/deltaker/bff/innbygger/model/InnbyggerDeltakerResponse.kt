@@ -59,6 +59,7 @@ data class InnbyggerDeltakerResponse(
         val startdato: LocalDate?,
         val sluttdato: LocalDate?,
         val erEnkeltplassUtenRammeavtale: Boolean,
+        val oppmoteSted: String?,
     )
 
     data class DeltakelsesmengderDto(
@@ -89,6 +90,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         sluttdato = deltakerliste.sluttDato,
         // midlertidig løsning inntil vi vet ner om det foreligger rammeavtale eller ikke
         erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
+        oppmoteSted = deltakerliste.oppmoteSted,
     ),
     status = status,
     startdato = startdato,
