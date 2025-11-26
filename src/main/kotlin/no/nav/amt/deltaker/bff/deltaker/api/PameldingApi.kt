@@ -97,11 +97,9 @@ fun Routing.registerPameldingApi(
             )
             if (nyKladd != null) {
                 call.respond(HttpStatusCode.OK)
-            }
-            else {
+            } else {
                 call.respond(HttpStatusCode.BadRequest, "Kladden ble ikke opprettet")
             }
-
         }
 
         post("/pamelding/{deltakerId}") {
