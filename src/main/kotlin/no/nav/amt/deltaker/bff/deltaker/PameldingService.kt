@@ -47,6 +47,7 @@ class PameldingService(
         if (kladd.opprinneligDeltaker.status.type !== DeltakerStatus.Type.KLADD) {
             // Dette kan skje når to brukere er inne på samme deltakelse samtidig
             // eller når samme bruker har flere faner med samme deltakelse
+            // eller når nav veileder er så rask med å dele utkast at kladd requesten(som har en delay i frontend) kommer på etterskudd
             log.warn("Kan ikke upserte kladd for deltaker ${kladd.opprinneligDeltaker.id} " +
                 "med status ${kladd.opprinneligDeltaker.status.type}," +
                 "status må være ${DeltakerStatus.Type.KLADD}.")
