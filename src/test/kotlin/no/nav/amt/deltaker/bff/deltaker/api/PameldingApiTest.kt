@@ -168,7 +168,7 @@ class PameldingApiTest {
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.KLADD))
         every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
 
-        coEvery { pameldingService.upsertKladd(any()) } returns Unit
+        coEvery { pameldingService.upsertKladd(any()) } returns deltaker
 
         setUpTestApplication()
         client.post("/pamelding/${deltaker.id}/kladd") { createPostRequest(kladdRequest) }.apply {
