@@ -29,8 +29,8 @@ spec:
         thresholdPercentage: 200
   resources:
     requests:
-      cpu: 40m
-      memory: 550Mi
+      cpu: 30m
+      memory: 700Mi
     limits:
       memory: 1Gi
   envFrom:
