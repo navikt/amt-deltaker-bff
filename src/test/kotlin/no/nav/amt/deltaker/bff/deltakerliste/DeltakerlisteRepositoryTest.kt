@@ -2,11 +2,11 @@ package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.utils.data.TestData.lagArrangor
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested

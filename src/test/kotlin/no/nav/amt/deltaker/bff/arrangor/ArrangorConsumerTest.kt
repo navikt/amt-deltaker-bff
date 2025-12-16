@@ -2,8 +2,8 @@ package no.nav.amt.deltaker.bff.arrangor
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ class ArrangorConsumerTest {
 
     @Test
     fun `consumeArrangor - ny arrangor - upserter`() {
-        val arrangor = TestData.lagArrangor()
+        val arrangor = lagArrangor()
         val arrangorConsumer = ArrangorConsumer(repository)
 
         runBlocking {
@@ -36,7 +36,7 @@ class ArrangorConsumerTest {
 
     @Test
     fun `consumeArrangor - oppdatert arrangor - upserter`() {
-        val arrangor = TestData.lagArrangor()
+        val arrangor = lagArrangor()
         repository.upsert(arrangor)
 
         val oppdatertArrangor = arrangor.copy(navn = "Oppdatert Arrangor")
@@ -52,7 +52,7 @@ class ArrangorConsumerTest {
 
     @Test
     fun `consumeArrangor - tombstonet arrangor - sletter`() {
-        val arrangor = TestData.lagArrangor()
+        val arrangor = lagArrangor()
         repository.upsert(arrangor)
 
         val arrangorConsumer = ArrangorConsumer(repository)

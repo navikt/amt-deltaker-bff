@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakstype
@@ -10,7 +11,7 @@ data class Deltakerliste(
     val id: UUID,
     val tiltak: Tiltakstype,
     val navn: String,
-    val status: Status?,
+    val status: GjennomforingStatusType?,
     val startDato: LocalDate?,
     val sluttDato: LocalDate? = null,
     val oppstart: Oppstartstype?,
@@ -23,24 +24,6 @@ data class Deltakerliste(
         val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
         val overordnetArrangorNavn: String?,
     )
-
-    enum class Status {
-        GJENNOMFORES,
-        AVBRUTT,
-        AVLYST,
-        AVSLUTTET,
-        ;
-
-        companion object {
-            fun fromString(status: String) = when (status) {
-                "GJENNOMFORES" -> GJENNOMFORES
-                "AVBRUTT" -> AVBRUTT
-                "AVLYST" -> AVLYST
-                "AVSLUTTET" -> AVSLUTTET
-                else -> error("Ukjent deltakerlistestatus: $status")
-            }
-        }
-    }
 
     fun deltakerAdresseDeles() = tiltakUtenDeltakerAdresset.none { it == this.tiltak.tiltakskode }
 }

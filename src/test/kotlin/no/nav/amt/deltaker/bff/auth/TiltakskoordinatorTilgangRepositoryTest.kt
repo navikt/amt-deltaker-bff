@@ -14,6 +14,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakskoordinatorTilgang
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
 import no.nav.amt.lib.testing.SingletonPostgres16Container
@@ -242,7 +243,7 @@ data class TiltakskoordinatorTilgangContext(
 
     fun medStengtDeltakerliste() {
         deltakerliste = deltakerliste.copy(
-            status = Deltakerliste.Status.AVSLUTTET,
+            status = GjennomforingStatusType.AVSLUTTET,
             sluttDato = LocalDate.now().minus(DeltakerlisteService.tiltakskoordinatorGraceperiode).minusDays(1),
         )
         deltakerlisteRepository.upsert(deltakerliste)
@@ -250,7 +251,7 @@ data class TiltakskoordinatorTilgangContext(
 
     fun medAvsluttetDeltakerliste() {
         deltakerliste = deltakerliste.copy(
-            status = Deltakerliste.Status.AVSLUTTET,
+            status = GjennomforingStatusType.AVSLUTTET,
             sluttDato = LocalDate.now(),
         )
         deltakerlisteRepository.upsert(deltakerliste)

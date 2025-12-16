@@ -4,7 +4,6 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
-import no.nav.amt.deltaker.bff.deltakerliste.kafka.DeltakerlistePayload
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
@@ -22,7 +21,9 @@ import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
+import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -42,8 +43,10 @@ import no.nav.amt.lib.models.person.address.Kontaktadresse
 import no.nav.amt.lib.models.person.address.Matrikkeladresse
 import no.nav.amt.lib.models.person.address.Vegadresse
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 object TestData {
@@ -57,20 +60,13 @@ object TestData {
 
     fun input(n: Int) = (1..n).map { ('a'..'z').random() }.joinToString("")
 
-    fun lagArrangor(
-        id: UUID = UUID.randomUUID(),
-        navn: String = "Arrangor 1",
-        organisasjonsnummer: String = randomOrgnr(),
-        overordnetArrangorId: UUID? = null,
-    ) = Arrangor(id, navn, organisasjonsnummer, overordnetArrangorId)
-
     fun lagDeltakerliste(
         id: UUID = UUID.randomUUID(),
         overordnetArrangor: Arrangor? = null,
         arrangor: Arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor?.id),
         tiltakstype: Tiltakstype = lagTiltakstype(),
         navn: String = "Test Deltakerliste ${tiltakstype.tiltakskode}",
-        status: Deltakerliste.Status = Deltakerliste.Status.GJENNOMFORES,
+        status: GjennomforingStatusType = GjennomforingStatusType.GJENNOMFORES,
         startDato: LocalDate = LocalDate.now().minusMonths(1),
         sluttDato: LocalDate? = LocalDate.now().plusYears(1),
         oppstart: Oppstartstype = finnOppstartstype(tiltakstype.tiltakskode),
@@ -118,23 +114,37 @@ object TestData {
         ledetekst: String = "Beskrivelse av tilaket",
     ) = DeltakerRegistreringInnhold(innholdselementer, ledetekst)
 
-    fun lagDeltakerlistePayload(arrangor: Arrangor = lagArrangor(), deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor)) =
-        DeltakerlistePayload(
-            id = deltakerliste.id,
-            tiltakskode = deltakerliste.tiltak.tiltakskode.name,
-            tiltakstype = DeltakerlistePayload.Tiltakstype(
-                deltakerliste.tiltak.tiltakskode.name,
-            ),
-            navn = deltakerliste.navn,
-            startDato = deltakerliste.startDato,
-            sluttDato = deltakerliste.sluttDato,
-            status = deltakerliste.status?.name,
-            oppstart = deltakerliste.oppstart,
-            apentForPamelding = deltakerliste.apentForPamelding,
-            antallPlasser = deltakerliste.antallPlasser,
-            oppmoteSted = deltakerliste.oppmoteSted,
-            arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
-        )
+    fun lagEnkeltplassDeltakerlistePayload(
+        arrangor: Arrangor = lagArrangor(),
+        deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),
+    ) = GjennomforingV2KafkaPayload.Enkeltplass(
+        id = deltakerliste.id,
+        tiltakskode = deltakerliste.tiltak.tiltakskode,
+        arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
+        oppdatertTidspunkt = OffsetDateTime.now(),
+        opprettetTidspunkt = OffsetDateTime.now(),
+    )
+
+    fun lagGruppeDeltakerlistePayload(
+        arrangor: Arrangor = lagArrangor(),
+        deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),
+    ) = GjennomforingV2KafkaPayload.Gruppe(
+        id = deltakerliste.id,
+        navn = deltakerliste.navn,
+        tiltakskode = deltakerliste.tiltak.tiltakskode,
+        startDato = deltakerliste.startDato!!,
+        sluttDato = deltakerliste.sluttDato,
+        status = deltakerliste.status!!,
+        oppstart = deltakerliste.oppstart!!,
+        apentForPamelding = deltakerliste.apentForPamelding,
+        oppmoteSted = deltakerliste.oppmoteSted,
+        tilgjengeligForArrangorFraOgMedDato = null,
+        antallPlasser = 42,
+        deltidsprosent = 42.0,
+        arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
+        oppdatertTidspunkt = OffsetDateTime.now(),
+        opprettetTidspunkt = OffsetDateTime.now(),
+    )
 
     fun lagDeltakerKladd(
         id: UUID = UUID.randomUUID(),
