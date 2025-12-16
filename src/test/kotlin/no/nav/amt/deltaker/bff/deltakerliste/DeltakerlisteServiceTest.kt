@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltakerliste
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
@@ -88,7 +89,7 @@ data class DeltakerlisteContext(
 
     fun medAvsluttetDeltakerliste() {
         deltakerliste = deltakerliste.copy(
-            status = Deltakerliste.Status.AVSLUTTET,
+            status = GjennomforingStatusType.AVSLUTTET,
             startDato = LocalDate.now().minusMonths(3),
             sluttDato = LocalDate.now().minus(DeltakerlisteService.tiltakskoordinatorGraceperiode).minusDays(1),
         )

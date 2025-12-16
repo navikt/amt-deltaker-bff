@@ -5,13 +5,13 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
-import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import java.util.UUID
@@ -43,21 +43,22 @@ class DeltakerlisteConsumer(
         }
     }
 
-    private suspend fun handterDeltakerliste(deltakerlistePayload: DeltakerlistePayload) {
-        if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.effectiveTiltakskode)) {
+    private suspend fun handterDeltakerliste(deltakerlistePayload: GjennomforingV2KafkaPayload) {
+        if (unleashToggle.skipProsesseringAvGjennomforing(deltakerlistePayload.tiltakskode.name)) {
             return
         }
 
-        val tiltakskode = Tiltakskode.valueOf(deltakerlistePayload.effectiveTiltakskode)
+        val arrangor = arrangorService.hentArrangor(deltakerlistePayload.arrangor.organisasjonsnummer)
+        val tiltakstype = tiltakstypeRepository.get(deltakerlistePayload.tiltakskode).getOrThrow()
 
         val deltakerliste = deltakerlistePayload.toModel(
-            arrangor = arrangorService.hentArrangor(deltakerlistePayload.arrangor.organisasjonsnummer),
-            tiltakstype = tiltakstypeRepository.get(tiltakskode).getOrThrow(),
+            { gruppe -> gruppe.toModel(arrangor, tiltakstype) },
+            { enkeltplass -> enkeltplass.toModel(arrangor, tiltakstype) },
         )
 
         deltakerlisteRepository.upsert(deltakerliste)
 
-        if (deltakerliste.status == Deltakerliste.Status.AVLYST || deltakerliste.status == Deltakerliste.Status.AVBRUTT) {
+        if (deltakerliste.status == GjennomforingStatusType.AVLYST || deltakerliste.status == GjennomforingStatusType.AVBRUTT) {
             val kladderSomSkalSlettes = pameldingService.getKladderForDeltakerliste(deltakerliste.id)
             kladderSomSkalSlettes.forEach {
                 pameldingService.slettKladd(it)

@@ -49,6 +49,7 @@ data class Deltaker(
                     is DeltakerHistorikk.ImportertFraArena ->
                         it.importertFraArena.deltakerVedImport.innsoktDato
                             .atStartOfDay()
+
                     is DeltakerHistorikk.Vedtak -> it.vedtak.fattet
                     else -> null
                 }
@@ -123,6 +124,12 @@ data class Deltaker(
             Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.HOYERE_UTDANNING,
             Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+            // nye tiltakskoder
+            Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+            Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+            Tiltakskode.STUDIESPESIALISERING,
+            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
             -> null
         }
 
@@ -162,6 +169,13 @@ data class Deltaker(
             Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.HOYERE_UTDANNING,
             Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+
+            // nye tiltakskoder
+            Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+            Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+            Tiltakskode.STUDIESPESIALISERING,
+            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
             -> null
         }
 

@@ -27,6 +27,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeAll
@@ -470,7 +471,7 @@ class DeltakerRepositoryTest {
 
         @Test
         fun `getMany - henter flere deltakere`() {
-            val arrangor = TestData.lagArrangor()
+            val arrangor = lagArrangor()
             TestRepository.insert(arrangor)
 
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
@@ -515,7 +516,7 @@ class DeltakerRepositoryTest {
 
         @Test
         fun `getKladderForDeltakerliste - henter flere deltakere`() {
-            val arrangor = TestData.lagArrangor()
+            val arrangor = lagArrangor()
             TestRepository.insert(arrangor)
 
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
@@ -545,7 +546,7 @@ class DeltakerRepositoryTest {
 
         @Test
         fun `getKladdForDeltakerliste - henter deltaker`() {
-            val arrangor = TestData.lagArrangor()
+            val arrangor = lagArrangor()
             TestRepository.insert(arrangor)
 
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)

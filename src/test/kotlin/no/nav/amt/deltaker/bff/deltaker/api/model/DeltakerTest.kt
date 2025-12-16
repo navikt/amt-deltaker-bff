@@ -38,6 +38,11 @@ class DeltakerTest {
                 Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
                 Tiltakskode.HOYERE_UTDANNING,
+                Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+                Tiltakskode.STUDIESPESIALISERING,
+                Tiltakskode.FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
                 -> it.maxVarighet shouldBe null
 
                 Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
@@ -132,9 +137,11 @@ class DeltakerTest {
 
                 Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
                 -> it.softMaxVarighet shouldBe weeks(8)
+
                 Tiltakskode.AVKLARING,
                 Tiltakskode.ARBEIDSRETTET_REHABILITERING,
                 -> it.softMaxVarighet shouldBe weeks(12)
+
                 Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
                 Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
                 Tiltakskode.JOBBKLUBB,
@@ -142,6 +149,11 @@ class DeltakerTest {
                 Tiltakskode.HOYERE_UTDANNING,
                 Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+                Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+                Tiltakskode.STUDIESPESIALISERING,
+                Tiltakskode.FAG_OG_YRKESOPPLAERING,
+                Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
                 -> it.softMaxVarighet shouldBe null
             }
         }

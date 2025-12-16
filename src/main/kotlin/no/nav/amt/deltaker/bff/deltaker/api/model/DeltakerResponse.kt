@@ -12,6 +12,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Innholdselement
@@ -97,7 +98,7 @@ data class DeltakerResponse(
         val oppstartstype: Oppstartstype?,
         val startdato: LocalDate?,
         val sluttdato: LocalDate?,
-        val status: Deltakerliste.Status?,
+        val status: GjennomforingStatusType?,
         val tilgjengeligInnhold: TilgjengeligInnhold,
         val erEnkeltplassUtenRammeavtale: Boolean,
         val oppmoteSted: String?,

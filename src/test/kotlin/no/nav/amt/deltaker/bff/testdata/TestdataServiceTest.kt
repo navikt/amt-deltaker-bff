@@ -29,6 +29,7 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -76,7 +77,7 @@ class TestdataServiceTest {
 
     @Test
     fun `opprettDeltakelse - deltaker finnes ikke, gyldig request - oppretter ny deltaker`() {
-        val arrangor = TestData.lagArrangor()
+        val arrangor = lagArrangor()
         val deltakerliste = TestData.lagDeltakerliste(
             arrangor = arrangor,
             tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),

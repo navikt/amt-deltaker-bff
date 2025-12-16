@@ -17,7 +17,6 @@ import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
 import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
@@ -30,6 +29,7 @@ import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.D
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.person.dto.NavEnhetDto
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.applicationConfig
 import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
@@ -97,8 +97,8 @@ fun mockHttpClient(defaultResponse: Any? = null): HttpClient {
     }
 }
 
-fun mockAmtArrangorClient(arrangor: Arrangor = TestData.lagArrangor()): AmtArrangorClient {
-    val overordnetArrangor = arrangor.overordnetArrangorId?.let { TestData.lagArrangor(id = it) }
+fun mockAmtArrangorClient(arrangor: Arrangor = lagArrangor()): AmtArrangorClient {
+    val overordnetArrangor = arrangor.overordnetArrangorId?.let { lagArrangor(id = it) }
 
     val response = ArrangorResponse(arrangor.id, arrangor.navn, arrangor.organisasjonsnummer, overordnetArrangor)
     return AmtArrangorClient(

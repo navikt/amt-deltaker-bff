@@ -5,6 +5,7 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.deltaker.Arrangor
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
@@ -21,7 +22,7 @@ class DeltakerlisteRepository {
                 id = row.uuid(col("id")),
                 tiltak = TiltakstypeRepository.rowMapper(row, "t"),
                 navn = row.string(col("navn")),
-                status = row.stringOrNull(col("status"))?.let { Deltakerliste.Status.valueOf(it) },
+                status = row.stringOrNull(col("status"))?.let { GjennomforingStatusType.valueOf(it) },
                 startDato = row.localDateOrNull(col("start_dato")),
                 sluttDato = row.localDateOrNull(col("slutt_dato")),
                 oppstart = row.stringOrNull(col("oppstart"))?.let { Oppstartstype.valueOf(it) },

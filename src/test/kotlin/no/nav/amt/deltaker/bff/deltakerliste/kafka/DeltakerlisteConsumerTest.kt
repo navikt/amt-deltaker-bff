@@ -16,7 +16,6 @@ import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
@@ -26,9 +25,9 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import no.nav.amt.deltaker.bff.utils.data.TestData.lagArrangor
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
-import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerlistePayload
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagEnkeltplassDeltakerlistePayload
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagGruppeDeltakerlistePayload
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakstype
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtArrangorClient
@@ -36,8 +35,11 @@ import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
+import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
@@ -73,8 +75,8 @@ class DeltakerlisteConsumerTest {
             )
 
         val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
-        val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
-            arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
+        val deltakerlistePayload = lagGruppeDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
+            arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
         runBlocking {
@@ -92,7 +94,7 @@ class DeltakerlisteConsumerTest {
     }
 
     @Test
-    fun `ny liste v2 gruppe - lagrer deltakerliste`() {
+    fun `ny liste gruppe - lagrer deltakerliste`() {
         val tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)
         TestRepository.insert(tiltakstype)
 
@@ -110,8 +112,8 @@ class DeltakerlisteConsumerTest {
             )
 
         val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
-        val deltakerlistePayload = lagDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
-            arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
+        val deltakerlistePayload = lagGruppeDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
+            arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
         )
 
         runBlocking {
@@ -145,14 +147,7 @@ class DeltakerlisteConsumerTest {
                 unleashToggle = unleashToggle,
             )
 
-        val deltakerlistePayload = lagDeltakerlistePayload(arrangor, deltakerliste).copy(
-            navn = null,
-            startDato = null,
-            sluttDato = null,
-            status = null,
-            oppstart = null,
-            arrangor = DeltakerlistePayload.Arrangor(arrangor.organisasjonsnummer),
-        )
+        val deltakerlistePayload = lagEnkeltplassDeltakerlistePayload(arrangor, deltakerliste)
 
         runBlocking {
             consumer.consume(
@@ -166,6 +161,9 @@ class DeltakerlisteConsumerTest {
                 startDato = null,
                 sluttDato = null,
                 oppstart = null,
+                antallPlasser = null,
+                apentForPamelding = true,
+                oppmoteSted = null,
             )
         }
 
@@ -190,7 +188,7 @@ class DeltakerlisteConsumerTest {
         runBlocking {
             consumer.consume(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(lagDeltakerlistePayload(arrangor, deltakerliste)),
+                objectMapper.writeValueAsString(lagGruppeDeltakerlistePayload(arrangor, deltakerliste)),
             )
 
             deltakerlisteRepository.get(deltakerliste.id).getOrThrow() shouldBe deltakerliste
@@ -218,7 +216,7 @@ class DeltakerlisteConsumerTest {
         runBlocking {
             consumer.consume(
                 deltakerliste.id,
-                objectMapper.writeValueAsString(lagDeltakerlistePayload(arrangor, oppdatertDeltakerliste)),
+                objectMapper.writeValueAsString(lagGruppeDeltakerlistePayload(arrangor, oppdatertDeltakerliste)),
             )
 
             deltakerlisteRepository.get(deltakerliste.id).getOrThrow() shouldBe oppdatertDeltakerliste
@@ -275,12 +273,12 @@ class DeltakerlisteConsumerTest {
             unleashToggle = unleashToggle,
         )
 
-        val mutatedDeltakerliste = deltakerlisteInTest.copy(sluttDato = LocalDate.now(), status = Deltakerliste.Status.AVBRUTT)
+        val mutatedDeltakerliste = deltakerlisteInTest.copy(sluttDato = LocalDate.now(), status = GjennomforingStatusType.AVBRUTT)
 
         runBlocking {
             consumer.consume(
                 deltakerlisteInTest.id,
-                objectMapper.writeValueAsString(lagDeltakerlistePayload(arrangorInTest, mutatedDeltakerliste)),
+                objectMapper.writeValueAsString(lagGruppeDeltakerlistePayload(arrangorInTest, mutatedDeltakerliste)),
             )
 
             deltakerlisteRepository.get(deltakerlisteInTest.id).getOrThrow() shouldBe mutatedDeltakerliste
