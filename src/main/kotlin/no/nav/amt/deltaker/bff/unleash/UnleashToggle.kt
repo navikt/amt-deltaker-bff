@@ -41,6 +41,12 @@ class UnleashToggle(
             Tiltakskode.HOYERE_UTDANNING,
         )
 
-        private val tiltakstyperKometKanskjeErMasterFor = tiltakstyperKometKanLese
+        private val tiltakstyperKometKanskjeErMasterFor = setOf(
+            Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
+            Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+            Tiltakskode.STUDIESPESIALISERING,
+            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+        )
     }
 }
