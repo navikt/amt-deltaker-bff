@@ -23,6 +23,7 @@ import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavEnhet
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakskoordinatorDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakskoordinatorTilgang
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
@@ -301,7 +302,7 @@ class TiltakskoordinatorDeltakerlisteApiTest : RouteTestBase() {
     }
 
     companion object {
-        private val deltakerlisteInTest = lagDeltakerliste()
+        private val deltakerlisteInTest = lagDeltakerliste(pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK)
 
         private val tiltakskoordinatorInTest = Tiltakskoordinator(
             id = UUID.randomUUID(),

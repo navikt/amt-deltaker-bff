@@ -35,6 +35,7 @@ import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
@@ -111,7 +112,12 @@ class DeltakerlisteConsumerTest {
                 unleashToggle = unleashToggle,
             )
 
-        val expectedDeltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
+        val expectedDeltakerliste = lagDeltakerliste(
+            arrangor = arrangor,
+            tiltakstype = tiltakstype,
+            pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
+        )
+
         val deltakerlistePayload = lagGruppeDeltakerlistePayload(arrangor, expectedDeltakerliste).copy(
             arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
         )
@@ -134,7 +140,11 @@ class DeltakerlisteConsumerTest {
         TestRepository.insert(tiltakstype)
 
         val arrangor = lagArrangor()
-        val deltakerliste = lagDeltakerliste(arrangor = arrangor, tiltakstype = tiltakstype)
+        val deltakerliste = lagDeltakerliste(
+            arrangor = arrangor,
+            tiltakstype = tiltakstype,
+            pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
+        )
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
 
         val consumer =
@@ -173,7 +183,7 @@ class DeltakerlisteConsumerTest {
     @Test
     fun `consumeDeltakerliste - ny liste og arrangor - lagrer deltakerliste`() {
         val arrangor = lagArrangor()
-        val deltakerliste = lagDeltakerliste(arrangor = arrangor)
+        val deltakerliste = lagDeltakerliste(arrangor = arrangor, pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK)
         TestRepository.insert(tiltakstype = deltakerliste.tiltak)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
         val consumer = DeltakerlisteConsumer(
@@ -198,7 +208,7 @@ class DeltakerlisteConsumerTest {
     @Test
     fun `consumeDeltakerliste - ny sluttdato - oppdaterer deltakerliste`() {
         val arrangor = lagArrangor()
-        val deltakerliste = lagDeltakerliste(arrangor = arrangor)
+        val deltakerliste = lagDeltakerliste(arrangor = arrangor, pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
         TestRepository.insert(deltakerliste)
 
@@ -249,7 +259,7 @@ class DeltakerlisteConsumerTest {
     @Test
     fun `consumeDeltakerliste - avbrutt, finnes deltakere - oppdaterer deltakerliste, sletter kladd`() {
         val arrangorInTest = lagArrangor()
-        val deltakerlisteInTest = lagDeltakerliste(arrangor = arrangorInTest)
+        val deltakerlisteInTest = lagDeltakerliste(arrangor = arrangorInTest, pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK)
 
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient())
         TestRepository.insert(deltakerlisteInTest)

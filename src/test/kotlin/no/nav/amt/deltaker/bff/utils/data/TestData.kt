@@ -21,6 +21,7 @@ import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
@@ -73,6 +74,7 @@ object TestData {
         apentForPamelding: Boolean = true,
         antallPlasser: Int = 42,
         oppmoteSted: String = "~oppmoteSted~",
+        pameldingType: GjennomforingPameldingType? = null,
     ) = Deltakerliste(
         id = id,
         tiltak = tiltakstype,
@@ -85,6 +87,7 @@ object TestData {
         apentForPamelding = apentForPamelding,
         antallPlasser = antallPlasser,
         oppmoteSted = oppmoteSted,
+        pameldingstype = pameldingType,
     )
 
     private val tiltakstypeCache = mutableMapOf<Tiltakskode, Tiltakstype>()
@@ -117,17 +120,20 @@ object TestData {
     fun lagEnkeltplassDeltakerlistePayload(
         arrangor: Arrangor = lagArrangor(),
         deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),
+        pameldingType: GjennomforingPameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
     ) = GjennomforingV2KafkaPayload.Enkeltplass(
         id = deltakerliste.id,
         tiltakskode = deltakerliste.tiltak.tiltakskode,
         arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
         oppdatertTidspunkt = OffsetDateTime.now(),
         opprettetTidspunkt = OffsetDateTime.now(),
+        pameldingType = pameldingType,
     )
 
     fun lagGruppeDeltakerlistePayload(
         arrangor: Arrangor = lagArrangor(),
         deltakerliste: Deltakerliste = lagDeltakerliste(arrangor = arrangor),
+        pameldingType: GjennomforingPameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
     ) = GjennomforingV2KafkaPayload.Gruppe(
         id = deltakerliste.id,
         navn = deltakerliste.navn,
@@ -142,6 +148,7 @@ object TestData {
         antallPlasser = 42,
         deltidsprosent = 42.0,
         arrangor = GjennomforingV2KafkaPayload.Arrangor(arrangor.organisasjonsnummer),
+        pameldingType = pameldingType,
         oppdatertTidspunkt = OffsetDateTime.now(),
         opprettetTidspunkt = OffsetDateTime.now(),
     )
