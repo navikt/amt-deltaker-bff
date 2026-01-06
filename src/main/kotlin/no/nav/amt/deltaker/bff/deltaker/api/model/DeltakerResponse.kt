@@ -12,6 +12,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.DeltakerRegistreringInnhold
@@ -102,6 +103,7 @@ data class DeltakerResponse(
         val tilgjengeligInnhold: TilgjengeligInnhold,
         val erEnkeltplassUtenRammeavtale: Boolean,
         val oppmoteSted: String?,
+        val pameldingstype: GjennomforingPameldingType?, // non-nullable etter relast
     )
 
     data class TilgjengeligInnhold(
@@ -167,6 +169,7 @@ data class DeltakerResponse(
                     // midlertidig løsning inntil vi vet ner om det foreligger rammeavtale eller ikke
                     erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
                     oppmoteSted = deltakerliste.oppmoteSted,
+                    pameldingstype = deltakerliste.pameldingstype,
                 ),
                 status = status,
                 startdato = startdato,
