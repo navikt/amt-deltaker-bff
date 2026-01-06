@@ -1,6 +1,7 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.api.response
 
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import java.time.LocalDate
@@ -15,5 +16,6 @@ data class DeltakerlisteResponse(
     val oppstartstype: Oppstartstype?,
     val apentForPamelding: Boolean,
     val antallPlasser: Int?,
+    val pameldingstype: GjennomforingPameldingType?, // skal gjøres  non-nullable etter relast
     val koordinatorer: List<Tiltakskoordinator>,
 )

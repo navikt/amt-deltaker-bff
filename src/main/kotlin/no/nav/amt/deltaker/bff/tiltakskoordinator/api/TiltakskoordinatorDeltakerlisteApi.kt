@@ -226,13 +226,14 @@ fun RoutingContext.getDeltakerlisteId(): UUID {
 }
 
 fun Deltakerliste.toResponse(koordinatorer: List<Tiltakskoordinator>) = DeltakerlisteResponse(
-    id = this.id,
-    navn = this.navn,
-    tiltakskode = this.tiltak.tiltakskode,
-    startdato = this.startDato,
-    sluttdato = this.sluttDato,
-    oppstartstype = this.oppstart,
-    apentForPamelding = this.apentForPamelding,
-    antallPlasser = this.antallPlasser,
+    id = id,
+    navn = navn,
+    tiltakskode = tiltak.tiltakskode,
+    startdato = startDato,
+    sluttdato = sluttDato,
+    oppstartstype = oppstart,
+    apentForPamelding = apentForPamelding,
+    antallPlasser = antallPlasser,
+    pameldingstype = pameldingstype,
     koordinatorer = koordinatorer,
 )

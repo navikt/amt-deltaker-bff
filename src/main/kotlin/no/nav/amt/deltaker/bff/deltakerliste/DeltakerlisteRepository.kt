@@ -5,6 +5,7 @@ import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.deltaker.Arrangor
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.utils.database.Database
@@ -40,6 +41,7 @@ class DeltakerlisteRepository {
                 antallPlasser = row.intOrNull(col("antall_plasser")),
                 apentForPamelding = row.boolean(col("apent_for_pamelding")),
                 oppmoteSted = row.stringOrNull(col("oppmote_sted")),
+                pameldingstype = row.stringOrNull(col("pameldingstype"))?.let { GjennomforingPameldingType.valueOf(it) },
             )
         }
     }
@@ -58,30 +60,34 @@ class DeltakerlisteRepository {
                 oppstart,
                 apent_for_pamelding,
                 antall_plasser,
-                oppmote_sted)
-            VALUES (:id,
-            		:navn,
-            		:status,
-            		:arrangor_id,
-            		:tiltakstype_id,
-            		:start_dato,
-            		:slutt_dato,
-                    :oppstart,
-                    :apent_for_pamelding,
-                    :antall_plasser,
-                    :oppmote_sted)
+                oppmote_sted,
+                pameldingstype)
+            VALUES (
+                :id,
+                :navn,
+                :status,
+                :arrangor_id,
+                :tiltakstype_id,
+                :start_dato,
+                :slutt_dato,
+                :oppstart,
+                :apent_for_pamelding,
+                :antall_plasser,
+                :oppmote_sted,
+                :pameldingstype)
             ON CONFLICT (id) DO UPDATE SET
-            		navn     				= :navn,
-            		status					= :status,
-            		arrangor_id 			= :arrangor_id,
-            		tiltakstype_id			= :tiltakstype_id,
-            		start_dato				= :start_dato,
-            		slutt_dato				= :slutt_dato,
-                    oppstart                = :oppstart,
-                    modified_at             = current_timestamp,
-                    apent_for_pamelding     = :apent_for_pamelding,
-                    antall_plasser          = :antall_plasser,
-                    oppmote_sted            = :oppmote_sted
+                navn     				= :navn,
+                status					= :status,
+                arrangor_id 			= :arrangor_id,
+                tiltakstype_id			= :tiltakstype_id,
+                start_dato				= :start_dato,
+                slutt_dato				= :slutt_dato,
+                oppstart                = :oppstart,
+                modified_at             = current_timestamp,
+                apent_for_pamelding     = :apent_for_pamelding,
+                antall_plasser          = :antall_plasser,
+                oppmote_sted            = :oppmote_sted,
+                pameldingstype          = :pameldingstype
             """.trimIndent()
 
         it.update(
@@ -99,6 +105,7 @@ class DeltakerlisteRepository {
                     "apent_for_pamelding" to deltakerliste.apentForPamelding,
                     "antall_plasser" to deltakerliste.antallPlasser,
                     "oppmote_sted" to deltakerliste.oppmoteSted,
+                    "pameldingstype" to deltakerliste.pameldingstype?.name,
                 ),
             ),
         )
@@ -129,6 +136,7 @@ class DeltakerlisteRepository {
                 dl.apent_for_pamelding as "dl.apent_for_pamelding",
                 dl.antall_plasser as "dl.antall_plasser",
                 dl.oppmote_sted as "dl.oppmote_sted",
+                dl.pameldingstype as "dl.pameldingstype",
                 a.id as "a.id",
                 a.navn as "a.navn",
                 a.organisasjonsnummer as "a.organisasjonsnummer",
