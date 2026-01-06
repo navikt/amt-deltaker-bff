@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteDto
@@ -33,7 +34,7 @@ fun assertProduced(forslag: Forslag) {
         sammenlignForslagStatus(cachedForslag.status, forslag.status)
     }
 
-    consumer.stop()
+    runBlocking { consumer.close() }
 }
 
 fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto, tombstoneExpected: Boolean = false) {
@@ -59,7 +60,7 @@ fun assertProduced(tilgang: TiltakskoordinatorsDeltakerlisteDto, tombstoneExpect
         }
     }
 
-    consumer.stop()
+    runBlocking { consumer.close() }
 }
 
 fun assertProducedTombstone(tilgang: TiltakskoordinatorDeltakerlisteTilgang) {
@@ -76,7 +77,7 @@ fun assertProducedTombstone(tilgang: TiltakskoordinatorDeltakerlisteTilgang) {
         cache[tilgang.id] shouldBe null
     }
 
-    consumer.stop()
+    runBlocking { consumer.close() }
 }
 
 fun sammenlignForslagStatus(a: Forslag.Status, b: Forslag.Status) {

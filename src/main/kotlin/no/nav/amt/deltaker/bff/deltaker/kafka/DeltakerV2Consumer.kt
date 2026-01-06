@@ -35,7 +35,7 @@ class DeltakerV2Consumer(
         consumeFunc = ::consume,
     )
 
-    override suspend fun consume(key: UUID, value: String?) {
+    suspend fun consume(key: UUID, value: String?) {
         if (value == null) {
             log.info("Mottok tombstone for deltaker $key - sletter deltaker")
             deltakerService.delete(key)

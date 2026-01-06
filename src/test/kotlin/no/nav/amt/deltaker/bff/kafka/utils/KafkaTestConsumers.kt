@@ -13,5 +13,9 @@ fun stringStringConsumer(topic: String, block: suspend (k: String, v: String?) -
         groupId = "test-consumer-${UUID.randomUUID()}",
     )
 
-    return ManagedKafkaConsumer(topic, config, block)
+    return ManagedKafkaConsumer(
+        topic = topic,
+        config = config,
+        consume = block,
+    )
 }
