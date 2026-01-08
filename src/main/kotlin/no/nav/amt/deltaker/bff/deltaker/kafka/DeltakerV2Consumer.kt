@@ -56,7 +56,7 @@ class DeltakerV2Consumer(
         val ukjentDeltaker = !deltakerFinnes || deltakerPayload.kilde == Kilde.ARENA
 
         if (ukjentDeltaker) {
-            // Når deltakeren ikke finnes så skal det bety at det er ene arenadeltaker som kommer fra arena-acl
+            // Når deltakeren ikke finnes så skal det bety at det er en arenadeltaker som kommer fra arena-acl
             // kan muligens forekomme race condition med at et utkast kommer på kafka før vi rekker å lagre i databasen
             log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
             val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
