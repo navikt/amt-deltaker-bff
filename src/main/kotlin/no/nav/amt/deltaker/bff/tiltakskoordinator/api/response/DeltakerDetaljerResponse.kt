@@ -4,6 +4,8 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ForslagResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.NavVeileder
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.models.person.Beskyttelsesmarkering
 import java.time.LocalDate
@@ -27,4 +29,6 @@ data class DeltakerDetaljerResponse(
     val tilgangTilBruker: Boolean,
     val aktiveForslag: List<ForslagResponse>,
     val ulesteHendelser: List<UlestHendelse>,
+    val oppstartstype: Oppstartstype?,
+    val pameldingstype: GjennomforingPameldingType,
 )

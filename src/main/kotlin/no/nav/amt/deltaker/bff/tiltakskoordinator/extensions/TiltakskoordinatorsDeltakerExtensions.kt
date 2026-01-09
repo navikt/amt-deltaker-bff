@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.response.VurderingResponse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelse
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 
 fun TiltakskoordinatorsDeltaker.toResponse(harTilgangTilBruker: Boolean, ulesteHendelser: List<UlestHendelse>): DeltakerDetaljerResponse {
     val (fornavn, mellomnavn, etternavn) = navBruker.getVisningsnavn(harTilgangTilBruker)
@@ -36,6 +37,8 @@ fun TiltakskoordinatorsDeltaker.toResponse(harTilgangTilBruker: Boolean, ulesteH
         },
         innsatsgruppe = innsatsgruppe,
         tiltakskode = deltakerliste.tiltak.tiltakskode,
+        oppstartstype = deltakerliste.oppstart,
+        pameldingstype = deltakerliste.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
         tilgangTilBruker = harTilgangTilBruker,
         aktiveForslag = aktiveForslag,
         ulesteHendelser = ulesteHendelser,
