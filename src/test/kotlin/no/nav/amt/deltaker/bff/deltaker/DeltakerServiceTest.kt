@@ -25,6 +25,7 @@ import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class DeltakerServiceTest {
     init {
@@ -404,6 +405,77 @@ class DeltakerServiceTest {
         service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
         service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
         service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - importerte deltakere med samme innsøktDato, endring på nyeste deltaker - beholder låsing`() {
+        val deltaker = TestData.lagDeltaker(
+            status = lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusDays(1),
+            ),
+            historikk = true,
+            kanEndres = true,
+            innsoktDatoFraArena = LocalDate.parse("2015-02-18"),
+        )
+        val historisertDeltaker = TestData.lagDeltaker(
+            navBruker = deltaker.navBruker,
+            deltakerliste = deltaker.deltakerliste,
+            status = lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusDays(2),
+            ),
+            historikk = true,
+            kanEndres = false,
+            innsoktDatoFraArena = LocalDate.parse("2015-02-18"),
+        )
+
+        TestRepository.insert(historisertDeltaker)
+        TestRepository.insert(deltaker)
+
+        service.oppdaterDeltakerLaas(
+            deltaker.id,
+            deltaker.navBruker.personident,
+            deltaker.deltakerliste.id,
+        )
+
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
+        service.getDeltaker(historisertDeltaker.id).getOrThrow().kanEndres shouldBe false
+    }
+
+    @Test
+    fun `oppdaterDeltakerLaas - importerte deltakere med samme innsøktDato, endring på historisert deltaker - beholder låsing`() {
+        val deltaker = TestData.lagDeltaker(
+            status = lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusDays(1),
+            ),
+            historikk = true,
+            innsoktDatoFraArena = LocalDate.parse("2015-02-18"),
+        )
+        val historisertDeltaker = TestData.lagDeltaker(
+            navBruker = deltaker.navBruker,
+            deltakerliste = deltaker.deltakerliste,
+            status = lagDeltakerStatus(
+                type = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusDays(2),
+            ),
+            historikk = true,
+            kanEndres = false,
+            innsoktDatoFraArena = LocalDate.parse("2015-02-18"),
+        )
+
+        TestRepository.insert(historisertDeltaker)
+        TestRepository.insert(deltaker)
+
+        service.oppdaterDeltakerLaas(
+            historisertDeltaker.id,
+            historisertDeltaker.navBruker.personident,
+            historisertDeltaker.deltakerliste.id,
+        )
+
+        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
+        service.getDeltaker(historisertDeltaker.id).getOrThrow().kanEndres shouldBe false
     }
 
     @Test
