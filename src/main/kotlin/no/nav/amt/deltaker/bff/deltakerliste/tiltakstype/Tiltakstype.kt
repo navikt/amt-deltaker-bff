@@ -13,7 +13,7 @@ fun DeltakerRegistreringInnhold.getInnholdselementer(tiltakstype: Tiltakskode): 
         Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
         Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
         Tiltakskode.STUDIESPESIALISERING,
-        Tiltakskode.FAG_OG_YRKESOPPLAERING
+        Tiltakskode.FAG_OG_YRKESOPPLAERING,
     )
     if (skalKunHaAnnetInnhold) return listOf(annetInnholdselement)
 
