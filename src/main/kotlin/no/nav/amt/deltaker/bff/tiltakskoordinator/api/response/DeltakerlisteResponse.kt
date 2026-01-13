@@ -16,6 +16,6 @@ data class DeltakerlisteResponse(
     val oppstartstype: Oppstartstype?,
     val apentForPamelding: Boolean,
     val antallPlasser: Int?,
-    val pameldingstype: GjennomforingPameldingType?, // skal gjøres  non-nullable etter relast
+    val pameldingstype: GjennomforingPameldingType,
     val koordinatorer: List<Tiltakskoordinator>,
 )

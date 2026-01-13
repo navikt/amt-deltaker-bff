@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.model.Tiltakskoordinator
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHendelseType
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
 import java.util.UUID
 
@@ -234,6 +235,6 @@ fun Deltakerliste.toResponse(koordinatorer: List<Tiltakskoordinator>) = Deltaker
     oppstartstype = oppstart,
     apentForPamelding = apentForPamelding,
     antallPlasser = antallPlasser,
-    pameldingstype = pameldingstype,
+    pameldingstype = pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
     koordinatorer = koordinatorer,
 )

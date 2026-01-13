@@ -61,7 +61,7 @@ data class InnbyggerDeltakerResponse(
         val sluttdato: LocalDate?,
         val erEnkeltplassUtenRammeavtale: Boolean,
         val oppmoteSted: String?,
-        val pameldingstype: GjennomforingPameldingType?, // skal gjøres  non-nullable etter relast
+        val pameldingstype: GjennomforingPameldingType,
     )
 
     data class DeltakelsesmengderDto(
@@ -93,7 +93,7 @@ fun Deltaker.toInnbyggerDeltakerResponse(
         // midlertidig løsning inntil vi vet ner om det foreligger rammeavtale eller ikke
         erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
         oppmoteSted = deltakerliste.oppmoteSted,
-        pameldingstype = deltakerliste.pameldingstype,
+        pameldingstype = deltakerliste.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
     ),
     status = status,
     startdato = startdato,

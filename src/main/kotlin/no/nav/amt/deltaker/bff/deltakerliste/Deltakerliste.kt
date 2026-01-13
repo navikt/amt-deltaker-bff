@@ -20,7 +20,7 @@ data class Deltakerliste(
     val apentForPamelding: Boolean,
     val antallPlasser: Int?,
     val oppmoteSted: String?,
-    val pameldingstype: GjennomforingPameldingType?, // skal gjøres  non-nullable etter relast
+    val pameldingstype: GjennomforingPameldingType?,
 ) {
     data class Arrangor(
         val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
