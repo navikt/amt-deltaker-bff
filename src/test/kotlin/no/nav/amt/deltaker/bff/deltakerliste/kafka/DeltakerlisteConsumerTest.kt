@@ -37,6 +37,7 @@ import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
+import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.SingletonPostgres16Container
@@ -115,6 +116,7 @@ class DeltakerlisteConsumerTest {
         val expectedDeltakerliste = lagDeltakerliste(
             arrangor = arrangor,
             tiltakstype = tiltakstype,
+            oppstart = Oppstartstype.LOPENDE,
             pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK,
         )
 
