@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementerMedAnnet
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.utils.toTitleCase
 import no.nav.amt.lib.models.arrangor.melding.Forslag
@@ -114,7 +114,7 @@ data class DeltakerResponse(
             // litt spesiell konstruksjon med nullable innhold, undersøk nærmere
             fun fromDeltakerRegistreringInnhold(innhold: DeltakerRegistreringInnhold?, tiltakstype: Tiltakskode) = TilgjengeligInnhold(
                 ledetekst = innhold?.ledetekst,
-                innhold = innhold?.getInnholdselementerMedAnnet(tiltakstype).orEmpty(),
+                innhold = innhold?.getInnholdselementer(tiltakstype).orEmpty(),
             )
         }
     }
@@ -180,7 +180,7 @@ data class DeltakerResponse(
                 deltakelsesinnhold = deltakelsesinnhold?.let {
                     DeltakelsesinnholdDto.fromDeltakelsesinnhold(
                         it,
-                        deltakerliste.tiltak.innhold?.getInnholdselementerMedAnnet(deltakerliste.tiltak.tiltakskode),
+                        deltakerliste.tiltak.innhold?.getInnholdselementer(deltakerliste.tiltak.tiltakskode),
                     )
                 },
                 vedtaksinformasjon = vedtaksinformasjon?.let { VedtaksinformasjonDto.fromVedtak(it, ansatte, vedtakSistEndretAvEnhet) },
