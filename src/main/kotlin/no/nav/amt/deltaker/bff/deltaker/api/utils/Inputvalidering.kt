@@ -132,15 +132,16 @@ fun validerSluttdatoForDeltaker(
 }
 
 fun validerDeltakelsesinnhold(
-    innhold: List<InnholdDto>,
+    valgteInnholdselementer: List<InnholdDto>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     tiltakstype: Tiltakskode,
 ) {
-    validerInnhold(tiltakstype, innhold, tiltaksinnhold) { innholdskoder ->
+    validerInnhold(tiltakstype, valgteInnholdselementer, tiltaksinnhold) { innholdskoder ->
         if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
-            require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
+            // TODO: her mangler det noe
+            require(valgteInnholdselementer.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
         }
-        innhold.forEach {
+        valgteInnholdselementer.forEach {
             require(it.innholdskode in innholdskoder) { "Ugyldig innholdskode: ${it.innholdskode}" }
 
             if (it.innholdskode == annetInnholdselement.innholdskode) {
@@ -202,17 +203,16 @@ private fun validerVarighet(
 
 private fun validerInnhold(
     tiltakstype: Tiltakskode,
-    innhold: List<InnholdDto>,
+    valgteInnholdselementer: List<InnholdDto>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     valider: (innholdskoder: List<String>) -> Unit,
 ) {
-    val innholdskoder = tiltaksinnhold
-        ?.getInnholdselementer(tiltakstype)
-        ?.map { it.innholdskode }
+    val muligeInnholdskoderForTiltak = getInnholdselementer(tiltaksinnhold?.innholdselementer, tiltakstype)
+        .map { it.innholdskode }
 
-    if (innholdskoder.isNullOrEmpty()) {
-        require(innhold.isEmpty()) { "Et tiltak uten innholdselementer kan ikke ha noe innhold" }
+    if (muligeInnholdskoderForTiltak.isEmpty()) {
+        require(valgteInnholdselementer.isEmpty()) { "Et tiltak uten innholdselementer kan ikke ha noe innhold" }
     } else {
-        valider(innholdskoder)
+        valider(muligeInnholdskoderForTiltak)
     }
 }

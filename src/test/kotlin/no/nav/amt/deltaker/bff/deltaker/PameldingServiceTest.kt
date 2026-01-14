@@ -280,7 +280,7 @@ fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
             ledetekst = it.ledetekst,
             innhold = fulltInnhold(
                 it.innhold,
-                deltakerliste.tiltak.innhold?.getInnholdselementer(deltakerliste.tiltak.tiltakskode) ?: emptyList(),
+                getInnholdselementer(deltakerliste.tiltak.innhold?.innholdselementer, deltakerliste.tiltak.tiltakskode),
             ),
         )
     },

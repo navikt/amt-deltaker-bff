@@ -114,7 +114,7 @@ data class DeltakerResponse(
             // litt spesiell konstruksjon med nullable innhold, undersøk nærmere
             fun fromDeltakerRegistreringInnhold(innhold: DeltakerRegistreringInnhold?, tiltakstype: Tiltakskode) = TilgjengeligInnhold(
                 ledetekst = innhold?.ledetekst,
-                innhold = innhold?.getInnholdselementer(tiltakstype).orEmpty(),
+                innhold = getInnholdselementer(innhold?.innholdselementer, tiltakstype),
             )
         }
     }
@@ -180,7 +180,7 @@ data class DeltakerResponse(
                 deltakelsesinnhold = deltakelsesinnhold?.let {
                     DeltakelsesinnholdDto.fromDeltakelsesinnhold(
                         it,
-                        deltakerliste.tiltak.innhold?.getInnholdselementer(deltakerliste.tiltak.tiltakskode),
+                        getInnholdselementer(deltakerliste.tiltak.innhold?.innholdselementer, deltakerliste.tiltak.tiltakskode),
                     )
                 },
                 vedtaksinformasjon = vedtaksinformasjon?.let { VedtaksinformasjonDto.fromVedtak(it, ansatte, vedtakSistEndretAvEnhet) },

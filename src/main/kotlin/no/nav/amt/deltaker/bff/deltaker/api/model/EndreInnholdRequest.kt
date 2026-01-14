@@ -15,5 +15,5 @@ data class EndreInnholdRequest(
         }
     }
 
-    private fun deltakerErEndret(deltaker: Deltaker): Boolean = deltaker.deltakelsesinnhold?.innhold != finnValgtInnhold(innhold, deltaker)
+    private fun deltakerErEndret(deltaker: Deltaker): Boolean = deltaker.deltakelsesinnhold?.innhold != innhold.toInnholdModel(deltaker)
 }

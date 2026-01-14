@@ -10,12 +10,14 @@ data class InnholdDto(
     val beskrivelse: String?,
 )
 
-fun finnValgtInnhold(innhold: List<InnholdDto>, deltaker: Deltaker) = innhold.mapNotNull { innholdDto ->
-    val tiltaksinnhold = deltaker.deltakerliste.tiltak.innhold
-        ?.getInnholdselementer(deltaker.deltakerliste.tiltak.tiltakskode)
-        ?.find { it.innholdskode == innholdDto.innholdskode }
-    if (innholdDto.innholdskode == annetInnholdselement.innholdskode) {
-        tiltaksinnhold?.toInnhold(true, innholdDto.beskrivelse)
+fun List<InnholdDto>.toInnholdModel(deltaker: Deltaker) = this.mapNotNull { valgtInnholdElement ->
+    val tiltaksinnhold = getInnholdselementer(
+        deltaker.deltakerliste.tiltak.innhold
+            ?.innholdselementer,
+        deltaker.deltakerliste.tiltak.tiltakskode,
+    ).find { it.innholdskode == valgtInnholdElement.innholdskode }
+    if (valgtInnholdElement.innholdskode == annetInnholdselement.innholdskode) {
+        tiltaksinnhold?.toInnhold(true, valgtInnholdElement.beskrivelse)
     } else {
         tiltaksinnhold?.toInnhold(valgt = true)
     }

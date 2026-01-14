@@ -21,7 +21,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
@@ -85,7 +85,7 @@ fun Routing.registerPameldingApi(
                     pamelding = Pamelding(
                         deltakelsesinnhold = Deltakelsesinnhold(
                             deltaker.deltakelsesinnhold?.ledetekst,
-                            finnValgtInnhold(request.innhold, deltaker),
+                            request.innhold.toInnholdModel(deltaker),
                         ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
@@ -120,7 +120,7 @@ fun Routing.registerPameldingApi(
                     pamelding = Pamelding(
                         deltakelsesinnhold = Deltakelsesinnhold(
                             deltaker.deltakelsesinnhold?.ledetekst,
-                            finnValgtInnhold(request.innhold, deltaker),
+                            request.innhold.toInnholdModel(deltaker),
                         ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
@@ -173,7 +173,7 @@ fun Routing.registerPameldingApi(
                         deltakelsesinnhold = Deltakelsesinnhold(
                             deltaker.deltakerliste.tiltak.innhold
                                 ?.ledetekst,
-                            finnValgtInnhold(request.innhold, deltaker),
+                            request.innhold.toInnholdModel(deltaker),
                         ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
