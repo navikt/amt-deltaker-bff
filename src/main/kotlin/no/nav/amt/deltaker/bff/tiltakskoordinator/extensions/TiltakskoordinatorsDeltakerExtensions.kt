@@ -57,11 +57,13 @@ fun getDeltakelsesinnholdAnnet(
         return null
     }
 
-    if (deltakelsesinnhold != null && deltakelsesinnhold.innhold.size > 0) {
-        return deltakelsesinnhold.innhold
-            .find { it.innholdskode == annetInnholdselement.innholdskode }
-            ?.beskrivelse
-    } else {
+    val beskrivelseAnnet = deltakelsesinnhold
+        ?.innhold
+        ?.find { it.innholdskode == annetInnholdselement.innholdskode && it.valgt }
+        ?.beskrivelse
+
+    if (beskrivelseAnnet.isNullOrBlank()) {
         return null
     }
+    return beskrivelseAnnet
 }
