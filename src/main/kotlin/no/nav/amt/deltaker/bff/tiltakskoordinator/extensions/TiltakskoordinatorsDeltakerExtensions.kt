@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.model.UlestHende
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
-import kotlin.compareTo
 
 fun TiltakskoordinatorsDeltaker.toResponse(harTilgangTilBruker: Boolean, ulesteHendelser: List<UlestHendelse>): DeltakerDetaljerResponse {
     val (fornavn, mellomnavn, etternavn) = navBruker.getVisningsnavn(harTilgangTilBruker)
