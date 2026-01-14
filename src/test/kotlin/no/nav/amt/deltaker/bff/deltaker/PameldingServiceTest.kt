@@ -13,7 +13,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
-import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementerMedAnnet
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
@@ -280,7 +280,7 @@ fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
             ledetekst = it.ledetekst,
             innhold = fulltInnhold(
                 it.innhold,
-                deltakerliste.tiltak.innhold?.getInnholdselementerMedAnnet(deltakerliste.tiltak.tiltakskode) ?: emptyList(),
+                deltakerliste.tiltak.innhold?.getInnholdselementer(deltakerliste.tiltak.tiltakskode) ?: emptyList(),
             ),
         )
     },
