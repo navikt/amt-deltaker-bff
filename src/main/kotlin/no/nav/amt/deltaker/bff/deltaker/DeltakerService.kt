@@ -48,7 +48,7 @@ class DeltakerService(
     ): Deltaker {
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
         val deltakeroppdatering = when (endring) {
-            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon ->
+            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> {
                 amtDeltakerClient
                     .endreBakgrunnsinformasjon(
                         deltakerId = deltaker.id,
@@ -56,8 +56,9 @@ class DeltakerService(
                         endretAvEnhet = endretAvEnhet,
                         endring = endring,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.EndreInnhold ->
+            is DeltakerEndring.Endring.EndreInnhold -> {
                 amtDeltakerClient
                     .endreInnhold(
                         deltakerId = deltaker.id,
@@ -68,8 +69,9 @@ class DeltakerService(
                             innhold = endring.innhold,
                         ),
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.AvsluttDeltakelse ->
+            is DeltakerEndring.Endring.AvsluttDeltakelse -> {
                 amtDeltakerClient
                     .avsluttDeltakelse(
                         deltakerId = deltaker.id,
@@ -80,8 +82,9 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.EndreAvslutning ->
+            is DeltakerEndring.Endring.EndreAvslutning -> {
                 amtDeltakerClient
                     .endreAvslutning(
                         deltakerId = deltaker.id,
@@ -93,8 +96,9 @@ class DeltakerService(
                         sluttdato = endring.sluttdato,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.AvbrytDeltakelse ->
+            is DeltakerEndring.Endring.AvbrytDeltakelse -> {
                 amtDeltakerClient
                     .avbrytDeltakelse(
                         deltakerId = deltaker.id,
@@ -105,8 +109,9 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde ->
+            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> {
                 amtDeltakerClient
                     .endreDeltakelsesmengde(
                         deltakerId = deltaker.id,
@@ -118,8 +123,9 @@ class DeltakerService(
                         gyldigFra = endring.gyldigFra,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.EndreSluttarsak ->
+            is DeltakerEndring.Endring.EndreSluttarsak -> {
                 amtDeltakerClient
                     .endreSluttaarsak(
                         deltakerId = deltaker.id,
@@ -129,8 +135,9 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.EndreSluttdato ->
+            is DeltakerEndring.Endring.EndreSluttdato -> {
                 amtDeltakerClient
                     .endreSluttdato(
                         deltakerId = deltaker.id,
@@ -140,8 +147,9 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.EndreStartdato ->
+            is DeltakerEndring.Endring.EndreStartdato -> {
                 amtDeltakerClient
                     .endreStartdato(
                         deltakerId = deltaker.id,
@@ -152,8 +160,9 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.ForlengDeltakelse ->
+            is DeltakerEndring.Endring.ForlengDeltakelse -> {
                 amtDeltakerClient
                     .forlengDeltakelse(
                         deltakerId = deltaker.id,
@@ -163,8 +172,9 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
-            is DeltakerEndring.Endring.IkkeAktuell ->
+            is DeltakerEndring.Endring.IkkeAktuell -> {
                 amtDeltakerClient
                     .ikkeAktuell(
                         deltakerId = deltaker.id,
@@ -174,6 +184,7 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
 
             is DeltakerEndring.Endring.ReaktiverDeltakelse -> {
                 val response = amtDeltakerClient.reaktiverDeltakelse(
@@ -186,7 +197,7 @@ class DeltakerService(
                 response.toDeltakeroppdatering()
             }
 
-            is DeltakerEndring.Endring.FjernOppstartsdato ->
+            is DeltakerEndring.Endring.FjernOppstartsdato -> {
                 amtDeltakerClient
                     .fjernOppstartsdato(
                         deltakerId = deltaker.id,
@@ -195,6 +206,7 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
+            }
         }
         oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)
@@ -236,21 +248,20 @@ class DeltakerService(
          */
         val deltakelserPaaPerson = deltakerRepository
             .getMany(personident, deltakerlisteId)
-            .sortedByDescending { it.paameldtDato }
+            .sortedWith(
+                compareByDescending<Deltaker> { it.paameldtDato }
+                    .thenByDescending { it.status.gyldigFra },
+            )
 
         if (deltakelserPaaPerson.none { it.id == deltakerId }) {
             throw IllegalStateException("Den nye deltakelsen $deltakerId må være upsertet for å bruke denne funksjonen")
         }
 
-        val nyesteDeltakelse =
-            if (deltakelserPaaPerson.any { it.status.type in AKTIVE_STATUSER }) {
-                deltakelserPaaPerson.first {
-                    it.status.type in
-                        AKTIVE_STATUSER
-                }
-            } else {
-                deltakelserPaaPerson.first()
-            }
+        val nyesteDeltakelse = deltakelserPaaPerson.firstOrNull { it.status.type in AKTIVE_STATUSER } ?: deltakelserPaaPerson.first()
+
+        if (deltakerId != nyesteDeltakelse.id) {
+            log.info("Fikk oppdatering på $deltakerId som skal låses fordi det er nyere deltakelse ${nyesteDeltakelse.id} på personen")
+        }
 
         val deltakelserSomSkalLaases = deltakelserPaaPerson
             .filter {
@@ -258,10 +269,6 @@ class DeltakerService(
                     nyesteDeltakelse.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
                     nyesteDeltakelse.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
             }.filter { it.kanEndres }
-
-        if (deltakerId != nyesteDeltakelse.id) {
-            log.info("Fikk oppdatering på $deltakerId som skal låses fordi det er nyere deltakelse ${nyesteDeltakelse.id} på personen")
-        }
 
         val laasesMedAktivStatus = deltakelserSomSkalLaases
             .filter { it.status.type in AKTIVE_STATUSER }
