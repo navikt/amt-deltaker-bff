@@ -1,9 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.api.utils
 
-import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.skalKunHaAnnetBeskrivelse
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
@@ -29,14 +30,14 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
 }
 
 fun validerAnnetInnhold(tekst: String?, tiltakstype: Tiltakskode) {
-    if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
+    if (!tiltakstype.skalKunHaAnnetBeskrivelse()) {
         require(tekst != null && tekst != "") {
             "Innhold med innholdskode: ${annetInnholdselement.innholdskode} må ha en beskrivelse"
         }
     }
     tekst?.let {
         require(it.length <= MAX_ANNET_INNHOLD_LENGDE) {
-            "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
+            "Annet Beskrivelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
         }
     }
 }
@@ -132,15 +133,15 @@ fun validerSluttdatoForDeltaker(
 }
 
 fun validerDeltakelsesinnhold(
-    innhold: List<InnholdDto>,
+    valgteInnholdselementer: List<InnholdRequest>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     tiltakstype: Tiltakskode,
 ) {
-    validerInnhold(tiltakstype, innhold, tiltaksinnhold) { innholdskoder ->
-        if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
-            require(innhold.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
+    validerInnhold(tiltakstype, valgteInnholdselementer, tiltaksinnhold) { innholdskoder ->
+        if (!tiltakstype.skalKunHaAnnetBeskrivelse()) {
+            require(valgteInnholdselementer.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
         }
-        innhold.forEach {
+        valgteInnholdselementer.forEach {
             require(it.innholdskode in innholdskoder) { "Ugyldig innholdskode: ${it.innholdskode}" }
 
             if (it.innholdskode == annetInnholdselement.innholdskode) {
@@ -165,7 +166,7 @@ private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aar
 )
 
 fun validerKladdInnhold(
-    innhold: List<InnholdDto>,
+    innhold: List<InnholdRequest>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     tiltakstype: Tiltakskode,
 ) {
@@ -202,17 +203,16 @@ private fun validerVarighet(
 
 private fun validerInnhold(
     tiltakstype: Tiltakskode,
-    innhold: List<InnholdDto>,
+    valgteInnholdselementer: List<InnholdRequest>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     valider: (innholdskoder: List<String>) -> Unit,
 ) {
-    val innholdskoder = tiltaksinnhold
-        ?.getInnholdselementer(tiltakstype)
-        ?.map { it.innholdskode }
+    val muligeInnholdskoderForTiltak = getInnholdselementer(tiltaksinnhold?.innholdselementer, tiltakstype)
+        .map { it.innholdskode }
 
-    if (innholdskoder.isNullOrEmpty()) {
-        require(innhold.isEmpty()) { "Et tiltak uten innholdselementer kan ikke ha noe innhold" }
+    if (muligeInnholdskoderForTiltak.isEmpty()) {
+        require(valgteInnholdselementer.isEmpty()) { "Et tiltak uten innholdselementer kan ikke ha noe innhold" }
     } else {
-        valider(innholdskoder)
+        valider(muligeInnholdskoderForTiltak)
     }
 }

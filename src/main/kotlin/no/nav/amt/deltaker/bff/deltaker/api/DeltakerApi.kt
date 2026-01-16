@@ -35,8 +35,8 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.finnValgtInnhold
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
+import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -140,7 +140,7 @@ fun Routing.registerDeltakerApi(
                 DeltakerEndring.Endring.EndreInnhold(
                     deltaker.deltakerliste.tiltak.innhold
                         ?.ledetekst,
-                    finnValgtInnhold(request.innhold, deltaker),
+                    request.innhold.toInnholdModel(deltaker),
                 )
             }
         }
@@ -245,6 +245,7 @@ fun Routing.registerDeltakerApi(
             }
         }
 
+        // Get deltaker
         post("/deltaker/{deltakerId}") {
             val request = call.receive<DeltakerRequest>()
             val deltakerId = call.parameters["deltakerId"]

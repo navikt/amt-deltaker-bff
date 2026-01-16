@@ -27,13 +27,10 @@ class InnholdDtoTest {
 
         val annetBeskrivelse = "annet må ha en beskrivelse"
 
-        val valgtInnhold = finnValgtInnhold(
-            innhold = listOf(
-                InnholdDto(innholdselement.innholdskode, null),
-                InnholdDto(annetInnholdselement.innholdskode, annetBeskrivelse),
-            ),
-            deltaker = deltaker,
-        )
+        val valgtInnhold = listOf(
+            InnholdRequest(innholdselement.innholdskode, null),
+            InnholdRequest(annetInnholdselement.innholdskode, annetBeskrivelse),
+        ).toInnholdModel(deltaker = deltaker)
         valgtInnhold shouldBe listOf(
             innholdselement.toInnhold(true),
             annetInnholdselement.toInnhold(true, annetBeskrivelse),
@@ -99,10 +96,7 @@ class InnholdDtoTest {
             ),
         )
 
-        val valgtInnhold = finnValgtInnhold(
-            innhold = innholdRequest.innhold,
-            deltaker = deltaker,
-        )
+        val valgtInnhold = innholdRequest.innhold.toInnholdModel(deltaker = deltaker)
 
         valgtInnhold.size shouldBe 2
         valgtInnhold.find { it.innholdskode == "arbeidspraksis" } shouldBe Innhold("Arbeidspraksis", "arbeidspraksis", true, null)

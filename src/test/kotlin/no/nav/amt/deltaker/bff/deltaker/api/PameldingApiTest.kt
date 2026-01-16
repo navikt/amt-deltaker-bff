@@ -22,7 +22,7 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorsDeltakerlisteProducer
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
-import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
@@ -337,12 +337,12 @@ class PameldingApiTest {
         }
     }
 
-    private fun utkastRequest(innhold: List<InnholdDto> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
+    private fun utkastRequest(innhold: List<InnholdRequest> = emptyList()) = UtkastRequest(innhold, "Bakgrunnen for...", null, null)
 
     private val kladdRequest = KladdRequest(emptyList(), "Bakgrunnen for...", null, null)
     private val pameldingRequest = PameldingRequest(UUID.randomUUID(), "1234")
 
-    private fun pameldingUtenGodkjenningRequest(innhold: List<InnholdDto> = emptyList()) = PameldingUtenGodkjenningRequest(
+    private fun pameldingUtenGodkjenningRequest(innhold: List<InnholdRequest> = emptyList()) = PameldingUtenGodkjenningRequest(
         innhold,
         "Bakgrunnen for...",
         null,
@@ -361,7 +361,7 @@ class PameldingApiTest {
 }
 
 private fun List<Innhold>.toInnholdDto() = this.map {
-    InnholdDto(
+    InnholdRequest(
         it.innholdskode,
         it.beskrivelse,
     )
