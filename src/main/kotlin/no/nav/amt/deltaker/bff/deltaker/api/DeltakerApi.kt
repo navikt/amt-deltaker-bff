@@ -245,6 +245,7 @@ fun Routing.registerDeltakerApi(
             }
         }
 
+        // Get deltaker
         post("/deltaker/{deltakerId}") {
             val request = call.receive<DeltakerRequest>()
             val deltakerId = call.parameters["deltakerId"]

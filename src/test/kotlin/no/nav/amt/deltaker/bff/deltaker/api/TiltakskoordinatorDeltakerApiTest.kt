@@ -42,7 +42,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
@@ -241,7 +241,7 @@ class TiltakskoordinatorDeltakerApiTest {
 
         client
             .post("/deltaker/${deltaker.id}/innhold") {
-                createPostRequest(EndreInnholdRequest(listOf(InnholdDto(deltaker.deltakelsesinnhold!!.innhold[0].innholdskode, null))))
+                createPostRequest(EndreInnholdRequest(listOf(InnholdRequest(deltaker.deltakelsesinnhold!!.innhold[0].innholdskode, null))))
             }.apply {
                 status shouldBe HttpStatusCode.OK
                 bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
@@ -824,7 +824,7 @@ class TiltakskoordinatorDeltakerApiTest {
 
     private val deltakerRequest = DeltakerRequest("1234")
     private val bakgrunnsinformasjonRequest = EndreBakgrunnsinformasjonRequest("Oppdatert bakgrunnsinformasjon")
-    private val innholdRequest = EndreInnholdRequest(listOf(InnholdDto("annet", "beskrivelse")))
+    private val innholdRequest = EndreInnholdRequest(listOf(InnholdRequest("annet", "beskrivelse")))
     private val deltakelsesmengdeRequest = EndreDeltakelsesmengdeRequest(
         deltakelsesprosent = 50,
         dagerPerUke = 3,

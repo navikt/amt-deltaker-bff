@@ -27,7 +27,7 @@ class EndreInnholdValideringTest {
                 innhold = listOf(Innhold("Type", "type", true, null)),
             )
             val request = EndreInnholdRequest(
-                innhold = listOf(InnholdDto("type", null)),
+                innhold = listOf(InnholdRequest("type", null)),
             )
 
             request.valider(deltaker)
@@ -54,8 +54,8 @@ class EndreInnholdValideringTest {
             )
             val request = EndreInnholdRequest(
                 innhold = listOf(
-                    InnholdDto("type", null),
-                    InnholdDto("type2", null),
+                    InnholdRequest("type", null),
+                    InnholdRequest("type2", null),
                 ),
             )
 
@@ -82,7 +82,7 @@ class EndreInnholdValideringTest {
             )
             val request = EndreInnholdRequest(
                 innhold = listOf(
-                    InnholdDto(annetInnholdselement.innholdskode, "Ny tekst"),
+                    InnholdRequest(annetInnholdselement.innholdskode, "Ny tekst"),
                 ),
             )
 

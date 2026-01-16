@@ -11,7 +11,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 
 data class KladdRequest(
-    val innhold: List<InnholdDto>,
+    val innhold: List<InnholdRequest>,
     val bakgrunnsinformasjon: String?,
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
@@ -44,7 +44,7 @@ private fun String.sanitize(): String {
     }
 }
 
-private fun List<InnholdDto>.sanitize() = this.map {
+private fun List<InnholdRequest>.sanitize() = this.map {
     val gyldigLengde = 0..<MAX_ANNET_INNHOLD_LENGDE * 2
     if (
         it.innholdskode == annetInnholdselement.innholdskode &&

@@ -5,12 +5,12 @@ import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 
-data class InnholdDto(
+data class InnholdRequest(
     val innholdskode: String,
     val beskrivelse: String?,
 )
 
-fun List<InnholdDto>.toInnholdModel(deltaker: Deltaker) = this.mapNotNull { valgtInnholdElement ->
+fun List<InnholdRequest>.toInnholdModel(deltaker: Deltaker) = this.mapNotNull { valgtInnholdElement ->
     val tiltaksinnhold = getInnholdselementer(
         deltaker.deltakerliste.tiltak.innhold
             ?.innholdselementer,

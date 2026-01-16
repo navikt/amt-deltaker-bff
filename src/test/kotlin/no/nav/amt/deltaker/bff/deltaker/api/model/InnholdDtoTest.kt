@@ -28,8 +28,8 @@ class InnholdDtoTest {
         val annetBeskrivelse = "annet må ha en beskrivelse"
 
         val valgtInnhold = listOf(
-            InnholdDto(innholdselement.innholdskode, null),
-            InnholdDto(annetInnholdselement.innholdskode, annetBeskrivelse),
+            InnholdRequest(innholdselement.innholdskode, null),
+            InnholdRequest(annetInnholdselement.innholdskode, annetBeskrivelse),
         ).toInnholdModel(deltaker = deltaker)
         valgtInnhold shouldBe listOf(
             innholdselement.toInnhold(true),

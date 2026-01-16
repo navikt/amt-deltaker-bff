@@ -5,7 +5,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.utils.validerDeltakerKanEndres
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 
 data class EndreInnholdRequest(
-    val innhold: List<InnholdDto>,
+    val innhold: List<InnholdRequest>,
 ) : Endringsrequest {
     override fun valider(deltaker: Deltaker) {
         validerDeltakelsesinnhold(innhold, deltaker.deltakerliste.tiltak.innhold, deltaker.deltakerliste.tiltak.tiltakskode)

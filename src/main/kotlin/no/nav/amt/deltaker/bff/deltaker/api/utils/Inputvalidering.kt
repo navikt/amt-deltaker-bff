@@ -1,9 +1,10 @@
 package no.nav.amt.deltaker.bff.deltaker.api.utils
 
-import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdDto
+import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.skalKunHaAnnetBeskrivelse
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengde
@@ -29,14 +30,14 @@ fun validerBakgrunnsinformasjon(tekst: String?) = tekst?.let {
 }
 
 fun validerAnnetInnhold(tekst: String?, tiltakstype: Tiltakskode) {
-    if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
+    if (!tiltakstype.skalKunHaAnnetBeskrivelse()) {
         require(tekst != null && tekst != "") {
             "Innhold med innholdskode: ${annetInnholdselement.innholdskode} må ha en beskrivelse"
         }
     }
     tekst?.let {
         require(it.length <= MAX_ANNET_INNHOLD_LENGDE) {
-            "Begrunnelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
+            "Annet Beskrivelse kan ikke være lengre enn $MAX_ANNET_INNHOLD_LENGDE"
         }
     }
 }
@@ -132,13 +133,12 @@ fun validerSluttdatoForDeltaker(
 }
 
 fun validerDeltakelsesinnhold(
-    valgteInnholdselementer: List<InnholdDto>,
+    valgteInnholdselementer: List<InnholdRequest>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     tiltakstype: Tiltakskode,
 ) {
     validerInnhold(tiltakstype, valgteInnholdselementer, tiltaksinnhold) { innholdskoder ->
-        if (tiltakstype != Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET) {
-            // TODO: her mangler det noe
+        if (!tiltakstype.skalKunHaAnnetBeskrivelse()) {
             require(valgteInnholdselementer.isNotEmpty()) { "For et tiltak med innholdselementer må det velges minst ett" }
         }
         valgteInnholdselementer.forEach {
@@ -166,7 +166,7 @@ private fun DeltakerEndring.Aarsak.toDeltakerStatusAarsak() = DeltakerStatus.Aar
 )
 
 fun validerKladdInnhold(
-    innhold: List<InnholdDto>,
+    innhold: List<InnholdRequest>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     tiltakstype: Tiltakskode,
 ) {
@@ -203,7 +203,7 @@ private fun validerVarighet(
 
 private fun validerInnhold(
     tiltakstype: Tiltakskode,
-    valgteInnholdselementer: List<InnholdDto>,
+    valgteInnholdselementer: List<InnholdRequest>,
     tiltaksinnhold: DeltakerRegistreringInnhold?,
     valider: (innholdskoder: List<String>) -> Unit,
 ) {

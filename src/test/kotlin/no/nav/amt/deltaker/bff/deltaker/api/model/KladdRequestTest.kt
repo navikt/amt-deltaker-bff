@@ -28,7 +28,7 @@ class KladdRequestTest {
     fun `sanitize - annet beskrivelse er lengre enn max - avkorter teksten`() {
         val request = KladdRequest(
             innhold = listOf(
-                InnholdDto(
+                InnholdRequest(
                     innholdskode = annetInnholdselement.innholdskode,
                     beskrivelse = input(MAX_ANNET_INNHOLD_LENGDE * 2 + 1),
                 ),

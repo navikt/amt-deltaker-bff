@@ -8,7 +8,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 
 data class UtkastRequest(
-    val innhold: List<InnholdDto>,
+    val innhold: List<InnholdRequest>,
     val bakgrunnsinformasjon: String?,
     val deltakelsesprosent: Int?,
     val dagerPerUke: Int?,
