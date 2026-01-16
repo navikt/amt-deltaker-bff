@@ -31,4 +31,5 @@ data class DeltakerDetaljerResponse(
     val ulesteHendelser: List<UlestHendelse>,
     val oppstartstype: Oppstartstype?,
     val pameldingstype: GjennomforingPameldingType,
+    val deltakelsesinnhold: String?,
 )

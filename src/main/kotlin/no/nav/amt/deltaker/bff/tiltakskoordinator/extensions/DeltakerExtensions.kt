@@ -40,4 +40,5 @@ fun Deltaker.toTiltakskoordinatorsDeltaker(
     ikkeDigitalOgManglerAdresse = ikkeDigitalOgManglerAdresse,
     forslag = forslag,
     ulesteHendelser = ulesteHendelser,
+    deltakelsesinnhold = deltakelsesinnhold,
 )
