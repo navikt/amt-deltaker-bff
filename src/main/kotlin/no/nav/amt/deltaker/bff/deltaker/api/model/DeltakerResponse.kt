@@ -104,6 +104,7 @@ data class DeltakerResponse(
         val erEnkeltplassUtenRammeavtale: Boolean,
         val oppmoteSted: String?,
         val pameldingstype: GjennomforingPameldingType,
+        val erOpplaeringstiltak: Boolean = tiltakskode.erOpplaeringstiltak(),
     )
 
     data class TilgjengeligInnhold(
@@ -170,6 +171,7 @@ data class DeltakerResponse(
                     erEnkeltplassUtenRammeavtale = deltakerliste.tiltak.tiltakskode.erEnkeltplass(),
                     oppmoteSted = deltakerliste.oppmoteSted,
                     pameldingstype = deltakerliste.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
+                    erOpplaeringstiltak = deltakerliste.tiltak.tiltakskode.erOpplaeringstiltak(),
                 ),
                 status = status,
                 startdato = startdato,
