@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAzureAdClient
@@ -11,27 +12,21 @@ import no.nav.amt.deltaker.bff.utils.mockHttpClient
 import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDateTime
 import java.util.UUID
 
 class NavAnsattServiceTest {
-    companion object {
-        lateinit var navAnsattRepository: NavAnsattRepository
-        lateinit var navAnsattService: NavAnsattService
+    private val navAnsattRepository = NavAnsattRepository()
+    private val navAnsattService = NavAnsattService(repository = navAnsattRepository, amtPersonServiceClient = mockk())
 
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-            navAnsattRepository = NavAnsattRepository()
-            navAnsattService = NavAnsattService(repository = navAnsattRepository, amtPersonServiceClient = mockk())
-        }
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Nested

@@ -3,42 +3,30 @@ package no.nav.amt.deltaker.bff.deltaker.forslag
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingConsumer
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDateTime
 import java.util.UUID
 
 class ArrangorMeldingConsumerTest {
+    val forslagRepository = ForslagRepository()
+    val forslagService = ForslagService(forslagRepository, mockk(), mockk(), mockk())
+
     companion object {
-        lateinit var repository: ForslagRepository
-        lateinit var service: ForslagService
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-
-            repository = ForslagRepository()
-            service = ForslagService(repository, mockk(), mockk(), mockk())
-        }
-    }
-
-    @BeforeEach
-    fun cleanDatabase() {
-        TestRepository.cleanDatabase()
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test
     fun `consume - forslag VenterPaSvar - lagrer`(): Unit = runBlocking {
-        val consumer = ArrangorMeldingConsumer(service)
+        val consumer = ArrangorMeldingConsumer(forslagService)
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
@@ -48,18 +36,18 @@ class ArrangorMeldingConsumerTest {
             objectMapper.writeValueAsString(forslag),
         )
 
-        val forslagFraDb = repository.getForDeltaker(deltaker.id)
+        val forslagFraDb = forslagRepository.getForDeltaker(deltaker.id)
         forslagFraDb.size shouldBe 1
         forslagFraDb.first().id shouldBe forslag.id
     }
 
     @Test
     fun `consume - forslag tilbakekalt - sletter`(): Unit = runBlocking {
-        val consumer = ArrangorMeldingConsumer(service)
+        val consumer = ArrangorMeldingConsumer(forslagService)
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
-        repository.upsert(forslag)
+        forslagRepository.upsert(forslag)
 
         consumer.consume(
             forslag.id,
@@ -70,7 +58,7 @@ class ArrangorMeldingConsumerTest {
             ),
         )
 
-        val forslagFraDb = repository.getForDeltaker(deltaker.id)
+        val forslagFraDb = forslagRepository.getForDeltaker(deltaker.id)
         forslagFraDb.size shouldBe 0
     }
 }

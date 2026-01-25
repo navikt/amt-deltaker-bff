@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.kafka.utils.assertProducedTombstone
@@ -14,7 +15,6 @@ import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.testing.SingletonKafkaProvider
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleSkjermedePersonerPolicyInput
@@ -25,6 +25,7 @@ import no.nav.poao_tilgang.client.api.ApiResult
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
@@ -45,9 +46,10 @@ class TilgangskontrollServiceTest {
         mockk<DeltakerlisteService>(),
     )
 
-    init {
-        @Suppress("UnusedExpression")
-        SingletonPostgres16Container
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test

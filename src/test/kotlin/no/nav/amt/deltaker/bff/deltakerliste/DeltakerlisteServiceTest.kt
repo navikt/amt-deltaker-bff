@@ -1,18 +1,25 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
 
 class DeltakerlisteServiceTest {
     private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
+
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
 
     @Test
     fun `get - deltakerliste har felles oppstart - returnere success`() {
@@ -81,9 +88,6 @@ data class DeltakerlisteContext(
     val repository = DeltakerlisteRepository()
 
     init {
-        @Suppress("UnusedExpression")
-        SingletonPostgres16Container
-
         TestRepository.insert(deltakerliste)
     }
 

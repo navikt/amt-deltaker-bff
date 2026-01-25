@@ -6,6 +6,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.apiclients.DtoMappers.deltakerOppdateringResponseFromDeltaker
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
@@ -25,17 +26,12 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.internalapis.tiltakskoordinator.response.DeltakerOppdateringFeilkode
 import no.nav.amt.lib.models.tiltakskoordinator.EndringFraTiltakskoordinator
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDateTime
 import java.util.UUID
 
 class TiltakskoordinatorServiceIntegrationTest {
-    init {
-        @Suppress("UnusedExpression")
-        SingletonPostgres16Container
-    }
-
     private val amtDeltakerClient = mockk<AmtDeltakerClient>()
     private val paameldingClient = mockk<PaameldingClient>()
     private val tiltaksKoordinatorClient = mockk<TiltaksKoordinatorClient>()
@@ -58,6 +54,12 @@ class TiltakskoordinatorServiceIntegrationTest {
         forslagService,
         ulestHendelseService,
     )
+
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
 
     @Test
     fun `tildelPlass - returnerer og lagrer deltaker med ny status`(): Unit = runBlocking {

@@ -2,23 +2,19 @@ package no.nav.amt.deltaker.bff.navansatt
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 class NavAnsattRepositoryTest {
-    companion object {
-        lateinit var repository: NavAnsattRepository
+    private val navAnsattRepository = NavAnsattRepository()
 
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-            repository = NavAnsattRepository()
-        }
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test
@@ -30,7 +26,7 @@ class NavAnsattRepositoryTest {
         )
         ansatte.forEach { TestRepository.insert(it) }
 
-        val faktiskeAnsatte = repository.getMany(ansatte.map { it.id })
+        val faktiskeAnsatte = navAnsattRepository.getMany(ansatte.map { it.id })
 
         faktiskeAnsatte.size shouldBe ansatte.size
         faktiskeAnsatte.find { it == ansatte[0] } shouldNotBe null
@@ -40,6 +36,6 @@ class NavAnsattRepositoryTest {
 
     @Test
     fun `getMany - ingen navidenter - returnerer tom list`() {
-        repository.getMany(emptyList()) shouldBe emptyList()
+        navAnsattRepository.getMany(emptyList()) shouldBe emptyList()
     }
 }

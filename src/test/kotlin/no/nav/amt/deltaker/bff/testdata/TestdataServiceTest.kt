@@ -1,10 +1,10 @@
 package no.nav.amt.deltaker.bff.testdata
 
 import io.kotest.matchers.shouldBe
-import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -28,51 +28,40 @@ import no.nav.amt.lib.models.arrangor.melding.EndringFraArrangor
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
 
 class TestdataServiceTest {
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerService = DeltakerService(
+        deltakerRepository = DeltakerRepository(),
+        amtDeltakerClient = mockAmtDeltakerClient(),
+        paameldingClient = mockPaameldingClient(),
+        navEnhetService = navEnhetService,
+        forslagService = mockk(),
+    )
+    private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
+    private var pameldingService = PameldingService(
+        deltakerService = deltakerService,
+        navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
+        navEnhetService = navEnhetService,
+        paameldingClient = mockPaameldingClient(),
+    )
+    private val arrangorMeldingProducer = mockk<ArrangorMeldingProducer>(relaxed = true)
+    private val testdataService = TestdataService(
+        pameldingService = pameldingService,
+        deltakerService = deltakerService,
+        deltakerlisteService = deltakerlisteService,
+        arrangorMeldingProducer = arrangorMeldingProducer,
+    )
+
     companion object {
-        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-        private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-        private val deltakerService = DeltakerService(
-            deltakerRepository = DeltakerRepository(),
-            amtDeltakerClient = mockAmtDeltakerClient(),
-            paameldingClient = mockPaameldingClient(),
-            navEnhetService = navEnhetService,
-            forslagService = mockk(),
-        )
-        private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
-        private var pameldingService = PameldingService(
-            deltakerService = deltakerService,
-            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-            navEnhetService = navEnhetService,
-            paameldingClient = mockPaameldingClient(),
-        )
-        private val arrangorMeldingProducer = mockk<ArrangorMeldingProducer>(relaxed = true)
-        private val testdataService = TestdataService(
-            pameldingService = pameldingService,
-            deltakerService = deltakerService,
-            deltakerlisteService = deltakerlisteService,
-            arrangorMeldingProducer = arrangorMeldingProducer,
-        )
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-        }
-    }
-
-    @BeforeEach
-    fun cleanDatabase() {
-        TestRepository.cleanDatabase()
-        clearMocks(arrangorMeldingProducer)
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test

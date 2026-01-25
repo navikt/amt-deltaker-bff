@@ -8,6 +8,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -40,18 +41,22 @@ import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.deltakerliste.kafka.GjennomforingV2KafkaPayload
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.objectMapper
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
 
 class DeltakerlisteConsumerTest {
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
+
     @BeforeEach
-    fun cleanDatabase() {
-        TestRepository.cleanDatabase()
+    fun setup() {
         clearAllMocks()
         every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns false
     }
@@ -299,38 +304,24 @@ class DeltakerlisteConsumerTest {
         }
     }
 
-    companion object {
-        private val deltakerlisteRepository = DeltakerlisteRepository()
-        private val tiltakstypeRepository = TiltakstypeRepository()
-        private val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
-        private val unleashToggle: UnleashToggle = mockk()
+    private val deltakerlisteRepository = DeltakerlisteRepository()
+    private val tiltakstypeRepository = TiltakstypeRepository()
+    private val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
+    private val unleashToggle: UnleashToggle = mockk()
 
-        lateinit var navEnhetService: NavEnhetService
-        lateinit var deltakerService: DeltakerService
-        lateinit var pameldingService: PameldingService
-        lateinit var navAnsattService: NavAnsattService
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-
-            navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-            navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-            deltakerService = DeltakerService(
-                deltakerRepository = DeltakerRepository(),
-                amtDeltakerClient = mockAmtDeltakerClient(),
-                paameldingClient = mockPaameldingClient(),
-                navEnhetService = navEnhetService,
-                forslagService = mockk(relaxed = true),
-            )
-            pameldingService = PameldingService(
-                deltakerService = deltakerService,
-                navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-                navEnhetService = navEnhetService,
-                paameldingClient = mockPaameldingClient(),
-            )
-        }
-    }
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerService = DeltakerService(
+        deltakerRepository = DeltakerRepository(),
+        amtDeltakerClient = mockAmtDeltakerClient(),
+        paameldingClient = mockPaameldingClient(),
+        navEnhetService = navEnhetService,
+        forslagService = mockk(relaxed = true),
+    )
+    private val pameldingService = PameldingService(
+        deltakerService = deltakerService,
+        navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
+        navEnhetService = navEnhetService,
+        paameldingClient = mockPaameldingClient(),
+    )
 }

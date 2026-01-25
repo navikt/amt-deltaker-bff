@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -32,16 +33,38 @@ import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerVedVedtak
 import no.nav.amt.lib.models.deltaker.Innhold
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.util.UUID
 import kotlin.test.assertFailsWith
 
 class PameldingServiceTest {
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerService = DeltakerService(
+        deltakerRepository = DeltakerRepository(),
+        amtDeltakerClient = mockAmtDeltakerClient(),
+        paameldingClient = mockPaameldingClient(),
+        navEnhetService = navEnhetService,
+        forslagService = mockk(),
+    )
+
+    private var pameldingService = PameldingService(
+        deltakerService = deltakerService,
+        navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
+        navEnhetService = navEnhetService,
+        paameldingClient = mockPaameldingClient(),
+    )
+
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
+
     @Test
     fun `opprettKladd - deltaker finnes ikke - oppretter ny deltaker`() {
         val overordnetArrangorInTest = lagArrangor()
@@ -222,32 +245,6 @@ class PameldingServiceTest {
 
             val gammelDeltakerFraDb = deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow()
             gammelDeltakerFraDb.kanEndres shouldBe false
-        }
-    }
-
-    companion object {
-        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-        private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-        private val deltakerService = DeltakerService(
-            deltakerRepository = DeltakerRepository(),
-            amtDeltakerClient = mockAmtDeltakerClient(),
-            paameldingClient = mockPaameldingClient(),
-            navEnhetService = navEnhetService,
-            forslagService = mockk(),
-        )
-
-        private var pameldingService = PameldingService(
-            deltakerService = deltakerService,
-            navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
-            navEnhetService = navEnhetService,
-            paameldingClient = mockPaameldingClient(),
-        )
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
         }
     }
 }

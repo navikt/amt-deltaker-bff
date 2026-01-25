@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.navbruker
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -20,39 +21,35 @@ import no.nav.amt.deltaker.bff.utils.toDto
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.models.person.dto.NavBrukerDto
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDateTime
 
 class NavBrukerConsumerTest {
+    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerService = DeltakerService(
+        deltakerRepository = DeltakerRepository(),
+        amtDeltakerClient = mockAmtDeltakerClient(),
+        paameldingClient = mockPaameldingClient(),
+        navEnhetService = navEnhetService,
+        forslagService = mockk(relaxed = true),
+    )
+    private val navBrukerService: NavBrukerService =
+        NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)
+
+    private var pameldingService = PameldingService(
+        deltakerService = deltakerService,
+        navBrukerService = navBrukerService,
+        navEnhetService = navEnhetService,
+        paameldingClient = mockPaameldingClient(),
+    )
+
     companion object {
-        private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-        private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-        private val deltakerService = DeltakerService(
-            deltakerRepository = DeltakerRepository(),
-            amtDeltakerClient = mockAmtDeltakerClient(),
-            paameldingClient = mockPaameldingClient(),
-            navEnhetService = navEnhetService,
-            forslagService = mockk(relaxed = true),
-        )
-        private val navBrukerService: NavBrukerService =
-            NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)
-
-        private var pameldingService = PameldingService(
-            deltakerService = deltakerService,
-            navBrukerService = navBrukerService,
-            navEnhetService = navEnhetService,
-            paameldingClient = mockPaameldingClient(),
-        )
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-        }
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test

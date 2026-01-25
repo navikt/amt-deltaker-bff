@@ -4,6 +4,7 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
@@ -17,28 +18,27 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.testing.shouldBeCloseTo
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
 class TiltakskoordinatorTilgangRepositoryTest {
-    @BeforeEach
-    fun setup() {
-        @Suppress("UnusedExpression")
-        SingletonPostgres16Container
-    }
+    private val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
 
-    private val repository = TiltakskoordinatorTilgangRepository()
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
 
     @Test
     fun `upsert - ny tilgang - inserter og returnerer tilgang`() {
         with(TiltakskoordinatorTilgangContext()) {
-            val lagretTilgang = repository.upsert(tilgang).getOrThrow()
+            val lagretTilgang = tiltakskoordinatorTilgangRepository.upsert(tilgang).getOrThrow()
             sammenlignTilganger(lagretTilgang, tilgang)
         }
     }
@@ -48,7 +48,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
             val avsluttetTilgang = tilgang.copy(gyldigTil = LocalDateTime.now())
-            val lagretTilgang = repository.upsert(avsluttetTilgang).getOrThrow()
+            val lagretTilgang = tiltakskoordinatorTilgangRepository.upsert(avsluttetTilgang).getOrThrow()
             sammenlignTilganger(avsluttetTilgang, lagretTilgang)
         }
     }
@@ -56,7 +56,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     @Test
     fun `hentAktivTilgang - aktiv tilgang finnes ikke - returnerer failure`() {
         with(TiltakskoordinatorTilgangContext()) {
-            val resultat = repository.hentAktivTilgang(navAnsatt.id, deltakerliste.id)
+            val resultat = tiltakskoordinatorTilgangRepository.hentAktivTilgang(navAnsatt.id, deltakerliste.id)
             resultat.isFailure shouldBe true
             resultat.exceptionOrNull()!!::class shouldBe NoSuchElementException::class
         }
@@ -66,7 +66,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     fun `hentAktivTilgang - inaktiv tilgang finnes - returnerer failure`() {
         with(TiltakskoordinatorTilgangContext()) {
             medInaktivTilgang()
-            val resultat = repository.hentAktivTilgang(navAnsatt.id, deltakerliste.id)
+            val resultat = tiltakskoordinatorTilgangRepository.hentAktivTilgang(navAnsatt.id, deltakerliste.id)
             resultat.isFailure shouldBe true
             resultat.exceptionOrNull()!!::class shouldBe NoSuchElementException::class
         }
@@ -76,7 +76,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     fun `hentAktivTilgang - aktiv tilgang finnes - returnerer succses`() {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
-            val resultat = repository.hentAktivTilgang(navAnsatt.id, deltakerliste.id)
+            val resultat = tiltakskoordinatorTilgangRepository.hentAktivTilgang(navAnsatt.id, deltakerliste.id)
             resultat.isSuccess shouldBe true
             sammenlignTilganger(resultat.getOrThrow(), tilgang)
         }
@@ -88,7 +88,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         fun `deltakerliste har ingen koordinatorer - returnerer tom liste`() {
             with(TiltakskoordinatorTilgangContext()) {
                 medAktivTilgang()
-                val koordinatorer = repository.hentKoordinatorer(UUID.randomUUID(), UUID.randomUUID())
+                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(UUID.randomUUID(), UUID.randomUUID())
                 koordinatorer.shouldBeEmpty()
             }
         }
@@ -97,7 +97,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         fun `deltakerliste har aktiv koordinator - skal returnere aktiv koordinator`() {
             with(TiltakskoordinatorTilgangContext()) {
                 medAktivTilgang()
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
+                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
                 koordinatorer shouldHaveSize 1
 
                 assertSoftly(koordinatorer.first()) {
@@ -113,7 +113,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
                 medAktivTilgang()
                 medInaktivTilgang()
 
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
+                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
 
                 koordinatorer shouldHaveSize 2
 
@@ -127,7 +127,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
             with(TiltakskoordinatorTilgangContext()) {
                 medInaktivTilgang()
 
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
+                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
 
                 koordinatorer shouldHaveSize 1
                 koordinatorer.first().erAktiv shouldBe false
@@ -145,7 +145,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
                     ),
                 )
 
-                val koordinatorer = repository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
+                val koordinatorer = tiltakskoordinatorTilgangRepository.hentKoordinatorer(deltakerliste.id, UUID.randomUUID())
 
                 koordinatorer shouldHaveSize 1
                 koordinatorer.first().erAktiv shouldBe true
@@ -158,7 +158,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
             medStengtDeltakerliste()
-            repository.hentUtdaterteTilganger() shouldHaveSize 1
+            tiltakskoordinatorTilgangRepository.hentUtdaterteTilganger() shouldHaveSize 1
         }
     }
 
@@ -167,7 +167,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
             medAvsluttetDeltakerliste()
-            repository.hentUtdaterteTilganger() shouldHaveSize 0
+            tiltakskoordinatorTilgangRepository.hentUtdaterteTilganger() shouldHaveSize 0
         }
     }
 
@@ -175,7 +175,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     fun `hentAktiveForDeltakerliste - aktiv tilgang - henter tilganger pa deltakerliste`() {
         with(TiltakskoordinatorTilgangContext()) {
             medAktivTilgang()
-            repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 1
+            tiltakskoordinatorTilgangRepository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 1
         }
     }
 
@@ -183,7 +183,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
     fun `hentAktiveForDeltakerliste - inaktiv tilgang - henter ikke tilganger pa deltakerliste`() {
         with(TiltakskoordinatorTilgangContext()) {
             medInaktivTilgang()
-            repository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 0
+            tiltakskoordinatorTilgangRepository.hentAktiveForDeltakerliste(deltakerliste.id) shouldHaveSize 0
         }
     }
 }
@@ -214,10 +214,13 @@ data class TiltakskoordinatorTilgangContext(
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattAzureId: UUID = UUID.randomUUID()
 
-    init {
-        @Suppress("UnusedExpression")
-        SingletonPostgres16Container
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
 
+    init {
         TestRepository.insert(navAnsatt)
         TestRepository.insert(secondNavAnsatt)
         TestRepository.insert(deltakerliste)

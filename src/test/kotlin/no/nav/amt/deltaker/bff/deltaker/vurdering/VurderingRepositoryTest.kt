@@ -1,22 +1,22 @@
 package no.nav.amt.deltaker.bff.deltaker.vurdering
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagVurdering
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.arrangor.melding.Vurderingstype
-import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 class VurderingRepositoryTest {
-    @BeforeEach
-    fun setup() {
-        @Suppress("UnusedExpression")
-        SingletonPostgres16Container
-    }
+    private val vurderingRepository = VurderingRepository()
 
-    private val repository = VurderingRepository()
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
+    }
 
     @Test
     fun `getForDeltaker - vurdering finnes - returnerer vurdering`() {
@@ -25,8 +25,8 @@ class VurderingRepositoryTest {
 
         TestRepository.insert(deltaker)
 
-        repository.upsert(vurdering)
-        val upsertedVurdering = repository.getForDeltaker(deltaker.id)
+        vurderingRepository.upsert(vurdering)
+        val upsertedVurdering = vurderingRepository.getForDeltaker(deltaker.id)
 
         upsertedVurdering.size shouldBe 1
         upsertedVurdering[0].deltakerId shouldBe vurdering.deltakerId
@@ -46,11 +46,11 @@ class VurderingRepositoryTest {
         TestRepository.insert(deltaker1)
         TestRepository.insert(deltaker2)
 
-        repository.upsert(vurdering1)
-        repository.upsert(vurdering2)
-        repository.upsert(vurdering3)
+        vurderingRepository.upsert(vurdering1)
+        vurderingRepository.upsert(vurdering2)
+        vurderingRepository.upsert(vurdering3)
 
-        val upsertedVurderinger = repository.getForDeltaker(deltaker1.id)
+        val upsertedVurderinger = vurderingRepository.getForDeltaker(deltaker1.id)
 
         upsertedVurderinger.size shouldBe 2
     }

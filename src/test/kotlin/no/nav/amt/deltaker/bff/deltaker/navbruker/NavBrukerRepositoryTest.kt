@@ -1,24 +1,20 @@
 package no.nav.amt.deltaker.bff.deltaker.navbruker
 
 import io.kotest.matchers.shouldBe
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
-import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 class NavBrukerRepositoryTest {
-    companion object {
-        lateinit var repository: NavBrukerRepository
+    private val navBrukerRepository = NavBrukerRepository()
 
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-            repository = NavBrukerRepository()
-        }
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test
@@ -26,7 +22,7 @@ class NavBrukerRepositoryTest {
         val bruker = TestData.lagNavBruker()
         TestRepository.insert(TestData.lagNavAnsatt(bruker.navVeilederId!!))
         TestRepository.insert(TestData.lagNavEnhet(bruker.navEnhetId!!))
-        repository.upsert(bruker).getOrNull() shouldBe bruker
+        navBrukerRepository.upsert(bruker).getOrNull() shouldBe bruker
     }
 
     @Test
@@ -41,7 +37,7 @@ class NavBrukerRepositoryTest {
             etternavn = "Nytt Etternavn",
             adressebeskyttelse = Adressebeskyttelse.STRENGT_FORTROLIG,
         )
-        repository.upsert(oppdatertBruker).getOrNull() shouldBe oppdatertBruker
-        repository.get(bruker.personId).getOrNull() shouldBe oppdatertBruker
+        navBrukerRepository.upsert(oppdatertBruker).getOrNull() shouldBe oppdatertBruker
+        navBrukerRepository.get(bruker.personId).getOrNull() shouldBe oppdatertBruker
     }
 }

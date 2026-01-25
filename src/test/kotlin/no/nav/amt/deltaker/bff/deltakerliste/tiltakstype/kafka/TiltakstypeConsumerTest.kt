@@ -2,28 +2,22 @@ package no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.kafka
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.models.deltaker.toV2
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.kafka.TiltakstypeDto
-import no.nav.amt.lib.testing.SingletonPostgres16Container
 import no.nav.amt.lib.utils.objectMapper
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 
 class TiltakstypeConsumerTest {
-    companion object {
-        lateinit var repository: TiltakstypeRepository
+    private val tiltakstypeRepository = TiltakstypeRepository()
 
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-            repository = TiltakstypeRepository()
-            TestRepository.cleanDatabase()
-        }
+    companion object {
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test
@@ -36,7 +30,7 @@ class TiltakstypeConsumerTest {
             innsatsgrupper = tiltakstype.innsatsgrupper.map { it.toV2() }.toSet(),
             deltakerRegistreringInnhold = tiltakstype.innhold,
         )
-        val consumer = TiltakstypeConsumer(repository)
+        val consumer = TiltakstypeConsumer(tiltakstypeRepository)
 
         runBlocking {
             consumer.consume(
@@ -44,7 +38,7 @@ class TiltakstypeConsumerTest {
                 objectMapper.writeValueAsString(tiltakstypeDto),
             )
 
-            repository.get(tiltakstype.tiltakskode).getOrThrow() shouldBe tiltakstype
+            tiltakstypeRepository.get(tiltakstype.tiltakskode).getOrThrow() shouldBe tiltakstype
         }
     }
 }

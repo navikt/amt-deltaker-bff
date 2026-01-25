@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.kafka.utils.assertProduced
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -14,34 +15,23 @@ import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.testing.SingletonKafkaProvider
-import no.nav.amt.lib.testing.SingletonPostgres16Container
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDateTime
 
 class ForslagServiceTest {
+    private val navEnhetService = mockk<NavEnhetService>()
+    private val navAnsattService = mockk<NavAnsattService>()
+    private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
+    private val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
+
+    private val forslagRepository = ForslagRepository()
+    private val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, arrangorMeldingProducer)
+
     companion object {
-        lateinit var repository: ForslagRepository
-        lateinit var service: ForslagService
-        val navEnhetService = mockk<NavEnhetService>()
-        val navAnsattService = mockk<NavAnsattService>()
-        private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
-        val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
-
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            @Suppress("UnusedExpression")
-            SingletonPostgres16Container
-            repository = ForslagRepository()
-            service = ForslagService(repository, navAnsattService, navEnhetService, arrangorMeldingProducer)
-        }
-    }
-
-    @BeforeEach
-    fun cleanDatabase() {
-        TestRepository.cleanDatabase()
+        @JvmField
+        @RegisterExtension
+        val dbExtension = DatabaseTestExtension()
     }
 
     @Test
@@ -53,12 +43,12 @@ class ForslagServiceTest {
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navIdent) } returns navAnsatt
         coEvery { navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhet.enhetsnummer) } returns navEnhet
         val opprinneligForslag = TestData.lagForslag(deltakerId = deltaker.id)
-        repository.upsert(opprinneligForslag)
+        forslagRepository.upsert(opprinneligForslag)
         val begrunnelseAvslag = "Avslått fordi.."
 
-        service.avvisForslag(opprinneligForslag, begrunnelseAvslag, navAnsatt.navIdent, navEnhet.enhetsnummer)
+        forslagService.avvisForslag(opprinneligForslag, begrunnelseAvslag, navAnsatt.navIdent, navEnhet.enhetsnummer)
 
-        repository.get(opprinneligForslag.id).getOrNull() shouldBe null
+        forslagRepository.get(opprinneligForslag.id).getOrNull() shouldBe null
 
         assertProduced(
             opprinneligForslag.copy(
