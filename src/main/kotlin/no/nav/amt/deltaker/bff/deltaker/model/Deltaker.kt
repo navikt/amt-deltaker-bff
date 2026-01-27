@@ -46,12 +46,18 @@ data class Deltaker(
             .firstOrNull { it is DeltakerHistorikk.Vedtak || it is DeltakerHistorikk.ImportertFraArena }
             ?.let {
                 when (it) {
-                    is DeltakerHistorikk.ImportertFraArena ->
+                    is DeltakerHistorikk.ImportertFraArena -> {
                         it.importertFraArena.deltakerVedImport.innsoktDato
                             .atStartOfDay()
+                    }
 
-                    is DeltakerHistorikk.Vedtak -> it.vedtak.fattet
-                    else -> null
+                    is DeltakerHistorikk.Vedtak -> {
+                        it.vedtak.fattet
+                    }
+
+                    else -> {
+                        null
+                    }
                 }
             }
 
@@ -100,6 +106,7 @@ data class Deltaker(
     val softMaxVarighet: Duration?
         get() = when (deltakerliste.tiltak.tiltakskode) {
             Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
+
             Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
                 Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                 Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
@@ -117,6 +124,7 @@ data class Deltaker(
             -> weeks(12)
 
             Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8)
+
             Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
             Tiltakskode.JOBBKLUBB,
@@ -145,6 +153,7 @@ data class Deltaker(
         get() = when (deltakerliste.tiltak.tiltakskode) {
             Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+            Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
             -> years(3)
 
             Tiltakskode.ARBEIDSRETTET_REHABILITERING,
@@ -152,10 +161,20 @@ data class Deltaker(
             -> weeks(12 + FERIETILLEGG)
 
             Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> weeks(8 + FERIETILLEGG)
-            Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> years(4)
+
+            Tiltakskode.HOYERE_UTDANNING,
+            Tiltakskode.STUDIESPESIALISERING,
+            Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+            Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+            Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+            -> years(4)
+
+            Tiltakskode.FAG_OG_YRKESOPPLAERING,
+            -> years(5)
 
             Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
                 Innsatsgruppe.SITUASJONSBESTEMT_INNSATS -> years(1)
+
                 Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                 Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                 Innsatsgruppe.VARIG_TILPASSET_INNSATS,
@@ -167,15 +186,7 @@ data class Deltaker(
             Tiltakskode.JOBBKLUBB,
             Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
             Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
-            Tiltakskode.HOYERE_UTDANNING,
             Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-
-            // nye tiltakskoder
-            Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
-            Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
-            Tiltakskode.STUDIESPESIALISERING,
-            Tiltakskode.FAG_OG_YRKESOPPLAERING,
-            Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
             -> null
         }
 
