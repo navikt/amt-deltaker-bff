@@ -24,6 +24,7 @@ class DeltakerTest {
             when (it.deltakerliste.tiltak.tiltakskode) {
                 Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
+                Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
                 -> it.maxVarighet shouldBe years(3)
 
                 Tiltakskode.AVKLARING,
@@ -31,22 +32,26 @@ class DeltakerTest {
                 -> it.maxVarighet shouldBe weeks(17)
 
                 Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK -> it.maxVarighet shouldBe weeks(13)
-                Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING -> it.maxVarighet shouldBe years(4)
+
+                Tiltakskode.HOYERE_UTDANNING,
+                Tiltakskode.STUDIESPESIALISERING,
+                Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
+                Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
+                Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING,
+                -> it.maxVarighet shouldBe years(4)
+
+                Tiltakskode.FAG_OG_YRKESOPPLAERING,
+                -> years(5)
 
                 Tiltakskode.VARIG_TILRETTELAGT_ARBEID_SKJERMET,
                 Tiltakskode.JOBBKLUBB,
                 Tiltakskode.ENKELTPLASS_ARBEIDSMARKEDSOPPLAERING,
                 Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
-                Tiltakskode.HOYERE_UTDANNING,
-                Tiltakskode.ARBEIDSMARKEDSOPPLAERING,
-                Tiltakskode.NORSKOPPLAERING_GRUNNLEGGENDE_FERDIGHETER_FOV,
-                Tiltakskode.STUDIESPESIALISERING,
-                Tiltakskode.FAG_OG_YRKESOPPLAERING,
-                Tiltakskode.HOYERE_YRKESFAGLIG_UTDANNING,
                 -> it.maxVarighet shouldBe null
 
                 Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
                     Innsatsgruppe.SITUASJONSBESTEMT_INNSATS -> it.maxVarighet shouldBe years(1)
+
                     Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                     Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
                     Innsatsgruppe.VARIG_TILPASSET_INNSATS,
@@ -126,6 +131,7 @@ class DeltakerTest {
         deltakere.forEach {
             when (it.deltakerliste.tiltak.tiltakskode) {
                 Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> it.softMaxVarighet shouldBe years(2)
+
                 Tiltakskode.OPPFOLGING -> when (it.navBruker.innsatsgruppe) {
                     Innsatsgruppe.SPESIELT_TILPASSET_INNSATS,
                     Innsatsgruppe.GRADERT_VARIG_TILPASSET_INNSATS,
