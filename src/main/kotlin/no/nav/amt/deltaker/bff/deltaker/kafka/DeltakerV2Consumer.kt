@@ -54,12 +54,13 @@ class DeltakerV2Consumer(
         val lagretDeltaker = deltakerService.getDeltaker(deltakerPayload.id).getOrNull()
         val deltakerFinnes = lagretDeltaker != null
         val ukjentDeltaker = !deltakerFinnes || deltakerPayload.kilde == Kilde.ARENA
+        val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
 
         if (ukjentDeltaker) {
             // Når deltakeren ikke finnes så skal det bety at det er en arenadeltaker som kommer fra arena-acl
+            // eller at en deltaker har blitt relastet
             // kan muligens forekomme race condition med at et utkast kommer på kafka før vi rekker å lagre i databasen
             log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
-            val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
             val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
 
             deltakerService.opprettDeltaker(deltaker)
@@ -71,6 +72,8 @@ class DeltakerV2Consumer(
                 deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
                 isSynchronousInvocation = false,
             )
+            deltakerService.oppdaterDeltakerLaas(deltakerPayload.id, navBruker.personident, deltakerPayload.deltakerliste.id)
+
             vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
             lagretDeltaker.navBruker.let {
                 if (it.adresse == null) {
