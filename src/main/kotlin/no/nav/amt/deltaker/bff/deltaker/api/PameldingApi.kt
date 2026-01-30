@@ -102,11 +102,6 @@ fun Routing.registerPameldingApi(
             }
         }
 
-        /*
-
-            godkjentAvNav = false,
-
-         */
         post("/pamelding/{deltakerId}") {
             val navIdent = call.getNavIdent()
             val request = call.receive<UtkastRequest>()
