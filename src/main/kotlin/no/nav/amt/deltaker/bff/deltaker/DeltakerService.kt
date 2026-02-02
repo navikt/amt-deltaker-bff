@@ -4,7 +4,7 @@ import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakeroppdatering
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
@@ -24,7 +24,7 @@ class DeltakerService(
     private val amtDeltakerClient: AmtDeltakerClient,
     private val paameldingClient: PaameldingClient,
     private val navEnhetService: NavEnhetService,
-    private val forslagService: ForslagService,
+    private val forslagRepository: ForslagRepository,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
@@ -340,7 +340,7 @@ class DeltakerService(
     }
 
     fun delete(deltakerId: UUID) {
-        forslagService.deleteForDeltaker(deltakerId)
+        forslagRepository.deleteForDeltaker(deltakerId)
         deltakerRepository.delete(deltakerId)
     }
 

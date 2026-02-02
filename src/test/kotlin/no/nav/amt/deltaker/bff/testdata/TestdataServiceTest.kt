@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.testdata
 
 import io.kotest.matchers.shouldBe
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
@@ -41,7 +41,7 @@ class TestdataServiceTest {
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
-        forslagService = mockk(),
+        forslagRepository = mockk(),
     )
     private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
     private var pameldingService = PameldingService(
@@ -125,7 +125,7 @@ class TestdataServiceTest {
             deltakerFraDb.deltakelsesinnhold?.ledetekst shouldBe deltakerliste.tiltak.innhold!!.ledetekst
             deltakerFraDb.deltakelsesinnhold?.innhold?.size shouldBe 1
 
-            coEvery {
+            every {
                 arrangorMeldingProducer.produce(
                     match {
                         it is EndringFraArrangor &&

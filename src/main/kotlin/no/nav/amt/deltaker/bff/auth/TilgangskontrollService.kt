@@ -7,6 +7,7 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.models.person.address.Adressebeskyttelse
+import no.nav.amt.lib.utils.database.Database
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.EksternBrukerTilgangTilEksternBrukerPolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
@@ -142,16 +143,18 @@ class TilgangskontrollService(
             )
             Result.failure(IllegalArgumentException("Nav-ansatt ${koordinator.id} har allerede tilgang til $deltakerlisteId"))
         } else {
-            upsertTilgang(
-                navIdent = navIdent,
-                TiltakskoordinatorDeltakerlisteTilgang(
-                    id = UUID.randomUUID(),
-                    navAnsattId = koordinator.id,
-                    deltakerlisteId = deltakerlisteId,
-                    gyldigFra = LocalDateTime.now(),
-                    gyldigTil = null,
-                ),
-            )
+            Database.transaction {
+                upsertTilgang(
+                    navIdent = navIdent,
+                    TiltakskoordinatorDeltakerlisteTilgang(
+                        id = UUID.randomUUID(),
+                        navAnsattId = koordinator.id,
+                        deltakerlisteId = deltakerlisteId,
+                        gyldigFra = LocalDateTime.now(),
+                        gyldigTil = null,
+                    ),
+                )
+            }
         }
     }
 

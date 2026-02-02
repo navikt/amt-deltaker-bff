@@ -15,6 +15,7 @@ import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.testing.SingletonKafkaProvider
+import no.nav.amt.lib.testing.TestOutboxEnvironment
 import no.nav.poao_tilgang.client.Decision
 import no.nav.poao_tilgang.client.NavAnsattBehandleFortroligBrukerePolicyInput
 import no.nav.poao_tilgang.client.NavAnsattBehandleSkjermedePersonerPolicyInput
@@ -33,7 +34,10 @@ class TilgangskontrollServiceTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
 
     private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
-    private val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(kafkaProducer)
+    private val tiltakskoordinatorsDeltakerlisteProducer = TiltakskoordinatorsDeltakerlisteProducer(
+        TestOutboxEnvironment.outboxService,
+        kafkaProducer,
+    )
 
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockk())
     private val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()

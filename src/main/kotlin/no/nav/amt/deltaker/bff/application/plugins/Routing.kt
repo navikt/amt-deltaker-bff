@@ -22,6 +22,7 @@ import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.registerDeltakerApi
 import no.nav.amt.deltaker.bff.deltaker.api.registerPameldingApi
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
@@ -54,6 +55,7 @@ fun Application.configureRouting(
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
+    forslagRepository: ForslagRepository,
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
@@ -101,6 +103,7 @@ fun Application.configureRouting(
             deltakerService,
             navAnsattService,
             navEnhetService,
+            forslagRepository,
             forslagService,
             amtDistribusjonClient,
             sporbarhetsloggService,
@@ -113,7 +116,7 @@ fun Application.configureRouting(
             pameldingService,
             navAnsattService,
             navEnhetService,
-            forslagService,
+            forslagRepository,
             amtDistribusjonClient,
         )
 
@@ -123,7 +126,7 @@ fun Application.configureRouting(
             navAnsattService,
             navEnhetService,
             innbyggerService,
-            forslagService,
+            forslagRepository,
         )
 
         registerInternalApi(

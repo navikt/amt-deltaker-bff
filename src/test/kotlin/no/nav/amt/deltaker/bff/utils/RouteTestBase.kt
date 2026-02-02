@@ -18,6 +18,7 @@ import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
@@ -38,6 +39,7 @@ abstract class RouteTestBase {
     protected val navAnsattService: NavAnsattService = mockk(relaxed = true)
     protected val navEnhetService: NavEnhetService = mockk(relaxed = true)
     protected val innbyggerService: InnbyggerService = mockk(relaxed = true)
+    protected val forslagRepository: ForslagRepository = mockk(relaxed = true)
     protected val forslagService: ForslagService = mockk(relaxed = true)
     protected val amtDistribusjonClient: AmtDistribusjonClient = mockk(relaxed = true)
     protected val sporbarhetsloggService: SporbarhetsloggService = mockk(relaxed = true)
@@ -71,6 +73,7 @@ abstract class RouteTestBase {
                     navAnsattService,
                     navEnhetService,
                     innbyggerService,
+                    forslagRepository,
                     forslagService,
                     amtDistribusjonClient,
                     sporbarhetsloggService,

@@ -4,7 +4,7 @@ import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -25,7 +25,7 @@ class TiltakskoordinatorService(
     private val navEnhetService: NavEnhetService,
     private val navAnsattService: NavAnsattService,
     private val amtDistribusjonClient: AmtDistribusjonClient,
-    private val forslagService: ForslagService,
+    private val forslagRepository: ForslagRepository,
     private val ulesteHendelseService: UlestHendelseService,
 ) {
     suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
@@ -35,7 +35,7 @@ class TiltakskoordinatorService(
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
-        val forslag = forslagService.getForDeltaker(deltaker.id)
+        val forslag = forslagRepository.getForDeltaker(deltaker.id)
         val ulesteHendelser = ulesteHendelseService.getUlesteHendelserForDeltaker(deltakerId)
 
         if (deltaker.navBruker.adresse == null) {
@@ -98,7 +98,7 @@ class TiltakskoordinatorService(
     private suspend fun List<Deltaker>.toTiltakskoordinatorsDeltaker(): List<TiltakskoordinatorsDeltaker> {
         val navEnheter = navEnhetService.hentEnheter(this.mapNotNull { it.navBruker.navEnhetId })
         val navVeiledere = navAnsattService.hentAnsatte(this.mapNotNull { it.navBruker.navVeilederId })
-        val forslag = forslagService.getForDeltakere(this.map { it.id })
+        val forslag = forslagRepository.getForDeltakere(this.map { it.id })
 
         return this
             .map {
@@ -127,7 +127,7 @@ class TiltakskoordinatorService(
         val deltakere = deltakerService.getMany(this.map { it.id })
         val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.navBruker.navEnhetId })
         val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
-        val forslag = forslagService.getForDeltakere(this.map { it.id })
+        val forslag = forslagRepository.getForDeltakere(this.map { it.id })
 
         return deltakere
             .map { deltaker ->
