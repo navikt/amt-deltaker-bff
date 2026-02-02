@@ -44,8 +44,9 @@ import kotlin.test.assertFailsWith
 class PameldingServiceTest {
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        deltakerRepository = DeltakerRepository(),
+        deltakerRepository = deltakerRepository,
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
@@ -53,6 +54,7 @@ class PameldingServiceTest {
     )
 
     private var pameldingService = PameldingService(
+        deltakerRepository = deltakerRepository,
         deltakerService = deltakerService,
         navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
         navEnhetService = navEnhetService,
@@ -85,8 +87,8 @@ class PameldingServiceTest {
                 personIdent = kladdInTest.navBruker.personident,
             )
 
-            deltaker.id shouldBe deltakerService
-                .getDeltakelser(kladdInTest.navBruker.personident, deltakerListeInTest.id)
+            deltaker.id shouldBe deltakerRepository
+                .getMany(kladdInTest.navBruker.personident, deltakerListeInTest.id)
                 .first()
                 .id
 
@@ -196,12 +198,12 @@ class PameldingServiceTest {
             )
             deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
 
-            deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+            deltakerRepository.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
             MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
             pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
 
-            val gammelDeltakerFraDb = deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow()
+            val gammelDeltakerFraDb = deltakerRepository.get(gammelDeltaker.id).getOrThrow()
             gammelDeltakerFraDb.kanEndres shouldBe true
         }
 
@@ -237,13 +239,13 @@ class PameldingServiceTest {
 
             deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
 
-            deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
+            deltakerRepository.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
             MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
 
             pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
 
-            val gammelDeltakerFraDb = deltakerService.getDeltaker(gammelDeltaker.id).getOrThrow()
+            val gammelDeltakerFraDb = deltakerRepository.get(gammelDeltaker.id).getOrThrow()
             gammelDeltakerFraDb.kanEndres shouldBe false
         }
     }

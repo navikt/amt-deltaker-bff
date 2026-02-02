@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -52,6 +53,7 @@ import java.util.UUID
 
 class InnbyggerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
+    private val deltakerRepository = mockk<DeltakerRepository>()
     private val deltakerService = mockk<DeltakerService>(relaxUnitFun = true)
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
@@ -82,7 +84,7 @@ class InnbyggerApiTest {
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
-        coEvery { deltakerService.getDeltaker(any()) } returns Result.success(TestData.lagDeltaker())
+        every { deltakerRepository.get(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }.status shouldBe HttpStatusCode.Forbidden
@@ -92,7 +94,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `skal teste tilgangskontroll - mangler token - returnerer 401`() = testApplication {
-        coEvery { deltakerService.getDeltaker(any()) } returns Result.success(TestData.lagDeltaker())
+        every { deltakerRepository.get(any()) } returns Result.success(TestData.lagDeltaker())
 
         setUpTestApplication()
         client.get("/innbygger/${UUID.randomUUID()}").status shouldBe HttpStatusCode.Unauthorized
@@ -120,7 +122,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `get id - deltaker finnes ikke - returnerer 404`() = testApplication {
-        coEvery { deltakerService.getDeltaker(any()) } returns Result.failure(NoSuchElementException())
+        every { deltakerRepository.get(any()) } returns Result.failure(NoSuchElementException())
 
         setUpTestApplication()
         val res = client.get("/innbygger/${UUID.randomUUID()}") { noBodyRequest() }
@@ -139,7 +141,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `godkjenn-utkast - deltaker finnes ikke - returnerer 404`() = testApplication {
-        coEvery { deltakerService.getDeltaker(any()) } returns Result.failure(NoSuchElementException())
+        every { deltakerRepository.get(any()) } returns Result.failure(NoSuchElementException())
 
         setUpTestApplication()
         val res = client.get("/innbygger/${UUID.randomUUID()}/godkjenn-utkast") { noBodyRequest() }
@@ -171,7 +173,7 @@ class InnbyggerApiTest {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
 
         val historikk = deltaker.getDeltakerHistorikkForVisning()
         val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
@@ -199,25 +201,25 @@ class InnbyggerApiTest {
             configureSerialization()
             configureAuthentication(Environment())
             configureRouting(
-                tilgangskontrollService,
-                deltakerService,
-                pameldingService,
-                navAnsattService,
-                navEnhetService,
-                innbyggerService,
-                forslagRepository,
-                forslagService,
-                amtDistribusjonClient,
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
+                tilgangskontrollService = tilgangskontrollService,
+                deltakerService = deltakerService,
+                pameldingService = pameldingService,
+                navAnsattService = navAnsattService,
+                navEnhetService = navEnhetService,
+                innbyggerService = innbyggerService,
+                forslagRepository = forslagRepository,
+                forslagService = forslagService,
+                amtDistribusjonClient = amtDistribusjonClient,
+                sporbarhetsloggService = mockk(),
+                deltakerRepository = deltakerRepository,
+                amtDeltakerClient = mockk(),
+                deltakerlisteService = mockk(),
+                unleash = mockk(),
+                sporbarhetOgTilgangskontrollSvc = mockk(),
+                tiltakskoordinatorService = mockk(),
+                tiltakskoordinatorTilgangRepository = mockk(),
+                ulestHendelseService = mockk(),
+                testdataService = mockk(),
             )
         }
     }
@@ -228,7 +230,7 @@ class InnbyggerApiTest {
         forslag: List<Forslag> = emptyList(),
     ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
         every { forslagRepository.getForDeltaker(deltaker.id) } returns forslag
 
         return if (oppdatertDeltaker == null) {

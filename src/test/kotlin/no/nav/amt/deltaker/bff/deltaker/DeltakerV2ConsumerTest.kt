@@ -46,8 +46,9 @@ class DeltakerV2ConsumerTest {
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        DeltakerRepository(),
+        deltakerRepository,
         mockAmtDeltakerClient(),
         mockPaameldingClient(),
         navEnhetService,
@@ -56,7 +57,14 @@ class DeltakerV2ConsumerTest {
     private val deltakerlisteRepository = DeltakerlisteRepository()
     private val vurderingService = VurderingService(VurderingRepository())
     private val unleashToggle = mockk<UnleashToggle>()
-    private val consumer = DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle)
+    private val consumer = DeltakerV2Consumer(
+        deltakerRepository,
+        deltakerService,
+        deltakerlisteRepository,
+        vurderingService,
+        navBrukerService,
+        unleashToggle,
+    )
 
     companion object {
         @JvmField
@@ -93,7 +101,7 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.ARENA, listOf(vurdering), deltakerliste)),
             )
 
-            val oppdatertDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
+            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.startdato shouldBe startdato
             oppdatertDeltaker.sluttdato shouldBe sluttdato
             oppdatertDeltaker.sistEndret shouldBeCloseTo sistEndret
@@ -125,7 +133,7 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
-            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
             lagretDeltaker.sistEndret shouldBeCloseTo sistEndret
@@ -160,11 +168,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
-            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
+            val lagretTidligereDeltaker = deltakerRepository.get(tidligereDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe false
         }
     }
@@ -198,11 +206,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
-            val lagretDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
+            val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             lagretDeltaker.startdato shouldBe deltaker.startdato
             lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerService.getDeltaker(tidligereDeltakelse.id).getOrThrow()
+            val lagretTidligereDeltaker = deltakerRepository.get(tidligereDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe false
         }
     }
@@ -234,11 +242,11 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(nyesteDeltakelse.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
             )
 
-            val lagretDeltaker = deltakerService.getDeltaker(nyesteDeltakelse.id).getOrThrow()
+            val lagretDeltaker = deltakerRepository.get(nyesteDeltakelse.id).getOrThrow()
             lagretDeltaker.startdato shouldBe nyesteDeltakelse.startdato
             lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerService.getDeltaker(eldsteDeltakelse.id).getOrThrow()
+            val lagretTidligereDeltaker = deltakerRepository.get(eldsteDeltakelse.id).getOrThrow()
             lagretTidligereDeltaker.kanEndres shouldBe false
         }
     }
@@ -265,7 +273,7 @@ class DeltakerV2ConsumerTest {
                 objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.KOMET, deltakerliste = deltakerliste)),
             )
 
-            val oppdatertDeltaker = deltakerService.getDeltaker(deltaker.id).getOrThrow()
+            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
             oppdatertDeltaker.startdato shouldBe startdato
             oppdatertDeltaker.sluttdato shouldBe sluttdato
         }
@@ -282,7 +290,7 @@ class DeltakerV2ConsumerTest {
 
             consumer.consume(deltaker.id, null)
 
-            deltakerService.getDeltaker(deltaker.id).getOrNull() shouldBe null
+            deltakerRepository.get(deltaker.id).getOrNull() shouldBe null
         }
     }
 }

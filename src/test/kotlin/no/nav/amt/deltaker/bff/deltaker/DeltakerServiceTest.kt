@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
@@ -31,10 +32,10 @@ import java.time.LocalDateTime
 class DeltakerServiceTest {
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val forslagRepository = mockk<ForslagRepository>()
+    private val deltakerRepository = DeltakerRepository()
 
-    // private val forslagService = mockk<ForslagService>()
-    private val service = DeltakerService(
-        DeltakerRepository(),
+    private val deltakerService = DeltakerService(
+        deltakerRepository,
         mockAmtDeltakerClient(),
         mockPaameldingClient(),
         navEnhetService,
@@ -106,7 +107,7 @@ class DeltakerServiceTest {
                 endring,
             )
 
-            val oppdatertDeltaker = service.oppdaterDeltaker(
+            val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                 deltaker,
                 endring,
                 "navIdent",
@@ -205,23 +206,24 @@ class DeltakerServiceTest {
         MockResponseHandler.addSlettKladdResponse(deltakerKladd.id)
         every { forslagRepository.deleteForDeltaker(deltakerKladd.id) } returns Unit
 
-        service.getDeltaker(deltakerKladd.id).isFailure shouldBe false
-        service.oppdaterDeltaker(
+        deltakerRepository.get(deltakerKladd.id).isFailure shouldBe false
+        deltakerService.oppdaterDeltaker(
             deltaker,
             endring,
             "navIdent",
             navEnhet.enhetsnummer,
         )
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART
-        service.getDeltaker(deltakerKladd.id).isFailure shouldBe true
+        deltakerRepository.get(deltakerKladd.id).isFailure shouldBe true
     }
 
     @Test
-    fun `oppdaterDeltaker(deltakerOppdatering) - har ikke andre deltakelser - oppdaterer deltaker`() {
+    fun `oppdaterDeltaker(deltakerOppdatering) - har ikke andre deltakelser - oppdaterer deltaker`() = runTest {
         val deltaker = TestData.lagDeltakerKladd()
         TestRepository.insert(deltaker)
+
         val deltakeroppdatering = Deltakeroppdatering(
             id = deltaker.id,
             startdato = null,
@@ -235,14 +237,14 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering)
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
     }
 
     @Test
-    fun `oppdaterDeltaker(deltakerOppdatering) - har ikke andre deltakelser, har sluttet - oppdaterer deltaker`() {
+    fun `oppdaterDeltaker(deltakerOppdatering) - har ikke andre deltakelser, har sluttet - oppdaterer deltaker`() = runTest {
         val deltaker = TestData.lagDeltaker(
             status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
         )
@@ -264,9 +266,9 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering)
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.HAR_SLUTTET
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.ANNET
         deltakerFraDb.status.aarsak?.beskrivelse shouldBe "Oppdatert"
@@ -276,7 +278,7 @@ class DeltakerServiceTest {
     }
 
     @Test
-    fun `oppdaterDeltaker(deltakerOppdatering) - har tidligere deltakelse, statusoppdatering - setter kan ikke endres`() {
+    fun `oppdaterDeltaker(deltakerOppdatering) - har tidligere deltakelse, statusoppdatering - setter kan ikke endres`() = runTest {
         val deltaker = TestData.lagDeltakerKladd()
         TestRepository.insert(deltaker)
         val gammelDeltaker = TestData.lagDeltaker(
@@ -299,17 +301,17 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering)
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.UTKAST_TIL_PAMELDING
 
-        val gammelDeltakerFraDb = service.getDeltaker(gammelDeltaker.id).getOrThrow()
+        val gammelDeltakerFraDb = deltakerRepository.get(gammelDeltaker.id).getOrThrow()
         gammelDeltakerFraDb.kanEndres shouldBe false
     }
 
     @Test
-    fun `oppdaterDeltaker(deltakerOppdatering) - har tidligere deltakelse, ikke statusoppdatering - oppdaterer deltaker`() {
+    fun `oppdaterDeltaker(deltakerOppdatering) - har tidligere deltakelse, ikke statusoppdatering - oppdaterer deltaker`() = runTest {
         val deltaker = TestData.lagDeltaker(
             status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
             startdato = LocalDate.now().minusDays(10),
@@ -336,17 +338,17 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering)
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.DELTAR
 
-        val gammelDeltakerFraDb = service.getDeltaker(gammelDeltaker.id).getOrThrow()
+        val gammelDeltakerFraDb = deltakerRepository.get(gammelDeltaker.id).getOrThrow()
         gammelDeltakerFraDb.kanEndres shouldBe true
     }
 
     @Test
-    fun `oppdaterDeltaker(deltakerOppdatering) - feilregistrert - setter kan ikke endres`() {
+    fun `oppdaterDeltaker(deltakerOppdatering) - feilregistrert - setter kan ikke endres`() = runTest {
         val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         TestRepository.insert(deltaker)
         val deltakeroppdatering = Deltakeroppdatering(
@@ -362,15 +364,15 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering)
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.FEILREGISTRERT
         deltakerFraDb.kanEndres shouldBe false
     }
 
     @Test
-    fun `oppdaterDeltaker(deltakerOppdatering) - avlyst gjennomforing - setter kan ikke endres`() {
+    fun `oppdaterDeltaker(deltakerOppdatering) - avlyst gjennomforing - setter kan ikke endres`() = runTest {
         val navBruker = TestData.lagNavBruker()
         val deltaker = TestData.lagDeltaker(
             status = lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
@@ -394,9 +396,9 @@ class DeltakerServiceTest {
             historikk = emptyList(),
         )
 
-        service.oppdaterDeltaker(deltakeroppdatering)
+        deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        val deltakerFraDb = service.getDeltaker(deltaker.id).getOrThrow()
+        val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()
         deltakerFraDb.status.type shouldBe DeltakerStatus.Type.IKKE_AKTUELL
         deltakerFraDb.status.aarsak?.type shouldBe DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         deltakerFraDb.kanEndres shouldBe false
@@ -406,9 +408,9 @@ class DeltakerServiceTest {
     fun `oppdaterDeltakerLaas - ny deltaker - beholder låsing`() {
         val deltaker = TestData.lagDeltaker()
         TestRepository.insert(deltaker)
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
-        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe true
+        deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe true
     }
 
     @Test
@@ -437,14 +439,14 @@ class DeltakerServiceTest {
         TestRepository.insert(historisertDeltaker)
         TestRepository.insert(deltaker)
 
-        service.oppdaterDeltakerLaas(
+        deltakerService.oppdaterDeltakerLaas(
             deltaker.id,
             deltaker.navBruker.personident,
             deltaker.deltakerliste.id,
         )
 
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
-        service.getDeltaker(historisertDeltaker.id).getOrThrow().kanEndres shouldBe false
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe true
+        deltakerRepository.get(historisertDeltaker.id).getOrThrow().kanEndres shouldBe false
     }
 
     @Test
@@ -472,14 +474,14 @@ class DeltakerServiceTest {
         TestRepository.insert(historisertDeltaker)
         TestRepository.insert(deltaker)
 
-        service.oppdaterDeltakerLaas(
+        deltakerService.oppdaterDeltakerLaas(
             historisertDeltaker.id,
             historisertDeltaker.navBruker.personident,
             historisertDeltaker.deltakerliste.id,
         )
 
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe true
-        service.getDeltaker(historisertDeltaker.id).getOrThrow().kanEndres shouldBe false
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe true
+        deltakerRepository.get(historisertDeltaker.id).getOrThrow().kanEndres shouldBe false
     }
 
     @Test
@@ -489,10 +491,10 @@ class DeltakerServiceTest {
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
 
-        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
 
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
-        service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe true
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe false
+        deltakerRepository.get(deltaker2.id).getOrThrow().kanEndres shouldBe true
     }
 
     @Test
@@ -506,10 +508,10 @@ class DeltakerServiceTest {
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
 
-        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
 
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
-        service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe false
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe false
+        deltakerRepository.get(deltaker2.id).getOrThrow().kanEndres shouldBe false
     }
 
     @Test
@@ -529,10 +531,10 @@ class DeltakerServiceTest {
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
 
-        service.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
 
-        service.getDeltaker(deltaker.id).getOrThrow().kanEndres shouldBe false
-        service.getDeltaker(deltaker2.id).getOrThrow().kanEndres shouldBe true
+        deltakerRepository.get(deltaker.id).getOrThrow().kanEndres shouldBe false
+        deltakerRepository.get(deltaker2.id).getOrThrow().kanEndres shouldBe true
     }
 
     @Test
@@ -553,7 +555,7 @@ class DeltakerServiceTest {
         TestRepository.insert(deltaker2)
 
         assertThrows<IllegalStateException> {
-            service.oppdaterDeltakerLaas(
+            deltakerService.oppdaterDeltakerLaas(
                 deltaker.id,
                 deltaker.navBruker.personident,
                 deltaker.deltakerliste.id,

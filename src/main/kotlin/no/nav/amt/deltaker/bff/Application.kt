@@ -243,6 +243,7 @@ fun Application.module() {
     )
 
     val pameldingService = PameldingService(
+        deltakerRepository = deltakerRepository,
         deltakerService = deltakerService,
         navBrukerService = navBrukerService,
         navEnhetService = navEnhetService,
@@ -256,6 +257,7 @@ fun Application.module() {
 
     val tiltakskoordinatorService = TiltakskoordinatorService(
         tiltaksKoordinatorClient = tiltakskoordinatorClient,
+        deltakerRepository = deltakerRepository,
         deltakerService = deltakerService,
         vurderingService = vurderingService,
         navEnhetService = navEnhetService,
@@ -286,13 +288,14 @@ fun Application.module() {
         pameldingService = pameldingService,
         deltakerlisteService = deltakerlisteService,
         arrangorMeldingProducer = arrangorMeldingProducer,
-        deltakerService = deltakerService,
+        deltakerRepository = deltakerRepository,
     )
 
     val unleashToggle = UnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(
+            deltakerRepository = deltakerRepository,
             deltakerlisteRepository = deltakerlisteRepository,
             arrangorService = arrangorService,
             tiltakstypeRepository = tiltakstypeRepository,
@@ -303,7 +306,14 @@ fun Application.module() {
         NavAnsattConsumer(navAnsattService),
         NavBrukerConsumer(navBrukerService, pameldingService),
         TiltakstypeConsumer(tiltakstypeRepository),
-        DeltakerV2Consumer(deltakerService, deltakerlisteRepository, vurderingService, navBrukerService, unleashToggle),
+        DeltakerV2Consumer(
+            deltakerRepository,
+            deltakerService,
+            deltakerlisteRepository,
+            vurderingService,
+            navBrukerService,
+            unleashToggle,
+        ),
         ArrangorMeldingConsumer(forslagRepository),
         HendelseConsumer(ulestHendelseService),
         NavEnhetConsumer(navEnhetService),
@@ -312,25 +322,25 @@ fun Application.module() {
 
     configureAuthentication(environment)
     configureRouting(
-        tilgangskontrollService,
-        deltakerService,
-        pameldingService,
-        navAnsattService,
-        navEnhetService,
-        innbyggerService,
-        forslagRepository,
-        forslagService,
-        amtDistribusjonClient,
-        sporbarhetsloggService,
-        deltakerRepository,
-        amtDeltakerClient,
-        deltakerlisteService,
-        unleash,
-        sporbarhetOgTilgangskontrollSvc,
-        tiltakskoordinatorService,
-        tiltakskoordinatorTilgangRepository,
-        ulestHendelseService,
-        testdataService,
+        tilgangskontrollService = tilgangskontrollService,
+        deltakerService = deltakerService,
+        pameldingService = pameldingService,
+        navAnsattService = navAnsattService,
+        navEnhetService = navEnhetService,
+        innbyggerService = innbyggerService,
+        forslagRepository = forslagRepository,
+        forslagService = forslagService,
+        amtDistribusjonClient = amtDistribusjonClient,
+        sporbarhetsloggService = sporbarhetsloggService,
+        deltakerRepository = deltakerRepository,
+        amtDeltakerClient = amtDeltakerClient,
+        deltakerlisteService = deltakerlisteService,
+        unleash = unleash,
+        sporbarhetOgTilgangskontrollSvc = sporbarhetOgTilgangskontrollSvc,
+        tiltakskoordinatorService = tiltakskoordinatorService,
+        tiltakskoordinatorTilgangRepository = tiltakskoordinatorTilgangRepository,
+        ulestHendelseService = ulestHendelseService,
+        testdataService = testdataService,
     )
     configureMonitoring()
 

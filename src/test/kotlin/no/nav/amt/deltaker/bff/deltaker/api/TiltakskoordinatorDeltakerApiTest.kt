@@ -48,6 +48,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.createPostRequest
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -80,6 +81,7 @@ import java.util.UUID
 
 class TiltakskoordinatorDeltakerApiTest {
     private val poaoTilgangCachedClient = mockk<PoaoTilgangCachedClient>()
+    private val deltakerRepository = mockk<DeltakerRepository>()
     private val deltakerService = mockk<DeltakerService>()
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
@@ -110,14 +112,12 @@ class TiltakskoordinatorDeltakerApiTest {
 
     @Test
     fun `skal teste tilgangskontroll - har ikke tilgang - returnerer 403`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
-        coEvery {
-            deltakerService.getDeltaker(
-                any(),
-            )
+        every {
+            deltakerRepository.get(any())
         } returns Result.success(TestData.lagDeltaker(navBruker = TestData.lagNavBruker(personident = "1234")))
         every { forslagRepository.get(any()) } returns Result.success(TestData.lagForslag())
         every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true
@@ -446,8 +446,8 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `getDeltakerHistorikk - har tilgang, deltaker finnes - returnerer historikk`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
 
         val historikk = deltaker.getDeltakerHistorikkForVisning()
         val ansatte = TestData.lagNavAnsatteForHistorikk(historikk).associateBy { it.id }
@@ -802,25 +802,25 @@ class TiltakskoordinatorDeltakerApiTest {
             configureSerialization()
             configureAuthentication(Environment())
             configureRouting(
-                tilgangskontrollService,
-                deltakerService,
-                pameldingService,
-                navAnsattService,
-                navEnhetService,
-                mockk(),
-                forslagRepository,
-                forslagService,
-                amtDistribusjonClient,
-                sporbarhetsloggService,
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
-                mockk(),
+                tilgangskontrollService = tilgangskontrollService,
+                deltakerService = deltakerService,
+                pameldingService = pameldingService,
+                navAnsattService = navAnsattService,
+                navEnhetService = navEnhetService,
+                innbyggerService = mockk(),
+                forslagRepository = forslagRepository,
+                forslagService = forslagService,
+                amtDistribusjonClient = amtDistribusjonClient,
+                sporbarhetsloggService = sporbarhetsloggService,
+                deltakerRepository = deltakerRepository,
+                amtDeltakerClient = mockk(),
+                deltakerlisteService = mockk(),
+                unleash = mockk(),
+                sporbarhetOgTilgangskontrollSvc = mockk(),
+                tiltakskoordinatorService = mockk(),
+                tiltakskoordinatorTilgangRepository = mockk(),
+                ulestHendelseService = mockk(),
+                testdataService = mockk(),
             )
         }
     }
@@ -869,9 +869,9 @@ class TiltakskoordinatorDeltakerApiTest {
         oppdatertDeltaker: Deltaker?,
         forslag: List<Forslag> = emptyList(),
     ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
-        every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
-        every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
+        every { deltakerRepository.getMany(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         every { forslagRepository.getForDeltaker(deltaker.id) } returns forslag
         every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true

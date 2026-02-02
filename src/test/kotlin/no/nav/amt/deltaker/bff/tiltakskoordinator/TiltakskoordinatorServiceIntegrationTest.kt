@@ -40,8 +40,9 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val navAnsattService = mockk<NavAnsattService>()
     private val vurderingService = mockk<VurderingService>()
     private val forslagRepository = mockk<ForslagRepository>()
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        deltakerRepository = DeltakerRepository(),
+        deltakerRepository = deltakerRepository,
         amtDeltakerClient = amtDeltakerClient,
         paameldingClient = paameldingClient,
         navEnhetService = navEnhetService,
@@ -51,6 +52,7 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val ulestHendelseService = mockk<UlestHendelseService>()
     private val tiltakskoordinatorService = TiltakskoordinatorService(
         tiltaksKoordinatorClient,
+        deltakerRepository,
         deltakerService,
         vurderingService,
         navEnhetService,

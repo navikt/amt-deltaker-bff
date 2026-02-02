@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker.kafka
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -22,6 +23,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerV2Consumer(
+    private val deltakerRepository: DeltakerRepository,
     private val deltakerService: DeltakerService,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val vurderingService: VurderingService,
@@ -51,7 +53,7 @@ class DeltakerV2Consumer(
             return
         }
 
-        val lagretDeltaker = deltakerService.getDeltaker(deltakerPayload.id).getOrNull()
+        val lagretDeltaker = deltakerRepository.get(deltakerPayload.id).getOrNull()
         val deltakerFinnes = lagretDeltaker != null
         val ukjentDeltaker = !deltakerFinnes || deltakerPayload.kilde == Kilde.ARENA
         val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()

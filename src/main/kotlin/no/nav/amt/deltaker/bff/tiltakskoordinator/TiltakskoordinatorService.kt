@@ -4,6 +4,7 @@ import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
@@ -20,6 +21,7 @@ import java.util.UUID
 
 class TiltakskoordinatorService(
     private val tiltaksKoordinatorClient: TiltaksKoordinatorClient,
+    private val deltakerRepository: DeltakerRepository,
     private val deltakerService: DeltakerService,
     private val vurderingService: VurderingService,
     private val navEnhetService: NavEnhetService,
@@ -28,10 +30,10 @@ class TiltakskoordinatorService(
     private val forslagRepository: ForslagRepository,
     private val ulesteHendelseService: UlestHendelseService,
 ) {
-    suspend fun getMany(deltakerIder: List<UUID>) = deltakerService.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
+    suspend fun getMany(deltakerIder: List<UUID>) = deltakerRepository.getMany(deltakerIder).toTiltakskoordinatorsDeltaker()
 
     suspend fun getDeltaker(deltakerId: UUID): TiltakskoordinatorsDeltaker {
-        val deltaker = deltakerService.getDeltaker(deltakerId).getOrThrow()
+        val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
         val sisteVurdering = vurderingService.getSisteVurderingForDeltaker(deltaker.id)
         val navVeileder = deltaker.navBruker.navVeilederId?.let { navAnsattService.hentEllerOpprettNavAnsatt(it) }
         val navEnhet = deltaker.navBruker.navEnhetId?.let { navEnhetService.hentEnhet(it) }
@@ -76,13 +78,12 @@ class TiltakskoordinatorService(
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
 
-        return deltakerService.getDeltaker(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
+        return deltakerRepository.get(deltakeroppdatering.id).getOrThrow().toTiltakskoordinatorsDeltaker()
     }
 
     suspend fun hentDeltakereForDeltakerliste(deltakerlisteId: UUID): List<TiltakskoordinatorsDeltaker> {
-        val deltakere = deltakerService.getForDeltakerliste(deltakerlisteId)
-        return deltakere
-            .toTiltakskoordinatorsDeltaker()
+        val deltakere = deltakerRepository.getForDeltakerliste(deltakerlisteId)
+        return deltakere.toTiltakskoordinatorsDeltaker()
     }
 
     fun TiltakskoordinatorsDeltaker.skalSkjules() = status.type in listOf(
@@ -124,7 +125,7 @@ class TiltakskoordinatorService(
     }
 
     private suspend fun List<DeltakerOppdateringResponse>.toTiltakskoordinatorsDeltakere(): List<TiltakskoordinatorsDeltaker> {
-        val deltakere = deltakerService.getMany(this.map { it.id })
+        val deltakere = deltakerRepository.getMany(this.map { it.id })
         val navEnheter = navEnhetService.hentEnheter(deltakere.mapNotNull { it.navBruker.navEnhetId })
         val navVeiledere = navAnsattService.hentAnsatte(deltakere.mapNotNull { it.navBruker.navVeilederId })
         val forslag = forslagRepository.getForDeltakere(this.map { it.id })

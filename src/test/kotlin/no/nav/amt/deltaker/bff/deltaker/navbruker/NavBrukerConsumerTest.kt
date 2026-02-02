@@ -29,8 +29,9 @@ import java.time.LocalDateTime
 class NavBrukerConsumerTest {
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        deltakerRepository = DeltakerRepository(),
+        deltakerRepository = deltakerRepository,
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
@@ -40,6 +41,7 @@ class NavBrukerConsumerTest {
         NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)
 
     private var pameldingService = PameldingService(
+        deltakerRepository = deltakerRepository,
         deltakerService = deltakerService,
         navBrukerService = navBrukerService,
         navEnhetService = navEnhetService,
@@ -113,7 +115,7 @@ class NavBrukerConsumerTest {
         }
 
         navBrukerService.get(navBruker.personId).getOrNull() shouldBe oppdatertNavBruker
-        deltakerService.getDeltaker(kladd.id).getOrNull() shouldBe null
+        deltakerRepository.get(kladd.id).getOrNull() shouldBe null
     }
 }
 

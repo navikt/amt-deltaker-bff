@@ -100,6 +100,7 @@ fun Application.configureRouting(
 
         registerDeltakerApi(
             tilgangskontrollService,
+            deltakerRepository,
             deltakerService,
             navAnsattService,
             navEnhetService,
@@ -112,7 +113,7 @@ fun Application.configureRouting(
 
         registerPameldingApi(
             tilgangskontrollService,
-            deltakerService,
+            deltakerRepository,
             pameldingService,
             navAnsattService,
             navEnhetService,
@@ -121,6 +122,7 @@ fun Application.configureRouting(
         )
 
         registerInnbyggerApi(
+            deltakerRepository,
             deltakerService,
             tilgangskontrollService,
             navAnsattService,
@@ -129,19 +131,14 @@ fun Application.configureRouting(
             forslagRepository,
         )
 
-        registerInternalApi(
-            deltakerRepository,
-            amtDeltakerClient,
-        )
+        registerInternalApi(amtDeltakerClient)
 
-        registerUnleashApi(
-            unleash,
-        )
+        registerUnleashApi(unleash)
 
         registerTiltakskoordinatorDeltakerApi(
             sporbarhetOgTilgangskontrollSvc,
             tiltakskoordinatorService,
-            deltakerService,
+            deltakerRepository,
             navAnsattService,
             navEnhetService,
             ulestHendelseService,
