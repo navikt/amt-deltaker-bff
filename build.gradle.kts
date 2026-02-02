@@ -38,6 +38,7 @@ val mockkVersion = "1.14.7"
 val nimbusVersion = "10.7"
 val amtLibVersion = "1.2026.02.01_09.45-d68624f62ecf"
 val unleashVersion = "12.1.0"
+val junitJupiterVersion = "6.0.2"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
 configurations.configureEach {
@@ -99,6 +100,7 @@ dependencies {
     testImplementation("io.mockk:mockk-jvm:$mockkVersion")
     testImplementation("com.nimbusds:nimbus-jose-jwt:$nimbusVersion")
     testImplementation("no.nav.amt.lib:testing:$amtLibVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion")
 }
 
 kotlin {
