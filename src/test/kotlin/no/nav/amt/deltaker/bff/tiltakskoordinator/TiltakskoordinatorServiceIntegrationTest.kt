@@ -14,7 +14,7 @@ import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
@@ -39,10 +39,15 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val navEnhetService = mockk<NavEnhetService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val vurderingService = mockk<VurderingService>()
-    private val deltakerService =
-        DeltakerService(DeltakerRepository(), amtDeltakerClient, paameldingClient, navEnhetService, mockk<ForslagService>())
+    private val forslagRepository = mockk<ForslagRepository>()
+    private val deltakerService = DeltakerService(
+        deltakerRepository = DeltakerRepository(),
+        amtDeltakerClient = amtDeltakerClient,
+        paameldingClient = paameldingClient,
+        navEnhetService = navEnhetService,
+        forslagRepository = forslagRepository,
+    )
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
-    private val forslagService = mockk<ForslagService>()
     private val ulestHendelseService = mockk<UlestHendelseService>()
     private val tiltakskoordinatorService = TiltakskoordinatorService(
         tiltaksKoordinatorClient,
@@ -51,7 +56,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         navEnhetService,
         navAnsattService,
         amtDistribusjonClient,
-        forslagService,
+        forslagRepository,
         ulestHendelseService,
     )
 
@@ -72,8 +77,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
         every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
-        every { forslagService.getForDeltakere(any()) } returns emptyList()
-        every { forslagService.getForDeltaker(any()) } returns emptyList()
+        every { forslagRepository.getForDeltakere(any()) } returns emptyList()
+        every { forslagRepository.getForDeltaker(any()) } returns emptyList()
         every { ulestHendelseService.getUlesteHendelserForDeltaker(any()) } returns emptyList()
 
         val nyStatus =
@@ -113,8 +118,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
         every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
-        every { forslagService.getForDeltakere(any()) } returns emptyList()
-        every { forslagService.getForDeltaker(any()) } returns emptyList()
+        every { forslagRepository.getForDeltakere(any()) } returns emptyList()
+        every { forslagRepository.getForDeltaker(any()) } returns emptyList()
         every { ulestHendelseService.getUlesteHendelserForDeltaker(any()) } returns emptyList()
 
         val nyStatus =
@@ -153,8 +158,8 @@ class TiltakskoordinatorServiceIntegrationTest {
         every { vurderingService.getSisteVurderingForDeltaker(deltaker.id) } returns null
         every { navEnhetService.hentEnheter(listOf(navEnhet.id)) } returns mapOf(navEnhet.id to navEnhet)
         every { navAnsattService.hentAnsatte(listOf(navAnsatt.id)) } returns mapOf(navAnsatt.id to navAnsatt)
-        every { forslagService.getForDeltakere(any()) } returns emptyList()
-        every { forslagService.getForDeltaker(any()) } returns emptyList()
+        every { forslagRepository.getForDeltakere(any()) } returns emptyList()
+        every { forslagRepository.getForDeltaker(any()) } returns emptyList()
         every { ulestHendelseService.getUlesteHendelserForDeltaker(any()) } returns emptyList()
 
         val nyStatus =

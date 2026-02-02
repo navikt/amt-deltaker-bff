@@ -25,6 +25,7 @@ import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
@@ -55,6 +56,7 @@ class InnbyggerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val forslagRepository = mockk<ForslagRepository>()
     private val forslagService = mockk<ForslagService>()
     private val innbyggerService = mockk<InnbyggerService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
@@ -203,6 +205,7 @@ class InnbyggerApiTest {
                 navAnsattService,
                 navEnhetService,
                 innbyggerService,
+                forslagRepository,
                 forslagService,
                 amtDistribusjonClient,
                 mockk(),
@@ -226,7 +229,7 @@ class InnbyggerApiTest {
     ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
         coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
-        every { forslagService.getForDeltaker(deltaker.id) } returns forslag
+        every { forslagRepository.getForDeltaker(deltaker.id) } returns forslag
 
         return if (oppdatertDeltaker == null) {
             mockAnsatteOgEnhetForDeltaker(deltaker)

@@ -11,10 +11,8 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
-import no.nav.amt.lib.kafka.Producer
-import no.nav.amt.lib.kafka.config.LocalKafkaConfig
 import no.nav.amt.lib.models.arrangor.melding.Forslag
-import no.nav.amt.lib.testing.SingletonKafkaProvider
+import no.nav.amt.lib.testing.TestOutboxEnvironment
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDateTime
@@ -22,11 +20,15 @@ import java.time.LocalDateTime
 class ForslagServiceTest {
     private val navEnhetService = mockk<NavEnhetService>()
     private val navAnsattService = mockk<NavAnsattService>()
-    private val kafkaProducer = Producer<String, String>(LocalKafkaConfig(SingletonKafkaProvider.getHost()))
-    private val arrangorMeldingProducer = ArrangorMeldingProducer(kafkaProducer)
+    private val arrangorMeldingProducer = ArrangorMeldingProducer(TestOutboxEnvironment.outboxService)
 
     private val forslagRepository = ForslagRepository()
-    private val forslagService = ForslagService(forslagRepository, navAnsattService, navEnhetService, arrangorMeldingProducer)
+    private val forslagService = ForslagService(
+        forslagRepository = forslagRepository,
+        navAnsattService = navAnsattService,
+        navEnhetService = navEnhetService,
+        arrangorMeldingProducer = arrangorMeldingProducer,
+    )
 
     companion object {
         @JvmField

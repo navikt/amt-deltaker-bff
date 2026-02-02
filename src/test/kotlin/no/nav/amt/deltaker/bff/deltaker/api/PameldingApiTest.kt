@@ -29,6 +29,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningReques
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.createPostRequest
 import no.nav.amt.deltaker.bff.deltaker.api.utils.noBodyRequest
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
@@ -56,6 +57,7 @@ class PameldingApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val forslagRepository = mockk<ForslagRepository>()
     private val forslagService = mockk<ForslagService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
     private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
@@ -127,7 +129,7 @@ class PameldingApiTest {
         coEvery { pameldingService.opprettDeltaker(any(), any()) } returns deltaker
         coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
         coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
-        coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
+        every { forslagRepository.getForDeltaker(deltaker.id) } returns emptyList()
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
 
         setUpTestApplication()
@@ -197,7 +199,7 @@ class PameldingApiTest {
         every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         coEvery { pameldingService.upsertUtkast(any()) } returns deltaker
-        coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
+        every { forslagRepository.getForDeltaker(deltaker.id) } returns emptyList()
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
@@ -235,7 +237,7 @@ class PameldingApiTest {
         every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
         coEvery { pameldingService.upsertUtkast(any()) } returns deltaker
-        coEvery { forslagService.getForDeltaker(deltaker.id) } returns emptyList()
+        every { forslagRepository.getForDeltaker(deltaker.id) } returns emptyList()
         val (ansatte, enhet) = mockAnsatteOgEnhetForDeltaker(deltaker)
 
         setUpTestApplication()
@@ -321,6 +323,7 @@ class PameldingApiTest {
                 navAnsattService,
                 navEnhetService,
                 mockk(),
+                forslagRepository,
                 forslagService,
                 amtDistribusjonClient,
                 mockk(),

@@ -34,7 +34,7 @@ class NavBrukerConsumerTest {
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
-        forslagService = mockk(relaxed = true),
+        forslagRepository = mockk(relaxed = true),
     )
     private val navBrukerService: NavBrukerService =
         NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService)

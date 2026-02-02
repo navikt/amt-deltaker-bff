@@ -36,7 +36,7 @@ val postgresVersion = "42.7.9"
 val caffeineVersion = "3.2.3"
 val mockkVersion = "1.14.7"
 val nimbusVersion = "10.7"
-val amtLibVersion = "1.2026.01.24_13.41-1e2b7ee8db55"
+val amtLibVersion = "1.2026.02.01_09.45-d68624f62ecf"
 val unleashVersion = "12.1.0"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
@@ -89,6 +89,7 @@ dependencies {
     implementation("no.nav.amt.lib:kafka:$amtLibVersion")
     implementation("no.nav.amt.lib:utils:$amtLibVersion")
     implementation("no.nav.amt.lib:ktor:$amtLibVersion")
+    implementation("no.nav.amt.lib:outbox:$amtLibVersion")
 
     testImplementation("io.ktor:ktor-server-test-host")
     testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
@@ -118,7 +119,7 @@ ktlint {
     version = ktlintVersion
 }
 
-tasks.test {
+tasks.named<Test>("test") {
     useJUnitPlatform()
 
     environment("TESTCONTAINERS_RYUK_DISABLED", "true")
@@ -136,7 +137,7 @@ tasks.test {
     }
 }
 
-tasks.jar {
+tasks.named<Jar>("jar") {
     manifest {
         attributes(
             "Main-Class" to "no.nav.amt.deltaker.bff.ApplicationKt",

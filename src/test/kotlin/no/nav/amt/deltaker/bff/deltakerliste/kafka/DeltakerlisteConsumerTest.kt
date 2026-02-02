@@ -316,7 +316,7 @@ class DeltakerlisteConsumerTest {
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
-        forslagService = mockk(relaxed = true),
+        forslagRepository = mockk(relaxed = true),
     )
     private val pameldingService = PameldingService(
         deltakerService = deltakerService,

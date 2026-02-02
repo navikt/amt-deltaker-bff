@@ -4,9 +4,9 @@ import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.arrangor.melding.Forslag
+import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
-import java.util.UUID
 
 class ForslagService(
     private val forslagRepository: ForslagRepository,
@@ -16,25 +16,6 @@ class ForslagService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    fun getForDeltaker(deltakerId: UUID) = forslagRepository.getForDeltaker(deltakerId)
-
-    fun getForDeltakere(deltakerIder: List<UUID>) = forslagRepository.getForDeltakere(deltakerIder)
-
-    fun get(id: UUID) = forslagRepository.get(id)
-
-    fun upsert(forslag: Forslag) = forslagRepository.upsert(forslag)
-
-    fun delete(id: UUID) {
-        forslagRepository.delete(id)
-        log.info("Slettet godkjent forslag $id")
-    }
-
-    fun deleteForDeltaker(deltakerId: UUID) {
-        forslagRepository.deleteForDeltaker(deltakerId)
-    }
-
-    fun kanLagres(deltakerId: UUID) = forslagRepository.kanLagres(deltakerId)
-
     suspend fun avvisForslag(
         opprinneligForslag: Forslag,
         begrunnelse: String,
@@ -43,6 +24,7 @@ class ForslagService(
     ) {
         val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(avvistAvAnsatt)
         val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(avvistAvEnhet)
+
         val avvistForslag = opprinneligForslag.copy(
             status = Forslag.Status.Avvist(
                 avvistAv = Forslag.NavAnsatt(
@@ -53,8 +35,12 @@ class ForslagService(
                 begrunnelseFraNav = begrunnelse,
             ),
         )
-        arrangorMeldingProducer.produce(avvistForslag)
-        delete(opprinneligForslag.id)
+
+        Database.transaction {
+            forslagRepository.delete(opprinneligForslag.id)
+            arrangorMeldingProducer.produce(avvistForslag)
+        }
+
         log.info("Avvist forslag for deltaker ${opprinneligForslag.deltakerId}")
     }
 }

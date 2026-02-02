@@ -49,7 +49,7 @@ class PameldingServiceTest {
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
-        forslagService = mockk(),
+        forslagRepository = mockk(),
     )
 
     private var pameldingService = PameldingService(

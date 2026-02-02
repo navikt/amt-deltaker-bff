@@ -38,6 +38,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
@@ -57,6 +58,7 @@ fun Routing.registerDeltakerApi(
     deltakerService: DeltakerService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
+    forslagRepository: ForslagRepository,
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
@@ -70,7 +72,7 @@ fun Routing.registerDeltakerApi(
         ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker),
         vedtakSistEndretAvEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) },
         digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident),
-        forslag = forslagService.getForDeltaker(deltaker.id),
+        forslag = forslagRepository.getForDeltaker(deltaker.id),
     )
 
     fun illegalUpdateGuard(deltaker: Deltaker, tillatEndringUtenOppfPeriode: Boolean) {
@@ -108,7 +110,7 @@ fun Routing.registerDeltakerApi(
         request.valider(deltaker)
 
         val forslag = if (request is EndringsforslagRequest) {
-            request.forslagId?.let { forslagService.get(it).getOrThrow() }
+            request.forslagId?.let { forslagRepository.get(it).getOrThrow() }
         } else {
             null
         }
@@ -121,7 +123,7 @@ fun Routing.registerDeltakerApi(
             forslagId = forslag?.id,
         )
 
-        forslag?.let { forslagService.delete(it.id) }
+        forslag?.let { forslagRepository.delete(it.id) }
 
         call.respond(komplettDeltakerResponse(oppdatertDeltaker))
     }
@@ -216,7 +218,7 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/endre-avslutning") {
             val request = call.receive<EndreAvslutningRequest>()
 
-            handleEndring(call, request) { deltaker ->
+            handleEndring(call, request) {
                 if (request.harDeltatt()) {
                     DeltakerEndring.Endring.EndreAvslutning(
                         aarsak = request.aarsak,
@@ -283,7 +285,7 @@ fun Routing.registerDeltakerApi(
         post("/forslag/{forslagId}/avvis") {
             val navIdent = call.getNavIdent()
             val request = call.receive<AvvisForslagRequest>()
-            val forslag = forslagService.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
+            val forslag = forslagRepository.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
             val deltaker = deltakerService.getDeltaker(forslag.deltakerId).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 

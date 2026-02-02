@@ -11,8 +11,11 @@ fun Tiltakskode.skalKunHaAnnetBeskrivelse() = this.erOpplaeringstiltak() ||
 fun getInnholdselementer(innholdselementer: List<Innholdselement>?, tiltakstype: Tiltakskode): List<Innholdselement> {
     if (tiltakstype.skalKunHaAnnetBeskrivelse()) return listOf(annetInnholdselement)
 
-    if (innholdselementer == null || innholdselementer.isEmpty()) return emptyList()
-    return innholdselementer.plus(annetInnholdselement)
+    return if (innholdselementer.isNullOrEmpty()) {
+        emptyList()
+    } else {
+        innholdselementer.plus(annetInnholdselement)
+    }
 }
 
 fun Innholdselement.toInnhold(valgt: Boolean = false, beskrivelse: String? = null) = Innhold(

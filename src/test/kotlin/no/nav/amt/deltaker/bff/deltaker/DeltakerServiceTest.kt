@@ -6,7 +6,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
@@ -30,13 +30,15 @@ import java.time.LocalDateTime
 
 class DeltakerServiceTest {
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val forslagService = mockk<ForslagService>()
+    private val forslagRepository = mockk<ForslagRepository>()
+
+    // private val forslagService = mockk<ForslagService>()
     private val service = DeltakerService(
         DeltakerRepository(),
         mockAmtDeltakerClient(),
         mockPaameldingClient(),
         navEnhetService,
-        forslagService,
+        forslagRepository,
     )
 
     companion object {
@@ -201,7 +203,7 @@ class DeltakerServiceTest {
         )
 
         MockResponseHandler.addSlettKladdResponse(deltakerKladd.id)
-        every { forslagService.deleteForDeltaker(deltakerKladd.id) } returns Unit
+        every { forslagRepository.deleteForDeltaker(deltakerKladd.id) } returns Unit
 
         service.getDeltaker(deltakerKladd.id).isFailure shouldBe false
         service.oppdaterDeltaker(

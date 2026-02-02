@@ -18,7 +18,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
-import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.innbygger.model.InnbyggerDeltakerResponse
 import no.nav.amt.deltaker.bff.innbygger.model.toInnbyggerDeltakerResponse
@@ -34,14 +34,14 @@ fun Routing.registerInnbyggerApi(
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
     innbyggerService: InnbyggerService,
-    forslagService: ForslagService,
+    forslageRepository: ForslagRepository,
 ) {
     val scope = CoroutineScope(Dispatchers.IO)
 
     fun komplettInnbyggerDeltakerResponse(deltaker: Deltaker): InnbyggerDeltakerResponse {
         val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
         val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-        val forslag = forslagService.getForDeltaker(deltaker.id)
+        val forslag = forslageRepository.getForDeltaker(deltaker.id)
         return deltaker.toInnbyggerDeltakerResponse(ansatte, enhet, forslag)
     }
 

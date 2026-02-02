@@ -48,6 +48,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.createPostRequest
+import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.toDeltakerStatusAarsak
@@ -83,6 +84,7 @@ class TiltakskoordinatorDeltakerApiTest {
     private val pameldingService = mockk<PameldingService>()
     private val navAnsattService = mockk<NavAnsattService>()
     private val navEnhetService = mockk<NavEnhetService>()
+    private val forslagRepository = mockk<ForslagRepository>()
     private val forslagService = mockk<ForslagService>(relaxed = true)
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
     private val sporbarhetsloggService = mockk<SporbarhetsloggService>(relaxed = true)
@@ -117,7 +119,7 @@ class TiltakskoordinatorDeltakerApiTest {
                 any(),
             )
         } returns Result.success(TestData.lagDeltaker(navBruker = TestData.lagNavBruker(personident = "1234")))
-        every { forslagService.get(any()) } returns Result.success(TestData.lagForslag())
+        every { forslagRepository.get(any()) } returns Result.success(TestData.lagForslag())
         every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true
         setUpTestApplication()
         client
@@ -772,7 +774,7 @@ class TiltakskoordinatorDeltakerApiTest {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker()
         val forslag = TestData.lagForslag(deltakerId = deltaker.id)
-        every { forslagService.get(forslag.id) } returns Result.success(forslag)
+        every { forslagRepository.get(forslag.id) } returns Result.success(forslag)
 
         val expectedDeltakerResponse = deltakerResponseInTest(deltaker, setupMocks(deltaker, deltaker))
 
@@ -806,6 +808,7 @@ class TiltakskoordinatorDeltakerApiTest {
                 navAnsattService,
                 navEnhetService,
                 mockk(),
+                forslagRepository,
                 forslagService,
                 amtDistribusjonClient,
                 sporbarhetsloggService,
@@ -870,7 +873,7 @@ class TiltakskoordinatorDeltakerApiTest {
         every { deltakerService.getDeltaker(deltaker.id) } returns Result.success(deltaker)
         every { deltakerService.getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id) } returns listOf(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
-        every { forslagService.getForDeltaker(deltaker.id) } returns forslag
+        every { forslagRepository.getForDeltaker(deltaker.id) } returns forslag
         every { unleashToggle.erKometMasterForTiltakstype(Tiltakskode.ARBEIDSFORBEREDENDE_TRENING) } returns true
 
         return if (oppdatertDeltaker != null) {

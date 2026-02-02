@@ -8,26 +8,13 @@ import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
+import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class ForslagRepository {
-    companion object {
-        fun rowMapper(row: Row, alias: String? = "f"): Forslag {
-            val col = prefixColumn(alias)
+    private val log = LoggerFactory.getLogger(javaClass)
 
-            return Forslag(
-                id = row.uuid(col("id")),
-                deltakerId = row.uuid(col("deltaker_id")),
-                opprettetAvArrangorAnsattId = row.uuid(col("arrangoransatt_id")),
-                opprettet = row.localDateTime(col("opprettet")),
-                begrunnelse = row.stringOrNull(col("begrunnelse")),
-                endring = objectMapper.readValue(row.string(col("endring"))),
-                status = objectMapper.readValue(row.string(col("status"))),
-            )
-        }
-    }
-
-    fun getForDeltaker(deltakerId: UUID) = Database.query {
+    fun getForDeltaker(deltakerId: UUID): List<Forslag> {
         val query = queryOf(
             """
             SELECT 
@@ -43,10 +30,13 @@ class ForslagRepository {
             """.trimIndent(),
             mapOf("deltaker_id" to deltakerId),
         )
-        it.run(query.map(::rowMapper).asList)
+
+        return Database.query { session ->
+            session.run(query.map(::rowMapper).asList)
+        }
     }
 
-    fun getForDeltakere(deltakerIder: List<UUID>) = Database.query {
+    fun getForDeltakere(deltakerIder: List<UUID>): List<Forslag> {
         val query = queryOf(
             """
             SELECT 
@@ -58,14 +48,17 @@ class ForslagRepository {
                 f.endring as "f.endring",
                 f.status as "f.status"
             FROM forslag f 
-            WHERE f.deltaker_id = any(:deltaker_ider);
+            WHERE f.deltaker_id = ANY(:deltaker_ider);
             """.trimIndent(),
             mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
         )
-        it.run(query.map(::rowMapper).asList)
+
+        return Database.query { session ->
+            session.run(query.map(::rowMapper).asList)
+        }
     }
 
-    fun get(id: UUID) = Database.query {
+    fun get(id: UUID): Result<Forslag> = runCatching {
         val query = queryOf(
             """
             SELECT 
@@ -81,77 +74,99 @@ class ForslagRepository {
             """.trimIndent(),
             mapOf("id" to id),
         ).map(::rowMapper).asSingle
-        it.run(query)?.let { d -> Result.success(d) }
-            ?: Result.failure(NoSuchElementException("Ingen forslag med id $id"))
+
+        Database.query { session ->
+            session.run(query) ?: throw NoSuchElementException("Ingen forslag med id $id")
+        }
     }
 
-    fun upsert(forslag: Forslag) = Database.query {
+    fun upsert(forslag: Forslag) {
         val sql =
             """
-            INSERT INTO forslag(
+            INSERT INTO forslag (
                 id, 
                 deltaker_id, 
                 arrangoransatt_id, 
                 opprettet, 
                 begrunnelse, 
                 endring,  
-                status)
-            VALUES (:id,
-            		:deltaker_id,
-            		:arrangoransatt_id,
-            		:opprettet,
-            		:begrunnelse,
-            		:endring,
-                    :status)
+                status
+            )
+            VALUES (
+                :id,
+                :deltaker_id,
+                :arrangoransatt_id,
+                :opprettet,
+                :begrunnelse,
+                :endring,
+                :status
+            )
             ON CONFLICT (id) DO UPDATE SET
-            		deltaker_id     	= :deltaker_id,
-            		arrangoransatt_id	= :arrangoransatt_id,
-            		opprettet 			= :opprettet,
-            		begrunnelse			= :begrunnelse,
-            		endring				= :endring,
-                    status              = :status,
-                    modified_at         = current_timestamp
+                deltaker_id     	= :deltaker_id,
+                arrangoransatt_id	= :arrangoransatt_id,
+                opprettet 			= :opprettet,
+                begrunnelse			= :begrunnelse,
+                endring				= :endring,
+                status              = :status,
+                modified_at         = current_timestamp
             """.trimIndent()
 
-        it.update(
-            queryOf(
-                sql,
-                mapOf(
-                    "id" to forslag.id,
-                    "deltaker_id" to forslag.deltakerId,
-                    "arrangoransatt_id" to forslag.opprettetAvArrangorAnsattId,
-                    "opprettet" to forslag.opprettet,
-                    "begrunnelse" to forslag.begrunnelse,
-                    "endring" to toPGObject(forslag.endring),
-                    "status" to toPGObject(forslag.status),
-                ),
-            ),
+        val params = mapOf(
+            "id" to forslag.id,
+            "deltaker_id" to forslag.deltakerId,
+            "arrangoransatt_id" to forslag.opprettetAvArrangorAnsattId,
+            "opprettet" to forslag.opprettet,
+            "begrunnelse" to forslag.begrunnelse,
+            "endring" to toPGObject(forslag.endring),
+            "status" to toPGObject(forslag.status),
         )
+
+        Database.query { session ->
+            session.update(queryOf(sql, params))
+        }
     }
 
-    fun delete(id: UUID) = Database.query {
+    fun delete(id: UUID) {
         val query = queryOf(
-            """delete from forslag where id = :id""",
+            "DELETE FROM forslag WHERE id = :id",
             mapOf("id" to id),
         )
-        it.update(query)
+
+        Database.query { session -> session.update(query) }
+        log.info("Slettet godkjent forslag $id")
     }
 
-    fun deleteForDeltaker(deltakerId: UUID) = Database.query {
+    fun deleteForDeltaker(deltakerId: UUID) {
         val query = queryOf(
-            """delete from forslag where deltaker_id = :deltaker_id""",
+            "DELETE FROM forslag WHERE deltaker_id = :deltaker_id",
             mapOf("deltaker_id" to deltakerId),
         )
-        it.update(query)
+
+        Database.query { session -> session.update(query) }
     }
 
-    fun kanLagres(deltakerId: UUID) = Database.query {
+    fun kanLagres(deltakerId: UUID): Boolean {
         val query = queryOf(
-            """
-            SELECT id FROM deltaker WHERE id = :id
-            """.trimIndent(),
+            "SELECT id FROM deltaker WHERE id = :id",
             mapOf("id" to deltakerId),
         ).map { row -> row.uuid("id") }.asSingle
-        it.run(query)?.let { true } ?: false
+
+        return Database.query { it.run(query) } != null
+    }
+
+    companion object {
+        private fun rowMapper(row: Row, alias: String? = "f"): Forslag {
+            val col = prefixColumn(alias)
+
+            return Forslag(
+                id = row.uuid(col("id")),
+                deltakerId = row.uuid(col("deltaker_id")),
+                opprettetAvArrangorAnsattId = row.uuid(col("arrangoransatt_id")),
+                opprettet = row.localDateTime(col("opprettet")),
+                begrunnelse = row.stringOrNull(col("begrunnelse")),
+                endring = objectMapper.readValue(row.string(col("endring"))),
+                status = objectMapper.readValue(row.string(col("status"))),
+            )
+        }
     }
 }
