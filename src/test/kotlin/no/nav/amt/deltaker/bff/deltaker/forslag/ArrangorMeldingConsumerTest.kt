@@ -17,7 +17,6 @@ class ArrangorMeldingConsumerTest {
     val forslagRepository = ForslagRepository()
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

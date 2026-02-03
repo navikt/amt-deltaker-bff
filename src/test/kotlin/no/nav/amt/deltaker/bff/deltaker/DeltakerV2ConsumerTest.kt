@@ -68,7 +68,6 @@ class DeltakerV2ConsumerTest {
     )
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

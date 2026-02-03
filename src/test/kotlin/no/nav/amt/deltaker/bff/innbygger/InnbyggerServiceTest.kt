@@ -29,7 +29,6 @@ class InnbyggerServiceTest {
     private val innbyggerService = InnbyggerService(deltakerService, mockPaameldingClient())
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

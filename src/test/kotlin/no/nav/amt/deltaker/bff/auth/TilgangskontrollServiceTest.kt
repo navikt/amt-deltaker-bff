@@ -51,7 +51,6 @@ class TilgangskontrollServiceTest {
     )
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

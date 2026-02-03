@@ -13,7 +13,6 @@ import java.time.LocalDate
 
 class DeltakerStatusRepositoryTest {
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

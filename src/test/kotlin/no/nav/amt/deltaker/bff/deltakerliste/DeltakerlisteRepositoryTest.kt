@@ -16,7 +16,6 @@ class DeltakerlisteRepositoryTest {
     private val deltakerlisteRepository = DeltakerlisteRepository()
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

@@ -50,7 +50,6 @@ import java.time.LocalDate
 
 class DeltakerlisteConsumerTest {
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

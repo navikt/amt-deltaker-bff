@@ -23,7 +23,6 @@ class HendelseConsumerTest {
     private val ulestHendelseService = UlestHendelseService(ulestHendelseRepository)
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

@@ -49,7 +49,6 @@ class NavBrukerConsumerTest {
     )
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }
