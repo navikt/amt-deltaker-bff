@@ -108,54 +108,56 @@ class DeltakerV2Consumer(
     override fun start() = consumer.start()
 
     override suspend fun close() = consumer.close()
-}
 
-fun DeltakerKafkaPayload.toDeltaker(navBruker: NavBruker, deltakerliste: Deltakerliste) = Deltaker(
-    id = id,
-    navBruker = navBruker,
-    deltakerliste = deltakerliste,
-    startdato = oppstartsdato,
-    sluttdato = sluttdato,
-    dagerPerUke = dagerPerUke,
-    deltakelsesprosent = prosentStilling?.toFloat(),
-    bakgrunnsinformasjon = bestillingTekst,
-    deltakelsesinnhold = innhold,
-    status = DeltakerStatus(
-        id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
-        type = status.type,
-        aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
-        gyldigFra = status.gyldigFra,
-        gyldigTil = null,
-        opprettet = status.opprettetDato,
-    ),
-    historikk = historikk.orEmpty(),
-    kanEndres = true,
-    sistEndret = sistEndret ?: LocalDateTime.now(),
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-)
+    companion object {
+        private fun DeltakerKafkaPayload.toDeltaker(navBruker: NavBruker, deltakerliste: Deltakerliste) = Deltaker(
+            id = id,
+            navBruker = navBruker,
+            deltakerliste = deltakerliste,
+            startdato = oppstartsdato,
+            sluttdato = sluttdato,
+            dagerPerUke = dagerPerUke,
+            deltakelsesprosent = prosentStilling?.toFloat(),
+            bakgrunnsinformasjon = bestillingTekst,
+            deltakelsesinnhold = innhold,
+            status = DeltakerStatus(
+                id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
+                type = status.type,
+                aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
+                gyldigFra = status.gyldigFra,
+                gyldigTil = null,
+                opprettet = status.opprettetDato,
+            ),
+            historikk = historikk.orEmpty(),
+            kanEndres = true,
+            sistEndret = sistEndret ?: LocalDateTime.now(),
+            erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+        )
 
-fun DeltakerKafkaPayload.toDeltakerOppdatering(): Deltakeroppdatering {
-    require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
+        private fun DeltakerKafkaPayload.toDeltakerOppdatering(): Deltakeroppdatering {
+            require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
 
-    return Deltakeroppdatering(
-        id = id,
-        startdato = oppstartsdato,
-        sluttdato = sluttdato,
-        dagerPerUke = dagerPerUke,
-        deltakelsesprosent = prosentStilling?.toFloat(),
-        bakgrunnsinformasjon = bestillingTekst,
-        deltakelsesinnhold = innhold,
-        status = DeltakerStatus(
-            id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
-            type = status.type,
-            aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
-            gyldigFra = status.gyldigFra,
-            gyldigTil = null,
-            opprettet = status.opprettetDato,
-        ),
-        historikk = historikk.orEmpty(),
-        sistEndret = sistEndret ?: LocalDateTime.now(),
-        erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-        forcedUpdate = forcedUpdate,
-    )
+            return Deltakeroppdatering(
+                id = id,
+                startdato = oppstartsdato,
+                sluttdato = sluttdato,
+                dagerPerUke = dagerPerUke,
+                deltakelsesprosent = prosentStilling?.toFloat(),
+                bakgrunnsinformasjon = bestillingTekst,
+                deltakelsesinnhold = innhold,
+                status = DeltakerStatus(
+                    id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
+                    type = status.type,
+                    aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
+                    gyldigFra = status.gyldigFra,
+                    gyldigTil = null,
+                    opprettet = status.opprettetDato,
+                ),
+                historikk = historikk.orEmpty(),
+                sistEndret = sistEndret ?: LocalDateTime.now(),
+                erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+                forcedUpdate = forcedUpdate,
+            )
+        }
+    }
 }

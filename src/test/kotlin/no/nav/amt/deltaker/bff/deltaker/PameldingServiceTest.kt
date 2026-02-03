@@ -2,12 +2,14 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
+import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerRepository
@@ -19,6 +21,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerKladd
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerStatus
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavEnhet
@@ -59,6 +62,59 @@ class PameldingServiceTest {
         @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
+    }
+
+    @Nested
+    inner class UpsertKladdTests {
+        @Test
+        fun `upsertKladd returnerer null nar status er forskjellig fra KLADD`() = runTest {
+            val deltaker = lagDeltakerKladd().copy(
+                status = lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            )
+            val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
+
+            val kladd = Kladd(
+                opprinneligDeltaker = deltaker,
+                pamelding = Pamelding(
+                    deltaker.deltakelsesinnhold!!,
+                    deltaker.bakgrunnsinformasjon,
+                    deltaker.deltakelsesprosent,
+                    deltaker.dagerPerUke,
+                    endretAv = "Veileder",
+                    endretAvEnhet = navEnhet.enhetsnummer,
+                ),
+            )
+
+            pameldingService.upsertKladd(kladd) shouldBe null
+        }
+
+        @Test
+        fun `upsertKladd oppdaterer deltaker nar status er KLADD`() = runTest {
+            val deltaker = lagDeltakerKladd()
+            TestRepository.insert(deltaker)
+
+            val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
+            TestRepository.insert(navEnhet)
+
+            val kladd = Kladd(
+                opprinneligDeltaker = deltaker,
+                pamelding = Pamelding(
+                    deltaker.deltakelsesinnhold!!,
+                    deltaker.bakgrunnsinformasjon,
+                    deltaker.deltakelsesprosent,
+                    deltaker.dagerPerUke,
+                    endretAv = "Veileder",
+                    endretAvEnhet = navEnhet.enhetsnummer,
+                ),
+            )
+
+            val oppdatertDeltaker = pameldingService.upsertKladd(kladd)
+
+            oppdatertDeltaker.shouldNotBeNull()
+
+            oppdatertDeltaker.id shouldBe deltaker.id
+            oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
+        }
     }
 
     @Nested
@@ -122,7 +178,7 @@ class PameldingServiceTest {
 
     @Test
     fun `upsertUtkast - oppdaterer og returnerer deltaker`() = runTest {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+        val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
         TestRepository.insert(navEnhet)
         TestRepository.insert(deltaker)
@@ -170,7 +226,7 @@ class PameldingServiceTest {
             TestRepository.insert(navEnhet)
 
             val gammelDeltaker = TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
                 navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
             )
             TestRepository.insert(gammelDeltaker)
@@ -189,7 +245,7 @@ class PameldingServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = null,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )
@@ -211,7 +267,7 @@ class PameldingServiceTest {
             TestRepository.insert(navEnhet)
 
             val gammelDeltaker = TestData.lagDeltaker(
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
                 navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
             )
             TestRepository.insert(gammelDeltaker)
@@ -230,7 +286,7 @@ class PameldingServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = null,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )

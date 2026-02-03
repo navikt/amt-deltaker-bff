@@ -354,7 +354,7 @@ class DeltakerRepository {
     }
 
     companion object {
-        private fun getDeltakerSql(where: String = "") =
+        private fun getDeltakerSql(where: String) =
             """
             SELECT 
                 d.id AS "d.id",
