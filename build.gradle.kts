@@ -5,7 +5,7 @@ group = "no.nav.amt-deltaker-bff"
 version = "1.0-SNAPSHOT"
 
 plugins {
-    val kotlinVersion = "2.2.21"
+    val kotlinVersion = "2.3.0"
 
     kotlin("jvm") version kotlinVersion
     id("io.ktor.plugin") version "3.4.0"
@@ -34,7 +34,7 @@ val hikariVersion = "7.0.2"
 val kotliqueryVersion = "1.9.1"
 val postgresVersion = "42.7.9"
 val caffeineVersion = "3.2.3"
-val mockkVersion = "1.14.7"
+val mockkVersion = "1.14.9"
 val nimbusVersion = "10.7"
 val amtLibVersion = "1.2026.02.01_09.45-d68624f62ecf"
 val unleashVersion = "12.1.0"
