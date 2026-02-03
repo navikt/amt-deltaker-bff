@@ -40,7 +40,6 @@ class PameldingService(
             deltakerlisteId = deltakerlisteId,
         )
 
-        // TODO: Utenfor transaction grunnet suspend
         navBrukerService.upsert(kladdResponse.navBruker)
 
         Database.transaction {
@@ -83,7 +82,7 @@ class PameldingService(
             DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
         }
 
-        log.info("Upserter kladd for deltaker med id ${deltaker.id}")
+        log.info("Upserted kladd for deltaker med id ${deltaker.id}")
 
         return deltakerRepository.get(deltaker.id).getOrThrow()
     }

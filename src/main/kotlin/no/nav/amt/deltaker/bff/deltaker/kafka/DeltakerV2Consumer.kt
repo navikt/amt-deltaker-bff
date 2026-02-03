@@ -95,7 +95,6 @@ class DeltakerV2Consumer(
                 vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
             }
 
-            // TODO: Utenfor transaction grunnet suspend
             lagretDeltaker.navBruker.let {
                 if (it.adresse == null) {
                     log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerPayload.id}")
