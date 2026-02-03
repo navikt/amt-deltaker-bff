@@ -66,22 +66,25 @@ class PameldingServiceTest {
 
     @Nested
     inner class UpsertKladdTests {
+        val kladdDeltakerInTest = lagDeltakerKladd()
+        val navEnhetInTest = lagNavEnhet(id = kladdDeltakerInTest.navBruker.navEnhetId!!)
+        val kladdInTest = Kladd(
+            opprinneligDeltaker = kladdDeltakerInTest,
+            pamelding = Pamelding(
+                kladdDeltakerInTest.deltakelsesinnhold!!,
+                kladdDeltakerInTest.bakgrunnsinformasjon,
+                kladdDeltakerInTest.deltakelsesprosent,
+                kladdDeltakerInTest.dagerPerUke,
+                endretAv = "Veileder",
+                endretAvEnhet = navEnhetInTest.enhetsnummer,
+            ),
+        )
+
         @Test
         fun `upsertKladd returnerer null nar status er forskjellig fra KLADD`() = runTest {
-            val deltaker = lagDeltakerKladd().copy(
-                status = lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            )
-            val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
-
-            val kladd = Kladd(
-                opprinneligDeltaker = deltaker,
-                pamelding = Pamelding(
-                    deltaker.deltakelsesinnhold!!,
-                    deltaker.bakgrunnsinformasjon,
-                    deltaker.deltakelsesprosent,
-                    deltaker.dagerPerUke,
-                    endretAv = "Veileder",
-                    endretAvEnhet = navEnhet.enhetsnummer,
+            val kladd = kladdInTest.copy(
+                opprinneligDeltaker = kladdDeltakerInTest.copy(
+                    status = lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
                 ),
             )
 
@@ -90,29 +93,12 @@ class PameldingServiceTest {
 
         @Test
         fun `upsertKladd oppdaterer deltaker nar status er KLADD`() = runTest {
-            val deltaker = lagDeltakerKladd()
-            TestRepository.insert(deltaker)
+            TestRepository.insert(kladdDeltakerInTest)
 
-            val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
-            TestRepository.insert(navEnhet)
-
-            val kladd = Kladd(
-                opprinneligDeltaker = deltaker,
-                pamelding = Pamelding(
-                    deltaker.deltakelsesinnhold!!,
-                    deltaker.bakgrunnsinformasjon,
-                    deltaker.deltakelsesprosent,
-                    deltaker.dagerPerUke,
-                    endretAv = "Veileder",
-                    endretAvEnhet = navEnhet.enhetsnummer,
-                ),
-            )
-
-            val oppdatertDeltaker = pameldingService.upsertKladd(kladd)
+            val oppdatertDeltaker = pameldingService.upsertKladd(kladdInTest)
 
             oppdatertDeltaker.shouldNotBeNull()
-
-            oppdatertDeltaker.id shouldBe deltaker.id
+            oppdatertDeltaker.id shouldBe kladdDeltakerInTest.id
             oppdatertDeltaker.status.type shouldBe DeltakerStatus.Type.KLADD
         }
     }
