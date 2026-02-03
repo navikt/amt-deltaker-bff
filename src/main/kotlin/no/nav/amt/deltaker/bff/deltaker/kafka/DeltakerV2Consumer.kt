@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -17,6 +18,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -65,18 +67,35 @@ class DeltakerV2Consumer(
             log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
             val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
 
-            deltakerService.opprettDeltaker(deltaker)
-            deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
-            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
+            Database.transaction {
+                deltakerRepository.upsert(deltaker)
+                DeltakerStatusRepository.lagreStatus(
+                    deltakerId = deltaker.id,
+                    deltakerStatus = deltaker.status,
+                )
+                deltakerService.oppdaterDeltakerLaas(
+                    deltakerId = deltaker.id,
+                    personident = deltaker.navBruker.personident,
+                    deltakerlisteId = deltaker.deltakerliste.id,
+                )
+                vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
+            }
         } else {
             log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
                 isSynchronousInvocation = false,
-            )
-            deltakerService.oppdaterDeltakerLaas(deltakerPayload.id, navBruker.personident, deltakerPayload.deltakerliste.id)
+            ) {
+                deltakerService.oppdaterDeltakerLaas(
+                    deltakerId = deltakerPayload.id,
+                    personident = navBruker.personident,
+                    deltakerlisteId = deltakerPayload.deltakerliste.id,
+                )
 
-            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
+                vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
+            }
+
+            // TODO: Utenfor transaction grunnet suspend
             lagretDeltaker.navBruker.let {
                 if (it.adresse == null) {
                     log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerPayload.id}")

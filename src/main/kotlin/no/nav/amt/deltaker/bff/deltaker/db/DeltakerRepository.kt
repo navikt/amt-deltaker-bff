@@ -342,7 +342,20 @@ class DeltakerRepository {
         )
     }
 
-    private fun getDeltakerSql(where: String = "") = """
+    fun oppdaterSistBesokt(id: UUID, sistBesokt: ZonedDateTime) {
+        val sql = "UPDATE deltaker SET sist_besokt = :sist_besokt WHERE id = :id"
+
+        val params = mapOf(
+            "id" to id,
+            "sist_besokt" to sistBesokt,
+        )
+
+        Database.query { session -> session.update(queryOf(sql, params)) }
+    }
+
+    companion object {
+        private fun getDeltakerSql(where: String = "") =
+            """
             SELECT 
                 d.id AS "d.id",
                 d.person_id AS "d.person_id",
@@ -404,20 +417,8 @@ class DeltakerRepository {
                 JOIN tiltakstype t ON t.id = dl.tiltakstype_id
                 LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
                 $where
-      """
+            """.trimIndent()
 
-    fun oppdaterSistBesokt(id: UUID, sistBesokt: ZonedDateTime) {
-        val sql = "UPDATE deltaker SET sist_besokt = :sist_besokt WHERE id = :id"
-
-        val params = mapOf(
-            "id" to id,
-            "sist_besokt" to sistBesokt,
-        )
-
-        Database.query { session -> session.update(queryOf(sql, params)) }
-    }
-
-    companion object {
         private fun batchUpdateDeltakerParams(deltaker: Deltakeroppdatering) = mapOf(
             "id" to deltaker.id,
             "startdato" to deltaker.startdato,

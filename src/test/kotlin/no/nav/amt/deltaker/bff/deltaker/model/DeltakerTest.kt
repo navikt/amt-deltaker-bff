@@ -1,12 +1,12 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
 import io.kotest.matchers.shouldBe
-import no.nav.amt.deltaker.bff.deltaker.sammenlignDeltakereVedVedtak
+import no.nav.amt.deltaker.bff.deltaker.DeltakerTestUtils.sammenlignDeltakereVedVedtak
+import no.nav.amt.deltaker.bff.deltaker.DeltakerTestUtils.sammenlignVedtak
 import no.nav.amt.deltaker.bff.kafka.utils.sammenlignForslagStatus
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
-import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
@@ -187,19 +187,4 @@ fun sammenlignHistorikk(a: DeltakerHistorikk, b: DeltakerHistorikk) {
             a.data.utkastGodkjentAvNav shouldBe b.data.utkastGodkjentAvNav
         }
     }
-}
-
-fun sammenlignVedtak(a: Vedtak, b: Vedtak) {
-    a.id shouldBe b.id
-    a.deltakerId shouldBe b.deltakerId
-    a.fattet shouldBeCloseTo b.fattet
-    a.gyldigTil shouldBeCloseTo b.gyldigTil
-    sammenlignDeltakereVedVedtak(a.deltakerVedVedtak, b.deltakerVedVedtak)
-    a.fattetAvNav shouldBe b.fattetAvNav
-    a.opprettet shouldBeCloseTo b.opprettet
-    a.opprettetAv shouldBe b.opprettetAv
-    a.opprettetAvEnhet shouldBe b.opprettetAvEnhet
-    a.sistEndret shouldBeCloseTo b.sistEndret
-    a.sistEndretAv shouldBe b.sistEndretAv
-    a.sistEndretAvEnhet shouldBe b.sistEndretAvEnhet
 }

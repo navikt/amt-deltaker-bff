@@ -40,13 +40,12 @@ class PameldingService(
             deltakerlisteId = deltakerlisteId,
         )
 
+        // TODO: Utenfor transaction grunnet suspend
         navBrukerService.upsert(kladdResponse.navBruker)
 
         Database.transaction {
             deltakerRepository.opprettKladd(kladdResponse)
             DeltakerStatusRepository.lagreStatus(kladdResponse.id, kladdResponse.status)
-            // CR-note: Finnes det tidligere statuser som skal deaktiveres for nye deltakelser?
-            DeltakerStatusRepository.deaktiverTidligereStatuser(kladdResponse.id, kladdResponse.status)
         }
 
         val deltaker = deltakerRepository.get(kladdResponse.id).getOrThrow()

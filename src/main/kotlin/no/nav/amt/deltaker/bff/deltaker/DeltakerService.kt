@@ -201,6 +201,7 @@ class DeltakerService(
         return deltaker.oppdater(deltakeroppdatering)
     }
 
+    // benyttes av DeltakerV2Consumer
     fun oppdaterDeltakerLaas(
         deltakerId: UUID,
         personident: String,
@@ -275,15 +276,11 @@ class DeltakerService(
         }
     }
 
-    suspend fun opprettDeltaker(deltaker: Deltaker) {
-        Database.transaction {
-            deltakerRepository.upsert(deltaker)
-            DeltakerStatusRepository.lagreStatus(deltaker.id, deltaker.status)
-            DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
-        }
-    }
-
-    suspend fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering, isSynchronousInvocation: Boolean = true) {
+    suspend fun oppdaterDeltaker(
+        deltakeroppdatering: Deltakeroppdatering,
+        isSynchronousInvocation: Boolean = true,
+        afterUpsert: () -> Unit = {},
+    ) {
         // CR-note: Burde det vært kastet en feil her hvis eksisterendeDeltaker er null?
         val eksisterendeDeltaker = deltakerRepository.get(deltakeroppdatering.id).getOrNull()
 
@@ -311,10 +308,12 @@ class DeltakerService(
             if (disableKanEndres) {
                 deltakerRepository.settKanEndres(listOf(deltakeroppdatering.id), false)
             }
+
+            afterUpsert()
         }
     }
 
-    suspend fun slettKladd(deltakerlisteId: UUID, personident: String): Boolean {
+    private suspend fun slettKladd(deltakerlisteId: UUID, personident: String): Boolean {
         val kladd = deltakerRepository.getKladdForDeltakerliste(deltakerlisteId, personident)
         return kladd?.let { slettKladd(kladd) } == true
     }
@@ -335,23 +334,25 @@ class DeltakerService(
         deltakerRepository.slettDeltaker(deltakerId)
     }
 
-    private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
-        val currentStatus: DeltakerStatus =
-            DeltakerStatusRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
-        return currentStatus.type != deltakeroppdatering.status.type
-    }
-
+    // benyttes av Routing.registerInnbyggerApi
     suspend fun oppdaterSistBesokt(deltaker: Deltaker) {
         val sistBesokt = ZonedDateTime.now()
         amtDeltakerClient.sistBesokt(deltaker.id, sistBesokt)
         deltakerRepository.oppdaterSistBesokt(deltaker.id, sistBesokt)
     }
 
+    // benyttes av TiltakskoordinatorService
     suspend fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) {
         Database.transaction {
             deltakerRepository.updateBatch(oppdaterteDeltakere)
             DeltakerStatusRepository.batchInsert(oppdaterteDeltakere)
             DeltakerStatusRepository.batchDeaktiverTidligereStatuser(oppdaterteDeltakere)
         }
+    }
+
+    private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
+        val currentStatus: DeltakerStatus =
+            DeltakerStatusRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
+        return currentStatus.type != deltakeroppdatering.status.type
     }
 }

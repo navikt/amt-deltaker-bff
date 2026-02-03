@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.db
 
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
@@ -48,5 +49,18 @@ class DeltakerStatusRepositoryTest {
         statuser.size shouldBe 3
         statuser.filter { it.gyldigTil == null }.size shouldBe 1
         statuser.first { it.gyldigTil == null }.id shouldBe nyStatus.id
+    }
+
+    @Test
+    fun `getDeltakereMedFlereGyldigeStatuser - deltaker har flere statuser som er gyldig - returnerer statuser`() {
+        val deltakerInTest = lagDeltaker(
+            status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+        )
+        TestRepository.insert(deltakerInTest)
+
+        val oppdatertStatus: DeltakerStatus = lagDeltakerStatus(DeltakerStatus.Type.FULLFORT)
+        TestRepository.insert(oppdatertStatus, deltakerInTest.id)
+
+        DeltakerStatusRepository.getDeltakereMedFlereGyldigeStatuser().shouldNotBeEmpty()
     }
 }

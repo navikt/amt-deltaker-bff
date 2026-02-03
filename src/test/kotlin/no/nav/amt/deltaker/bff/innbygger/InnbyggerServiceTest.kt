@@ -3,10 +3,11 @@ package no.nav.amt.deltaker.bff.innbygger
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.DeltakerTestUtils.sammenlignVedtak
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.model.sammenlignVedtak
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.DeltakerTestUtils.sammenlignDeltakere
@@ -44,7 +45,7 @@ class InnbyggerServiceTest {
     }
 
     @Test
-    fun `godkjennUtkast - har riktig status - kaller amtDeltaker og oppdaterer deltaker`() {
+    fun `godkjennUtkast - har riktig status - kaller amtDeltaker og oppdaterer deltaker`() = runTest {
         val deltaker = deltakerMedIkkeFattetVedtak()
         TestRepository.insert(deltaker)
 
@@ -52,14 +53,12 @@ class InnbyggerServiceTest {
 
         MockResponseHandler.addInnbyggerGodkjennUtkastResponse(deltakerMedFattetVedtak)
 
-        runBlocking {
-            val oppdatertDeltaker = innbyggerService.godkjennUtkast(deltaker)
+        val oppdatertDeltaker = innbyggerService.godkjennUtkast(deltaker)
 
-            oppdatertDeltaker.ikkeFattetVedtak shouldBe null
-            deltaker.ikkeFattetVedtak!!.id shouldBe oppdatertDeltaker.fattetVedtak!!.id
+        oppdatertDeltaker.ikkeFattetVedtak shouldBe null
+        deltaker.ikkeFattetVedtak!!.id shouldBe oppdatertDeltaker.fattetVedtak!!.id
 
-            sammenlignDeltakere(oppdatertDeltaker, deltakerMedFattetVedtak)
-            sammenlignVedtak(oppdatertDeltaker.vedtaksinformasjon!!, deltakerMedFattetVedtak.vedtaksinformasjon!!)
-        }
+        sammenlignDeltakere(oppdatertDeltaker, deltakerMedFattetVedtak)
+        sammenlignVedtak(oppdatertDeltaker.vedtaksinformasjon!!, deltakerMedFattetVedtak.vedtaksinformasjon!!)
     }
 }

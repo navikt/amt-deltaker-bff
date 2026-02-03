@@ -3,7 +3,7 @@ package no.nav.amt.deltaker.bff.deltaker
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.kafka.DeltakerV2Consumer
@@ -55,6 +55,7 @@ class DeltakerV2ConsumerTest {
         mockk(relaxed = true),
     )
     private val deltakerlisteRepository = DeltakerlisteRepository()
+    private val vurdersRepository = VurderingRepository()
     private val vurderingService = VurderingService(VurderingRepository())
     private val unleashToggle = mockk<UnleashToggle>()
     private val consumer = DeltakerV2Consumer(
@@ -78,220 +79,206 @@ class DeltakerV2ConsumerTest {
     }
 
     @Test
-    fun `consume - kilde er ARENA, deltaker finnes - konsumerer melding, oppdaterer`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
-            TestRepository.insert(deltaker)
-            val vurdering = TestData.lagVurdering(deltakerId = deltaker.id)
-            val startdato = LocalDate.now().plusDays(1)
-            val sluttdato = LocalDate.now().plusWeeks(3)
-            val sistEndret = LocalDateTime.now().minusDays(2)
-            val mottattDeltaker = deltaker.copy(
-                startdato = startdato,
-                sluttdato = sluttdato,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-                sistEndret = sistEndret,
-            )
+    fun `consume - kilde er ARENA, deltaker finnes - konsumerer melding, oppdaterer`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
+        TestRepository.insert(deltaker)
+        val vurdering = TestData.lagVurdering(deltakerId = deltaker.id)
+        val startdato = LocalDate.now().plusDays(1)
+        val sluttdato = LocalDate.now().plusWeeks(3)
+        val sistEndret = LocalDateTime.now().minusDays(2)
+        val mottattDeltaker = deltaker.copy(
+            startdato = startdato,
+            sluttdato = sluttdato,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            sistEndret = sistEndret,
+        )
 
-            consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.ARENA, listOf(vurdering), deltakerliste)),
-            )
+        consumer.consume(
+            deltaker.id,
+            objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.ARENA, listOf(vurdering), deltakerliste)),
+        )
 
-            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
-            oppdatertDeltaker.startdato shouldBe startdato
-            oppdatertDeltaker.sluttdato shouldBe sluttdato
-            oppdatertDeltaker.sistEndret shouldBeCloseTo sistEndret
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
+        oppdatertDeltaker.startdato shouldBe startdato
+        oppdatertDeltaker.sluttdato shouldBe sluttdato
+        oppdatertDeltaker.sistEndret shouldBeCloseTo sistEndret
 
-            val lagretVurdering = vurderingService.getForDeltaker(deltaker.id)
-            lagretVurdering.size shouldBe 1
-        }
+        val lagretVurdering = vurdersRepository.getForDeltaker(deltaker.id)
+        lagretVurdering.size shouldBe 1
     }
 
     @Test
-    fun `consume - kilde er ARENA, deltaker finnes ikke, ingen andre deltakelser - konsumerer melding, lagrer`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            TestRepository.insert(deltakerliste)
-            val navbruker = TestData.lagNavBruker()
-            val sistEndret = LocalDateTime.now().minusDays(1)
-            val statusOpprettet = LocalDateTime.now().minusWeeks(1)
-            val deltaker = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                sistEndret = sistEndret,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, opprettet = statusOpprettet),
-            )
-            TestRepository.insert(navbruker)
-            consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
-            )
+    fun `consume - kilde er ARENA, deltaker finnes ikke, ingen andre deltakelser - konsumerer melding, lagrer`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        TestRepository.insert(deltakerliste)
+        val navbruker = TestData.lagNavBruker()
+        val sistEndret = LocalDateTime.now().minusDays(1)
+        val statusOpprettet = LocalDateTime.now().minusWeeks(1)
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            sistEndret = sistEndret,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, opprettet = statusOpprettet),
+        )
+        TestRepository.insert(navbruker)
+        consumer.consume(
+            deltaker.id,
+            objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
+        )
 
-            val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
-            lagretDeltaker.startdato shouldBe deltaker.startdato
-            lagretDeltaker.kanEndres shouldBe true
-            lagretDeltaker.sistEndret shouldBeCloseTo sistEndret
-            lagretDeltaker.status.opprettet shouldBeCloseTo statusOpprettet
-        }
+        val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
+        lagretDeltaker.startdato shouldBe deltaker.startdato
+        lagretDeltaker.kanEndres shouldBe true
+        lagretDeltaker.sistEndret shouldBeCloseTo sistEndret
+        lagretDeltaker.status.opprettet shouldBeCloseTo statusOpprettet
     }
 
     @Test
-    fun `consume - kilde ARENA, finnes ikke, en tidligere deltakelse - lagrer, tidligere deltaker kan ikke endres`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val navbruker = TestData.lagNavBruker()
-            val tidligereDeltakelse = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                historikk = true,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-            )
-            TestRepository.insert(tidligereDeltakelse)
+    fun `consume - kilde ARENA, finnes ikke, en tidligere deltakelse - lagrer, tidligere deltaker kan ikke endres`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        val navbruker = TestData.lagNavBruker()
+        val tidligereDeltakelse = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            historikk = true,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+        )
+        TestRepository.insert(tidligereDeltakelse)
 
-            val deltaker = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                historikk = true,
-                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
-            )
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            historikk = true,
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
+        )
 
-            consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
-            )
+        consumer.consume(
+            deltaker.id,
+            objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
+        )
 
-            val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
-            lagretDeltaker.startdato shouldBe deltaker.startdato
-            lagretDeltaker.kanEndres shouldBe true
+        val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
+        lagretDeltaker.startdato shouldBe deltaker.startdato
+        lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerRepository.get(tidligereDeltakelse.id).getOrThrow()
-            lagretTidligereDeltaker.kanEndres shouldBe false
-        }
+        val lagretTidligereDeltaker = deltakerRepository.get(tidligereDeltakelse.id).getOrThrow()
+        lagretTidligereDeltaker.kanEndres shouldBe false
     }
 
     @Test
-    fun `consume - kilde ARENA, finnes ikke, avsluttet, en avsluttet deltakelse - tidligere deltaker kan ikke endres`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val navbruker = TestData.lagNavBruker()
-            val statusdato = LocalDateTime.now().minusMonths(2)
-            val tidligereDeltakelse = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                historikk = true,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
-            )
-            TestRepository.insert(tidligereDeltakelse)
+    fun `consume - kilde ARENA, finnes ikke, avsluttet, en avsluttet deltakelse - tidligere deltaker kan ikke endres`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        val navbruker = TestData.lagNavBruker()
+        val statusdato = LocalDateTime.now().minusMonths(2)
+        val tidligereDeltakelse = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            historikk = true,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
+        )
+        TestRepository.insert(tidligereDeltakelse)
 
-            val statusdato2 = LocalDateTime.now().minusDays(3)
-            val deltaker = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                historikk = true,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
-            )
+        val statusdato2 = LocalDateTime.now().minusDays(3)
+        val deltaker = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            historikk = true,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
+        )
 
-            consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
-            )
+        consumer.consume(
+            deltaker.id,
+            objectMapper.writeValueAsString(deltaker.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
+        )
 
-            val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
-            lagretDeltaker.startdato shouldBe deltaker.startdato
-            lagretDeltaker.kanEndres shouldBe true
+        val lagretDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
+        lagretDeltaker.startdato shouldBe deltaker.startdato
+        lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerRepository.get(tidligereDeltakelse.id).getOrThrow()
-            lagretTidligereDeltaker.kanEndres shouldBe false
-        }
+        val lagretTidligereDeltaker = deltakerRepository.get(tidligereDeltakelse.id).getOrThrow()
+        lagretTidligereDeltaker.kanEndres shouldBe false
     }
 
     @Test
-    fun `consume - kilde ARENA, leser inn eldste deltakelse først - eldste deltaker kan ikke endres`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val navbruker = TestData.lagNavBruker()
-            val eldsteDeltakelse = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
-                historikk = true,
-            )
+    fun `consume - kilde ARENA, leser inn eldste deltakelse først - eldste deltaker kan ikke endres`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        val navbruker = TestData.lagNavBruker()
+        val eldsteDeltakelse = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            historikk = true,
+        )
 
-            val nyesteDeltakelse = TestData.lagDeltaker(
-                deltakerliste = deltakerliste,
-                navBruker = navbruker,
-                historikk = true,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
-            )
-            TestRepository.insert(eldsteDeltakelse)
+        val nyesteDeltakelse = TestData.lagDeltaker(
+            deltakerliste = deltakerliste,
+            navBruker = navbruker,
+            historikk = true,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+        )
+        TestRepository.insert(eldsteDeltakelse)
 
-            consumer.consume(
-                nyesteDeltakelse.id,
-                objectMapper.writeValueAsString(nyesteDeltakelse.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
-            )
+        consumer.consume(
+            nyesteDeltakelse.id,
+            objectMapper.writeValueAsString(nyesteDeltakelse.toKafkaPayload(Kilde.ARENA, deltakerliste = deltakerliste)),
+        )
 
-            val lagretDeltaker = deltakerRepository.get(nyesteDeltakelse.id).getOrThrow()
-            lagretDeltaker.startdato shouldBe nyesteDeltakelse.startdato
-            lagretDeltaker.kanEndres shouldBe true
+        val lagretDeltaker = deltakerRepository.get(nyesteDeltakelse.id).getOrThrow()
+        lagretDeltaker.startdato shouldBe nyesteDeltakelse.startdato
+        lagretDeltaker.kanEndres shouldBe true
 
-            val lagretTidligereDeltaker = deltakerRepository.get(eldsteDeltakelse.id).getOrThrow()
-            lagretTidligereDeltaker.kanEndres shouldBe false
-        }
+        val lagretTidligereDeltaker = deltakerRepository.get(eldsteDeltakelse.id).getOrThrow()
+        lagretTidligereDeltaker.kanEndres shouldBe false
     }
 
     @Test
-    fun `consume - kilde er KOMET, deltaker finnes - konsumerer melding, oppdaterer`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
-            TestRepository.insert(deltaker)
+    fun `consume - kilde er KOMET, deltaker finnes - konsumerer melding, oppdaterer`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
+        TestRepository.insert(deltaker)
 
-            val startdato = LocalDate.now().plusDays(1)
-            val sluttdato = LocalDate.now().plusWeeks(3)
-            val mottattDeltaker = deltaker.copy(
-                startdato = startdato,
-                sluttdato = sluttdato,
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
-            )
+        val startdato = LocalDate.now().plusDays(1)
+        val sluttdato = LocalDate.now().plusWeeks(3)
+        val mottattDeltaker = deltaker.copy(
+            startdato = startdato,
+            sluttdato = sluttdato,
+            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+        )
 
-            consumer.consume(
-                deltaker.id,
-                objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.KOMET, deltakerliste = deltakerliste)),
-            )
+        consumer.consume(
+            deltaker.id,
+            objectMapper.writeValueAsString(mottattDeltaker.toKafkaPayload(Kilde.KOMET, deltakerliste = deltakerliste)),
+        )
 
-            val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
-            oppdatertDeltaker.startdato shouldBe startdato
-            oppdatertDeltaker.sluttdato shouldBe sluttdato
-        }
+        val oppdatertDeltaker = deltakerRepository.get(deltaker.id).getOrThrow()
+        oppdatertDeltaker.startdato shouldBe startdato
+        oppdatertDeltaker.sluttdato shouldBe sluttdato
     }
 
     @Test
-    fun `consume - tombstone - sletter deltaker`() {
-        runBlocking {
-            val deltakerliste = TestData.lagDeltakerliste(
-                tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
-            )
-            val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
-            TestRepository.insert(deltaker)
+    fun `consume - tombstone - sletter deltaker`() = runTest {
+        val deltakerliste = TestData.lagDeltakerliste(
+            tiltakstype = TestData.lagTiltakstype(tiltakskode = Tiltakskode.ARBEIDSFORBEREDENDE_TRENING),
+        )
+        val deltaker = TestData.lagDeltaker(deltakerliste = deltakerliste, startdato = null, sluttdato = null)
+        TestRepository.insert(deltaker)
 
-            consumer.consume(deltaker.id, null)
+        consumer.consume(deltaker.id, null)
 
-            deltakerRepository.get(deltaker.id).getOrNull() shouldBe null
-        }
+        deltakerRepository.get(deltaker.id).getOrNull() shouldBe null
     }
 }
 

@@ -38,36 +38,6 @@ object DeltakerStatusRepository {
         return Database.query { session -> session.run(query) }
     }
 
-    private val insertStatusSQL =
-        """
-        INSERT INTO deltaker_status (
-            id, 
-            deltaker_id, 
-            type, 
-            aarsak, 
-            gyldig_fra, 
-            created_at
-        )
-        VALUES (
-            :id, 
-            :deltaker_id, 
-            :type, 
-            :aarsak, 
-            :gyldig_fra, 
-            :created_at
-        )
-        ON CONFLICT (id) DO NOTHING
-        """.trimIndent()
-
-    private fun insertStatusParams(status: DeltakerStatus, deltakerId: UUID) = mapOf(
-        "id" to status.id,
-        "deltaker_id" to deltakerId,
-        "type" to status.type.name,
-        "aarsak" to toPGObject(status.aarsak),
-        "gyldig_fra" to status.gyldigFra,
-        "created_at" to status.opprettet,
-    )
-
     fun batchInsert(deltakere: List<Deltakeroppdatering>) {
         val statusParams = deltakere.map { insertStatusParams(it.status, it.id) }
 
@@ -75,19 +45,6 @@ object DeltakerStatusRepository {
             session.batchPreparedNamedStatement(insertStatusSQL, statusParams)
         }
     }
-
-    private val deaktiverTidligereStatuserSQL =
-        """
-        UPDATE deltaker_status
-        SET gyldig_til = CURRENT_TIMESTAMP
-        WHERE 
-            deltaker_id = :deltaker_id 
-            AND id != :id 
-            AND gyldig_til IS NULL
-        """.trimIndent()
-
-    private fun deaktiverTidligereStatuserParams(status: DeltakerStatus, deltakerId: UUID) =
-        mapOf("id" to status.id, "deltaker_id" to deltakerId)
 
     fun batchDeaktiverTidligereStatuser(deltakere: List<Deltakeroppdatering>) {
         val deaktiverTidligereStatuserParams = deltakere.map { deaktiverTidligereStatuserParams(it.status, it.id) }
@@ -210,7 +167,7 @@ object DeltakerStatusRepository {
         Database.query { session -> session.update(query) }
     }
 
-    fun deltakerStatusRowMapper(row: Row) = DeltakerStatus(
+    private fun deltakerStatusRowMapper(row: Row) = DeltakerStatus(
         id = row.uuid("id"),
         type = row.string("type").let { t -> DeltakerStatus.Type.valueOf(t) },
         aarsak = row.stringOrNull("aarsak")?.let { aarsak -> objectMapper.readValue(aarsak) },
@@ -218,4 +175,47 @@ object DeltakerStatusRepository {
         gyldigTil = row.localDateTimeOrNull("gyldig_til"),
         opprettet = row.localDateTime("created_at"),
     )
+
+    private val insertStatusSQL =
+        """
+        INSERT INTO deltaker_status (
+            id, 
+            deltaker_id, 
+            type, 
+            aarsak, 
+            gyldig_fra, 
+            created_at
+        )
+        VALUES (
+            :id, 
+            :deltaker_id, 
+            :type, 
+            :aarsak, 
+            :gyldig_fra, 
+            :created_at
+        )
+        ON CONFLICT (id) DO NOTHING
+        """.trimIndent()
+
+    private fun insertStatusParams(status: DeltakerStatus, deltakerId: UUID) = mapOf(
+        "id" to status.id,
+        "deltaker_id" to deltakerId,
+        "type" to status.type.name,
+        "aarsak" to toPGObject(status.aarsak),
+        "gyldig_fra" to status.gyldigFra,
+        "created_at" to status.opprettet,
+    )
+
+    private val deaktiverTidligereStatuserSQL =
+        """
+        UPDATE deltaker_status
+        SET gyldig_til = CURRENT_TIMESTAMP
+        WHERE 
+            deltaker_id = :deltaker_id 
+            AND id != :id 
+            AND gyldig_til IS NULL
+        """.trimIndent()
+
+    private fun deaktiverTidligereStatuserParams(status: DeltakerStatus, deltakerId: UUID) =
+        mapOf("id" to status.id, "deltaker_id" to deltakerId)
 }

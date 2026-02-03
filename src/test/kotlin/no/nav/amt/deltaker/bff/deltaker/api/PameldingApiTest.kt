@@ -128,10 +128,10 @@ class PameldingApiTest {
         val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker).associateBy { it.id }
         val navEnhet = TestData.lagNavEnhet(id = deltaker.vedtaksinformasjon!!.sistEndretAvEnhet)
 
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         coEvery { pameldingService.opprettDeltaker(any(), any()) } returns deltaker
-        coEvery { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navAnsattService.hentAnsatteForDeltaker(deltaker) } returns ansatte
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
         every { forslagRepository.getForDeltaker(deltaker.id) } returns emptyList()
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
 
@@ -154,7 +154,7 @@ class PameldingApiTest {
 
     @Test
     fun `post pamelding - deltakerliste finnes ikke - returnerer 404`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
 
         coEvery {
             pameldingService.opprettDeltaker(any(), any())
@@ -169,7 +169,7 @@ class PameldingApiTest {
 
     @Test
     fun `kladd deltakerId - har tilgang - returnerer 200`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.KLADD))
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
 
@@ -183,7 +183,7 @@ class PameldingApiTest {
 
     @Test
     fun `kladd deltakerId - har tilgang, feil deltakerstatus - returnerer 400`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
 
@@ -197,7 +197,7 @@ class PameldingApiTest {
 
     @Test
     fun `pamelding deltakerId - har tilgang - oppretter utkast og returnerer deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { amtDistribusjonClient.digitalBruker(any()) } returns true
@@ -235,7 +235,7 @@ class PameldingApiTest {
 
     @Test
     fun `pamelding deltakerId uten godkjenning - har tilgang - oppretter og returnerer ferdig godkjent deltaker`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
 
         every { deltakerRepository.get(any()) } returns Result.success(deltaker)
@@ -277,7 +277,7 @@ class PameldingApiTest {
 
     @Test
     fun `slett kladd - har tilgang, deltaker er KLADD - sletter deltaker og returnerer 200`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
         coEvery { pameldingService.slettKladd(deltaker) } returns true
@@ -290,7 +290,7 @@ class PameldingApiTest {
 
     @Test
     fun `slett kladd - deltaker har ikke status KLADD - returnerer 400`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         val deltaker =
             TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
