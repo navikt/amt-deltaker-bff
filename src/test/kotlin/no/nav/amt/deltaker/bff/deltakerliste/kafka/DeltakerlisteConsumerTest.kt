@@ -4,9 +4,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearAllMocks
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
@@ -139,7 +139,7 @@ class DeltakerlisteConsumerTest {
             deltakerlisteRepository.get(expectedDeltakerliste.id).getOrThrow() shouldBe expectedDeltakerliste
         }
 
-        coVerify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
+        verify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
     }
 
     @Test
@@ -186,7 +186,7 @@ class DeltakerlisteConsumerTest {
             )
         }
 
-        coVerify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
+        verify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
     }
 
     @Test

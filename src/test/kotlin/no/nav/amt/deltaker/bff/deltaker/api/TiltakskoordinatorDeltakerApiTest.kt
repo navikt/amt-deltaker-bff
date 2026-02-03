@@ -14,9 +14,9 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.clearMocks
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
@@ -404,7 +404,7 @@ class TiltakskoordinatorDeltakerApiTest {
             status shouldBe HttpStatusCode.OK
             bodyAsText() shouldBe objectMapper.writeValueAsString(expectedDeltakerResponse)
         }
-        coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
+        verify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
 
     @Test
@@ -439,7 +439,7 @@ class TiltakskoordinatorDeltakerApiTest {
             deltakerResponse.importertFraArena?.innsoktDato shouldBe innsoktDatoFraArena
             deltakerResponse.vedtaksinformasjon shouldBe null
         }
-        coVerify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
+        verify(exactly = 1) { sporbarhetsloggService.sendAuditLog(any(), any()) }
     }
 
     @Test

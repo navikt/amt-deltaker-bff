@@ -80,7 +80,7 @@ class InnbyggerApiTest {
 
     @Test
     fun `skal teste tilgangskontroll - har ikke tilgang - returnerer 403`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
@@ -172,7 +172,7 @@ class InnbyggerApiTest {
     fun `getHistorikk - deltaker finnes, har tilgang - returnerer historikk`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker().let { TestData.leggTilHistorikk(it, 2, 2, 1) }
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
 
         val historikk = deltaker.getDeltakerHistorikkForVisning()
@@ -229,7 +229,7 @@ class InnbyggerApiTest {
         oppdatertDeltaker: Deltaker? = null,
         forslag: List<Forslag> = emptyList(),
     ): Pair<Map<UUID, NavAnsatt>, NavEnhet?> {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         every { deltakerRepository.get(deltaker.id) } returns Result.success(deltaker)
         every { forslagRepository.getForDeltaker(deltaker.id) } returns forslag
 

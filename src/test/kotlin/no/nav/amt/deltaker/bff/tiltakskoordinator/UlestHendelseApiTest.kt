@@ -4,10 +4,10 @@ import io.kotest.matchers.shouldBe
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.http.HttpStatusCode
-import io.mockk.coEvery
-import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
+import io.mockk.verify
 import no.nav.amt.deltaker.bff.utils.RouteTestBase
 import no.nav.amt.deltaker.bff.utils.generateJWT
 import org.junit.jupiter.api.Test
@@ -23,7 +23,7 @@ class UlestHendelseApiTest : RouteTestBase() {
 
     @Test
     fun `skal returnere NoContent nar hendelse er slettet`() {
-        coEvery { ulestHendelseService.delete(any()) } just runs
+        every { ulestHendelseService.delete(any()) } just runs
 
         val response = withTestApplicationContext { client ->
             client.delete("/tiltakskoordinator/ulest-hendelse/${UUID.randomUUID()}") {
@@ -33,7 +33,7 @@ class UlestHendelseApiTest : RouteTestBase() {
 
         response.status shouldBe HttpStatusCode.NoContent
 
-        coVerify { ulestHendelseService.delete(any()) }
+        verify { ulestHendelseService.delete(any()) }
     }
 
     companion object {

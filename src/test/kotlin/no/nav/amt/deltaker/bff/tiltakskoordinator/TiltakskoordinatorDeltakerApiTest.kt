@@ -127,7 +127,7 @@ class TiltakskoordinatorDeltakerApiTest : RouteTestBase() {
                 )
             } returns true
 
-            coEvery { navAnsattService.hentAnsatteForHistorikk(any()) } returns navAnsattMap
+            every { navAnsattService.hentAnsatteForHistorikk(any()) } returns navAnsattMap
             coEvery { navEnhetService.hentEnheterForHistorikk(any()) } returns navEnhetMap
 
             val responseBody = withTestApplicationContext { httpClient ->

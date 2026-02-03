@@ -100,7 +100,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
@@ -141,7 +141,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
@@ -188,7 +188,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
