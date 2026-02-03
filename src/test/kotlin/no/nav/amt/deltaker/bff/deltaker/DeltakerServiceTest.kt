@@ -117,10 +117,7 @@ class DeltakerServiceTest {
             deltakerService.oppdaterDeltaker(oppdatertDeltaker.toDeltakeroppdatering())
 
             val deltakerFromDb = deltakerRepository.get(deltaker.id).shouldBeSuccess()
-            sammenlignDeltakere(
-                deltakerFromDb,
-                oppdatertDeltaker.copy(sistEndret = deltakerFromDb.sistEndret), // TODO: undersøk
-            )
+            sammenlignDeltakere(deltakerFromDb, oppdatertDeltaker)
         }
 
         @Test
@@ -162,8 +159,7 @@ class DeltakerServiceTest {
             deltakerService.oppdaterDeltaker(oppdatertDeltaker.toDeltakeroppdatering())
 
             val deltakerFromDb = deltakerRepository.get(deltaker.id).shouldBeSuccess()
-            // TODO: undersøk sistEndret
-            sammenlignDeltakere(deltakerFromDb, oppdatertDeltaker.copy(sistEndret = deltakerFromDb.sistEndret))
+            sammenlignDeltakere(deltakerFromDb, oppdatertDeltaker)
             deltakerFromDb.kanEndres shouldBe false
         }
 
