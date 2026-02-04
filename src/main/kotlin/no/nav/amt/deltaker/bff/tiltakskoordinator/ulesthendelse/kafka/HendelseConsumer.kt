@@ -6,8 +6,8 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseSer
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.AUTO_OFFSET_RESET_LATEST
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
+import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.hendelse.Hendelse
-import no.nav.amt.lib.models.hendelse.HendelseDeltaker.Deltakerliste.Oppstartstype
 import no.nav.amt.lib.models.hendelse.HendelseType
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
@@ -32,7 +32,7 @@ class HendelseConsumer(
         }
         val hendelse = objectMapper.readValue<Hendelse>(value)
 
-        if (hendelse.deltaker.deltakerliste.oppstartstype == Oppstartstype.LOPENDE) {
+        if (hendelse.deltaker.deltakerliste.pameldingstype == GjennomforingPameldingType.DIREKTE_VEDTAK) {
             return
         }
 
