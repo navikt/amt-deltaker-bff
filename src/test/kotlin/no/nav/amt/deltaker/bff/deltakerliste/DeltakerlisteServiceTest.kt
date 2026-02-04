@@ -16,7 +16,6 @@ class DeltakerlisteServiceTest {
     private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

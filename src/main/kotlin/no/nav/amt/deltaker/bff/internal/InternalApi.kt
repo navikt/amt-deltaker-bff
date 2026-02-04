@@ -8,12 +8,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-fun Routing.registerInternalApi(deltakerRepository: DeltakerRepository, amtDeltakerClient: AmtDeltakerClient) {
+fun Routing.registerInternalApi(amtDeltakerClient: AmtDeltakerClient) {
     val scope = CoroutineScope(Dispatchers.IO)
 
     val log: Logger = LoggerFactory.getLogger(javaClass)
@@ -22,10 +22,10 @@ fun Routing.registerInternalApi(deltakerRepository: DeltakerRepository, amtDelta
         if (isInternal(call.request.local.remoteAddress)) {
             scope.launch {
                 log.info("Henter deltakelser med mer enn en gyldig status")
-                val deltakerIder = deltakerRepository.getDeltakereMedFlereGyldigeStatuser()
+                val deltakerIder = DeltakerStatusRepository.getDeltakereMedFlereGyldigeStatuser()
                 deltakerIder.forEach {
                     val deltaker = amtDeltakerClient.getDeltaker(it)
-                    deltakerRepository.deaktiverUkritiskTidligereStatuserQuery(deltaker.status, it)
+                    DeltakerStatusRepository.deaktiverUkritiskTidligereStatuserQuery(deltaker.status, it)
                     log.info("Oppdatert status for deltaker $it")
                 }
                 log.info("Deaktivert statuser for ${deltakerIder.size} deltakere")

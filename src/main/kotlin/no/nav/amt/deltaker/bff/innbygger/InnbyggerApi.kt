@@ -18,6 +18,7 @@ import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.innbygger.model.InnbyggerDeltakerResponse
@@ -29,6 +30,7 @@ import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 fun Routing.registerInnbyggerApi(
+    deltakerRepository: DeltakerRepository,
     deltakerService: DeltakerService,
     tilgangskontrollService: TilgangskontrollService,
     navAnsattService: NavAnsattService,
@@ -48,7 +50,7 @@ fun Routing.registerInnbyggerApi(
     authenticate(AuthLevel.INNBYGGER.name) {
         get("/innbygger/{id}") {
             val innbygger = call.getPersonIdent()
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["id"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
             scope.launch { deltakerService.oppdaterSistBesokt(deltaker) }
@@ -58,7 +60,7 @@ fun Routing.registerInnbyggerApi(
 
         post("/innbygger/{id}/godkjenn-utkast") {
             val innbygger = call.getPersonIdent()
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["id"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
             require(deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
@@ -74,7 +76,7 @@ fun Routing.registerInnbyggerApi(
 
         get("/innbygger/{id}/historikk") {
             val innbygger = call.getPersonIdent()
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["id"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
             val historikk = deltaker.getDeltakerHistorikkForVisning()

@@ -3,6 +3,8 @@ package no.nav.amt.deltaker.bff.deltaker.kafka
 import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -16,12 +18,14 @@ import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
 
 class DeltakerV2Consumer(
+    private val deltakerRepository: DeltakerRepository,
     private val deltakerService: DeltakerService,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val vurderingService: VurderingService,
@@ -51,7 +55,7 @@ class DeltakerV2Consumer(
             return
         }
 
-        val lagretDeltaker = deltakerService.getDeltaker(deltakerPayload.id).getOrNull()
+        val lagretDeltaker = deltakerRepository.get(deltakerPayload.id).getOrNull()
         val deltakerFinnes = lagretDeltaker != null
         val ukjentDeltaker = !deltakerFinnes || deltakerPayload.kilde == Kilde.ARENA
         val navBruker = navBrukerService.getOrCreate(deltakerPayload.personalia.personident).getOrThrow()
@@ -63,18 +67,34 @@ class DeltakerV2Consumer(
             log.info("Inserter ny $tiltakskode deltaker med id ${deltakerPayload.id}")
             val deltaker = deltakerPayload.toDeltaker(navBruker, deltakerliste)
 
-            deltakerService.opprettDeltaker(deltaker)
-            deltakerService.oppdaterDeltakerLaas(deltaker.id, deltaker.navBruker.personident, deltaker.deltakerliste.id)
-            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
+            Database.transaction {
+                deltakerRepository.upsert(deltaker)
+                DeltakerStatusRepository.lagreStatus(
+                    deltakerId = deltaker.id,
+                    deltakerStatus = deltaker.status,
+                )
+                deltakerService.oppdaterDeltakerLaas(
+                    deltakerId = deltaker.id,
+                    personident = deltaker.navBruker.personident,
+                    deltakerlisteId = deltaker.deltakerliste.id,
+                )
+                vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
+            }
         } else {
             log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
             deltakerService.oppdaterDeltaker(
                 deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
                 isSynchronousInvocation = false,
-            )
-            deltakerService.oppdaterDeltakerLaas(deltakerPayload.id, navBruker.personident, deltakerPayload.deltakerliste.id)
+            ) {
+                deltakerService.oppdaterDeltakerLaas(
+                    deltakerId = deltakerPayload.id,
+                    personident = navBruker.personident,
+                    deltakerlisteId = deltakerPayload.deltakerliste.id,
+                )
 
-            vurderingService.upsert(deltakerPayload.vurderingerFraArrangor.orEmpty())
+                vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
+            }
+
             lagretDeltaker.navBruker.let {
                 if (it.adresse == null) {
                     log.info("Oppdaterer navbruker som mangler adresse for deltakerid ${deltakerPayload.id}")
@@ -87,54 +107,56 @@ class DeltakerV2Consumer(
     override fun start() = consumer.start()
 
     override suspend fun close() = consumer.close()
-}
 
-fun DeltakerKafkaPayload.toDeltaker(navBruker: NavBruker, deltakerliste: Deltakerliste) = Deltaker(
-    id = id,
-    navBruker = navBruker,
-    deltakerliste = deltakerliste,
-    startdato = oppstartsdato,
-    sluttdato = sluttdato,
-    dagerPerUke = dagerPerUke,
-    deltakelsesprosent = prosentStilling?.toFloat(),
-    bakgrunnsinformasjon = bestillingTekst,
-    deltakelsesinnhold = innhold,
-    status = DeltakerStatus(
-        id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
-        type = status.type,
-        aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
-        gyldigFra = status.gyldigFra,
-        gyldigTil = null,
-        opprettet = status.opprettetDato,
-    ),
-    historikk = historikk.orEmpty(),
-    kanEndres = true,
-    sistEndret = sistEndret ?: LocalDateTime.now(),
-    erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-)
+    companion object {
+        private fun DeltakerKafkaPayload.toDeltaker(navBruker: NavBruker, deltakerliste: Deltakerliste) = Deltaker(
+            id = id,
+            navBruker = navBruker,
+            deltakerliste = deltakerliste,
+            startdato = oppstartsdato,
+            sluttdato = sluttdato,
+            dagerPerUke = dagerPerUke,
+            deltakelsesprosent = prosentStilling?.toFloat(),
+            bakgrunnsinformasjon = bestillingTekst,
+            deltakelsesinnhold = innhold,
+            status = DeltakerStatus(
+                id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
+                type = status.type,
+                aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
+                gyldigFra = status.gyldigFra,
+                gyldigTil = null,
+                opprettet = status.opprettetDato,
+            ),
+            historikk = historikk.orEmpty(),
+            kanEndres = true,
+            sistEndret = sistEndret ?: LocalDateTime.now(),
+            erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+        )
 
-fun DeltakerKafkaPayload.toDeltakerOppdatering(): Deltakeroppdatering {
-    require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
+        private fun DeltakerKafkaPayload.toDeltakerOppdatering(): Deltakeroppdatering {
+            require(status.id != null) { "Kan ikke håndtere deltakerstatus uten id for deltaker $id" }
 
-    return Deltakeroppdatering(
-        id = id,
-        startdato = oppstartsdato,
-        sluttdato = sluttdato,
-        dagerPerUke = dagerPerUke,
-        deltakelsesprosent = prosentStilling?.toFloat(),
-        bakgrunnsinformasjon = bestillingTekst,
-        deltakelsesinnhold = innhold,
-        status = DeltakerStatus(
-            id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
-            type = status.type,
-            aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
-            gyldigFra = status.gyldigFra,
-            gyldigTil = null,
-            opprettet = status.opprettetDato,
-        ),
-        historikk = historikk.orEmpty(),
-        sistEndret = sistEndret ?: LocalDateTime.now(),
-        erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-        forcedUpdate = forcedUpdate,
-    )
+            return Deltakeroppdatering(
+                id = id,
+                startdato = oppstartsdato,
+                sluttdato = sluttdato,
+                dagerPerUke = dagerPerUke,
+                deltakelsesprosent = prosentStilling?.toFloat(),
+                bakgrunnsinformasjon = bestillingTekst,
+                deltakelsesinnhold = innhold,
+                status = DeltakerStatus(
+                    id = status.id ?: throw IllegalStateException("deltakerstatus mangler id $id"),
+                    type = status.type,
+                    aarsak = status.aarsak?.let { DeltakerStatus.Aarsak(it, status.aarsaksbeskrivelse) },
+                    gyldigFra = status.gyldigFra,
+                    gyldigTil = null,
+                    opprettet = status.opprettetDato,
+                ),
+                historikk = historikk.orEmpty(),
+                sistEndret = sistEndret ?: LocalDateTime.now(),
+                erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+                forcedUpdate = forcedUpdate,
+            )
+        }
+    }
 }

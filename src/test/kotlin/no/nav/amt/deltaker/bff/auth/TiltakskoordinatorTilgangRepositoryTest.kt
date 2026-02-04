@@ -30,7 +30,6 @@ class TiltakskoordinatorTilgangRepositoryTest {
     private val tiltakskoordinatorTilgangRepository = TiltakskoordinatorTilgangRepository()
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }
@@ -215,7 +214,6 @@ data class TiltakskoordinatorTilgangContext(
     val navAnsattAzureId: UUID = UUID.randomUUID()
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

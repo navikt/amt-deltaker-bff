@@ -7,6 +7,7 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.mockk.coEvery
+import io.mockk.every
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
@@ -81,7 +82,7 @@ class TiltakskoordinatorDeltakerApiTest : RouteTestBase() {
 
         @Test
         fun `skal returnere Forbidden nar ikke tilgang til bruker`() {
-            coEvery { deltakerService.getDeltaker(any()) } returns Result.success(deltaker)
+            every { deltakerRepository.get(any()) } returns Result.success(deltaker)
             coEvery {
                 sporbarhetOgTilgangskontrollSvc.kontrollerTilgangTilBruker(
                     navIdent = any(),
@@ -116,7 +117,7 @@ class TiltakskoordinatorDeltakerApiTest : RouteTestBase() {
                 ),
             )
 
-            coEvery { deltakerService.getDeltaker(any()) } returns Result.success(deltaker)
+            every { deltakerRepository.get(any()) } returns Result.success(deltaker)
             coEvery {
                 sporbarhetOgTilgangskontrollSvc.kontrollerTilgangTilBruker(
                     navIdent = any(),
@@ -126,7 +127,7 @@ class TiltakskoordinatorDeltakerApiTest : RouteTestBase() {
                 )
             } returns true
 
-            coEvery { navAnsattService.hentAnsatteForHistorikk(any()) } returns navAnsattMap
+            every { navAnsattService.hentAnsatteForHistorikk(any()) } returns navAnsattMap
             coEvery { navEnhetService.hentEnheterForHistorikk(any()) } returns navEnhetMap
 
             val responseBody = withTestApplicationContext { httpClient ->

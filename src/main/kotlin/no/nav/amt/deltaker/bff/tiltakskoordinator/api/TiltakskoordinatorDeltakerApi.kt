@@ -10,9 +10,9 @@ import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.application.plugins.writePolymorphicListAsString
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.SporbarhetOgTilgangskontrollSvc
@@ -26,7 +26,7 @@ import java.util.UUID
 fun Routing.registerTiltakskoordinatorDeltakerApi(
     sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc,
     tiltakskoordinatorService: TiltakskoordinatorService,
-    deltakerService: DeltakerService,
+    deltakerRepository: DeltakerRepository,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
     ulesteHendelserService: UlestHendelseService,
@@ -55,7 +55,7 @@ fun Routing.registerTiltakskoordinatorDeltakerApi(
 
         get("$apiPath/historikk") {
             val deltakerId = UUID.fromString(call.parameters["id"])
-            val deltaker = deltakerService.getDeltaker(deltakerId).getOrThrow()
+            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
 
             sporbarhetOgTilgangskontrollSvc
                 .kontrollerTilgangTilBruker(

@@ -1,8 +1,8 @@
 package no.nav.amt.deltaker.bff.testdata
 
 import kotlinx.coroutines.delay
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.kafka.ArrangorMeldingProducer
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
@@ -28,7 +28,7 @@ class TestdataService(
     private val pameldingService: PameldingService,
     private val deltakerlisteService: DeltakerlisteService,
     private val arrangorMeldingProducer: ArrangorMeldingProducer,
-    private val deltakerService: DeltakerService,
+    private val deltakerRepository: DeltakerRepository,
 ) {
     suspend fun opprettDeltakelse(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest): Deltaker {
         deltakerFinnesAllerede(opprettTestDeltakelseRequest)
@@ -64,12 +64,12 @@ class TestdataService(
 
         delay(100)
 
-        return deltakerService.getDeltaker(deltakerId).getOrThrow()
+        return deltakerRepository.get(deltakerId).getOrThrow()
     }
 
     private fun deltakerFinnesAllerede(opprettTestDeltakelseRequest: OpprettTestDeltakelseRequest) {
-        val eksisterendeDeltaker = deltakerService
-            .getDeltakelser(opprettTestDeltakelseRequest.personident, opprettTestDeltakelseRequest.deltakerlisteId)
+        val eksisterendeDeltaker = deltakerRepository
+            .getMany(opprettTestDeltakelseRequest.personident, opprettTestDeltakelseRequest.deltakerlisteId)
             .firstOrNull { !it.harSluttet() }
 
         if (eksisterendeDeltaker != null) {

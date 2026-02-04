@@ -4,9 +4,9 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.clearAllMocks
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
@@ -50,7 +50,6 @@ import java.time.LocalDate
 
 class DeltakerlisteConsumerTest {
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }
@@ -73,6 +72,7 @@ class DeltakerlisteConsumerTest {
 
         val consumer =
             DeltakerlisteConsumer(
+                deltakerRepository = deltakerRepository,
                 deltakerlisteRepository = deltakerlisteRepository,
                 arrangorService = arrangorService,
                 tiltakstypeRepository = tiltakstypeRepository,
@@ -110,6 +110,7 @@ class DeltakerlisteConsumerTest {
 
         val consumer =
             DeltakerlisteConsumer(
+                deltakerRepository = deltakerRepository,
                 deltakerlisteRepository = deltakerlisteRepository,
                 arrangorService = arrangorService,
                 tiltakstypeRepository = tiltakstypeRepository,
@@ -138,7 +139,7 @@ class DeltakerlisteConsumerTest {
             deltakerlisteRepository.get(expectedDeltakerliste.id).getOrThrow() shouldBe expectedDeltakerliste
         }
 
-        coVerify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
+        verify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
     }
 
     @Test
@@ -156,6 +157,7 @@ class DeltakerlisteConsumerTest {
 
         val consumer =
             DeltakerlisteConsumer(
+                deltakerRepository = deltakerRepository,
                 deltakerlisteRepository = deltakerlisteRepository,
                 arrangorService = arrangorService,
                 tiltakstypeRepository = tiltakstypeRepository,
@@ -184,7 +186,7 @@ class DeltakerlisteConsumerTest {
             )
         }
 
-        coVerify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
+        verify(exactly = 0) { tilgangskontrollService.stengTilgangerTilDeltakerliste(any()) }
     }
 
     @Test
@@ -194,11 +196,12 @@ class DeltakerlisteConsumerTest {
         TestRepository.insert(tiltakstype = deltakerliste.tiltak)
         val arrangorService = ArrangorService(ArrangorRepository(), mockAmtArrangorClient(arrangor))
         val consumer = DeltakerlisteConsumer(
-            deltakerlisteRepository,
-            arrangorService,
-            tiltakstypeRepository,
-            pameldingService,
-            tilgangskontrollService,
+            deltakerRepository = deltakerRepository,
+            deltakerlisteRepository = deltakerlisteRepository,
+            arrangorService = arrangorService,
+            tiltakstypeRepository = tiltakstypeRepository,
+            pameldingService = pameldingService,
+            tilgangskontrollService = tilgangskontrollService,
             unleashToggle = unleashToggle,
         )
 
@@ -220,11 +223,12 @@ class DeltakerlisteConsumerTest {
         TestRepository.insert(deltakerliste)
 
         val consumer = DeltakerlisteConsumer(
-            deltakerlisteRepository,
-            arrangorService,
-            tiltakstypeRepository,
-            pameldingService,
-            tilgangskontrollService,
+            deltakerRepository = deltakerRepository,
+            deltakerlisteRepository = deltakerlisteRepository,
+            arrangorService = arrangorService,
+            tiltakstypeRepository = tiltakstypeRepository,
+            pameldingService = pameldingService,
+            tilgangskontrollService = tilgangskontrollService,
             unleashToggle = unleashToggle,
         )
 
@@ -248,11 +252,12 @@ class DeltakerlisteConsumerTest {
         TestRepository.insert(deltakerliste)
 
         val consumer = DeltakerlisteConsumer(
-            deltakerlisteRepository,
-            arrangorService,
-            tiltakstypeRepository,
-            pameldingService,
-            tilgangskontrollService,
+            deltakerRepository = deltakerRepository,
+            deltakerlisteRepository = deltakerlisteRepository,
+            arrangorService = arrangorService,
+            tiltakstypeRepository = tiltakstypeRepository,
+            pameldingService = pameldingService,
+            tilgangskontrollService = tilgangskontrollService,
             unleashToggle = unleashToggle,
         )
 
@@ -282,11 +287,12 @@ class DeltakerlisteConsumerTest {
         MockResponseHandler.addSlettKladdResponse(kladd.id)
 
         val consumer = DeltakerlisteConsumer(
-            deltakerlisteRepository,
-            arrangorService,
-            tiltakstypeRepository,
-            pameldingService,
-            tilgangskontrollService,
+            deltakerRepository = deltakerRepository,
+            deltakerlisteRepository = deltakerlisteRepository,
+            arrangorService = arrangorService,
+            tiltakstypeRepository = tiltakstypeRepository,
+            pameldingService = pameldingService,
+            tilgangskontrollService = tilgangskontrollService,
             unleashToggle = unleashToggle,
         )
 
@@ -299,8 +305,8 @@ class DeltakerlisteConsumerTest {
             )
 
             deltakerlisteRepository.get(deltakerlisteInTest.id).getOrThrow() shouldBe mutatedDeltakerliste
-            deltakerService.getDeltaker(kladd.id).getOrNull() shouldBe null
-            deltakerService.getDeltaker(deltaker.id).getOrNull() shouldNotBe null
+            deltakerRepository.get(kladd.id).getOrNull() shouldBe null
+            deltakerRepository.get(deltaker.id).getOrNull() shouldNotBe null
         }
     }
 
@@ -311,14 +317,16 @@ class DeltakerlisteConsumerTest {
 
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        deltakerRepository = DeltakerRepository(),
+        deltakerRepository = deltakerRepository,
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
         forslagRepository = mockk(relaxed = true),
     )
     private val pameldingService = PameldingService(
+        deltakerRepository = deltakerRepository,
         deltakerService = deltakerService,
         navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
         navEnhetService = navEnhetService,

@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach
 
 abstract class RouteTestBase {
     protected val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
+    protected val deltakerRepository: DeltakerRepository = mockk(relaxed = true)
     protected val deltakerService: DeltakerService = mockk(relaxed = true)
     protected val pameldingService: PameldingService = mockk(relaxed = true)
     protected val navAnsattService: NavAnsattService = mockk(relaxed = true)
@@ -43,7 +44,6 @@ abstract class RouteTestBase {
     protected val forslagService: ForslagService = mockk(relaxed = true)
     protected val amtDistribusjonClient: AmtDistribusjonClient = mockk(relaxed = true)
     protected val sporbarhetsloggService: SporbarhetsloggService = mockk(relaxed = true)
-    protected val deltakerRepository: DeltakerRepository = mockk(relaxed = true)
     protected val amtDeltakerClient: AmtDeltakerClient = mockk(relaxed = true)
     protected val deltakerlisteService: DeltakerlisteService = mockk(relaxed = true)
     protected val unleash: Unleash = mockk(relaxed = true)

@@ -24,7 +24,6 @@ class NavAnsattServiceTest {
     private val navAnsattService = NavAnsattService(repository = navAnsattRepository, amtPersonServiceClient = mockk())
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

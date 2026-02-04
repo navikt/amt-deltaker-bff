@@ -11,7 +11,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
@@ -47,7 +47,7 @@ class AuthenticationTest {
 
     @Test
     fun `testAuthentication - gyldig token, ansatt har tilgang - returnerer 200`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         setUpTestApplication()
         client
             .get("/fnr/12345678910") {
@@ -60,7 +60,7 @@ class AuthenticationTest {
 
     @Test
     fun `testAuthentication - gyldig token, ansatt har ikke tilgang - returnerer 403`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(
             null,
             Decision.Deny("Ikke tilgang", ""),
         )
@@ -75,7 +75,7 @@ class AuthenticationTest {
 
     @Test
     fun `testAuthentication - ugyldig tokenissuer - returnerer 401`() = testApplication {
-        coEvery { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
+        every { poaoTilgangCachedClient.evaluatePolicy(any()) } returns ApiResult(null, Decision.Permit)
         setUpTestApplication()
         client
             .get("/fnr/12345678910") {
