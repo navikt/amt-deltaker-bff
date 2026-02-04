@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.arrangor.ArrangorService
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.unleash.UnleashToggle
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 
 class DeltakerlisteConsumer(
+    private val deltakerRepository: DeltakerRepository,
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val arrangorService: ArrangorService,
     private val tiltakstypeRepository: TiltakstypeRepository,
@@ -61,7 +63,7 @@ class DeltakerlisteConsumer(
         deltakerlisteRepository.upsert(deltakerliste)
 
         if (deltakerliste.status == GjennomforingStatusType.AVLYST || deltakerliste.status == GjennomforingStatusType.AVBRUTT) {
-            val kladderSomSkalSlettes = pameldingService.getKladderForDeltakerliste(deltakerliste.id)
+            val kladderSomSkalSlettes = deltakerRepository.getKladderForDeltakerliste(deltakerliste.id)
             kladderSomSkalSlettes.forEach {
                 pameldingService.slettKladd(it)
             }

@@ -3,16 +3,21 @@ package no.nav.amt.deltaker.bff.deltaker
 import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
 import java.util.UUID
 
 class PameldingService(
+    private val deltakerRepository: DeltakerRepository,
     private val deltakerService: DeltakerService,
     private val navBrukerService: NavBrukerService,
     private val paameldingClient: PaameldingClient,
@@ -21,8 +26,8 @@ class PameldingService(
     private val log = LoggerFactory.getLogger(javaClass)
 
     suspend fun opprettDeltaker(deltakerlisteId: UUID, personIdent: String): Deltaker {
-        val eksisterendeDeltaker = deltakerService
-            .getDeltakelser(personIdent, deltakerlisteId)
+        val eksisterendeDeltaker = deltakerRepository
+            .getMany(personIdent, deltakerlisteId)
             .firstOrNull { !it.harSluttet() }
 
         if (eksisterendeDeltaker != null) {
@@ -36,14 +41,20 @@ class PameldingService(
         )
 
         navBrukerService.upsert(kladdResponse.navBruker)
-        val deltaker = deltakerService.opprettKladd(kladdResponse).getOrThrow()
+
+        Database.transaction {
+            deltakerRepository.opprettKladd(kladdResponse)
+            DeltakerStatusRepository.lagreStatus(kladdResponse.id, kladdResponse.status)
+        }
+
+        val deltaker = deltakerRepository.get(kladdResponse.id).getOrThrow()
 
         MetricRegister.OPPRETTET_KLADD.inc()
 
         return deltaker
     }
 
-    fun upsertKladd(kladd: Kladd): Deltaker? {
+    suspend fun upsertKladd(kladd: Kladd): Deltaker? {
         if (kladd.opprinneligDeltaker.status.type !== DeltakerStatus.Type.KLADD) {
             // Dette kan skje når to brukere er inne på samme deltakelse samtidig
             // eller når samme bruker har flere faner med samme deltakelse
@@ -56,11 +67,24 @@ class PameldingService(
             return null
         }
 
-        return deltakerService.oppdaterKladd(
-            kladd.opprinneligDeltaker,
-            kladd.opprinneligDeltaker.status,
-            kladd.pamelding,
+        val deltaker = kladd.opprinneligDeltaker.copy(
+            deltakelsesinnhold = kladd.pamelding.deltakelsesinnhold,
+            bakgrunnsinformasjon = kladd.pamelding.bakgrunnsinformasjon,
+            deltakelsesprosent = kladd.pamelding.deltakelsesprosent,
+            dagerPerUke = kladd.pamelding.dagerPerUke,
+            status = kladd.opprinneligDeltaker.status,
+            sistEndret = LocalDateTime.now(),
         )
+
+        Database.transaction {
+            deltakerRepository.upsert(deltaker)
+            DeltakerStatusRepository.lagreStatus(deltaker.id, deltaker.status)
+            DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
+        }
+
+        log.info("Upserted kladd for deltaker med id ${deltaker.id}")
+
+        return deltakerRepository.get(deltaker.id).getOrThrow()
     }
 
     suspend fun upsertUtkast(utkast: Utkast): Deltaker {
@@ -68,7 +92,7 @@ class PameldingService(
         val deltakeroppdatering = paameldingClient.utkast(utkast).toDeltakerOppdatering()
 
         deltakerService.oppdaterDeltaker(deltakeroppdatering)
-        return deltakerService.getDeltaker(utkast.deltakerId).getOrThrow()
+        return deltakerRepository.get(utkast.deltakerId).getOrThrow()
     }
 
     suspend fun slettKladd(deltaker: Deltaker) = deltakerService.slettKladd(deltaker)
@@ -81,22 +105,28 @@ class PameldingService(
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(avbruttAvEnhet)
         paameldingClient.avbrytUtkast(deltaker.id, avbruttAv, avbruttAvEnhet)
 
-        val forrigeDeltaker = deltakerService
-            .getDeltakelser(deltaker.navBruker.personident, deltaker.deltakerliste.id)
+        val forrigeDeltaker = deltakerRepository
+            .getMany(deltaker.navBruker.personident, deltaker.deltakerliste.id)
             .filter { it.id !== deltaker.id && it.paameldtDato != null }
             .sortedByDescending { it.paameldtDato }
             .firstOrNull() ?: return
+
         if (forrigeDeltaker.status.type != DeltakerStatus.Type.FEILREGISTRERT &&
             forrigeDeltaker.status.type != DeltakerStatus.Type.AVBRUTT_UTKAST &&
             forrigeDeltaker.status.aarsak?.type != DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
         ) {
-            deltakerService.laasOppDeltaker(forrigeDeltaker)
+            laasOppDeltaker(forrigeDeltaker)
         }
     }
 
-    fun getKladder(personident: String): List<Deltaker> = deltakerService.getDeltakelser(personident).filter {
-        it.status.type == DeltakerStatus.Type.KLADD
+    private fun laasOppDeltaker(deltaker: Deltaker) {
+        deltakerRepository.settKanEndres(listOf(deltaker.id), true)
+        log.info(
+            "Har låst opp tidligere deltaker ${deltaker.id} for endringer pga avbrutt utkast på nåværende deltaker",
+        )
     }
 
-    fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> = deltakerService.getKladderForDeltakerliste(deltakerlisteId)
+    fun getKladder(personident: String): List<Deltaker> = deltakerRepository.getMany(personident).filter {
+        it.status.type == DeltakerStatus.Type.KLADD
+    }
 }

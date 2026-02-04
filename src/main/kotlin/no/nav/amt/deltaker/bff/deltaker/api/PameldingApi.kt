@@ -14,7 +14,6 @@ import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
 import no.nav.amt.deltaker.bff.application.plugins.getNavIdent
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
-import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.api.model.KladdRequest
@@ -22,6 +21,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.PameldingUtenGodkjenningRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.UtkastRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
@@ -36,7 +36,7 @@ import java.util.UUID
 
 fun Routing.registerPameldingApi(
     tilgangskontrollService: TilgangskontrollService,
-    deltakerService: DeltakerService,
+    deltakerRepository: DeltakerRepository,
     pameldingService: PameldingService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
@@ -72,7 +72,7 @@ fun Routing.registerPameldingApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<KladdRequest>().sanitize()
 
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
@@ -106,7 +106,7 @@ fun Routing.registerPameldingApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<UtkastRequest>()
 
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
             request.valider(deltaker, digitalBruker)
 
@@ -139,7 +139,7 @@ fun Routing.registerPameldingApi(
 
         post("/pamelding/{deltakerId}/avbryt") {
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -159,7 +159,7 @@ fun Routing.registerPameldingApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
 
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             request.valider(deltaker)
 
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
@@ -197,7 +197,7 @@ fun Routing.registerPameldingApi(
         delete("/pamelding/{deltakerId}") {
             val navIdent = call.getNavIdent()
             val deltakerId = UUID.fromString(call.parameters["deltakerId"])
-            val deltaker = deltakerService.getDeltaker(deltakerId).getOrThrow()
+            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
 

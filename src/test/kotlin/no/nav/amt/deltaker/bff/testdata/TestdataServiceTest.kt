@@ -36,8 +36,9 @@ import java.time.LocalDate
 class TestdataServiceTest {
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        deltakerRepository = DeltakerRepository(),
+        deltakerRepository = deltakerRepository,
         amtDeltakerClient = mockAmtDeltakerClient(),
         paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
@@ -45,6 +46,7 @@ class TestdataServiceTest {
     )
     private val deltakerlisteService = DeltakerlisteService(DeltakerlisteRepository())
     private var pameldingService = PameldingService(
+        deltakerRepository = deltakerRepository,
         deltakerService = deltakerService,
         navBrukerService = NavBrukerService(mockAmtPersonServiceClient(), NavBrukerRepository(), navAnsattService, navEnhetService),
         navEnhetService = navEnhetService,
@@ -53,13 +55,12 @@ class TestdataServiceTest {
     private val arrangorMeldingProducer = mockk<ArrangorMeldingProducer>(relaxed = true)
     private val testdataService = TestdataService(
         pameldingService = pameldingService,
-        deltakerService = deltakerService,
+        deltakerRepository = deltakerRepository,
         deltakerlisteService = deltakerlisteService,
         arrangorMeldingProducer = arrangorMeldingProducer,
     )
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }
@@ -113,7 +114,7 @@ class TestdataServiceTest {
         runBlocking {
             val deltaker = testdataService.opprettDeltakelse(opprettTestDeltakelseRequest)
 
-            val deltakerFraDb = deltakerService.getDeltakelser(navBruker.personident, deltakerliste.id).first()
+            val deltakerFraDb = deltakerRepository.getMany(navBruker.personident, deltakerliste.id).first()
             deltakerFraDb.id shouldBe deltaker.id
             deltakerFraDb.deltakerliste.id shouldBe deltakerliste.id
             deltakerFraDb.status.type shouldBe DeltakerStatus.Type.VENTER_PA_OPPSTART

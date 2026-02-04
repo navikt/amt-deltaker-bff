@@ -17,7 +17,6 @@ class NavAnsattConsumerTest {
     private val navAnsattRepository = NavAnsattRepository()
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

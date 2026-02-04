@@ -31,7 +31,6 @@ class ForslagServiceTest {
     )
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

@@ -4,6 +4,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerifySequence
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
@@ -32,7 +33,7 @@ class SporbarhetOgTilgangskontrollSvcTest {
         clearAllMocks()
 
         coEvery { mockTilgangskontrollService.verifiserTiltakskoordinatorTilgang(any(), any()) } just runs
-        coEvery { mockTilgangskontrollService.harKoordinatorTilgangTilPerson(any(), any()) } returns true
+        every { mockTilgangskontrollService.harKoordinatorTilgangTilPerson(any(), any()) } returns true
     }
 
     @Test

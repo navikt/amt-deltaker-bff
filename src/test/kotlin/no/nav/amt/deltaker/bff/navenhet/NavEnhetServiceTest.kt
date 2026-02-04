@@ -21,7 +21,6 @@ class NavEnhetServiceTest {
     private val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }

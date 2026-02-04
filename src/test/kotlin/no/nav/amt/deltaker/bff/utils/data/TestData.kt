@@ -1,9 +1,10 @@
 package no.nav.amt.deltaker.bff.utils.data
 
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
+import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
-import no.nav.amt.deltaker.bff.deltaker.toDeltakerVedVedtak
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toTiltakskoordinatorsDeltaker
 import no.nav.amt.deltaker.bff.tiltakskoordinator.model.TiltakskoordinatorsDeltaker
@@ -17,6 +18,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.DeltakerVedImport
+import no.nav.amt.lib.models.deltaker.DeltakerVedVedtak
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
@@ -60,6 +62,25 @@ object TestData {
     fun randomOrgnr() = (900_000_000..999_999_998).random().toString()
 
     fun input(n: Int) = (1..n).map { ('a'..'z').random() }.joinToString("")
+
+    fun Deltaker.toDeltakerVedVedtak() = DeltakerVedVedtak(
+        id,
+        startdato,
+        sluttdato,
+        dagerPerUke,
+        deltakelsesprosent,
+        bakgrunnsinformasjon,
+        deltakelsesinnhold = deltakelsesinnhold?.let {
+            Deltakelsesinnhold(
+                ledetekst = it.ledetekst,
+                innhold = fulltInnhold(
+                    it.innhold,
+                    getInnholdselementer(deltakerliste.tiltak.innhold?.innholdselementer, deltakerliste.tiltak.tiltakskode),
+                ),
+            )
+        },
+        status,
+    )
 
     fun lagDeltakerliste(
         id: UUID = UUID.randomUUID(),

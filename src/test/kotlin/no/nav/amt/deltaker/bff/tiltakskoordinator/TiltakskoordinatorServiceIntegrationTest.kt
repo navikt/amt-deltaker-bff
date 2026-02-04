@@ -40,8 +40,9 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val navAnsattService = mockk<NavAnsattService>()
     private val vurderingService = mockk<VurderingService>()
     private val forslagRepository = mockk<ForslagRepository>()
+    private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
-        deltakerRepository = DeltakerRepository(),
+        deltakerRepository = deltakerRepository,
         amtDeltakerClient = amtDeltakerClient,
         paameldingClient = paameldingClient,
         navEnhetService = navEnhetService,
@@ -51,6 +52,7 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val ulestHendelseService = mockk<UlestHendelseService>()
     private val tiltakskoordinatorService = TiltakskoordinatorService(
         tiltaksKoordinatorClient,
+        deltakerRepository,
         deltakerService,
         vurderingService,
         navEnhetService,
@@ -61,7 +63,6 @@ class TiltakskoordinatorServiceIntegrationTest {
     )
 
     companion object {
-        @JvmField
         @RegisterExtension
         val dbExtension = DatabaseTestExtension()
     }
@@ -99,7 +100,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
@@ -140,7 +141,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker
@@ -187,7 +188,7 @@ class TiltakskoordinatorServiceIntegrationTest {
         resultDeltaker.status.trimMss().copy(id = nyStatus.id) shouldBe nyStatus.trimMss()
 
         coEvery { navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.id) } returns navAnsatt
-        coEvery { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
+        every { navEnhetService.hentEnhet(navEnhet.id) } returns navEnhet
 
         val deltakerFraDb = tiltakskoordinatorService.getDeltaker(deltaker.id)
         deltakerFraDb shouldBeCloseTo deltaker

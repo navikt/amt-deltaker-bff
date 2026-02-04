@@ -4,19 +4,19 @@ import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakeroppdatering
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
-import no.nav.amt.deltaker.bff.deltaker.model.Pamelding
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
-import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
+import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerService(
@@ -27,17 +27,6 @@ class DeltakerService(
     private val forslagRepository: ForslagRepository,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
-
-    fun getDeltaker(id: UUID) = deltakerRepository.get(id)
-
-    fun getMany(ider: List<UUID>) = deltakerRepository.getMany(ider)
-
-    fun getDeltakelser(personident: String, deltakerlisteId: UUID): List<Deltaker> =
-        deltakerRepository.getMany(personident, deltakerlisteId)
-
-    fun getDeltakelser(personident: String) = deltakerRepository.getMany(personident)
-
-    fun getKladderForDeltakerliste(deltakerlisteId: UUID) = deltakerRepository.getKladderForDeltakerliste(deltakerlisteId)
 
     suspend fun oppdaterDeltaker(
         deltaker: Deltaker,
@@ -212,26 +201,7 @@ class DeltakerService(
         return deltaker.oppdater(deltakeroppdatering)
     }
 
-    fun oppdaterKladd(
-        opprinneligDeltaker: Deltaker,
-        status: DeltakerStatus,
-        endring: Pamelding,
-    ): Deltaker {
-        val deltaker = opprinneligDeltaker.copy(
-            deltakelsesinnhold = endring.deltakelsesinnhold,
-            bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
-            deltakelsesprosent = endring.deltakelsesprosent,
-            dagerPerUke = endring.dagerPerUke,
-            status = status,
-        )
-
-        upsertKladd(deltaker)
-
-        return deltakerRepository.get(deltaker.id).getOrThrow()
-    }
-
-    fun opprettDeltaker(deltaker: Deltaker) = deltakerRepository.upsert(deltaker)
-
+    // benyttes av DeltakerV2Consumer
     fun oppdaterDeltakerLaas(
         deltakerId: UUID,
         personident: String,
@@ -296,7 +266,7 @@ class DeltakerService(
         deltakerRepository.settKanEndres(deltakelserSomSkalLaases.map { it.id }, false)
     }
 
-    fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
+    private fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
             val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
             deltakerRepository.settKanEndres(tidligereDeltakelser, false)
@@ -306,25 +276,44 @@ class DeltakerService(
         }
     }
 
-    fun laasOppDeltaker(deltaker: Deltaker) {
-        deltakerRepository.settKanEndres(listOf(deltaker.id), true)
-        log.info(
-            "Har låst opp tidligere deltaker ${deltaker.id} for endringer pga avbrutt utkast på nåværende deltaker",
-        )
-    }
+    suspend fun oppdaterDeltaker(
+        deltakeroppdatering: Deltakeroppdatering,
+        isSynchronousInvocation: Boolean = true,
+        afterUpsert: () -> Unit = {},
+    ) {
+        // CR-note: Burde det vært kastet en feil her hvis eksisterendeDeltaker er null?
+        val eksisterendeDeltaker = deltakerRepository.get(deltakeroppdatering.id).getOrNull()
 
-    fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering, isSynchronousInvocation: Boolean = true) {
-        laasTidligereDeltakelser(deltakeroppdatering)
-        deltakerRepository.update(deltaker = deltakeroppdatering, isSynchronousInvocation = isSynchronousInvocation)
+        val nyTid = deltakeroppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
 
-        if (deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
+        val skalOppdatereStatus =
+            isSynchronousInvocation ||
+                eksisterendeDeltaker == null ||
+                nyTid >= eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
+
+        val disableKanEndres = deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
-        ) {
-            deltakerRepository.settKanEndres(listOf(deltakeroppdatering.id), false)
+
+        Database.transaction {
+            laasTidligereDeltakelser(deltakeroppdatering)
+
+            deltakerRepository.update(deltakeroppdatering)
+
+            if (skalOppdatereStatus) {
+                DeltakerStatusRepository.lagreStatus(deltakeroppdatering.id, deltakeroppdatering.status)
+                DeltakerStatusRepository.deaktiverTidligereStatuser(deltakeroppdatering.id, deltakeroppdatering.status)
+            }
+
+            // deltakerRepository.settKanEndres kalles også i laasTidligereDeltakelser, undersøk
+            if (disableKanEndres) {
+                deltakerRepository.settKanEndres(listOf(deltakeroppdatering.id), false)
+            }
+
+            afterUpsert()
         }
     }
 
-    suspend fun slettKladd(deltakerlisteId: UUID, personident: String): Boolean {
+    private suspend fun slettKladd(deltakerlisteId: UUID, personident: String): Boolean {
         val kladd = deltakerRepository.getKladdForDeltakerliste(deltakerlisteId, personident)
         return kladd?.let { slettKladd(kladd) } == true
     }
@@ -339,33 +328,31 @@ class DeltakerService(
         return true
     }
 
-    fun delete(deltakerId: UUID) {
+    suspend fun delete(deltakerId: UUID) = Database.transaction {
         forslagRepository.deleteForDeltaker(deltakerId)
-        deltakerRepository.delete(deltakerId)
+        DeltakerStatusRepository.slettStatus(deltakerId)
+        deltakerRepository.slettDeltaker(deltakerId)
     }
 
-    private fun upsertKladd(deltaker: Deltaker) {
-        deltakerRepository.upsert(deltaker.copy(sistEndret = LocalDateTime.now()))
-        log.info("Upserter kladd for deltaker med id ${deltaker.id}")
-    }
-
-    fun opprettKladd(kladd: OpprettKladdResponse): Result<Deltaker> {
-        deltakerRepository.opprettKladd(kladd)
-        return deltakerRepository.get(kladd.id)
-    }
-
-    private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
-        val currentStatus: DeltakerStatus = deltakerRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
-        return currentStatus.type != deltakeroppdatering.status.type
-    }
-
+    // benyttes av Routing.registerInnbyggerApi
     suspend fun oppdaterSistBesokt(deltaker: Deltaker) {
         val sistBesokt = ZonedDateTime.now()
         amtDeltakerClient.sistBesokt(deltaker.id, sistBesokt)
         deltakerRepository.oppdaterSistBesokt(deltaker.id, sistBesokt)
     }
 
-    fun getForDeltakerliste(deltakerlisteId: UUID) = deltakerRepository.getForDeltakerliste(deltakerlisteId)
+    // benyttes av TiltakskoordinatorService
+    suspend fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) {
+        Database.transaction {
+            deltakerRepository.updateBatch(oppdaterteDeltakere)
+            DeltakerStatusRepository.batchInsert(oppdaterteDeltakere)
+            DeltakerStatusRepository.batchDeaktiverTidligereStatuser(oppdaterteDeltakere)
+        }
+    }
 
-    fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) = deltakerRepository.updateBatch(oppdaterteDeltakere)
+    private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
+        val currentStatus: DeltakerStatus =
+            DeltakerStatusRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
+        return currentStatus.type != deltakeroppdatering.status.type
+    }
 }

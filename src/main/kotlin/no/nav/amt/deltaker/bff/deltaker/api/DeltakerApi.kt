@@ -38,6 +38,7 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
+import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagService
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -55,6 +56,7 @@ import java.util.UUID
 
 fun Routing.registerDeltakerApi(
     tilgangskontrollService: TilgangskontrollService,
+    deltakerRepository: DeltakerRepository,
     deltakerService: DeltakerService,
     navAnsattService: NavAnsattService,
     navEnhetService: NavEnhetService,
@@ -101,7 +103,7 @@ fun Routing.registerDeltakerApi(
         endring: (deltaker: Deltaker) -> DeltakerEndring.Endring,
     ) {
         val navIdent = call.getNavIdent()
-        val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+        val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
         val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
         tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
@@ -252,7 +254,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<DeltakerRequest>()
             val deltakerId = call.parameters["deltakerId"]
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(deltakerId)).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(deltakerId)).getOrThrow()
 
             if (request.personident != deltaker.navBruker.personident) {
                 log.warn("$deltakerId ble forsøkt lest med en annen navbruker i kontekst.")
@@ -267,7 +269,7 @@ fun Routing.registerDeltakerApi(
 
         get("/deltaker/{deltakerId}/historikk") {
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerService.getDeltaker(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
@@ -286,7 +288,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = call.getNavIdent()
             val request = call.receive<AvvisForslagRequest>()
             val forslag = forslagRepository.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
-            val deltaker = deltakerService.getDeltaker(forslag.deltakerId).getOrThrow()
+            val deltaker = deltakerRepository.get(forslag.deltakerId).getOrThrow()
             val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
             tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
