@@ -235,9 +235,9 @@ class DeltakerService(
 
         val deltakelserSomSkalLaases = deltakelserPaaPerson
             .filter {
-                it.id != nyesteDeltakelse.id
-                        || nyesteDeltakelse.status.type == DeltakerStatus.Type.FEILREGISTRERT
-                        || nyesteDeltakelse.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
+                it.id != nyesteDeltakelse.id ||
+                    nyesteDeltakelse.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
+                    nyesteDeltakelse.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
             }.filter { it.kanEndres }
 
         val laasesMedAktivStatus = deltakelserSomSkalLaases
@@ -246,12 +246,12 @@ class DeltakerService(
         if (laasesMedAktivStatus.isNotEmpty()) {
             throw IllegalStateException(
                 "ugyldig state. Fant eldre deltakelser med aktiv status: " +
-                        "Nyeste deltaker ${nyesteDeltakelse.id} " +
-                        "påmeldt ${nyesteDeltakelse.paameldtDato} " +
-                        "har status ${nyesteDeltakelse.status.type}. " +
-                        "Eldre deltakelse(r) ${laasesMedAktivStatus.map { it.id }} " +
-                        "påmeldt ${laasesMedAktivStatus.map { it.paameldtDato }} " +
-                        "har status ${laasesMedAktivStatus.map { it.status.type }}. ",
+                    "Nyeste deltaker ${nyesteDeltakelse.id} " +
+                    "påmeldt ${nyesteDeltakelse.paameldtDato} " +
+                    "har status ${nyesteDeltakelse.status.type}. " +
+                    "Eldre deltakelse(r) ${laasesMedAktivStatus.map { it.id }} " +
+                    "påmeldt ${laasesMedAktivStatus.map { it.paameldtDato }} " +
+                    "har status ${laasesMedAktivStatus.map { it.status.type }}. ",
             )
         }
 
@@ -264,7 +264,7 @@ class DeltakerService(
 
         if (deltakelserSomSkalLaases.isNotEmpty()) {
             log.info(
-                "Låser ${deltakelserSomSkalLaases.size} deltakere for endringer grunnet nyere aktiv deltaker med id ${nyesteDeltakelse.id}"
+                "Låser ${deltakelserSomSkalLaases.size} deltakere for endringer grunnet nyere aktiv deltaker med id ${nyesteDeltakelse.id}",
             )
             deltakerRepository.settKanEndres(deltakelserSomSkalLaases.map { it.id }, false)
         }
