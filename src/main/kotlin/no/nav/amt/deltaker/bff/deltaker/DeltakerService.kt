@@ -280,6 +280,11 @@ class DeltakerService(
         }
     }
 
+    fun lagreDeltakerStatus(deltakerId: UUID, deltakerStatus: DeltakerStatus) {
+        DeltakerStatusRepository.deaktiverTidligereStatuser(deltakerId, deltakerStatus)
+        DeltakerStatusRepository.insertIfNotExists(deltakerId, deltakerStatus)
+    }
+
     suspend fun oppdaterDeltaker(
         deltakeroppdatering: Deltakeroppdatering,
         isSynchronousInvocation: Boolean = true,
@@ -304,8 +309,7 @@ class DeltakerService(
             deltakerRepository.update(deltakeroppdatering)
 
             if (skalOppdatereStatus) {
-                DeltakerStatusRepository.lagreStatus(deltakeroppdatering.id, deltakeroppdatering.status)
-                DeltakerStatusRepository.deaktiverTidligereStatuser(deltakeroppdatering.id, deltakeroppdatering.status)
+                lagreDeltakerStatus(deltakeroppdatering.id, deltakeroppdatering.status)
             }
 
             // deltakerRepository.settKanEndres kalles også i laasTidligereDeltakelser, undersøk
@@ -349,14 +353,14 @@ class DeltakerService(
     suspend fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) {
         Database.transaction {
             deltakerRepository.updateBatch(oppdaterteDeltakere)
-            DeltakerStatusRepository.batchInsert(oppdaterteDeltakere)
             DeltakerStatusRepository.batchDeaktiverTidligereStatuser(oppdaterteDeltakere)
+            DeltakerStatusRepository.batchInsert(oppdaterteDeltakere)
         }
     }
 
     private fun harEndretStatus(deltakeroppdatering: Deltakeroppdatering): Boolean {
-        val currentStatus: DeltakerStatus =
-            DeltakerStatusRepository.getDeltakerStatuser(deltakeroppdatering.id).first { it.gyldigTil == null }
+        val currentStatus = DeltakerStatusRepository.getAktivDeltakerStatus(deltakeroppdatering.id) ?: return true
+
         return currentStatus.type != deltakeroppdatering.status.type
     }
 }

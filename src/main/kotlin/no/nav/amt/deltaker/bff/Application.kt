@@ -333,7 +333,6 @@ fun Application.module() {
         amtDistribusjonClient = amtDistribusjonClient,
         sporbarhetsloggService = sporbarhetsloggService,
         deltakerRepository = deltakerRepository,
-        amtDeltakerClient = amtDeltakerClient,
         deltakerlisteService = deltakerlisteService,
         unleash = unleash,
         sporbarhetOgTilgangskontrollSvc = sporbarhetOgTilgangskontrollSvc,

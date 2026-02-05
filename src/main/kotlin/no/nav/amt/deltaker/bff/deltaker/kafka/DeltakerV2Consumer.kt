@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import no.nav.amt.deltaker.bff.Environment
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
@@ -69,8 +68,8 @@ class DeltakerV2Consumer(
 
             Database.transaction {
                 deltakerRepository.upsert(deltaker)
-                DeltakerStatusRepository.lagreStatus(deltaker.id, deltaker.status)
-                DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
+                deltakerService.lagreDeltakerStatus(deltaker.id, deltaker.status)
+
                 deltakerService.oppdaterDeltakerLaas(
                     deltakerId = deltaker.id,
                     personident = deltaker.navBruker.personident,

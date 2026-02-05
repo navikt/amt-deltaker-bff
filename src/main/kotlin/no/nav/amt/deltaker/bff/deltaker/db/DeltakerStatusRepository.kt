@@ -11,32 +11,7 @@ import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 object DeltakerStatusRepository {
-    /**
-     * Henter ID-ene til deltakere som har mer enn én aktiv (gyldig) status registrert samtidig.
-     *
-     * En deltaker kun skal ha kun én aktiv status om gangen, i motsatt fall må koden rette opp i dette ved kall
-     * til /internal/synk-status.
-     *
-     * En status regnes som aktiv hvis feltet `gyldig_til` er `NULL`.
-     *
-     * @return En liste med deltaker-ID-er (UUID) som har flere aktive statuser.
-     */
-    fun getDeltakereMedFlereGyldigeStatuser(): List<UUID> {
-        val sql =
-            """
-            SELECT deltaker_id
-            FROM deltaker_status
-            WHERE gyldig_til IS NULL
-            GROUP BY deltaker_id
-            HAVING COUNT(*) > 1
-            """.trimIndent()
-
-        val query = queryOf(sql).map { it.uuid("deltaker_id") }.asList
-
-        return Database.query { session -> session.run(query) }
-    }
-
-    fun lagreStatus(deltakerId: UUID, deltakerStatus: DeltakerStatus) {
+    fun insertIfNotExists(deltakerId: UUID, deltakerStatus: DeltakerStatus) {
         Database.query { session ->
             session.update(
                 queryOf(
@@ -75,12 +50,12 @@ object DeltakerStatusRepository {
         }
     }
 
-    fun getDeltakerStatuser(deltakerId: UUID): List<DeltakerStatus> {
-        val sql = "SELECT * FROM deltaker_status WHERE deltaker_id = :deltaker_id"
+    fun getAktivDeltakerStatus(deltakerId: UUID): DeltakerStatus? {
+        val sql = "SELECT * FROM deltaker_status WHERE deltaker_id = :deltaker_id AND gyldig_til IS NULL"
 
         val query = queryOf(sql, mapOf("deltaker_id" to deltakerId))
             .map(::deltakerStatusRowMapper)
-            .asList
+            .asSingle
 
         return Database.query { session -> session.run(query) }
     }
