@@ -25,7 +25,7 @@ fun Routing.registerInternalApi(amtDeltakerClient: AmtDeltakerClient) {
                 val deltakerIder = DeltakerStatusRepository.getDeltakereMedFlereGyldigeStatuser()
                 deltakerIder.forEach {
                     val deltaker = amtDeltakerClient.getDeltaker(it)
-                    DeltakerStatusRepository.deaktiverUkritiskTidligereStatuserQuery(deltaker.status, it)
+                    DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
                     log.info("Oppdatert status for deltaker $it")
                 }
                 log.info("Deaktivert statuser for ${deltakerIder.size} deltakere")

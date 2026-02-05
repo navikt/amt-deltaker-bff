@@ -18,7 +18,7 @@ class DeltakerStatusRepositoryTest {
     }
 
     @Test
-    fun `deaktiverUkritiskTidligereStatuserQuery - skal deaktivere alle andre statuser`() {
+    fun `deaktiverTidligereStatuser - skal deaktivere alle andre statuser`() {
         val gammelStatus1 = lagDeltakerStatus(
             type = DeltakerStatus.Type.DELTAR,
             gyldigFra = LocalDate.of(2024, 7, 14).atStartOfDay(),
@@ -42,7 +42,7 @@ class DeltakerStatusRepositoryTest {
         TestRepository.insert(gammelStatus1, deltaker.id)
         TestRepository.insert(gammelStatus2, deltaker.id)
 
-        DeltakerStatusRepository.deaktiverUkritiskTidligereStatuserQuery(nyStatus, deltaker.id)
+        DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, nyStatus)
 
         val statuser = DeltakerStatusRepository.getDeltakerStatuser(deltaker.id)
         statuser.size shouldBe 3
