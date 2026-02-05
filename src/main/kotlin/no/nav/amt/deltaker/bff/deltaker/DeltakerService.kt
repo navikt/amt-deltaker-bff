@@ -257,7 +257,7 @@ class DeltakerService(
         if (!nyesteDeltakelse.kanEndres) {
             // Dette skal ikke skje i en ventet funksjonell flyt men mange feil med
             // låsing opp igjennom tidene har ført til at nyeste deltakelse er låst
-            log.warn("Nyeste deltakelse ${nyesteDeltakelse.id} var låst for endringer. Låser opp..")
+            log.info("Nyeste deltakelse ${nyesteDeltakelse.id} var låst for endringer. Låser opp")
             deltakerRepository.settKanEndres(listOf(nyesteDeltakelse.id), true)
         }
 
