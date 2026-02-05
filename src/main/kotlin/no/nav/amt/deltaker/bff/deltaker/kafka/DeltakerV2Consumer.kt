@@ -79,10 +79,7 @@ class DeltakerV2Consumer(
             }
         } else {
             log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
-            deltakerService.oppdaterDeltaker(
-                deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
-                isSynchronousInvocation = false,
-            ) {
+            deltakerService.oppdaterDeltaker(deltakerPayload.toDeltakerOppdatering()) {
                 deltakerService.oppdaterDeltakerLaas(
                     deltakerId = deltakerPayload.id,
                     personident = navBruker.personident,

@@ -16,7 +16,6 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class DeltakerService(
@@ -285,21 +284,7 @@ class DeltakerService(
         DeltakerStatusRepository.insertIfNotExists(deltakerId, deltakerStatus)
     }
 
-    suspend fun oppdaterDeltaker(
-        deltakeroppdatering: Deltakeroppdatering,
-        isSynchronousInvocation: Boolean = true,
-        afterUpsert: () -> Unit = {},
-    ) {
-        // CR-note: Burde det vært kastet en feil her hvis eksisterendeDeltaker er null?
-        val eksisterendeDeltaker = deltakerRepository.get(deltakeroppdatering.id).getOrNull()
-
-        val nyTid = deltakeroppdatering.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
-
-        val skalOppdatereStatus =
-            isSynchronousInvocation ||
-                eksisterendeDeltaker == null ||
-                nyTid >= eksisterendeDeltaker.status.opprettet.truncatedTo(ChronoUnit.MILLIS)
-
+    suspend fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering, afterUpsert: () -> Unit = {}) {
         val disableKanEndres = deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
 
@@ -307,10 +292,7 @@ class DeltakerService(
             laasTidligereDeltakelser(deltakeroppdatering)
 
             deltakerRepository.update(deltakeroppdatering)
-
-            if (skalOppdatereStatus) {
-                lagreDeltakerStatus(deltakeroppdatering.id, deltakeroppdatering.status)
-            }
+            lagreDeltakerStatus(deltakeroppdatering.id, deltakeroppdatering.status)
 
             // deltakerRepository.settKanEndres kalles også i laasTidligereDeltakelser, undersøk
             if (disableKanEndres) {
