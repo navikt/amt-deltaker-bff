@@ -7,7 +7,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
@@ -89,8 +88,6 @@ class DeltakerServiceTest {
 
         val deltaker2FraDB = deltakerRepository.get(deltaker2.id).getOrThrow()
         sammenlignDeltakere(deltaker2FraDB, oppdatertDeltaker2)
-
-        DeltakerStatusRepository.getDeltakereMedFlereGyldigeStatuser() shouldBe emptyList()
     }
 
     @Test

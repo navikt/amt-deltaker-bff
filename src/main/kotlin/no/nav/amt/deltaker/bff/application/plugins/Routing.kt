@@ -13,7 +13,6 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.auth.TilgangskontrollService
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorTilgangRepository
@@ -28,7 +27,6 @@ import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteStengtException
 import no.nav.amt.deltaker.bff.innbygger.InnbyggerService
 import no.nav.amt.deltaker.bff.innbygger.registerInnbyggerApi
-import no.nav.amt.deltaker.bff.internal.registerInternalApi
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
@@ -60,7 +58,6 @@ fun Application.configureRouting(
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
     deltakerRepository: DeltakerRepository,
-    amtDeltakerClient: AmtDeltakerClient,
     deltakerlisteService: DeltakerlisteService,
     unleash: Unleash,
     sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc,
@@ -130,8 +127,6 @@ fun Application.configureRouting(
             innbyggerService,
             forslagRepository,
         )
-
-        registerInternalApi(amtDeltakerClient)
 
         registerUnleashApi(unleash)
 

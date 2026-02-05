@@ -813,7 +813,6 @@ class TiltakskoordinatorDeltakerApiTest {
                 amtDistribusjonClient = amtDistribusjonClient,
                 sporbarhetsloggService = sporbarhetsloggService,
                 deltakerRepository = deltakerRepository,
-                amtDeltakerClient = mockk(),
                 deltakerlisteService = mockk(),
                 unleash = mockk(),
                 sporbarhetOgTilgangskontrollSvc = mockk(),

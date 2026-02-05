@@ -4,7 +4,6 @@ import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakerOppdatering
 import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.application.metrics.MetricRegister
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
-import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Kladd
 import no.nav.amt.deltaker.bff.deltaker.model.Utkast
@@ -44,7 +43,7 @@ class PameldingService(
 
         Database.transaction {
             deltakerRepository.opprettKladd(kladdResponse)
-            DeltakerStatusRepository.lagreStatus(kladdResponse.id, kladdResponse.status)
+            deltakerService.lagreDeltakerStatus(kladdResponse.id, kladdResponse.status)
         }
 
         val deltaker = deltakerRepository.get(kladdResponse.id).getOrThrow()
@@ -78,8 +77,7 @@ class PameldingService(
 
         Database.transaction {
             deltakerRepository.upsert(deltaker)
-            DeltakerStatusRepository.lagreStatus(deltaker.id, deltaker.status)
-            DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
+            deltakerService.lagreDeltakerStatus(deltaker.id, deltaker.status)
         }
 
         log.info("Upserted kladd for deltaker med id ${deltaker.id}")

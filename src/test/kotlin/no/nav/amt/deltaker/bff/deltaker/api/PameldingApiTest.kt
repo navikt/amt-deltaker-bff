@@ -333,7 +333,6 @@ class PameldingApiTest {
                 forslagService = forslagService,
                 amtDistribusjonClient = amtDistribusjonClient,
                 sporbarhetsloggService = mockk(),
-                amtDeltakerClient = mockk(),
                 deltakerlisteService = deltakerlisteService,
                 unleash = mockk(),
                 sporbarhetOgTilgangskontrollSvc = mockk(),

@@ -8,7 +8,6 @@ import io.ktor.server.testing.testApplication
 import io.mockk.clearAllMocks
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
-import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
@@ -44,7 +43,6 @@ abstract class RouteTestBase {
     protected val forslagService: ForslagService = mockk(relaxed = true)
     protected val amtDistribusjonClient: AmtDistribusjonClient = mockk(relaxed = true)
     protected val sporbarhetsloggService: SporbarhetsloggService = mockk(relaxed = true)
-    protected val amtDeltakerClient: AmtDeltakerClient = mockk(relaxed = true)
     protected val deltakerlisteService: DeltakerlisteService = mockk(relaxed = true)
     protected val unleash: Unleash = mockk(relaxed = true)
     protected val sporbarhetOgTilgangskontrollSvc: SporbarhetOgTilgangskontrollSvc = mockk(relaxed = true)
@@ -78,7 +76,6 @@ abstract class RouteTestBase {
                     amtDistribusjonClient,
                     sporbarhetsloggService,
                     deltakerRepository,
-                    amtDeltakerClient,
                     deltakerlisteService,
                     unleash,
                     sporbarhetOgTilgangskontrollSvc,
