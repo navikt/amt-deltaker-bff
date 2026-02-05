@@ -69,10 +69,8 @@ class DeltakerV2Consumer(
 
             Database.transaction {
                 deltakerRepository.upsert(deltaker)
-                DeltakerStatusRepository.lagreStatus(
-                    deltakerId = deltaker.id,
-                    deltakerStatus = deltaker.status,
-                )
+                DeltakerStatusRepository.lagreStatus(deltaker.id, deltaker.status)
+                DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, deltaker.status)
                 deltakerService.oppdaterDeltakerLaas(
                     deltakerId = deltaker.id,
                     personident = deltaker.navBruker.personident,
