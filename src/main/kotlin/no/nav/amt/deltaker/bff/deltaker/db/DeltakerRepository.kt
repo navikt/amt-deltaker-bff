@@ -132,7 +132,7 @@ class DeltakerRepository {
     }
 
     fun get(id: UUID): Result<Deltaker> = runCatching {
-        val sql = getDeltakerSql("WHERE d.id = :id AND ds.gyldig_til IS NULL")
+        val sql = getDeltakerSql("WHERE d.id = :id")
         val query = queryOf(sql, mapOf("id" to id)).map(::rowMapper).asSingle
 
         Database.query { session ->
@@ -157,7 +157,6 @@ class DeltakerRepository {
             WHERE 
                 nb.personident = :personident 
                 AND d.deltakerliste_id = :deltakerliste_id 
-                AND ds.gyldig_til IS NULL
             """.trimIndent(),
         )
 
@@ -173,7 +172,7 @@ class DeltakerRepository {
     }
 
     fun getMany(personident: String): List<Deltaker> {
-        val sql = getDeltakerSql("WHERE nb.personident = :personident AND ds.gyldig_til IS NULL")
+        val sql = getDeltakerSql("WHERE nb.personident = :personident")
 
         val query = queryOf(
             sql,
@@ -189,7 +188,6 @@ class DeltakerRepository {
             WHERE 
                d.deltakerliste_id = :deltakerliste_id 
                AND ds.type = 'KLADD'
-               AND ds.gyldig_til IS NULL
             """.trimIndent(),
         )
 
@@ -208,7 +206,6 @@ class DeltakerRepository {
                d.deltakerliste_id = :deltakerliste_id
                AND nb.personident = :personident
                AND ds.type = 'KLADD'
-               AND ds.gyldig_til is null
             """.trimIndent(),
         )
 
@@ -234,10 +231,11 @@ class DeltakerRepository {
                 JOIN deltaker d2 ON 
                     d.person_id = d2.person_id
                     AND d.deltakerliste_id = d2.deltakerliste_id
-                JOIN deltaker_status ds ON d2.id = ds.deltaker_id
+                JOIN deltaker_status ds ON 
+                    d2.id = ds.deltaker_id
+                    AND ds.gyldig_til IS NULL
             WHERE 
                 d.id = ?
-                AND ds.gyldig_til IS NULL
                 AND d.kan_endres = TRUE
                 AND ds.type in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
                 AND d2.id != d.id;
@@ -256,8 +254,7 @@ class DeltakerRepository {
         val sql = getDeltakerSql(
             """
             WHERE 
-                ds.gyldig_til IS NULL
-                AND ds.type = 'KLADD'
+                ds.type = 'KLADD'
                 AND d.modified_at < :sist_endret
             """.trimIndent(),
         )
@@ -336,7 +333,7 @@ class DeltakerRepository {
     fun getForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> = Database.query { session ->
         session.run(
             queryOf(
-                getDeltakerSql("WHERE dl.id = :deltakerliste_id AND ds.gyldig_til IS NULL"),
+                getDeltakerSql("WHERE dl.id = :deltakerliste_id"),
                 mapOf("deltakerliste_id" to deltakerlisteId),
             ).map(::rowMapper).asList,
         )
@@ -411,7 +408,9 @@ class DeltakerRepository {
                 t.innhold AS "t.innhold"
             FROM deltaker d 
                 JOIN nav_bruker nb ON d.person_id = nb.person_id
-                JOIN deltaker_status ds ON d.id = ds.deltaker_id
+                JOIN deltaker_status ds ON 
+                    d.id = ds.deltaker_id
+                    AND ds.gyldig_til IS NULL
                 JOIN deltakerliste dl ON d.deltakerliste_id = dl.id
                 JOIN arrangor a ON a.id = dl.arrangor_id
                 JOIN tiltakstype t ON t.id = dl.tiltakstype_id
