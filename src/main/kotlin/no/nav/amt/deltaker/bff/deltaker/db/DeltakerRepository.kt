@@ -144,7 +144,7 @@ class DeltakerRepository {
     fun getMany(ider: List<UUID>): List<Deltaker> {
         if (ider.isEmpty()) return emptyList()
 
-        val sql = getDeltakerSql("WHERE d.id = ANY(:ider) AND ds.gyldig_til IS NULL")
+        val sql = getDeltakerSql("WHERE d.id = ANY(:ider::uuid[])")
 
         val query = queryOf(sql, mapOf("ider" to ider.toTypedArray())).map(::rowMapper).asList
 
@@ -287,7 +287,7 @@ class DeltakerRepository {
             SET 
                 kan_endres = :kan_endres, 
                 modified_at = CURRENT_TIMESTAMP
-            WHERE id = ANY(:ider);
+            WHERE id = ANY(:ider::uuid[]);
             """.trimIndent()
 
         val parameters = mapOf(

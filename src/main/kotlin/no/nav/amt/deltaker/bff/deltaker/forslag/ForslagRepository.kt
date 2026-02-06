@@ -48,7 +48,7 @@ class ForslagRepository {
                 f.endring as "f.endring",
                 f.status as "f.status"
             FROM forslag f 
-            WHERE f.deltaker_id = ANY(:deltaker_ider);
+            WHERE f.deltaker_id = ANY(:deltaker_ider::uuid[]);
             """.trimIndent(),
             mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
         )
