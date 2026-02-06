@@ -278,22 +278,35 @@ class DeltakerRepository {
         }
     }
 
-    fun settKanEndres(ider: List<UUID>, kanEndres: Boolean) {
-        if (ider.isEmpty()) return
-
+    fun settKanEndres(deltakerId: UUID, kanEndres: Boolean) {
         val sql =
             """
             UPDATE deltaker
             SET 
                 kan_endres = :kan_endres, 
                 modified_at = CURRENT_TIMESTAMP
-            WHERE id = ANY(:ider::uuid[]);
+            WHERE id = :deltaker_id
             """.trimIndent()
 
         val parameters = mapOf(
             "kan_endres" to kanEndres,
-            "ider" to ider.toTypedArray(),
+            "deltaker_id" to deltakerId,
         )
+
+        Database.query { session -> session.update(queryOf(sql, parameters)) }
+    }
+
+    fun disableKanEndresMany(ider: List<UUID>) {
+        val sql =
+            """
+            UPDATE deltaker
+            SET 
+                kan_endres = FALSE, 
+                modified_at = CURRENT_TIMESTAMP
+            WHERE id = ANY(:ider::uuid[]);
+            """.trimIndent()
+
+        val parameters = mapOf("ider" to ider.toTypedArray())
 
         Database.query { session -> session.update(queryOf(sql, parameters)) }
     }
@@ -339,11 +352,18 @@ class DeltakerRepository {
         )
     }
 
-    fun oppdaterSistBesokt(id: UUID, sistBesokt: ZonedDateTime) {
-        val sql = "UPDATE deltaker SET sist_besokt = :sist_besokt WHERE id = :id"
+    fun oppdaterSistBesokt(deltakerId: UUID, sistBesokt: ZonedDateTime) {
+        val sql =
+            """
+            UPDATE deltaker 
+            SET 
+                sist_besokt = :sist_besokt, 
+                modified_at = CURRENT_TIMESTAMP 
+            WHERE id = :id
+            """.trimIndent()
 
         val params = mapOf(
-            "id" to id,
+            "id" to deltakerId,
             "sist_besokt" to sistBesokt,
         )
 

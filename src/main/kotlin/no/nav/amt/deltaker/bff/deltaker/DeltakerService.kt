@@ -258,24 +258,41 @@ class DeltakerService(
             // Dette skal ikke skje i en ventet funksjonell flyt men mange feil med
             // låsing opp igjennom tidene har ført til at nyeste deltakelse er låst
             log.info("Nyeste deltakelse ${nyesteDeltakelse.id} var låst for endringer. Låser opp")
-            deltakerRepository.settKanEndres(listOf(nyesteDeltakelse.id), true)
+            deltakerRepository.settKanEndres(nyesteDeltakelse.id, true)
         }
 
-        if (deltakelserSomSkalLaases.isNotEmpty()) {
-            log.info(
-                "Låser ${deltakelserSomSkalLaases.size} deltakere for endringer grunnet nyere aktiv deltaker med id ${nyesteDeltakelse.id}",
+        if (deltakelserSomSkalLaases.any()) {
+            laasSingleOrMultipleDeltakelser(
+                iderSomSkalLaases = deltakelserSomSkalLaases.map { it.id },
+                nyDeltakerId = nyesteDeltakelse.id,
             )
-            deltakerRepository.settKanEndres(deltakelserSomSkalLaases.map { it.id }, false)
         }
     }
 
     private fun laasTidligereDeltakelser(deltakeroppdatering: Deltakeroppdatering) {
         if (deltakeroppdatering.status.type in AKTIVE_STATUSER && harEndretStatus(deltakeroppdatering)) {
             val tidligereDeltakelser = deltakerRepository.getTidligereAvsluttedeDeltakelser(deltakeroppdatering.id)
-            deltakerRepository.settKanEndres(tidligereDeltakelser, false)
-            log.info(
-                "Har låst ${tidligereDeltakelser.size} deltakere for endringer pga nyere aktiv deltaker med id ${deltakeroppdatering.id}",
-            )
+
+            if (tidligereDeltakelser.any()) {
+                laasSingleOrMultipleDeltakelser(
+                    iderSomSkalLaases = tidligereDeltakelser,
+                    nyDeltakerId = deltakeroppdatering.id,
+                )
+            }
+        }
+    }
+
+    private fun laasSingleOrMultipleDeltakelser(iderSomSkalLaases: List<UUID>, nyDeltakerId: UUID) {
+        if (iderSomSkalLaases.isEmpty()) return
+
+        log.info(
+            "Låser ${iderSomSkalLaases.size} deltakere for endringer grunnet nyere aktiv deltaker med id $nyDeltakerId",
+        )
+
+        if (iderSomSkalLaases.size > 1) {
+            deltakerRepository.disableKanEndresMany(iderSomSkalLaases)
+        } else {
+            deltakerRepository.settKanEndres(iderSomSkalLaases.first(), false)
         }
     }
 
@@ -296,7 +313,7 @@ class DeltakerService(
 
             // deltakerRepository.settKanEndres kalles også i laasTidligereDeltakelser, undersøk
             if (disableKanEndres) {
-                deltakerRepository.settKanEndres(listOf(deltakeroppdatering.id), false)
+                deltakerRepository.settKanEndres(deltakeroppdatering.id, false)
             }
 
             afterUpsert()

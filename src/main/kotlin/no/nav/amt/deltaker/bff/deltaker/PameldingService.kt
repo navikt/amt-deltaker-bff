@@ -118,7 +118,7 @@ class PameldingService(
     }
 
     private fun laasOppDeltaker(deltaker: Deltaker) {
-        deltakerRepository.settKanEndres(listOf(deltaker.id), true)
+        deltakerRepository.settKanEndres(deltaker.id, true)
         log.info(
             "Har låst opp tidligere deltaker ${deltaker.id} for endringer pga avbrutt utkast på nåværende deltaker",
         )
