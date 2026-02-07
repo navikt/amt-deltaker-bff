@@ -12,63 +12,51 @@ import no.nav.amt.lib.utils.objectMapper
 import java.util.UUID
 
 class NavBrukerRepository {
-    private fun rowMapper(row: Row) = NavBruker(
-        personId = row.uuid("person_id"),
-        personident = row.string("personident"),
-        fornavn = row.string("fornavn"),
-        mellomnavn = row.stringOrNull("mellomnavn"),
-        etternavn = row.string("etternavn"),
-        adressebeskyttelse = row.stringOrNull("adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
-        oppfolgingsperioder = row.stringOrNull("oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
-        innsatsgruppe = row.stringOrNull("innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
-        adresse = row.stringOrNull("adresse")?.let { objectMapper.readValue(it) },
-        erSkjermet = row.boolean("er_skjermet"),
-        navEnhetId = row.uuidOrNull("nav_enhet_id"),
-        navVeilederId = row.uuidOrNull("nav_veileder_id"),
-        telefon = null,
-        epost = null,
-    )
-
-    fun upsert(bruker: NavBruker) = Database.query {
+    fun upsert(bruker: NavBruker): Result<NavBruker> = runCatching {
         val sql =
             """
-            insert into nav_bruker(person_id,
-                                   personident,
-                                   fornavn,
-                                   mellomnavn,
-                                   etternavn,
-                                   adressebeskyttelse,
-                                   oppfolgingsperioder,
-                                   innsatsgruppe,
-                                   adresse,
-                                   er_skjermet,
-                                   nav_veileder_id,
-                                   nav_enhet_id)
-            values (:person_id,
-                    :personident,
-                    :fornavn,
-                    :mellomnavn,
-                    :etternavn,
-                    :adressebeskyttelse,
-                    :oppfolgingsperioder,
-                    :innsatsgruppe,
-                    :adresse,
-                    :er_skjermet,
-                    :nav_veileder_id,
-                    :nav_enhet_id)
-            on conflict (person_id) do update set personident         = :personident,
-                                                  fornavn             = :fornavn,
-                                                  mellomnavn          = :mellomnavn,
-                                                  etternavn           = :etternavn,
-                                                  adressebeskyttelse  = :adressebeskyttelse,
-                                                  oppfolgingsperioder = :oppfolgingsperioder,
-                                                  innsatsgruppe       = :innsatsgruppe,
-                                                  adresse             = :adresse,
-                                                  er_skjermet         = :er_skjermet,
-                                                  nav_veileder_id     = :nav_veileder_id,
-                                                  nav_enhet_id        = :nav_enhet_id,
-                                                  modified_at         = current_timestamp
-            returning *
+            INSERT INTO nav_bruker (
+                person_id,
+                personident,
+                fornavn,
+                mellomnavn,
+                etternavn,
+                adressebeskyttelse,
+                oppfolgingsperioder,
+                innsatsgruppe,
+                adresse,
+                er_skjermet,
+                nav_veileder_id,
+                nav_enhet_id
+            )
+            VALUES (
+                :person_id,
+                :personident,
+                :fornavn,
+                :mellomnavn,
+                :etternavn,
+                :adressebeskyttelse,
+                :oppfolgingsperioder,
+                :innsatsgruppe,
+                :adresse,
+                :er_skjermet,
+                :nav_veileder_id,
+                :nav_enhet_id
+            )
+            ON CONFLICT (person_id) DO UPDATE SET 
+                personident         = :personident,
+                fornavn             = :fornavn,
+                mellomnavn          = :mellomnavn,
+                etternavn           = :etternavn,
+                adressebeskyttelse  = :adressebeskyttelse,
+                oppfolgingsperioder = :oppfolgingsperioder,
+                innsatsgruppe       = :innsatsgruppe,
+                adresse             = :adresse,
+                er_skjermet         = :er_skjermet,
+                nav_veileder_id     = :nav_veileder_id,
+                nav_enhet_id        = :nav_enhet_id,
+                modified_at         = CURRENT_TIMESTAMP
+            RETURNING *
             """.trimIndent()
 
         val params = mapOf(
@@ -86,33 +74,50 @@ class NavBrukerRepository {
             "nav_veileder_id" to bruker.navVeilederId,
         )
 
-        it
-            .run(queryOf(sql, params).map(::rowMapper).asSingle)
-            ?.let { b -> Result.success(b) }
-            ?: Result.failure(NoSuchElementException("Noe gikk galt med upsert av bruker ${bruker.personId}"))
+        Database.query { session ->
+            session.run(queryOf(sql, params).map(::rowMapper).asSingle)
+                ?: throw NoSuchElementException("Noe gikk galt med upsert av bruker ${bruker.personId}")
+        }
     }
 
-    fun get(personId: UUID) = Database.query {
-        val query = queryOf(
-            statement = "select * from nav_bruker where person_id = :person_id",
-            paramMap = mapOf("person_id" to personId),
-        )
-
-        it
-            .run(query.map(::rowMapper).asSingle)
-            ?.let { b -> Result.success(b) }
-            ?: Result.failure(NoSuchElementException("Fant ikke bruker $personId"))
+    fun get(personId: UUID): Result<NavBruker> = runCatching {
+        Database.query { session ->
+            session.run(
+                queryOf(
+                    statement = "SELECT * FROM nav_bruker WHERE person_id = :person_id",
+                    paramMap = mapOf("person_id" to personId),
+                ).map(::rowMapper).asSingle,
+            ) ?: throw NoSuchElementException("Fant ikke bruker $personId")
+        }
     }
 
-    fun get(personident: String) = Database.query {
-        val query = queryOf(
-            statement = "select * from nav_bruker where personident = :personident",
-            paramMap = mapOf("personident" to personident),
-        )
+    fun get(personident: String): Result<NavBruker> = runCatching {
+        Database.query { session ->
+            session.run(
+                queryOf(
+                    statement = "SELECT * FROM nav_bruker WHERE personident = :personident",
+                    paramMap = mapOf("personident" to personident),
+                ).map(::rowMapper).asSingle,
+            ) ?: throw NoSuchElementException("Fant ikke bruker med personident")
+        }
+    }
 
-        it
-            .run(query.map(::rowMapper).asSingle)
-            ?.let { b -> Result.success(b) }
-            ?: Result.failure(NoSuchElementException("Fant ikke bruker med personident"))
+    companion object {
+        private fun rowMapper(row: Row) = NavBruker(
+            personId = row.uuid("person_id"),
+            personident = row.string("personident"),
+            fornavn = row.string("fornavn"),
+            mellomnavn = row.stringOrNull("mellomnavn"),
+            etternavn = row.string("etternavn"),
+            adressebeskyttelse = row.stringOrNull("adressebeskyttelse")?.let { Adressebeskyttelse.valueOf(it) },
+            oppfolgingsperioder = row.stringOrNull("oppfolgingsperioder")?.let { objectMapper.readValue(it) } ?: emptyList(),
+            innsatsgruppe = row.stringOrNull("innsatsgruppe")?.let { Innsatsgruppe.valueOf(it) },
+            adresse = row.stringOrNull("adresse")?.let { objectMapper.readValue(it) },
+            erSkjermet = row.boolean("er_skjermet"),
+            navEnhetId = row.uuidOrNull("nav_enhet_id"),
+            navVeilederId = row.uuidOrNull("nav_veileder_id"),
+            telefon = null,
+            epost = null,
+        )
     }
 }

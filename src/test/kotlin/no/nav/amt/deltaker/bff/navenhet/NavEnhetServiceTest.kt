@@ -3,6 +3,7 @@ package no.nav.amt.deltaker.bff.navenhet
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
@@ -16,9 +17,9 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class NavEnhetServiceTest {
-    private val repository = NavEnhetRepository()
+    private val navEnhetRepository = NavEnhetRepository()
     private val amtPersonServiceClient = mockAmtPersonServiceClient()
-    private val navEnhetService = NavEnhetService(repository, amtPersonServiceClient)
+    private val navEnhetService = NavEnhetService(navEnhetRepository, amtPersonServiceClient)
 
     companion object {
         @RegisterExtension
@@ -26,50 +27,40 @@ class NavEnhetServiceTest {
     }
 
     @Test
-    fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes i db - henter fra db`() {
+    fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes i db - henter fra db`() = runTest {
         val navEnhet = TestData.lagNavEnhet()
-        repository.upsert(navEnhet)
+        navEnhetRepository.upsert(navEnhet)
 
-        runBlocking {
-            val navEnhetFraDb = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhet.enhetsnummer)
-            navEnhetFraDb shouldBe navEnhet
-        }
+        val navEnhetFraDb = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhet.enhetsnummer)
+        navEnhetFraDb shouldBe navEnhet
     }
 
     @Test
-    fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes ikke i db - henter fra personservice og lagrer`() {
+    fun `hentOpprettEllerOppdaterNavEnhet - navenhet finnes ikke i db - henter fra personservice og lagrer`() = runTest {
         val navEnhetResponse = TestData.lagNavEnhet()
         MockResponseHandler.addNavEnhetPostResponse(navEnhetResponse)
 
-        runBlocking {
-            val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
+        val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
 
-            navEnhet shouldBe navEnhetResponse
-            repository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse
-        }
+        navEnhet shouldBe navEnhetResponse
+        navEnhetRepository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse
     }
 
     @Test
-    fun `hentOpprettEllerOppdaterNavEnhet - utdatert navenhet finnes i db - henter fra personservice og oppdaterer`() {
-        val utdatertNavEnhet = TestData.lagNavEnhet()
+    fun `hentOpprettEllerOppdaterNavEnhet - utdatert navenhet finnes i db - henter fra personservice og oppdaterer`() = runTest {
+        val opprinneligNavEnhet = TestData.lagNavEnhet()
         TestRepository.insert(
-            NavEnhetDbo(
-                id = utdatertNavEnhet.id,
-                enhetsnummer = utdatertNavEnhet.enhetsnummer,
-                navn = utdatertNavEnhet.navn,
-                sistEndret = LocalDateTime.now().minusMonths(2),
-            ),
+            navEnhet = opprinneligNavEnhet,
+            sistEndret = LocalDateTime.now().minusMonths(2),
         )
 
-        val navEnhetResponse = utdatertNavEnhet.copy(navn = "Oppdater navn")
+        val navEnhetResponse = opprinneligNavEnhet.copy(navn = "Oppdater navn")
         MockResponseHandler.addNavEnhetPostResponse(navEnhetResponse)
 
-        runBlocking {
-            val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
+        val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)
 
-            navEnhet shouldBe navEnhetResponse
-            repository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse
-        }
+        navEnhet shouldBe navEnhetResponse
+        navEnhetRepository.get(navEnhetResponse.enhetsnummer)?.toNavEnhet() shouldBe navEnhetResponse
     }
 
     @Test
@@ -98,7 +89,7 @@ class NavEnhetServiceTest {
 
         val enheter = TestData.lagNavEnheterForHistorikk(historikk)
 
-        enheter.forEach { TestRepository.insert(it) }
+        enheter.forEach { navEnhetRepository.upsert(it) }
         TestRepository.insert(deltaker)
 
         val faktiskeEnheter = runBlocking { navEnhetService.hentEnheterForHistorikk(historikk) }

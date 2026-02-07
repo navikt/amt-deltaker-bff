@@ -1,9 +1,11 @@
 package no.nav.amt.deltaker.bff.navansatt
 
+import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
@@ -50,18 +52,16 @@ class NavAnsattServiceTest {
     @Nested
     inner class HentEllerOpprettNavAnsatt {
         @Test
-        fun `navansatt finnes i db - henter fra db`() {
+        fun `Nav-ansatt finnes i db - henter fra db`() = runTest {
             val navAnsatt = TestData.lagNavAnsatt()
             navAnsattRepository.upsert(navAnsatt)
 
-            runBlocking {
-                val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
-                navAnsattFraDb shouldBe navAnsatt
-            }
+            val navAnsattFraDb = navAnsattService.hentEllerOpprettNavAnsatt(navAnsatt.navIdent)
+            navAnsattFraDb shouldBe navAnsatt
         }
 
         @Test
-        fun `navansatt finnes ikke i db - henter fra personservice og lagrer`() {
+        fun `Nav-ansatt finnes ikke i db - henter fra personservice og lagrer`() = runTest {
             val navAnsattResponse = TestData.lagNavAnsatt()
             val httpClient = mockHttpClient(objectMapper.writeValueAsString(navAnsattResponse))
             val amtPersonServiceClient = AmtPersonServiceClient(
@@ -72,17 +72,15 @@ class NavAnsattServiceTest {
             )
             val navAnsattService = NavAnsattService(navAnsattRepository, amtPersonServiceClient)
 
-            runBlocking {
-                val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navIdent)
+            val navAnsatt = navAnsattService.hentEllerOpprettNavAnsatt(navAnsattResponse.navIdent)
 
-                navAnsatt shouldBe navAnsattResponse
-                navAnsattRepository.get(navAnsattResponse.id) shouldBe navAnsattResponse
-            }
+            navAnsatt shouldBe navAnsattResponse
+            navAnsattRepository.get(navAnsattResponse.id) shouldBe navAnsattResponse
         }
     }
 
     @Test
-    fun `oppdaterNavAnsatt - navansatt finnes - blir oppdatert`() {
+    fun `oppdaterNavAnsatt - Nav-ansatt finnes - blir oppdatert`() {
         val navAnsatt = TestData.lagNavAnsatt()
         navAnsattRepository.upsert(navAnsatt)
         val oppdatertNavAnsatt = navAnsatt.copy(navn = "Nytt Navn")
@@ -93,7 +91,7 @@ class NavAnsattServiceTest {
     }
 
     @Test
-    fun `slettNavAnsatt - navansatt blir slettet`() {
+    fun `slettNavAnsatt - Nav-ansatt blir slettet`() {
         val navAnsatt = TestData.lagNavAnsatt()
         navAnsattRepository.upsert(navAnsatt)
 
@@ -105,25 +103,34 @@ class NavAnsattServiceTest {
     @Test
     fun `hentAnsatteForDeltaker - deltaker endret av flere ansatte - returnerer alle ansatte`() {
         val deltaker = TestData.lagDeltaker()
-        val ansatte = TestData.lagNavAnsatteForDeltaker(deltaker)
 
-        ansatte.forEach { TestRepository.insert(it) }
+        assertSoftly(deltaker.vedtaksinformasjon.shouldNotBeNull()) {
+            opprettetAv.shouldNotBeNull()
+            sistEndretAv.shouldNotBeNull()
+
+            opprettetAv shouldBe sistEndretAv
+            opprettetAv shouldBe deltaker.navBruker.navVeilederId!!
+        }
+
         TestRepository.insert(deltaker)
+        val ansattInDb = navAnsattRepository.get(deltaker.vedtaksinformasjon!!.sistEndretAv).shouldNotBeNull()
 
         val faktiskeAnsatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
-        faktiskeAnsatte.size shouldBe ansatte.size
 
-        faktiskeAnsatte.toList().map { it.second }.containsAll(ansatte) shouldBe true
+        faktiskeAnsatte.size shouldBe 1
+        faktiskeAnsatte[ansattInDb.id] shouldBe ansattInDb
     }
 
     @Test
     fun `hentAnsatteForHistorikk - historikk endret av flere ansatte - returnerer alle ansatte`() {
         val deltaker = TestData.lagDeltaker()
+
         val vedtak = TestData.lagVedtak(
             deltakerVedVedtak = deltaker,
             fattet = LocalDateTime.now(),
             fattetAvNav = true,
         )
+
         val deltakerEndring = TestData.lagDeltakerEndring(deltakerId = deltaker.id)
         val forslag = TestData.lagForslag(
             deltakerId = deltaker.id,
@@ -142,7 +149,7 @@ class NavAnsattServiceTest {
 
         val ansatte = TestData.lagNavAnsatteForHistorikk(historikk)
 
-        ansatte.forEach { TestRepository.insert(it) }
+        ansatte.forEach { navAnsattRepository.upsert(it) }
         TestRepository.insert(deltaker)
 
         val faktiskeAnsatte = navAnsattService.hentAnsatteForHistorikk(historikk)

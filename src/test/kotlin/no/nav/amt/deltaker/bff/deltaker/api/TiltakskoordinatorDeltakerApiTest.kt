@@ -196,9 +196,9 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `oppdater bakgrunnsinformasjon - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             bakgrunnsinformasjon = bakgrunnsinformasjonRequest.bakgrunnsinformasjon,
         )
 
@@ -216,7 +216,10 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `oppdater bakgrunnsinformasjon - deltaker har sluttet - returnerer bad request`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusMonths(3),
+            ),
             sluttdato = LocalDate.now().minusMonths(3),
         )
 
@@ -233,9 +236,9 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `oppdater innhold - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(statusType = DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             deltakelsesinnhold = Deltakelsesinnhold("ledetekst", innholdRequest.innhold.toInnholdModel(deltaker)),
         )
 
@@ -256,7 +259,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val deltaker =
             TestData.lagDeltaker(
                 sluttdato = LocalDate.now().plusMonths(3),
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             )
 
         val oppdatertDeltaker = deltaker.copy(
@@ -278,7 +281,7 @@ class TiltakskoordinatorDeltakerApiTest {
         val deltaker =
             TestData.lagDeltaker(
                 sluttdato = LocalDate.now().plusMonths(3),
-                status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             )
         setupMocks(deltaker, null)
 
@@ -302,7 +305,7 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `oppdater startdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = startdatoRequest.startdato,
@@ -321,7 +324,7 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `endre sluttdato - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             sluttdato = LocalDate.now().minusDays(3),
         )
         val oppdatertDeltaker = deltaker.copy(
@@ -340,7 +343,7 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `endre sluttdato - har tilgang, deltaker har status IKKE AKTUELL - feiler`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL),
             sluttdato = LocalDate.now().minusDays(3),
         )
         setupMocks(deltaker, null)
@@ -373,7 +376,7 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `endre sluttarsak - har tilgang, deltaker har status HAR SLUTTET - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, aarsak = null),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
         )
 
         val oppdatertDeltaker = deltaker.copy(
@@ -505,7 +508,10 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `forleng - har tilgang, har sluttet for mer enn to mnd siden - feiler`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusMonths(3),
+            ),
             sluttdato = forlengDeltakelseRequest.sluttdato.minusMonths(3),
         )
         setupMocks(deltaker, null)
@@ -614,7 +620,10 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `avslutt - har tilgang, har ikke deltatt, mer enn 15 dager siden - feiler ikke`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, gyldigFra = LocalDateTime.now().minusDays(20)),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.DELTAR,
+                gyldigFra = LocalDateTime.now().minusDays(20),
+            ),
         )
         val oppdatertDeltaker = deltaker.copy(
             status = TestData.lagDeltakerStatus(
@@ -714,9 +723,9 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `reaktiver - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker =
-            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL))
+            TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL))
         val oppdatertDeltaker = deltaker.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = null,
             sluttdato = null,
         )
@@ -735,7 +744,10 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `reaktiver - deltaker har sluttet - returnerer bad request`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, gyldigFra = LocalDateTime.now().minusMonths(3)),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                gyldigFra = LocalDateTime.now().minusMonths(3),
+            ),
             sluttdato = LocalDate.now().minusMonths(1),
         )
         setupMocks(deltaker, null)
@@ -751,7 +763,7 @@ class TiltakskoordinatorDeltakerApiTest {
     fun `fjern oppstartsdato - har tilgang - returnerer oppdatert deltaker`() = testApplication {
         setUpTestApplication()
         val deltaker = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = LocalDate.now().plusWeeks(1),
             sluttdato = LocalDate.now().plusMonths(3),
         )

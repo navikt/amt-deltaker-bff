@@ -8,7 +8,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.AVSLUTTENDE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
-import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
@@ -132,23 +131,27 @@ class DeltakerRepository {
     }
 
     fun get(id: UUID): Result<Deltaker> = runCatching {
-        val sql = getDeltakerSql("WHERE d.id = :id")
-        val query = queryOf(sql, mapOf("id" to id)).map(::rowMapper).asSingle
-
         Database.query { session ->
-            session.run(query)
-                ?: throw NoSuchElementException("Ingen deltaker med id $id")
+            session.run(
+                queryOf(
+                    getDeltakerSql("WHERE d.id = :id"),
+                    mapOf("id" to id),
+                ).map(::rowMapper).asSingle,
+            ) ?: throw NoSuchElementException("Ingen deltaker med id $id")
         }
     }
 
     fun getMany(ider: List<UUID>): List<Deltaker> {
         if (ider.isEmpty()) return emptyList()
 
-        val sql = getDeltakerSql("WHERE d.id = ANY(:ider::uuid[])")
-
-        val query = queryOf(sql, mapOf("ider" to ider.toTypedArray())).map(::rowMapper).asList
-
-        return Database.query { session -> session.run(query) }
+        return Database.query { session ->
+            session.run(
+                queryOf(
+                    getDeltakerSql("WHERE d.id = ANY(:ider::uuid[])"),
+                    mapOf("ider" to ider.toTypedArray()),
+                ).map(::rowMapper).asList,
+            )
+        }
     }
 
     fun getMany(personident: String, deltakerlisteId: UUID): List<Deltaker> {
@@ -171,15 +174,13 @@ class DeltakerRepository {
         return Database.query { session -> session.run(query) }
     }
 
-    fun getMany(personident: String): List<Deltaker> {
-        val sql = getDeltakerSql("WHERE nb.personident = :personident")
-
-        val query = queryOf(
-            sql,
-            mapOf("personident" to personident),
-        ).map(::rowMapper).asList
-
-        return Database.query { session -> session.run(query) }
+    fun getMany(personident: String): List<Deltaker> = Database.query { session ->
+        session.run(
+            queryOf(
+                getDeltakerSql("WHERE nb.personident = :personident"),
+                mapOf("personident" to personident),
+            ).map(::rowMapper).asList,
+        )
     }
 
     fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> {
@@ -231,9 +232,7 @@ class DeltakerRepository {
                 JOIN deltaker d2 ON 
                     d.person_id = d2.person_id
                     AND d.deltakerliste_id = d2.deltakerliste_id
-                JOIN deltaker_status ds ON 
-                    d2.id = ds.deltaker_id
-                    AND ds.gyldig_til IS NULL
+                JOIN deltaker_status ds ON d2.id = ds.deltaker_id
             WHERE 
                 d.id = ?
                 AND d.kan_endres = TRUE
@@ -398,14 +397,14 @@ class DeltakerRepository {
                 nb.adresse AS "nb.adresse",
                 nb.nav_enhet_id AS "nb.nav_enhet_id",
                 nb.nav_veileder_id AS "nb.nav_veileder_id",
+
                 ds.id AS "ds.id",
                 ds.deltaker_id AS "ds.deltaker_id",
                 ds.type AS "ds.type",
                 ds.aarsak AS "ds.aarsak",
                 ds.gyldig_fra AS "ds.gyldig_fra",
-                ds.gyldig_til AS "ds.gyldig_til",
                 ds.created_at AS "ds.created_at",
-                ds.modified_at AS "ds.modified_at",
+
                 dl.id AS "dl.id",
                 dl.navn AS "dl.navn",
                 dl.status AS "dl.status",
@@ -428,9 +427,7 @@ class DeltakerRepository {
                 t.innhold AS "t.innhold"
             FROM deltaker d 
                 JOIN nav_bruker nb ON d.person_id = nb.person_id
-                JOIN deltaker_status ds ON 
-                    d.id = ds.deltaker_id
-                    AND ds.gyldig_til IS NULL
+                JOIN deltaker_status ds ON d.id = ds.deltaker_id
                 JOIN deltakerliste dl ON d.deltakerliste_id = dl.id
                 JOIN arrangor a ON a.id = dl.arrangor_id
                 JOIN tiltakstype t ON t.id = dl.tiltakstype_id
@@ -468,10 +465,10 @@ class DeltakerRepository {
 
         private fun mapDeltakerStatus(row: Row) = DeltakerStatus(
             id = row.uuid("ds.id"),
-            type = row.string("ds.type").let { DeltakerStatus.Type.valueOf(it) },
+            type = DeltakerStatus.Type.valueOf(row.string("ds.type")),
             aarsak = row.stringOrNull("ds.aarsak")?.let { objectMapper.readValue(it) },
             gyldigFra = row.localDateTime("ds.gyldig_fra"),
-            gyldigTil = row.localDateTimeOrNull("ds.gyldig_til"),
+            gyldigTil = null,
             opprettet = row.localDateTime("ds.created_at"),
         )
 
@@ -501,9 +498,7 @@ class DeltakerRepository {
             bakgrunnsinformasjon = row.stringOrNull("d.bakgrunnsinformasjon"),
             deltakelsesinnhold = row.stringOrNull("d.innhold")?.let { objectMapper.readValue(it) },
             status = mapDeltakerStatus(row),
-            historikk = row.string("d.historikk").let { list ->
-                objectMapper.readValue<List<DeltakerHistorikk>>(list.trim())
-            },
+            historikk = objectMapper.readValue(row.string("d.historikk").trim()),
             kanEndres = row.boolean("d.kan_endres"),
             sistEndret = row.localDateTime("d.modified_at"),
             erManueltDeltMedArrangor = row.boolean("d.er_manuelt_delt_med_arrangor"),

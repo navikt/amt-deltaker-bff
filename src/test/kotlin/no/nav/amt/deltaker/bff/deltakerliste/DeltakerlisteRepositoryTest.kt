@@ -1,11 +1,13 @@
 package no.nav.amt.deltaker.bff.deltakerliste
 
+import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
+import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
+import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakstype
-import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,6 +16,8 @@ import java.time.LocalDate
 
 class DeltakerlisteRepositoryTest {
     private val deltakerlisteRepository = DeltakerlisteRepository()
+    private val arrangorRepository = ArrangorRepository()
+    private val tiltakstypeRepository = TiltakstypeRepository()
 
     companion object {
         @RegisterExtension
@@ -25,10 +29,10 @@ class DeltakerlisteRepositoryTest {
         @Test
         fun `ny minimal deltakerliste - inserter`() {
             val arrangor = lagArrangor()
-            TestRepository.insert(arrangor)
+            arrangorRepository.upsert(arrangor)
 
             val tiltakstype = lagTiltakstype()
-            TestRepository.insert(tiltakstype)
+            tiltakstypeRepository.upsert(tiltakstype)
 
             val deltakerliste = lagDeltakerliste(
                 arrangor = arrangor,
@@ -49,9 +53,10 @@ class DeltakerlisteRepositoryTest {
         @Test
         fun `ny deltakerliste - inserter`() {
             val arrangor = lagArrangor()
+            arrangorRepository.upsert(arrangor)
+
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
-            TestRepository.insert(arrangor)
-            TestRepository.insert(deltakerliste.tiltak)
+            tiltakstypeRepository.upsert(deltakerliste.tiltak)
 
             deltakerlisteRepository.upsert(deltakerliste)
 
@@ -61,9 +66,10 @@ class DeltakerlisteRepositoryTest {
         @Test
         fun `deltakerliste ny sluttdato - oppdaterer`() {
             val arrangor = lagArrangor()
+            arrangorRepository.upsert(arrangor)
+
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
-            TestRepository.insert(arrangor)
-            TestRepository.insert(deltakerliste.tiltak)
+            tiltakstypeRepository.upsert(deltakerliste.tiltak)
 
             deltakerlisteRepository.upsert(deltakerliste)
 
@@ -78,25 +84,27 @@ class DeltakerlisteRepositoryTest {
     @Test
     fun `delete - sletter deltakerliste`() {
         val arrangor = lagArrangor()
-        val deltakerliste = lagDeltakerliste(arrangor = arrangor)
-        TestRepository.insert(arrangor)
-        TestRepository.insert(deltakerliste.tiltak)
+        arrangorRepository.upsert(arrangor)
 
+        val deltakerliste = lagDeltakerliste(arrangor = arrangor)
+        tiltakstypeRepository.upsert(deltakerliste.tiltak)
         deltakerlisteRepository.upsert(deltakerliste)
 
         deltakerlisteRepository.delete(deltakerliste.id)
 
-        deltakerlisteRepository.get(deltakerliste.id).getOrNull() shouldBe null
+        deltakerlisteRepository.get(deltakerliste.id).shouldBeFailure<NoSuchElementException>()
     }
 
     @Test
     fun `get - deltakerliste og arrangor finnes - henter deltakerliste`() {
         val overordnetArrangor = lagArrangor()
+        arrangorRepository.upsert(overordnetArrangor)
+
         val arrangor = lagArrangor(overordnetArrangorId = overordnetArrangor.id)
+        arrangorRepository.upsert(arrangor)
+
         val deltakerliste = lagDeltakerliste(arrangor = arrangor, overordnetArrangor = overordnetArrangor)
-        TestRepository.insert(overordnetArrangor)
-        TestRepository.insert(arrangor)
-        TestRepository.insert(deltakerliste.tiltak)
+        tiltakstypeRepository.upsert(deltakerliste.tiltak)
         deltakerlisteRepository.upsert(deltakerliste)
 
         val deltakerlisteMedArrangor = deltakerlisteRepository.get(deltakerliste.id).getOrThrow()

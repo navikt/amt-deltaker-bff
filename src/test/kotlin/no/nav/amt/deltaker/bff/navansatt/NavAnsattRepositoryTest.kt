@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.utils.data.TestData
-import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
 
@@ -23,7 +22,7 @@ class NavAnsattRepositoryTest {
             TestData.lagNavAnsatt(),
             TestData.lagNavAnsatt(),
         )
-        ansatte.forEach { TestRepository.insert(it) }
+        ansatte.forEach { navAnsattRepository.upsert(it) }
 
         val faktiskeAnsatte = navAnsattRepository.getMany(ansatte.map { it.id })
 
