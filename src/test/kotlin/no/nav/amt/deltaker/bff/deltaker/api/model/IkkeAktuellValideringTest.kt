@@ -15,8 +15,8 @@ class IkkeAktuellValideringTest {
         shouldThrow<IllegalArgumentException> {
             val deltaker = TestData.lagDeltaker(
                 status = TestData.lagDeltakerStatus(
-                    type = DeltakerStatus.Type.IKKE_AKTUELL,
-                    aarsak = DeltakerStatus.Aarsak.Type.FATT_JOBB,
+                    statusType = DeltakerStatus.Type.IKKE_AKTUELL,
+                    aarsakType = DeltakerStatus.Aarsak.Type.FATT_JOBB,
                 ),
             )
             val request = IkkeAktuellRequest(
@@ -34,8 +34,8 @@ class IkkeAktuellValideringTest {
         shouldNotThrow<IllegalArgumentException> {
             val deltaker = TestData.lagDeltaker(
                 status = TestData.lagDeltakerStatus(
-                    type = DeltakerStatus.Type.IKKE_AKTUELL,
-                    aarsak = DeltakerStatus.Aarsak.Type.FATT_JOBB,
+                    statusType = DeltakerStatus.Type.IKKE_AKTUELL,
+                    aarsakType = DeltakerStatus.Aarsak.Type.FATT_JOBB,
                 ),
             )
             val request = IkkeAktuellRequest(
@@ -53,7 +53,7 @@ class IkkeAktuellValideringTest {
         shouldNotThrow<IllegalArgumentException> {
             val deltaker = TestData.lagDeltaker(
                 status = TestData.lagDeltakerStatus(
-                    type = DeltakerStatus.Type.DELTAR,
+                    statusType = DeltakerStatus.Type.DELTAR,
                     gyldigFra = LocalDateTime.now().minusDays(10),
                 ),
             )
@@ -72,7 +72,7 @@ class IkkeAktuellValideringTest {
         shouldThrow<IllegalArgumentException> {
             val deltaker = TestData.lagDeltaker(
                 status = TestData.lagDeltakerStatus(
-                    type = DeltakerStatus.Type.DELTAR,
+                    statusType = DeltakerStatus.Type.DELTAR,
                     gyldigFra = LocalDateTime.now().minusDays(16),
                 ),
             )
@@ -91,7 +91,7 @@ class IkkeAktuellValideringTest {
         shouldThrow<IllegalArgumentException> {
             val deltaker = TestData.lagDeltaker(
                 status = TestData.lagDeltakerStatus(
-                    type = DeltakerStatus.Type.DELTAR,
+                    statusType = DeltakerStatus.Type.DELTAR,
                     gyldigFra = LocalDateTime.now().minusDays(10),
                 ),
             )

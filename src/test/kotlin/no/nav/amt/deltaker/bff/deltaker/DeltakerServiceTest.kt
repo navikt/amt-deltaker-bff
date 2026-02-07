@@ -92,7 +92,7 @@ class DeltakerServiceTest {
 
     @Test
     fun `delete - ingen endring eller vedtak - sletter deltaker`() = runTest {
-        val deltaker = lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.KLADD))
+        val deltaker = lagDeltaker(status = lagDeltakerStatus(DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
 
         deltakerService.delete(deltaker.id)
@@ -120,7 +120,7 @@ class DeltakerServiceTest {
         @Test
         fun `deltaker endringshistorikk mangler men er utkast - oppdaterer`() = runTest {
             val deltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
             )
             TestRepository.insert(deltaker)
             val oppdatertDeltaker = deltaker.copy(bakgrunnsinformasjon = "Endringshistorikk mangler")
@@ -372,7 +372,7 @@ class DeltakerServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = null,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )
@@ -386,7 +386,7 @@ class DeltakerServiceTest {
         @Test
         fun `oppdaterDeltaker(deltakerOppdatering) - har ikke andre deltakelser, har sluttet - oppdaterer deltaker`() = runTest {
             val deltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             )
             TestRepository.insert(deltaker)
             val deltakeroppdatering = Deltakeroppdatering(
@@ -398,9 +398,9 @@ class DeltakerServiceTest {
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = Deltakelsesinnhold("ny ledetekst", listOf(Innhold("", "", true, ""))),
                 status = lagDeltakerStatus(
-                    type = DeltakerStatus.Type.HAR_SLUTTET,
-                    aarsak = DeltakerStatus.Aarsak.Type.ANNET,
-                    beskrivelse = "Oppdatert",
+                    statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                    aarsakType = DeltakerStatus.Aarsak.Type.ANNET,
+                    aarsakBeskrivelse = "Oppdatert",
                 ),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
@@ -424,7 +424,7 @@ class DeltakerServiceTest {
             val gammelDeltaker = lagDeltaker(
                 deltakerliste = deltaker.deltakerliste,
                 navBruker = deltaker.navBruker,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+                status = lagDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL),
                 kanEndres = true,
             )
             TestRepository.insert(gammelDeltaker)
@@ -436,7 +436,7 @@ class DeltakerServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = Deltakelsesinnhold("ny ledetekst", listOf(Innhold("", "", true, ""))),
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )
@@ -453,7 +453,7 @@ class DeltakerServiceTest {
         @Test
         fun `oppdaterDeltaker(deltakerOppdatering) - har tidligere deltakelse, ikke statusoppdatering - oppdaterer deltaker`() = runTest {
             val deltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
                 startdato = LocalDate.now().minusDays(10),
                 sluttdato = null,
             )
@@ -461,7 +461,7 @@ class DeltakerServiceTest {
             val gammelDeltaker = lagDeltaker(
                 deltakerliste = deltaker.deltakerliste,
                 navBruker = deltaker.navBruker,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+                status = lagDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL),
                 kanEndres = true,
             )
             TestRepository.insert(gammelDeltaker)
@@ -473,7 +473,7 @@ class DeltakerServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = null,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )
@@ -489,7 +489,7 @@ class DeltakerServiceTest {
 
         @Test
         fun `oppdaterDeltaker(deltakerOppdatering) - feilregistrert - setter kan ikke endres`() = runTest {
-            val deltaker = lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART))
+            val deltaker = lagDeltaker(status = lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART))
             TestRepository.insert(deltaker)
             val deltakeroppdatering = Deltakeroppdatering(
                 id = deltaker.id,
@@ -499,7 +499,7 @@ class DeltakerServiceTest {
                 deltakelsesprosent = null,
                 bakgrunnsinformasjon = null,
                 deltakelsesinnhold = null,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+                status = lagDeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )
@@ -515,7 +515,7 @@ class DeltakerServiceTest {
         fun `oppdaterDeltaker(deltakerOppdatering) - avlyst gjennomforing - setter kan ikke endres`() = runTest {
             val navBruker = TestData.lagNavBruker()
             val deltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+                status = lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
                 navBruker = navBruker,
             )
             TestRepository.insert(navBruker)
@@ -529,8 +529,8 @@ class DeltakerServiceTest {
                 bakgrunnsinformasjon = null,
                 deltakelsesinnhold = null,
                 status = lagDeltakerStatus(
-                    type = DeltakerStatus.Type.IKKE_AKTUELL,
-                    aarsak = DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
+                    statusType = DeltakerStatus.Type.IKKE_AKTUELL,
+                    aarsakType = DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT,
                 ),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
@@ -558,7 +558,7 @@ class DeltakerServiceTest {
     fun `oppdaterDeltakerLaas - importerte deltakere med samme innsøktDato, endring på nyeste deltaker - beholder låsing`() {
         val deltaker = lagDeltaker(
             status = lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
                 gyldigFra = LocalDateTime.now().minusDays(1),
             ),
             historikk = true,
@@ -569,7 +569,7 @@ class DeltakerServiceTest {
             navBruker = deltaker.navBruker,
             deltakerliste = deltaker.deltakerliste,
             status = lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
                 gyldigFra = LocalDateTime.now().minusDays(2),
             ),
             historikk = true,
@@ -594,7 +594,7 @@ class DeltakerServiceTest {
     fun `oppdaterDeltakerLaas - importerte deltakere med samme innsøktDato, endring på historisert deltaker - beholder låsing`() {
         val deltaker = lagDeltaker(
             status = lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
                 gyldigFra = LocalDateTime.now().minusDays(1),
             ),
             historikk = true,
@@ -604,7 +604,7 @@ class DeltakerServiceTest {
             navBruker = deltaker.navBruker,
             deltakerliste = deltaker.deltakerliste,
             status = lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
                 gyldigFra = LocalDateTime.now().minusDays(2),
             ),
             historikk = true,
@@ -627,7 +627,7 @@ class DeltakerServiceTest {
 
     @Test
     fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste - låser den eldste`() {
-        val deltaker = lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET))
+        val deltaker = lagDeltaker(status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET))
         val deltaker2 = lagDeltaker(navBruker = deltaker.navBruker, deltakerliste = deltaker.deltakerliste)
         TestRepository.insert(deltaker)
         TestRepository.insert(deltaker2)
@@ -640,9 +640,9 @@ class DeltakerServiceTest {
 
     @Test
     fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste, nyeste er feilregistrert - låser begge`() {
-        val deltaker = lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET))
+        val deltaker = lagDeltaker(status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET))
         val deltaker2 = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+            status = lagDeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT),
             navBruker = deltaker.navBruker,
             deltakerliste = deltaker.deltakerliste,
         )
@@ -658,11 +658,11 @@ class DeltakerServiceTest {
     @Test
     fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste med samme reg dato - låser den med avsluttende status`() {
         val deltaker = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             historikk = true,
         )
         val deltaker2 = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             navBruker = deltaker.navBruker,
             deltakerliste = deltaker.deltakerliste,
             historikk = true,
@@ -680,11 +680,11 @@ class DeltakerServiceTest {
     @Test
     fun `oppdaterDeltakerLaas - flere deltakelser på samme deltakerliste med samme reg dato - kaster exception`() {
         val deltaker = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             historikk = true,
         )
         val deltaker2 = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             navBruker = deltaker.navBruker,
             deltakerliste = deltaker.deltakerliste,
             historikk = true,

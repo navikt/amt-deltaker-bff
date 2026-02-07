@@ -20,6 +20,7 @@ import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
+import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerKladd
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerStatus
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
@@ -40,7 +41,8 @@ import java.util.UUID
 
 class PameldingServiceTest {
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val navEnhetRepository = NavEnhetRepository()
+    private val navEnhetService = NavEnhetService(navEnhetRepository, mockAmtPersonServiceClient())
     private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
         deltakerRepository = deltakerRepository,
@@ -163,10 +165,10 @@ class PameldingServiceTest {
 
     @Test
     fun `upsertUtkast - oppdaterer og returnerer deltaker`() = runTest {
-        val deltaker = TestData.lagDeltaker(status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
-        val navEnhet = lagNavEnhet(id = deltaker.navBruker.navEnhetId!!)
-        TestRepository.insert(navEnhet)
+        val deltaker = lagDeltaker(status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING))
+
         TestRepository.insert(deltaker)
+        val navEnhetInTest = navEnhetRepository.get(deltaker.navBruker.navEnhetId!!).shouldNotBeNull()
 
         val forventetDeltaker = deltaker.copy(
             deltakelsesinnhold = Deltakelsesinnhold(
@@ -188,7 +190,7 @@ class PameldingServiceTest {
                 forventetDeltaker.deltakelsesprosent,
                 forventetDeltaker.dagerPerUke,
                 endretAv = "Veileder",
-                endretAvEnhet = navEnhet.enhetsnummer,
+                endretAvEnhet = navEnhetInTest.enhetsnummer,
             ),
             godkjentAvNav = false,
         )
@@ -207,11 +209,11 @@ class PameldingServiceTest {
     inner class AvbrytUtkast {
         @Test
         fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen laases opp`() = runTest {
-            val navEnhet = lagNavEnhet()
-            TestRepository.insert(navEnhet)
+            val navEnhet = lagNavEnhet().copy()
+            navEnhetRepository.upsert(navEnhet)
 
-            val gammelDeltaker = TestData.lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            val gammelDeltaker = lagDeltaker(
+                status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
                 navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
             )
             TestRepository.insert(gammelDeltaker)
@@ -230,7 +232,7 @@ class PameldingServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = null,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )
@@ -238,6 +240,7 @@ class PameldingServiceTest {
             deltakerService.oppdaterDeltaker(nyDeltakerOppdaterUtkast)
             deltakerRepository.get(gammelDeltaker.id).getOrThrow().kanEndres shouldBe false
 
+            MockResponseHandler.addNavEnhetPostResponse(navEnhet)
             MockResponseHandler.avbrytUtkastResponse(nyDeltaker)
 
             pameldingService.avbrytUtkast(nyDeltaker, navEnhet.enhetsnummer, "test")
@@ -249,10 +252,10 @@ class PameldingServiceTest {
         @Test
         fun `avbrytUtkast() - utkast avbrytes for ny deltakelse - Den forrige avsluttede deltakelsen forblir laast`() = runTest {
             val navEnhet = lagNavEnhet()
-            TestRepository.insert(navEnhet)
+            navEnhetRepository.upsert(navEnhet)
 
-            val gammelDeltaker = TestData.lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.FEILREGISTRERT),
+            val gammelDeltaker = lagDeltaker(
+                status = lagDeltakerStatus(DeltakerStatus.Type.FEILREGISTRERT),
                 navBruker = TestData.lagNavBruker(navEnhetId = navEnhet.id),
             )
             TestRepository.insert(gammelDeltaker)
@@ -271,7 +274,7 @@ class PameldingServiceTest {
                 deltakelsesprosent = 100F,
                 bakgrunnsinformasjon = "Tekst",
                 deltakelsesinnhold = null,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
                 erManueltDeltMedArrangor = false,
                 historikk = emptyList(),
             )

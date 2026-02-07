@@ -9,6 +9,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
+import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.utils.DeltakerTestUtils.sammenlignDeltakere
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
@@ -30,6 +31,7 @@ import java.util.UUID
 
 class DeltakerRepositoryTest {
     val deltakerRepository = DeltakerRepository()
+    val arrangorRepository = ArrangorRepository()
 
     @Test
     fun `get - deltaker har flere vedtak, et aktivt - returnerer deltaker med aktivt vedtak`() {
@@ -52,7 +54,7 @@ class DeltakerRepositoryTest {
         @Test
         fun `getTidligereAvsluttedeDeltakelser - har ingen tidligere deltakelse - returnerer tom liste`() {
             val deltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
             )
             TestRepository.insert(deltaker)
 
@@ -62,13 +64,13 @@ class DeltakerRepositoryTest {
         @Test
         fun `getTidligereAvsluttedeDeltakelser - har aktiv tidligere deltakelse - returnerer tom liste`() {
             val avsluttetDeltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+                status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             )
             TestRepository.insert(avsluttetDeltaker)
             val deltaker = lagDeltaker(
                 deltakerliste = avsluttetDeltaker.deltakerliste,
                 navBruker = avsluttetDeltaker.navBruker,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
             )
             TestRepository.insert(deltaker)
 
@@ -78,13 +80,13 @@ class DeltakerRepositoryTest {
         @Test
         fun `getTidligereAvsluttedeDeltakelser - har tidligere avsluttet deltakelse - returnerer id`() {
             val avsluttetDeltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             )
             TestRepository.insert(avsluttetDeltaker)
             val deltaker = lagDeltaker(
                 deltakerliste = avsluttetDeltaker.deltakerliste,
                 navBruker = avsluttetDeltaker.navBruker,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+                status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
             )
             TestRepository.insert(deltaker)
 
@@ -94,13 +96,13 @@ class DeltakerRepositoryTest {
         @Test
         fun `getTidligereAvsluttedeDeltakelser - har tidligere avsluttet deltakelse, er avsluttet deltakelse - returnerer id`() {
             val avsluttetDeltaker = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             )
             TestRepository.insert(avsluttetDeltaker)
             val deltaker = lagDeltaker(
                 deltakerliste = avsluttetDeltaker.deltakerliste,
                 navBruker = avsluttetDeltaker.navBruker,
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+                status = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             )
             TestRepository.insert(deltaker)
 
@@ -147,21 +149,14 @@ class DeltakerRepositoryTest {
                 )
             }
             deltakere.forEach { TestRepository.insert(it) }
-            deltakere.forEach {
-                TestRepository.insert(
-                    lagDeltakerStatus(
-                        type = DeltakerStatus.Type.VENTER_PA_OPPSTART,
-                        gyldigFra = it.status.gyldigFra.minusMonths(1),
-                        gyldigTil = it.status.gyldigFra,
-                    ),
-                    it.id,
-                )
-            }
 
             val deltakereFraDb = deltakerRepository.getForDeltakerliste(deltakerliste.id)
 
             deltakereFraDb.size shouldBe deltakere.size
-            deltakere.sortedBy { it.id }.zip(deltakereFraDb.sortedBy { it.id }).forEach { sammenlignDeltakere(it.first, it.second) }
+            deltakere
+                .sortedBy { it.id }
+                .zip(deltakereFraDb.sortedBy { it.id })
+                .forEach { sammenlignDeltakere(it.first, it.second) }
         }
 
         @Test
@@ -201,7 +196,7 @@ class DeltakerRepositoryTest {
         @Test
         fun `getMany - henter flere deltakere`() {
             val arrangor = lagArrangor()
-            TestRepository.insert(arrangor)
+            arrangorRepository.upsert(arrangor)
 
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
 
@@ -246,12 +241,12 @@ class DeltakerRepositoryTest {
         @Test
         fun `getKladderForDeltakerliste - henter flere deltakere`() {
             val arrangor = lagArrangor()
-            TestRepository.insert(arrangor)
+            arrangorRepository.upsert(arrangor)
 
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
 
             val deltakerInTest = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.KLADD),
+                status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
                 deltakerliste = deltakerliste,
             )
             TestRepository.insert(deltakerInTest)
@@ -273,12 +268,12 @@ class DeltakerRepositoryTest {
         @Test
         fun `getKladdForDeltakerliste - henter deltaker`() {
             val arrangor = lagArrangor()
-            TestRepository.insert(arrangor)
+            arrangorRepository.upsert(arrangor)
 
             val deltakerliste = lagDeltakerliste(arrangor = arrangor)
 
             val deltakerInTest = lagDeltaker(
-                status = lagDeltakerStatus(type = DeltakerStatus.Type.KLADD),
+                status = lagDeltakerStatus(DeltakerStatus.Type.KLADD),
                 deltakerliste = deltakerliste,
             )
             TestRepository.insert(deltakerInTest)

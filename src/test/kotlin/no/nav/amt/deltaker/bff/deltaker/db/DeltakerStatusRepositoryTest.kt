@@ -23,8 +23,8 @@ class DeltakerStatusRepositoryTest {
     @Test
     fun `insertIfNotExists - kaster feil hvis flere aktive statuser`() {
         val gammelStatus = lagDeltakerStatus(
-            type = DeltakerStatus.Type.HAR_SLUTTET,
-            aarsak = DeltakerStatus.Aarsak.Type.ANNET,
+            statusType = DeltakerStatus.Type.HAR_SLUTTET,
+            aarsakType = DeltakerStatus.Aarsak.Type.ANNET,
             gyldigFra = LocalDate.of(2024, 10, 5).atStartOfDay(),
         )
 
@@ -32,8 +32,7 @@ class DeltakerStatusRepositoryTest {
         TestRepository.insert(deltaker)
 
         val nyStatus = lagDeltakerStatus(
-            type = DeltakerStatus.Type.HAR_SLUTTET,
-            aarsak = null,
+            statusType = DeltakerStatus.Type.HAR_SLUTTET,
             gyldigFra = LocalDate.of(2024, 10, 5).atStartOfDay(),
         )
 
@@ -45,23 +44,23 @@ class DeltakerStatusRepositoryTest {
     }
 
     @Test
-    fun `deaktiverTidligereStatuser - skal deaktivere alle andre statuser`() {
+    fun `slettTidligereStatuser - skal slette alle andre statuser`() {
         val gammelStatus = lagDeltakerStatus(
-            type = DeltakerStatus.Type.HAR_SLUTTET,
-            aarsak = DeltakerStatus.Aarsak.Type.ANNET,
+            statusType = DeltakerStatus.Type.HAR_SLUTTET,
+            aarsakType = DeltakerStatus.Aarsak.Type.ANNET,
             gyldigFra = LocalDate.of(2024, 10, 5).atStartOfDay(),
         )
 
         val nyStatus = lagDeltakerStatus(
-            type = DeltakerStatus.Type.HAR_SLUTTET,
-            aarsak = null,
+            statusType = DeltakerStatus.Type.HAR_SLUTTET,
             gyldigFra = LocalDate.of(2024, 10, 5).atStartOfDay(),
         )
 
         val deltaker = lagDeltaker(status = gammelStatus)
         TestRepository.insert(deltaker)
 
-        DeltakerStatusRepository.deaktiverTidligereStatuser(deltaker.id, nyStatus)
+        DeltakerStatusRepository.slettTidligereStatuser(deltaker.id, nyStatus)
+
         val inaktivStatus = DeltakerStatusRepository.getAktivDeltakerStatus(deltaker.id)
         inaktivStatus.shouldBeNull()
 

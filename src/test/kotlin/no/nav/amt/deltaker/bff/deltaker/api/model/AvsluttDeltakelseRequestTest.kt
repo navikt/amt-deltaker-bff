@@ -62,7 +62,7 @@ class AvsluttDeltakelseRequestTest {
         @EnumSource(DeltakerStatus.Type::class, names = ["DELTAR", "HAR_SLUTTET", "AVBRUTT", "FULLFORT"], mode = EnumSource.Mode.EXCLUDE)
         fun `valider - ugyldig deltakerstatus - feiler`(status: DeltakerStatus.Type) {
             val deltaker = deltakerInTest.copy(
-                status = lagDeltakerStatus(type = status),
+                status = lagDeltakerStatus(status),
                 sluttdato = yesterday.minusDays(1),
             )
 
@@ -82,7 +82,7 @@ class AvsluttDeltakelseRequestTest {
         @EnumSource(DeltakerStatus.Type::class, names = ["DELTAR", "HAR_SLUTTET", "AVBRUTT", "FULLFORT"])
         fun `valider - skal ikke feile med gyldig deltakerstatus`(status: DeltakerStatus.Type) {
             val deltaker = deltakerInTest.copy(
-                status = lagDeltakerStatus(type = status),
+                status = lagDeltakerStatus(status),
                 sluttdato = yesterday.minusDays(1),
             )
 
@@ -123,7 +123,7 @@ class AvsluttDeltakelseRequestTest {
                 harDeltatt = false,
             )
 
-            val deltaker = deltakerInTest.copy(status = lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+            val deltaker = deltakerInTest.copy(status = lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
 
             shouldNotThrowAny {
                 request.valider(deltaker)
@@ -168,8 +168,8 @@ class AvsluttDeltakelseRequestTest {
 
         private val deltakerInTest = lagDeltaker(
             status = lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
-                aarsak = DeltakerStatus.Aarsak.Type.FATT_JOBB,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsakType = DeltakerStatus.Aarsak.Type.FATT_JOBB,
             ),
             sluttdato = yesterday,
         )

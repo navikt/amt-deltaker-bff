@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.deltaker.navbruker
 
 import io.kotest.matchers.shouldBe
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.PameldingService
@@ -28,6 +28,7 @@ import java.time.LocalDateTime
 
 class NavBrukerConsumerTest {
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
+    private val navEnhetRepository = NavEnhetRepository()
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
@@ -54,7 +55,7 @@ class NavBrukerConsumerTest {
     }
 
     @Test
-    fun `consumeNavBruker - ny navBruker - upserter`() {
+    fun `consumeNavBruker - ny navBruker - upserter`() = runTest {
         val navBruker = TestData.lagNavBruker()
         val navVeileder = TestData.lagNavAnsatt(navBruker.navVeilederId!!)
         val navEnhet = TestData.lagNavEnhet(navBruker.navEnhetId!!)
@@ -63,37 +64,33 @@ class NavBrukerConsumerTest {
         MockResponseHandler.addNavAnsattResponse(navVeileder)
         MockResponseHandler.addNavEnhetGetResponse(navEnhet)
 
-        runBlocking {
-            navBrukerConsumer.consume(navBruker.personId, navBruker.toDto(navEnhet).toJSON())
-        }
+        navBrukerConsumer.consume(navBruker.personId, navBruker.toDto(navEnhet).toJSON())
 
         navBrukerService.get(navBruker.personId).getOrNull() shouldBe navBruker
     }
 
     @Test
-    fun `consumeNavBruker - oppdatert navBruker - upserter`() {
+    fun `consumeNavBruker - oppdatert navBruker - upserter`() = runTest {
         val navBruker = TestData.lagNavBruker()
         val navEnhet = TestData.lagNavEnhet(navBruker.navEnhetId!!)
-        TestRepository.insert(navEnhet)
+        navEnhetRepository.upsert(navEnhet)
         TestRepository.insert(navBruker)
 
         val oppdatertNavBruker = navBruker.copy(fornavn = "Oppdatert NavBruker")
 
         val navBrukerConsumer = NavBrukerConsumer(navBrukerService, pameldingService)
 
-        runBlocking {
-            navBrukerConsumer.consume(navBruker.personId, oppdatertNavBruker.toDto(navEnhet).toJSON())
-        }
+        navBrukerConsumer.consume(navBruker.personId, oppdatertNavBruker.toDto(navEnhet).toJSON())
 
         navBrukerService.get(navBruker.personId).getOrNull() shouldBe oppdatertNavBruker
     }
 
     @Test
-    fun `consumeNavBruker - avsluttet oppfolging - sletter kladd`() {
+    fun `consumeNavBruker - avsluttet oppfolging - sletter kladd`() = runTest {
         val navBruker = TestData.lagNavBruker()
         val navEnhet = TestData.lagNavEnhet(navBruker.navEnhetId!!)
         val kladd = TestData.lagDeltakerKladd(navBruker = navBruker)
-        TestRepository.insert(navEnhet)
+        navEnhetRepository.upsert(navEnhet)
         TestRepository.insert(kladd)
         MockResponseHandler.addSlettKladdResponse(kladd.id)
 
@@ -109,9 +106,7 @@ class NavBrukerConsumerTest {
 
         val navBrukerConsumer = NavBrukerConsumer(navBrukerService, pameldingService)
 
-        runBlocking {
-            navBrukerConsumer.consume(navBruker.personId, oppdatertNavBruker.toDto(navEnhet).toJSON())
-        }
+        navBrukerConsumer.consume(navBruker.personId, oppdatertNavBruker.toDto(navEnhet).toJSON())
 
         navBrukerService.get(navBruker.personId).getOrNull() shouldBe oppdatertNavBruker
         deltakerRepository.get(kladd.id).getOrNull() shouldBe null

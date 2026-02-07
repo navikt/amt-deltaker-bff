@@ -68,7 +68,7 @@ class TestdataApiTest {
             deltakerliste = deltakerliste,
             startdato = startdato,
             sluttdato = startdato.plusMonths(3),
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             deltakelsesprosent = 50F,
             dagerPerUke = 3F,
         )

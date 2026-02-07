@@ -297,7 +297,7 @@ class DeltakerService(
     }
 
     fun lagreDeltakerStatus(deltakerId: UUID, deltakerStatus: DeltakerStatus) {
-        DeltakerStatusRepository.deaktiverTidligereStatuser(deltakerId, deltakerStatus)
+        DeltakerStatusRepository.slettTidligereStatuser(deltakerId, deltakerStatus)
         DeltakerStatusRepository.insertIfNotExists(deltakerId, deltakerStatus)
     }
 
@@ -352,7 +352,7 @@ class DeltakerService(
     suspend fun oppdaterDeltakere(oppdaterteDeltakere: List<Deltakeroppdatering>) {
         Database.transaction {
             deltakerRepository.updateBatch(oppdaterteDeltakere)
-            DeltakerStatusRepository.batchDeaktiverTidligereStatuser(oppdaterteDeltakere)
+            DeltakerStatusRepository.batchSlettTidligereStatuser(oppdaterteDeltakere)
             DeltakerStatusRepository.batchInsert(oppdaterteDeltakere)
         }
     }

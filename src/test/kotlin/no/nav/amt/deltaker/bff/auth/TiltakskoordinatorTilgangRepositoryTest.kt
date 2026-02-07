@@ -10,6 +10,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteService
+import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
@@ -137,7 +138,7 @@ class TiltakskoordinatorTilgangRepositoryTest {
         fun `samme koordinator finnes som inaktiv og aktiv - returnerer aktiv koordinator`() {
             with(TiltakskoordinatorTilgangContext()) {
                 medAktivTilgang()
-                TestRepository.insert(
+                tiltakskoordinatorTilgangRepository.upsert(
                     secondTilgang.copy(
                         navAnsattId = navAnsatt.id,
                         gyldigTil = LocalDateTime.now(),
@@ -209,7 +210,9 @@ data class TiltakskoordinatorTilgangContext(
     ),
     var deltaker: Deltaker = lagDeltaker(deltakerliste = deltakerliste),
 ) {
+    val navAnsattRepository = NavAnsattRepository()
     val deltakerRepository = DeltakerRepository()
+    val tilgangsRepository = TiltakskoordinatorTilgangRepository()
     val deltakerlisteRepository = DeltakerlisteRepository()
     val navAnsattAzureId: UUID = UUID.randomUUID()
 
@@ -219,18 +222,18 @@ data class TiltakskoordinatorTilgangContext(
     }
 
     init {
-        TestRepository.insert(navAnsatt)
-        TestRepository.insert(secondNavAnsatt)
+        navAnsattRepository.upsert(navAnsatt)
+        navAnsattRepository.upsert(secondNavAnsatt)
         TestRepository.insert(deltakerliste)
         TestRepository.insert(deltaker)
     }
 
     fun medAktivTilgang() {
-        TestRepository.insert(tilgang)
+        tilgangsRepository.upsert(tilgang)
     }
 
     fun medInaktivTilgang() {
-        TestRepository.insert(secondTilgang.copy(gyldigTil = LocalDateTime.now()))
+        tilgangsRepository.upsert(secondTilgang.copy(gyldigTil = LocalDateTime.now()))
     }
 
     fun medSkjermetDeltaker() {

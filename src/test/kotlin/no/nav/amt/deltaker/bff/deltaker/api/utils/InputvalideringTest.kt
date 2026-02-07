@@ -244,27 +244,23 @@ class InputvalideringTest {
     @Test
     fun testValiderDeltakerKanEndres() {
         val deltakerDeltar = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.DELTAR,
-            ),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR),
             sluttdato = LocalDate.now().plusMonths(6),
         )
         val deltakerSluttetFireUkerSiden = TestData.lagDeltaker(
-            status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
-            ),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             sluttdato = LocalDate.now().minusWeeks(4),
         )
         val deltakerSluttetFireMndSiden = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
                 gyldigFra = LocalDateTime.now().minusMonths(4),
             ),
             sluttdato = LocalDate.now().minusMonths(4),
         )
         val deltakerIkkeAktuellFireMndSiden = TestData.lagDeltaker(
             status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.IKKE_AKTUELL,
+                statusType = DeltakerStatus.Type.IKKE_AKTUELL,
                 gyldigFra = LocalDateTime.now().minusMonths(4),
             ),
             sluttdato = null,

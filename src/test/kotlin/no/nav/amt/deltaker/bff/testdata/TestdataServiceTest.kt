@@ -34,8 +34,12 @@ import org.junit.jupiter.api.extension.RegisterExtension
 import java.time.LocalDate
 
 class TestdataServiceTest {
-    private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
-    private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
+    private val navAnsattRepository = NavAnsattRepository()
+    private val navAnsattService = NavAnsattService(navAnsattRepository, mockAmtPersonServiceClient())
+
+    private val navEnhetRepository = NavEnhetRepository()
+    private val navEnhetService = NavEnhetService(navEnhetRepository, mockAmtPersonServiceClient())
+
     private val deltakerRepository = DeltakerRepository()
     private val deltakerService = DeltakerService(
         deltakerRepository = deltakerRepository,
@@ -74,8 +78,10 @@ class TestdataServiceTest {
         )
         val opprettetAv = TestData.lagNavAnsatt(navIdent = TESTVEILEDER)
         val opprettetAvEnhet = TestData.lagNavEnhet(enhetsnummer = TESTENHET)
-        TestRepository.insert(opprettetAv)
-        TestRepository.insert(opprettetAvEnhet)
+
+        navAnsattRepository.upsert(opprettetAv)
+        navEnhetRepository.upsert(opprettetAvEnhet)
+
         val navBruker = TestData.lagNavBruker(navVeilederId = opprettetAv.id, navEnhetId = opprettetAvEnhet.id)
 
         val opprettTestDeltakelseRequest = OpprettTestDeltakelseRequest(
@@ -94,7 +100,7 @@ class TestdataServiceTest {
             dagerPerUke = opprettTestDeltakelseRequest.dagerPerUke?.toFloat(),
             deltakelsesprosent = opprettTestDeltakelseRequest.deltakelsesprosent.toFloat(),
             bakgrunnsinformasjon = null,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             kanEndres = true,
             deltakelsesinnhold = Deltakelsesinnhold(
                 ledetekst = deltakerliste.tiltak.innhold!!.ledetekst,

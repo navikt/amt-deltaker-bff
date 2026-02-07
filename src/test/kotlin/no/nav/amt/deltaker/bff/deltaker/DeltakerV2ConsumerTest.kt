@@ -91,7 +91,7 @@ class DeltakerV2ConsumerTest {
         val mottattDeltaker = deltaker.copy(
             startdato = startdato,
             sluttdato = sluttdato,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             sistEndret = sistEndret,
         )
 
@@ -122,7 +122,10 @@ class DeltakerV2ConsumerTest {
             deltakerliste = deltakerliste,
             navBruker = navbruker,
             sistEndret = sistEndret,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR, opprettet = statusOpprettet),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.DELTAR,
+                opprettet = statusOpprettet,
+            ),
         )
         TestRepository.insert(navbruker)
         consumer.consume(
@@ -147,7 +150,7 @@ class DeltakerV2ConsumerTest {
             deltakerliste = deltakerliste,
             navBruker = navbruker,
             historikk = true,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
         )
         TestRepository.insert(tidligereDeltakelse)
 
@@ -182,7 +185,10 @@ class DeltakerV2ConsumerTest {
             deltakerliste = deltakerliste,
             navBruker = navbruker,
             historikk = true,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET, opprettet = statusdato),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                opprettet = statusdato,
+            ),
         )
         TestRepository.insert(tidligereDeltakelse)
 
@@ -191,7 +197,10 @@ class DeltakerV2ConsumerTest {
             deltakerliste = deltakerliste,
             navBruker = navbruker,
             historikk = true,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL, opprettet = statusdato2),
+            status = TestData.lagDeltakerStatus(
+                statusType = DeltakerStatus.Type.IKKE_AKTUELL,
+                opprettet = statusdato2,
+            ),
         )
 
         consumer.consume(
@@ -216,7 +225,7 @@ class DeltakerV2ConsumerTest {
         val eldsteDeltakelse = TestData.lagDeltaker(
             deltakerliste = deltakerliste,
             navBruker = navbruker,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
             historikk = true,
         )
 
@@ -224,7 +233,7 @@ class DeltakerV2ConsumerTest {
             deltakerliste = deltakerliste,
             navBruker = navbruker,
             historikk = true,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.IKKE_AKTUELL),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.IKKE_AKTUELL),
         )
         TestRepository.insert(eldsteDeltakelse)
 
@@ -254,7 +263,7 @@ class DeltakerV2ConsumerTest {
         val mottattDeltaker = deltaker.copy(
             startdato = startdato,
             sluttdato = sluttdato,
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
         )
 
         consumer.consume(

@@ -206,7 +206,7 @@ object TestData {
         innhold: List<Innhold> = deltakerliste.tiltak.innhold
             ?.innholdselementer
             ?.map { it.toInnhold() } ?: emptyList(),
-        status: DeltakerStatus = lagDeltakerStatus(type = DeltakerStatus.Type.HAR_SLUTTET),
+        status: DeltakerStatus = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
         historikk: Boolean = true,
         kanEndres: Boolean = true,
         sistEndret: LocalDateTime = LocalDateTime.now(),
@@ -310,31 +310,34 @@ object TestData {
 
     fun lagDeltakerStatus(
         statusType: DeltakerStatus.Type,
-        aarsak: DeltakerStatus.Aarsak.Type? = null,
+        aarsakType: DeltakerStatus.Aarsak.Type? = null,
         beskrivelse: String? = null,
-    ) = lagDeltakerStatus(type = statusType, aarsak = aarsak, beskrivelse = beskrivelse)
+    ) = lagDeltakerStatus(
+        statusType = statusType,
+        aarsakType = aarsakType,
+        aarsakBeskrivelse = beskrivelse,
+    )
 
     fun lagDeltakerStatus(
         id: UUID = UUID.randomUUID(),
-        type: DeltakerStatus.Type = DeltakerStatus.Type.DELTAR,
-        aarsak: DeltakerStatus.Aarsak.Type? = null,
-        beskrivelse: String? = null,
+        statusType: DeltakerStatus.Type = DeltakerStatus.Type.DELTAR,
+        aarsakType: DeltakerStatus.Aarsak.Type? = null,
+        aarsakBeskrivelse: String? = null,
         gyldigFra: LocalDateTime = LocalDateTime.now(),
-        gyldigTil: LocalDateTime? = null,
-        opprettet: LocalDateTime = gyldigFra,
+        opprettet: LocalDateTime = LocalDateTime.now(),
     ) = DeltakerStatus(
-        id,
-        type,
-        aarsak?.let { DeltakerStatus.Aarsak(it, beskrivelse) },
-        gyldigFra,
-        gyldigTil,
-        opprettet,
+        id = id,
+        type = statusType,
+        aarsak = aarsakType?.let { DeltakerStatus.Aarsak(it, aarsakBeskrivelse) },
+        gyldigFra = gyldigFra,
+        gyldigTil = null, // lagres ikke i databasen
+        opprettet = opprettet,
     )
 
     fun lagVedtak(
         id: UUID = UUID.randomUUID(),
         deltakerVedVedtak: Deltaker = lagDeltaker(
-            status = lagDeltakerStatus(type = DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
+            status = lagDeltakerStatus(DeltakerStatus.Type.UTKAST_TIL_PAMELDING),
         ),
         deltakerId: UUID = deltakerVedVedtak.id,
         fattet: LocalDateTime? = null,
@@ -633,26 +636,26 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
         is DeltakerEndring.Endring.AvsluttDeltakelse -> this.copy(
             sluttdato = endring.sluttdato,
             status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.HAR_SLUTTET,
-                aarsak = endring.aarsak?.toStatusAarsak()?.type,
-                beskrivelse = endring.aarsak?.beskrivelse,
+                statusType = DeltakerStatus.Type.HAR_SLUTTET,
+                aarsakType = endring.aarsak?.toStatusAarsak()?.type,
+                aarsakBeskrivelse = endring.aarsak?.beskrivelse,
             ),
         )
 
         is DeltakerEndring.Endring.EndreAvslutning -> this.copy(
             status = TestData.lagDeltakerStatus(
-                type = if (endring.harFullfort == true) DeltakerStatus.Type.FULLFORT else DeltakerStatus.Type.AVBRUTT,
-                aarsak = endring.aarsak?.toStatusAarsak()?.type,
-                beskrivelse = endring.aarsak?.beskrivelse,
+                statusType = if (endring.harFullfort == true) DeltakerStatus.Type.FULLFORT else DeltakerStatus.Type.AVBRUTT,
+                aarsakType = endring.aarsak?.toStatusAarsak()?.type,
+                aarsakBeskrivelse = endring.aarsak?.beskrivelse,
             ),
         )
 
         is DeltakerEndring.Endring.AvbrytDeltakelse -> this.copy(
             sluttdato = endring.sluttdato,
             status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.AVBRUTT,
-                aarsak = endring.aarsak.toStatusAarsak().type,
-                beskrivelse = endring.aarsak.beskrivelse,
+                statusType = DeltakerStatus.Type.AVBRUTT,
+                aarsakType = endring.aarsak.toStatusAarsak().type,
+                aarsakBeskrivelse = endring.aarsak.beskrivelse,
             ),
         )
 
@@ -673,14 +676,14 @@ fun Deltaker.endre(deltakerEndring: DeltakerEndring): Deltaker {
         is DeltakerEndring.Endring.ForlengDeltakelse -> this.copy(sluttdato = endring.sluttdato)
         is DeltakerEndring.Endring.IkkeAktuell -> this.copy(
             status = TestData.lagDeltakerStatus(
-                type = DeltakerStatus.Type.IKKE_AKTUELL,
-                aarsak = endring.aarsak.toStatusAarsak().type,
-                beskrivelse = endring.aarsak.beskrivelse,
+                statusType = DeltakerStatus.Type.IKKE_AKTUELL,
+                aarsakType = endring.aarsak.toStatusAarsak().type,
+                aarsakBeskrivelse = endring.aarsak.beskrivelse,
             ),
         )
 
         is DeltakerEndring.Endring.ReaktiverDeltakelse -> this.copy(
-            status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.VENTER_PA_OPPSTART),
+            status = TestData.lagDeltakerStatus(DeltakerStatus.Type.VENTER_PA_OPPSTART),
             startdato = null,
             sluttdato = null,
         )

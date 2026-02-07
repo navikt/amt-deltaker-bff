@@ -30,31 +30,31 @@ object DeltakerStatusRepository {
         }
     }
 
-    fun deaktiverTidligereStatuser(deltakerId: UUID, deltakerStatus: DeltakerStatus) {
+    fun slettTidligereStatuser(deltakerId: UUID, deltakerStatus: DeltakerStatus) {
         Database.query { session ->
             session.update(
                 queryOf(
-                    deaktiverTidligereStatuserSql,
-                    buildDeaktiverTidligereStatuserParams(deltakerStatus, deltakerId),
+                    slettTidligereStatuserSql,
+                    buildSlettTidligereStatuserParams(deltakerStatus, deltakerId),
                 ),
             )
         }
     }
 
-    fun batchDeaktiverTidligereStatuser(deltakere: List<Deltakeroppdatering>) {
-        val deaktiverTidligereStatuserParams = deltakere
-            .map { buildDeaktiverTidligereStatuserParams(it.status, it.id) }
+    fun batchSlettTidligereStatuser(deltakere: List<Deltakeroppdatering>) {
+        val slettTidligereStatuserParams = deltakere
+            .map { buildSlettTidligereStatuserParams(it.status, it.id) }
 
         Database.query { session ->
-            session.batchPreparedNamedStatement(deaktiverTidligereStatuserSql, deaktiverTidligereStatuserParams)
+            session.batchPreparedNamedStatement(slettTidligereStatuserSql, slettTidligereStatuserParams)
         }
     }
 
     fun getAktivDeltakerStatus(deltakerId: UUID): DeltakerStatus? {
-        val sql = "SELECT * FROM deltaker_status WHERE deltaker_id = :deltaker_id AND gyldig_til IS NULL"
+        val sql = "SELECT * FROM deltaker_status WHERE deltaker_id = :deltaker_id"
 
         val query = queryOf(sql, mapOf("deltaker_id" to deltakerId))
-            .map(::deltakerStatusRowMapper)
+            .map(::rowMapper)
             .asSingle
 
         return Database.query { session -> session.run(query) }
@@ -71,12 +71,12 @@ object DeltakerStatusRepository {
         }
     }
 
-    private fun deltakerStatusRowMapper(row: Row) = DeltakerStatus(
+    private fun rowMapper(row: Row) = DeltakerStatus(
         id = row.uuid("id"),
-        type = row.string("type").let { t -> DeltakerStatus.Type.valueOf(t) },
+        type = DeltakerStatus.Type.valueOf(row.string("type")),
         aarsak = row.stringOrNull("aarsak")?.let { aarsak -> objectMapper.readValue(aarsak) },
         gyldigFra = row.localDateTime("gyldig_fra"),
-        gyldigTil = row.localDateTimeOrNull("gyldig_til"),
+        gyldigTil = null,
         opprettet = row.localDateTime("created_at"),
     )
 
@@ -87,7 +87,7 @@ object DeltakerStatusRepository {
             deltaker_id, 
             type, 
             aarsak, 
-            gyldig_fra, 
+            gyldig_fra,
             created_at
         )
         VALUES (
@@ -95,7 +95,7 @@ object DeltakerStatusRepository {
             :deltaker_id, 
             :type, 
             :aarsak, 
-            :gyldig_fra, 
+            :gyldig_fra,
             :created_at
         )
         ON CONFLICT (id) DO NOTHING
@@ -110,16 +110,14 @@ object DeltakerStatusRepository {
         "created_at" to status.opprettet,
     )
 
-    private val deaktiverTidligereStatuserSql =
+    private val slettTidligereStatuserSql =
         """
-        UPDATE deltaker_status
-        SET gyldig_til = CURRENT_TIMESTAMP
+        DELETE FROM deltaker_status
         WHERE 
             deltaker_id = :deltaker_id 
             AND id != :id 
-            AND gyldig_til IS NULL
         """.trimIndent()
 
-    private fun buildDeaktiverTidligereStatuserParams(status: DeltakerStatus, deltakerId: UUID) =
+    private fun buildSlettTidligereStatuserParams(status: DeltakerStatus, deltakerId: UUID) =
         mapOf("id" to status.id, "deltaker_id" to deltakerId)
 }

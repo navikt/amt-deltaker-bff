@@ -35,7 +35,7 @@ class InnbyggerServiceTest {
 
     @Test
     fun `godkjennUtkast - har feil status - feiler`() {
-        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(type = DeltakerStatus.Type.DELTAR))
+        val deltaker = TestData.lagDeltaker(status = TestData.lagDeltakerStatus(DeltakerStatus.Type.DELTAR))
         assertThrows(IllegalArgumentException::class.java) {
             runBlocking {
                 innbyggerService.godkjennUtkast(deltaker)
