@@ -57,7 +57,7 @@ class TiltakstypeRepository {
         log.info("Upsertet tiltakstype med id ${tiltakstype.id}")
     }
 
-    fun get(tiltakskode: Tiltakskode) = runCatching {
+    fun get(tiltakskode: Tiltakskode): Result<Tiltakstype> = runCatching {
         val query = queryOf(
             """
             SELECT 
