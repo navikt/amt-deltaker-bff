@@ -48,17 +48,13 @@ class NavEnhetServiceTest {
 
     @Test
     fun `hentOpprettEllerOppdaterNavEnhet - utdatert navenhet finnes i db - henter fra personservice og oppdaterer`() = runTest {
-        val utdatertNavEnhet = TestData.lagNavEnhet()
+        val opprinneligNavEnhet = TestData.lagNavEnhet()
         TestRepository.insert(
-            NavEnhetDbo(
-                id = utdatertNavEnhet.id,
-                enhetsnummer = utdatertNavEnhet.enhetsnummer,
-                navn = utdatertNavEnhet.navn,
-                sistEndret = LocalDateTime.now().minusMonths(2),
-            ),
+            navEnhet = opprinneligNavEnhet,
+            sistEndret = LocalDateTime.now().minusMonths(2),
         )
 
-        val navEnhetResponse = utdatertNavEnhet.copy(navn = "Oppdater navn")
+        val navEnhetResponse = opprinneligNavEnhet.copy(navn = "Oppdater navn")
         MockResponseHandler.addNavEnhetPostResponse(navEnhetResponse)
 
         val navEnhet = navEnhetService.hentOpprettEllerOppdaterNavEnhet(navEnhetResponse.enhetsnummer)

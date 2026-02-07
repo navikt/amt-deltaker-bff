@@ -10,37 +10,38 @@ import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
-import no.nav.amt.deltaker.bff.navenhet.NavEnhetDbo
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagNavAnsatt
 import no.nav.amt.lib.models.deltaker.Arrangor
 import no.nav.amt.lib.models.person.NavBruker
+import no.nav.amt.lib.models.person.NavEnhet
 import no.nav.amt.lib.utils.database.Database
+import java.time.LocalDateTime
+import java.time.ZonedDateTime
 import java.util.UUID
 
 object TestRepository {
-    fun cleanDatabase() = Database.query { session ->
-        val tables = listOf(
-            "tiltakskoordinator_deltakerliste_tilgang",
-            "ulest_hendelse",
-            "forslag",
-            "vurdering",
-            "deltaker_status",
-            "deltaker",
-            "nav_bruker",
-            "nav_ansatt",
-            "nav_enhet",
-            "deltakerliste",
-            "arrangor",
-        )
-        tables.forEach {
-            val query = queryOf(
-                """delete from $it""",
-                emptyMap(),
-            )
+    fun cleanDatabase() {
+        val sql =
+            """
+            DO $$
+            DECLARE r RECORD;
+            
+            BEGIN
+                FOR r IN (
+                    SELECT tablename
+                    FROM pg_tables
+                    WHERE 
+                        schemaname = 'public'
+                        AND tablename NOT IN ('flyway_schema_history', 'outbox_record')
+                ) 
+                LOOP
+                    EXECUTE format('TRUNCATE TABLE %I CASCADE', r.tablename);
+                END LOOP;
+            END $$;                
+            """.trimIndent()
 
-            session.update(query)
-        }
+        Database.query { session -> session.update(queryOf(sql)) }
     }
 
     fun insert(deltakerliste: Deltakerliste, overordnetArrangor: Arrangor? = null) {
@@ -61,32 +62,20 @@ object TestRepository {
         DeltakerStatusRepository.insertIfNotExists(deltaker.id, deltaker.status)
     }
 
-    fun insert(navEnhetDbo: NavEnhetDbo) {
-        val sql =
-            """
-            INSERT INTO nav_enhet (
-                id, 
-                nav_enhet_nummer, 
-                navn, 
-                modified_at
+    fun insert(navEnhet: NavEnhet, sistEndret: LocalDateTime) {
+        NavEnhetRepository().upsert(navEnhet)
+
+        Database.query { session ->
+            session.update(
+                queryOf(
+                    "UPDATE nav_enhet SET modified_at = :modified_at WHERE id = :id",
+                    mapOf(
+                        "id" to navEnhet.id,
+                        "modified_at" to sistEndret,
+                    ),
+                ),
             )
-            VALUES (
-                :id, 
-                :nav_enhet_nummer, 
-                :navn, 
-                :modified_at
-            ) 
-            ON CONFLICT (id) DO NOTHING
-            """.trimIndent()
-
-        val params = mapOf(
-            "id" to navEnhetDbo.id,
-            "nav_enhet_nummer" to navEnhetDbo.enhetsnummer,
-            "navn" to navEnhetDbo.navn,
-            "modified_at" to navEnhetDbo.sistEndret,
-        )
-
-        Database.query { session -> session.update(queryOf(sql, params)) }
+        }
     }
 
     fun insert(bruker: NavBruker) {
@@ -103,12 +92,12 @@ object TestRepository {
         NavBrukerRepository().upsert(bruker)
     }
 
-    fun getDeltakerSistBesokt(deltakerId: UUID) = Database.query {
-        val sql =
-            """
-            select sist_besokt from deltaker where id = ?
-            """.trimIndent()
-
-        it.run(queryOf(sql, deltakerId).map { row -> row.zonedDateTime("sist_besokt") }.asSingle)
+    fun getDeltakerSistBesokt(deltakerId: UUID): ZonedDateTime? = Database.query { session ->
+        session.run(
+            queryOf(
+                "SELECT sist_besokt FROM deltaker WHERE id = ?",
+                deltakerId,
+            ).map { row -> row.zonedDateTime("sist_besokt") }.asSingle,
+        )
     }
 }
