@@ -23,11 +23,10 @@ object DeltakerStatusRepository {
     }
 
     fun batchInsert(deltakere: List<Deltakeroppdatering>) {
+        val statusParamsList = deltakere.map { buildInsertStatusParams(it.status, it.id) }
+
         Database.query { session ->
-            session.batchPreparedNamedStatement(
-                insertStatusSql,
-                deltakere.map { buildInsertStatusParams(it.status, it.id) },
-            )
+            session.batchPreparedNamedStatement(insertStatusSql, statusParamsList)
         }
     }
 
@@ -51,13 +50,14 @@ object DeltakerStatusRepository {
         }
     }
 
-    fun getAktivDeltakerStatus(deltakerId: UUID): DeltakerStatus? = Database.query { session ->
-        session.run(
-            queryOf(
-                "SELECT * FROM deltaker_status WHERE deltaker_id = :deltaker_id AND gyldig_til IS NULL",
-                mapOf("deltaker_id" to deltakerId),
-            ).map(::deltakerStatusRowMapper).asSingle,
-        )
+    fun getAktivDeltakerStatus(deltakerId: UUID): DeltakerStatus? {
+        val sql = "SELECT * FROM deltaker_status WHERE deltaker_id = :deltaker_id AND gyldig_til IS NULL"
+
+        val query = queryOf(sql, mapOf("deltaker_id" to deltakerId))
+            .map(::deltakerStatusRowMapper)
+            .asSingle
+
+        return Database.query { session -> session.run(query) }
     }
 
     fun slettStatus(deltakerId: UUID) {
