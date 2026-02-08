@@ -1,7 +1,7 @@
 package no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka
 
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.tiltakskoordinator.extensions.toUlestHendelse
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
@@ -28,7 +28,7 @@ class HendelseConsumerTest {
     }
 
     @Test
-    fun `consume - hendelse InnbyggerGodkjennUtkast - lagrer`(): Unit = runBlocking {
+    fun `consume - hendelse InnbyggerGodkjennUtkast - lagrer`(): Unit = runTest {
         val consumer = HendelseConsumer(ulestHendelseService)
         val deltakerliste = lagDeltakerliste(
             tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
@@ -53,12 +53,13 @@ class HendelseConsumerTest {
         )
 
         val ulestHendelseFraDb = ulestHendelseRepository.getForDeltaker(deltaker.id)
+
         ulestHendelseFraDb.size shouldBe 1
         ulestHendelseFraDb.first().id shouldBe hendelse.id
     }
 
     @Test
-    fun `consume - hendelse vi ikke bryr oss om - lagrer ikke`(): Unit = runBlocking {
+    fun `consume - hendelse vi ikke bryr oss om - lagrer ikke`(): Unit = runTest {
         val consumer = HendelseConsumer(ulestHendelseService)
         val deltakerliste = lagDeltakerliste(
             tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),
@@ -80,7 +81,7 @@ class HendelseConsumerTest {
     }
 
     @Test
-    fun `consume - hendelse tombstone - sletter`(): Unit = runBlocking {
+    fun `consume - hendelse tombstone - sletter`(): Unit = runTest {
         val consumer = HendelseConsumer(ulestHendelseService)
         val deltakerliste = lagDeltakerliste(
             tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING),

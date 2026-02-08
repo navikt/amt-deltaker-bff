@@ -237,7 +237,7 @@ class DeltakerRepository {
                 d.id = ?
                 AND d.kan_endres = TRUE
                 AND ds.type in (${avsluttendeDeltakerStatuser.joinToString { "?" }})
-                AND d2.id != d.id;
+                AND d2.id != d.id
             """.trimIndent()
 
         val query = queryOf(
@@ -302,7 +302,7 @@ class DeltakerRepository {
             SET 
                 kan_endres = FALSE, 
                 modified_at = CURRENT_TIMESTAMP
-            WHERE id = ANY(:ider::uuid[]);
+            WHERE id = ANY(:ider::uuid[])
             """.trimIndent()
 
         val parameters = mapOf("ider" to ider.toTypedArray())

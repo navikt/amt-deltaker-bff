@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Row
 import kotliquery.queryOf
 import no.nav.amt.deltaker.bff.db.toPGObject
-import no.nav.amt.deltaker.bff.utils.prefixColumn
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
@@ -18,15 +17,15 @@ class ForslagRepository {
         val query = queryOf(
             """
             SELECT 
-                f.id as "f.id",
-                f.deltaker_id as "f.deltaker_id",
-                f.arrangoransatt_id as "f.arrangoransatt_id",
-                f.opprettet as "f.opprettet",
-                f.begrunnelse as "f.begrunnelse",
-                f.endring as "f.endring",
-                f.status as "f.status"
-            FROM forslag f 
-            WHERE f.deltaker_id = :deltaker_id;
+                id,
+                deltaker_id,
+                arrangoransatt_id,
+                opprettet,
+                begrunnelse,
+                endring,
+                status
+            FROM forslag 
+            WHERE deltaker_id = :deltaker_id
             """.trimIndent(),
             mapOf("deltaker_id" to deltakerId),
         )
@@ -40,15 +39,15 @@ class ForslagRepository {
         val query = queryOf(
             """
             SELECT 
-                f.id as "f.id",
-                f.deltaker_id as "f.deltaker_id",
-                f.arrangoransatt_id as "f.arrangoransatt_id",
-                f.opprettet as "f.opprettet",
-                f.begrunnelse as "f.begrunnelse",
-                f.endring as "f.endring",
-                f.status as "f.status"
-            FROM forslag f 
-            WHERE f.deltaker_id = ANY(:deltaker_ider::uuid[]);
+                id,
+                deltaker_id,
+                arrangoransatt_id,
+                opprettet,
+                begrunnelse,
+                endring,
+                status
+            FROM forslag 
+            WHERE deltaker_id = ANY(:deltaker_ider::uuid[])
             """.trimIndent(),
             mapOf("deltaker_ider" to deltakerIder.toTypedArray()),
         )
@@ -62,15 +61,15 @@ class ForslagRepository {
         val query = queryOf(
             """
             SELECT 
-                f.id as "f.id",
-                f.deltaker_id as "f.deltaker_id",
-                f.arrangoransatt_id as "f.arrangoransatt_id",
-                f.opprettet as "f.opprettet",
-                f.begrunnelse as "f.begrunnelse",
-                f.endring as "f.endring",
-                f.status as "f.status"
-            FROM forslag f 
-            WHERE f.id = :id;
+                id,
+                deltaker_id,
+                arrangoransatt_id,
+                opprettet,
+                begrunnelse,
+                endring,
+                status
+            FROM forslag 
+            WHERE id = :id
             """.trimIndent(),
             mapOf("id" to id),
         ).map(::rowMapper).asSingle
@@ -108,7 +107,7 @@ class ForslagRepository {
                 begrunnelse			= :begrunnelse,
                 endring				= :endring,
                 status              = :status,
-                modified_at         = current_timestamp
+                modified_at         = CURRENT_TIMESTAMP
             """.trimIndent()
 
         val params = mapOf(
@@ -121,52 +120,50 @@ class ForslagRepository {
             "status" to toPGObject(forslag.status),
         )
 
-        Database.query { session ->
-            session.update(queryOf(sql, params))
-        }
+        Database.query { session -> session.update(queryOf(sql, params)) }
     }
 
     fun delete(id: UUID) {
-        val query = queryOf(
-            "DELETE FROM forslag WHERE id = :id",
-            mapOf("id" to id),
-        )
-
-        Database.query { session -> session.update(query) }
+        Database.query { session ->
+            session.update(
+                queryOf(
+                    "DELETE FROM forslag WHERE id = :id",
+                    mapOf("id" to id),
+                ),
+            )
+        }
         log.info("Slettet godkjent forslag $id")
     }
 
     fun deleteForDeltaker(deltakerId: UUID) {
-        val query = queryOf(
-            "DELETE FROM forslag WHERE deltaker_id = :deltaker_id",
-            mapOf("deltaker_id" to deltakerId),
-        )
-
-        Database.query { session -> session.update(query) }
-    }
-
-    fun kanLagres(deltakerId: UUID): Boolean {
-        val query = queryOf(
-            "SELECT id FROM deltaker WHERE id = :id",
-            mapOf("id" to deltakerId),
-        ).map { row -> row.uuid("id") }.asSingle
-
-        return Database.query { it.run(query) } != null
-    }
-
-    companion object {
-        private fun rowMapper(row: Row, alias: String? = "f"): Forslag {
-            val col = prefixColumn(alias)
-
-            return Forslag(
-                id = row.uuid(col("id")),
-                deltakerId = row.uuid(col("deltaker_id")),
-                opprettetAvArrangorAnsattId = row.uuid(col("arrangoransatt_id")),
-                opprettet = row.localDateTime(col("opprettet")),
-                begrunnelse = row.stringOrNull(col("begrunnelse")),
-                endring = objectMapper.readValue(row.string(col("endring"))),
-                status = objectMapper.readValue(row.string(col("status"))),
+        Database.query { session ->
+            session.update(
+                queryOf(
+                    "DELETE FROM forslag WHERE deltaker_id = :deltaker_id",
+                    mapOf("deltaker_id" to deltakerId),
+                ),
             )
         }
+    }
+
+    fun kanLagres(deltakerId: UUID): Boolean = Database.query { session ->
+        session.run(
+            queryOf(
+                "SELECT id FROM deltaker WHERE id = :id",
+                mapOf("id" to deltakerId),
+            ).map { row -> row.uuid("id") }.asSingle,
+        )
+    } != null
+
+    companion object {
+        private fun rowMapper(row: Row): Forslag = Forslag(
+            id = row.uuid("id"),
+            deltakerId = row.uuid("deltaker_id"),
+            opprettetAvArrangorAnsattId = row.uuid("arrangoransatt_id"),
+            opprettet = row.localDateTime("opprettet"),
+            begrunnelse = row.stringOrNull("begrunnelse"),
+            endring = objectMapper.readValue(row.string("endring")),
+            status = objectMapper.readValue(row.string("status")),
+        )
     }
 }

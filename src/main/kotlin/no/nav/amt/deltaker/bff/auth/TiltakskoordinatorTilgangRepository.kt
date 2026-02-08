@@ -97,7 +97,7 @@ class TiltakskoordinatorTilgangRepository {
             WHERE tilgang.deltakerliste_id = :deltakerliste_id
             ORDER BY 
                 nav_ansatt.id, 
-                tilgang.gyldig_til DESC NULLS FIRST;
+                tilgang.gyldig_til DESC NULLS FIRST
             """.trimIndent()
 
         val query = queryOf(
@@ -118,18 +118,13 @@ class TiltakskoordinatorTilgangRepository {
     }
 
     fun get(id: UUID): Result<TiltakskoordinatorDeltakerlisteTilgang> = runCatching {
-        val sql =
-            """
-            SELECT *
-            FROM tiltakskoordinator_deltakerliste_tilgang
-            WHERE id = :id
-            """.trimIndent()
-
-        val params = mapOf("id" to id)
-
         Database.query { session ->
-            session.run(queryOf(sql, params).map(::rowMapper).asSingle)
-                ?: throw NoSuchElementException("Fant ikke tilgang med id $id")
+            session.run(
+                queryOf(
+                    "SELECT * FROM tiltakskoordinator_deltakerliste_tilgang WHERE id = :id",
+                    mapOf("id" to id),
+                ).map(::rowMapper).asSingle,
+            ) ?: throw NoSuchElementException("Fant ikke tilgang med id $id")
         }
     }
 
@@ -151,10 +146,8 @@ class TiltakskoordinatorTilgangRepository {
                 AND dl.slutt_dato < :grense 
             """.trimIndent()
 
-        val params = mapOf("grense" to grense)
-
         return Database.query { session ->
-            session.run(queryOf(sql, params).map(::rowMapper).asList)
+            session.run(queryOf(sql, mapOf("grense" to grense)).map(::rowMapper).asList)
         }
     }
 
@@ -175,10 +168,8 @@ class TiltakskoordinatorTilgangRepository {
                 AND t.gyldig_til IS NULL 
             """
 
-        val params = mapOf("deltakerliste_id" to deltakerlisteId)
-
         return Database.query { session ->
-            session.run(queryOf(sql, params).map(::rowMapper).asList)
+            session.run(queryOf(sql, mapOf("deltakerliste_id" to deltakerlisteId)).map(::rowMapper).asList)
         }
     }
 
