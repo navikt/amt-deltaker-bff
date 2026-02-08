@@ -4,7 +4,6 @@ import io.kotest.matchers.shouldBe
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.DeltakerTestUtils.sammenlignVedtak
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -18,6 +17,7 @@ import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
 import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.testing.DatabaseTestExtension
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension

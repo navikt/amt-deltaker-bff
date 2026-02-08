@@ -3,11 +3,11 @@ package no.nav.amt.deltaker.bff.deltakerliste
 import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import no.nav.amt.deltaker.bff.DatabaseTestExtension
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.TiltakstypeRepository
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltakerliste
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagTiltakstype
+import no.nav.amt.lib.testing.DatabaseTestExtension
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

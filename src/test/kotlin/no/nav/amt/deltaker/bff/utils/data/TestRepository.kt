@@ -21,29 +21,6 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 object TestRepository {
-    fun cleanDatabase() {
-        val sql =
-            """
-            DO $$
-            DECLARE r RECORD;
-            
-            BEGIN
-                FOR r IN (
-                    SELECT tablename
-                    FROM pg_tables
-                    WHERE 
-                        schemaname = 'public'
-                        AND tablename NOT IN ('flyway_schema_history', 'outbox_record')
-                ) 
-                LOOP
-                    EXECUTE format('TRUNCATE TABLE %I CASCADE', r.tablename);
-                END LOOP;
-            END $$;                
-            """.trimIndent()
-
-        Database.query { session -> session.update(queryOf(sql)) }
-    }
-
     fun insert(deltakerliste: Deltakerliste, overordnetArrangor: Arrangor? = null) {
         TiltakstypeRepository().upsert(deltakerliste.tiltak)
         overordnetArrangor?.let { ArrangorRepository().upsert(it) }

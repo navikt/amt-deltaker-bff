@@ -2,7 +2,7 @@ package no.nav.amt.deltaker.bff.arrangor
 
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.runBlocking
-import no.nav.amt.deltaker.bff.DatabaseTestExtension
+import no.nav.amt.lib.testing.DatabaseTestExtension
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.objectMapper
 import org.junit.jupiter.api.Test
