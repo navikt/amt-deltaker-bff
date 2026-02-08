@@ -46,12 +46,8 @@ object TestRepository {
 
     fun insert(deltakerliste: Deltakerliste, overordnetArrangor: Arrangor? = null) {
         TiltakstypeRepository().upsert(deltakerliste.tiltak)
-
-        if (overordnetArrangor != null) {
-            ArrangorRepository().upsert(overordnetArrangor)
-        }
+        overordnetArrangor?.let { ArrangorRepository().upsert(it) }
         ArrangorRepository().upsert(deltakerliste.arrangor.arrangor)
-
         DeltakerlisteRepository().upsert(deltakerliste)
     }
 
@@ -79,16 +75,8 @@ object TestRepository {
     }
 
     fun insert(bruker: NavBruker) {
-        val navVeilederId: UUID? = bruker.navVeilederId
-        if (navVeilederId != null) {
-            NavAnsattRepository().upsert(lagNavAnsatt(navVeilederId))
-        }
-
-        val navEnhetId: UUID? = bruker.navEnhetId
-        if (navEnhetId != null) {
-            NavEnhetRepository().upsert(TestData.lagNavEnhet(navEnhetId))
-        }
-
+        bruker.navVeilederId?.let { NavAnsattRepository().upsert(lagNavAnsatt(it)) }
+        bruker.navEnhetId?.let { NavEnhetRepository().upsert(TestData.lagNavEnhet(it)) }
         NavBrukerRepository().upsert(bruker)
     }
 
