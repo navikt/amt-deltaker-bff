@@ -18,7 +18,7 @@ class DeltakerlisteRepository {
     fun upsert(deltakerliste: Deltakerliste) {
         val sql =
             """
-            INSERT INTO deltakerliste(
+            INSERT INTO deltakerliste (
                 id, 
                 navn, 
                 status, 
@@ -30,7 +30,8 @@ class DeltakerlisteRepository {
                 apent_for_pamelding,
                 antall_plasser,
                 oppmote_sted,
-                pameldingstype)
+                pameldingstype
+            )
             VALUES (
                 :id,
                 :navn,
@@ -43,7 +44,8 @@ class DeltakerlisteRepository {
                 :apent_for_pamelding,
                 :antall_plasser,
                 :oppmote_sted,
-                :pameldingstype)
+                :pameldingstype
+            )
             ON CONFLICT (id) DO UPDATE SET
                 navn     				= :navn,
                 status					= :status,
@@ -128,33 +130,31 @@ class DeltakerlisteRepository {
     }
 
     companion object {
-        fun rowMapper(row: Row, alias: String? = "dl"): Deltakerliste {
-            val col = prefixColumn(alias)
+        private val col = prefixColumn("dl")
 
-            return Deltakerliste(
-                id = row.uuid(col("id")),
-                tiltak = TiltakstypeRepository.rowMapper(row, "t"),
-                navn = row.string(col("navn")),
-                status = row.stringOrNull(col("status"))?.let { GjennomforingStatusType.valueOf(it) },
-                startDato = row.localDateOrNull(col("start_dato")),
-                sluttDato = row.localDateOrNull(col("slutt_dato")),
-                oppstart = row.stringOrNull(col("oppstart"))?.let { Oppstartstype.valueOf(it) },
-                arrangor = Deltakerliste.Arrangor(
-                    arrangor = Arrangor(
-                        id = row.uuid("a.id"),
-                        navn = row.string("a.navn"),
-                        organisasjonsnummer = row.string("a.organisasjonsnummer"),
-                        overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
-                    ),
-                    overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
-                        row.string("oa.navn")
-                    },
+        fun rowMapper(row: Row): Deltakerliste = Deltakerliste(
+            id = row.uuid(col("id")),
+            tiltak = TiltakstypeRepository.rowMapper(row, "t"),
+            navn = row.string(col("navn")),
+            status = row.stringOrNull(col("status"))?.let { GjennomforingStatusType.valueOf(it) },
+            startDato = row.localDateOrNull(col("start_dato")),
+            sluttDato = row.localDateOrNull(col("slutt_dato")),
+            oppstart = row.stringOrNull(col("oppstart"))?.let { Oppstartstype.valueOf(it) },
+            arrangor = Deltakerliste.Arrangor(
+                arrangor = Arrangor(
+                    id = row.uuid("a.id"),
+                    navn = row.string("a.navn"),
+                    organisasjonsnummer = row.string("a.organisasjonsnummer"),
+                    overordnetArrangorId = row.uuidOrNull("a.overordnet_arrangor_id"),
                 ),
-                antallPlasser = row.intOrNull(col("antall_plasser")),
-                apentForPamelding = row.boolean(col("apent_for_pamelding")),
-                oppmoteSted = row.stringOrNull(col("oppmote_sted")),
-                pameldingstype = row.stringOrNull(col("pameldingstype"))?.let { GjennomforingPameldingType.valueOf(it) },
-            )
-        }
+                overordnetArrangorNavn = row.uuidOrNull("a.overordnet_arrangor_id")?.let {
+                    row.string("oa.navn")
+                },
+            ),
+            antallPlasser = row.intOrNull(col("antall_plasser")),
+            apentForPamelding = row.boolean(col("apent_for_pamelding")),
+            oppmoteSted = row.stringOrNull(col("oppmote_sted")),
+            pameldingstype = row.stringOrNull(col("pameldingstype"))?.let { GjennomforingPameldingType.valueOf(it) },
+        )
     }
 }

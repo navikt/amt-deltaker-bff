@@ -33,6 +33,27 @@ class DeltakerRepositoryTest {
     val deltakerRepository = DeltakerRepository()
     val arrangorRepository = ArrangorRepository()
 
+    @Nested
+    inner class GetAntallDeltakereForDeltakerlisteTests {
+        val deltakerlisteInTest = lagDeltakerliste()
+
+        @Test
+        fun `skal returnere 0 hvis ingen deltakere`() {
+            val antallDeltakere = deltakerRepository.getAntallDeltakereForDeltakerliste(deltakerlisteInTest.id)
+
+            antallDeltakere shouldBe 0
+        }
+
+        @Test
+        fun `skal returnere antall deltaker hvis deltakerliste inneholder deltakere`() {
+            TestRepository.insert(lagDeltaker(deltakerliste = deltakerlisteInTest))
+
+            val antallDeltakere = deltakerRepository.getAntallDeltakereForDeltakerliste(deltakerlisteInTest.id)
+
+            antallDeltakere shouldBe 1
+        }
+    }
+
     @Test
     fun `get - deltaker har flere vedtak, et aktivt - returnerer deltaker med aktivt vedtak`() {
         val baseDeltaker = lagDeltaker()

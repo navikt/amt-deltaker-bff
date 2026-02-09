@@ -52,6 +52,14 @@ class DeltakerlisteConsumer(
 
         deltakerlistePayload.assertPameldingstypeIsValid()
 
+        deltakerlisteRepository.get(deltakerlistePayload.id).onSuccess { eksisterendeDeltakerliste ->
+            deltakerlistePayload.assertValidChanges(
+                antallDeltakere = deltakerRepository.getAntallDeltakereForDeltakerliste(eksisterendeDeltakerliste.id),
+                eksisterendePameldingstype = eksisterendeDeltakerliste.pameldingstype,
+                eksisterendeOppstartstype = eksisterendeDeltakerliste.oppstart,
+            )
+        }
+
         val arrangor = arrangorService.hentArrangor(deltakerlistePayload.arrangor.organisasjonsnummer)
         val tiltakstype = tiltakstypeRepository.get(deltakerlistePayload.tiltakskode).getOrThrow()
 

@@ -20,6 +20,15 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 class DeltakerRepository {
+    fun getAntallDeltakereForDeltakerliste(deltakerlisteId: UUID): Int = Database.query { session ->
+        session.run(
+            queryOf(
+                "SELECT COUNT(*) FROM deltaker WHERE deltakerliste_id = :deltakerliste_id",
+                mapOf("deltakerliste_id" to deltakerlisteId),
+            ).map { it.int(1) }.asSingle,
+        ) ?: 0
+    }
+
     fun opprettKladd(kladd: OpprettKladdResponse) {
         val sql =
             """
