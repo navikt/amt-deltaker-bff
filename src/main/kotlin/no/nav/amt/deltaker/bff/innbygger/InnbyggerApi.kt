@@ -63,6 +63,7 @@ fun Routing.registerInnbyggerApi(
             val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
             tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
 
+            // duplikatkode i InnbyggerService
             require(deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
                 "Deltaker ${deltaker.id} har ikke status ${DeltakerStatus.Type.UTKAST_TIL_PAMELDING}"
             }
