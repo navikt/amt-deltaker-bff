@@ -36,6 +36,8 @@ class ForslagRepository {
     }
 
     fun getForDeltakere(deltakerIder: List<UUID>): List<Forslag> {
+        if (deltakerIder.isEmpty()) return emptyList()
+
         val query = queryOf(
             """
             SELECT 

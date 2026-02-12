@@ -231,8 +231,6 @@ class DeltakerRepository {
     }
 
     fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID): List<UUID> {
-        val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
-
         val sql =
             """
             SELECT d2.id
@@ -305,6 +303,8 @@ class DeltakerRepository {
     }
 
     fun disableKanEndresMany(ider: List<UUID>) {
+        if (ider.isEmpty()) return
+
         val sql =
             """
             UPDATE deltaker
@@ -379,6 +379,8 @@ class DeltakerRepository {
     }
 
     companion object {
+        private val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
+
         private fun getDeltakerSql(where: String) =
             """
             SELECT 
