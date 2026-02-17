@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.deltaker.navbruker.NavBrukerService
 import no.nav.amt.deltaker.bff.deltaker.vurdering.VurderingService
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.DeltakerlisteRepository
-import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.utils.KafkaConsumerFactory.buildManagedKafkaConsumer
 import no.nav.amt.lib.kafka.Consumer
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
@@ -19,6 +18,7 @@ import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.person.NavBruker
 import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.util.UUID
@@ -29,7 +29,7 @@ class DeltakerV2Consumer(
     private val deltakerlisteRepository: DeltakerlisteRepository,
     private val vurderingService: VurderingService,
     private val navBrukerService: NavBrukerService,
-    private val unleashToggle: UnleashToggle,
+    private val unleashToggle: CommonUnleashToggle,
 ) : Consumer<UUID, String?> {
     private val log = LoggerFactory.getLogger(javaClass)
 

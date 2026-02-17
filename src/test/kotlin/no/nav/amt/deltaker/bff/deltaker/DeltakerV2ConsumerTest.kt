@@ -16,7 +16,6 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
-import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
@@ -36,6 +35,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.DatabaseTestExtension
 import no.nav.amt.lib.testing.shouldBeCloseTo
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -57,7 +57,7 @@ class DeltakerV2ConsumerTest {
     private val deltakerlisteRepository = DeltakerlisteRepository()
     private val vurdersRepository = VurderingRepository()
     private val vurderingService = VurderingService(VurderingRepository())
-    private val unleashToggle = mockk<UnleashToggle>()
+    private val unleashToggle = mockk<CommonUnleashToggle>()
     private val consumer = DeltakerV2Consumer(
         deltakerRepository,
         deltakerService,
