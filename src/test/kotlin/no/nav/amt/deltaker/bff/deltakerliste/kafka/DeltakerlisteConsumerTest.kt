@@ -22,7 +22,6 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattRepository
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetRepository
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
-import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.utils.MockResponseHandler
 import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestData.lagDeltaker
@@ -44,6 +43,7 @@ import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
 import no.nav.amt.lib.testing.DatabaseTestExtension
 import no.nav.amt.lib.testing.utils.TestData.lagArrangor
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -56,7 +56,7 @@ class DeltakerlisteConsumerTest {
     private val deltakerlisteRepository = DeltakerlisteRepository()
     private val tiltakstypeRepository = TiltakstypeRepository()
     private val tilgangskontrollService: TilgangskontrollService = mockk(relaxed = true)
-    private val unleashToggle: UnleashToggle = mockk()
+    private val unleashToggle: CommonUnleashToggle = mockk()
     private val navAnsattService = NavAnsattService(NavAnsattRepository(), mockAmtPersonServiceClient())
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
     private val deltakerRepository = DeltakerRepository()
@@ -95,7 +95,7 @@ class DeltakerlisteConsumerTest {
     @BeforeEach
     fun setup() {
         clearAllMocks()
-        every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns false
+        every { unleashToggle.skalLeseGjennomforing(any<String>()) } returns true
     }
 
     @Test
@@ -124,7 +124,7 @@ class DeltakerlisteConsumerTest {
 
     @Test
     fun `unleashToggle er ikke enabled for tiltakstype - lagrer ikke deltakerliste`() = runTest {
-        every { unleashToggle.skipProsesseringAvGjennomforing(any<String>()) } returns true
+        every { unleashToggle.skalLeseGjennomforing(any<String>()) } returns false
 
         val tiltakstype = lagTiltakstype(tiltakskode = Tiltakskode.GRUPPE_FAG_OG_YRKESOPPLAERING)
         tiltakstypeRepository.upsert(tiltakstype)

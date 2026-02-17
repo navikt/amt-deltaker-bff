@@ -68,7 +68,6 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.TiltakskoordinatorService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseRepository
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.kafka.HendelseConsumer
-import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.kafka.Producer
 import no.nav.amt.lib.kafka.config.KafkaConfigImpl
 import no.nav.amt.lib.kafka.config.LocalKafkaConfig
@@ -81,6 +80,7 @@ import no.nav.amt.lib.outbox.OutboxService
 import no.nav.amt.lib.utils.applicationConfig
 import no.nav.amt.lib.utils.database.Database
 import no.nav.amt.lib.utils.job.JobManager
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import no.nav.common.audit_log.log.AuditLoggerImpl
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
 import no.nav.poao_tilgang.client.PoaoTilgangHttpClient
@@ -291,7 +291,7 @@ fun Application.module() {
         deltakerRepository = deltakerRepository,
     )
 
-    val unleashToggle = UnleashToggle(unleash)
+    val unleashToggle = CommonUnleashToggle(unleash)
     val consumers = listOf(
         ArrangorConsumer(arrangorRepository),
         DeltakerlisteConsumer(

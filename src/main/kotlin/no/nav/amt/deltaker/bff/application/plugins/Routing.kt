@@ -38,11 +38,11 @@ import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinator
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerTiltakskoordinatorDeltakerlisteApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.api.registerUlestHendelseApi
 import no.nav.amt.deltaker.bff.tiltakskoordinator.ulesthendelse.UlestHendelseService
-import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.deltaker.bff.unleash.registerUnleashApi
 import no.nav.amt.lib.ktor.auth.exceptions.AuthenticationException
 import no.nav.amt.lib.ktor.auth.exceptions.AuthorizationException
 import no.nav.amt.lib.ktor.routing.registerHealthApi
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -105,7 +105,7 @@ fun Application.configureRouting(
             forslagService,
             amtDistribusjonClient,
             sporbarhetsloggService,
-            UnleashToggle(unleash),
+            CommonUnleashToggle(unleash),
         )
 
         registerPameldingApi(

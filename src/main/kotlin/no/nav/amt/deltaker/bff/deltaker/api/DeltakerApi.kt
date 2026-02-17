@@ -45,10 +45,10 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
-import no.nav.amt.deltaker.bff.unleash.UnleashToggle
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.utils.objectMapper
+import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -64,7 +64,7 @@ fun Routing.registerDeltakerApi(
     forslagService: ForslagService,
     amtDistribusjonClient: AmtDistribusjonClient,
     sporbarhetsloggService: SporbarhetsloggService,
-    unleashToggle: UnleashToggle,
+    unleashToggle: CommonUnleashToggle,
 ) {
     val log: Logger = LoggerFactory.getLogger(javaClass)
 
