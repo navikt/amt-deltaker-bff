@@ -11,21 +11,4 @@ data class VedtaksinformasjonModel(
     val sistEndret: LocalDateTime,
     val sistEndretAv: String?,
     val sistEndretAvEnhet: String?,
-) {
-    companion object {
-        fun fromVedtaksinformasjonResponse(
-            response: no.nav.amt.deltaker.bff.apiclients.deltaker.VedtaksinformasjonResponse?,
-        ): VedtaksinformasjonModel? = response?.let {
-            VedtaksinformasjonModel(
-                fattet = it.fattet,
-                fattetAvNav = it.fattetAvNav,
-                opprettet = it.opprettet,
-                opprettetAv = it.opprettetAv,
-                opprettetAvEnhet = it.opprettetAvEnhet,
-                sistEndret = it.sistEndret,
-                sistEndretAv = it.sistEndretAv,
-                sistEndretAvEnhet = it.sistEndretAvEnhet,
-            )
-        }
-    }
-}
+)

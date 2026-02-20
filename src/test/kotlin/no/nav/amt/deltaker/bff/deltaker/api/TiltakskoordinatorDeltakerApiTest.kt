@@ -46,7 +46,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.IkkeAktuellRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.InnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ReaktiverDeltakelseRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.getArrangorNavn
 import no.nav.amt.deltaker.bff.deltaker.api.model.toInnholdModel
 import no.nav.amt.deltaker.bff.deltaker.api.model.toResponse
 import no.nav.amt.deltaker.bff.deltaker.api.utils.createPostRequest

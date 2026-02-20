@@ -3,11 +3,9 @@ package no.nav.amt.deltaker.bff.deltaker.api.model
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerModel
 import no.nav.amt.deltaker.bff.deltaker.model.VedtaksinformasjonModel
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.annetInnholdselement
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.toInnhold
-import no.nav.amt.deltaker.bff.utils.toTitleCase
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -102,6 +100,20 @@ data class DeltakerResponse(
                     ledetekst = deltakelsesinnhold.ledetekst,
                     innhold = fulltInnhold(deltakelsesinnhold.innhold, tiltaksInnhold ?: emptyList()),
                 )
+
+            fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> = innholdselementer
+                .asSequence()
+                .filterNot { it.innholdskode in valgtInnhold.map { vi -> vi.innholdskode } }
+                .map { it.toInnhold() }
+                .plus(valgtInnhold)
+                .sortedWith(sortertAlfabetiskMedAnnetSist())
+                .toList()
+
+            private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
+                it.tekst == annetInnholdselement.tekst
+            }.thenBy {
+                it.tekst
+            }
         }
     }
 
@@ -290,29 +302,4 @@ data class DeltakerResponse(
             )
         }
     }
-}
-
-// Flyttet til amt-deltaker men må kartlegges bruk andre steder
-fun Deltakerliste.Arrangor.getArrangorNavn(): String {
-    val arrangorNavnForDeltakerliste =
-        if (overordnetArrangorNavn.isNullOrEmpty() || overordnetArrangorNavn == "Ukjent Virksomhet") {
-            arrangor.navn
-        } else {
-            overordnetArrangorNavn
-        }
-    return toTitleCase(arrangorNavnForDeltakerliste)
-}
-
-fun fulltInnhold(valgtInnhold: List<Innhold>, innholdselementer: List<Innholdselement>): List<Innhold> = innholdselementer
-    .asSequence()
-    .filter { it.innholdskode !in valgtInnhold.map { vi -> vi.innholdskode } }
-    .map { it.toInnhold() }
-    .plus(valgtInnhold)
-    .sortedWith(sortertAlfabetiskMedAnnetSist())
-    .toList()
-
-private fun sortertAlfabetiskMedAnnetSist() = compareBy<Innhold> {
-    it.tekst == annetInnholdselement.tekst
-}.thenBy {
-    it.tekst
 }

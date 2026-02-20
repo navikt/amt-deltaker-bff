@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.apiclients.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.model.GjennomforingModel
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -20,4 +21,19 @@ data class GjennomforingResponse(
     val arrangor: ArrangorResponse,
     val pameldingstype: GjennomforingPameldingType?,
     val antallPlasser: Int?, // TODO: Brukes den her egentlig til noe i frontend?
-)
+) {
+    fun toGjennomforingModel() = GjennomforingModel(
+        id = id,
+        tiltak = tiltakstype,
+        navn = navn,
+        status = status,
+        startDato = startDato,
+        sluttDato = sluttDato,
+        oppstart = oppstart,
+        apentForPamelding = apentForPamelding,
+        oppmoteSted = oppmoteSted,
+        arrangor = arrangor.toArrangorModel(),
+        pameldingstype = pameldingstype,
+        antallPlasser = antallPlasser,
+    )
+}

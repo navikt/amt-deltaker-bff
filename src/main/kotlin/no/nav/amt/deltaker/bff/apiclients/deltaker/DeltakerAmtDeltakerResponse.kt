@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.apiclients.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.model.DeltakerModel
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
@@ -33,4 +34,24 @@ data class DeltakerAmtDeltakerResponse(
     val historikk: List<DeltakerHistorikk>,
     val erLaastForEndringer: Boolean, // TODO: Må fikses i amt-deltaker
     val endringsforslagFraArrangor: List<Forslag>,
-)
+) {
+    fun toDeltakerModel() = DeltakerModel(
+        id = id,
+        navBruker = navBruker.toNavBrukerModel(),
+        gjennomforing = this.gjennomforing.toGjennomforingModel(),
+        startdato = startdato,
+        sluttdato = sluttdato,
+        dagerPerUke = dagerPerUke,
+        deltakelsesprosent = deltakelsesprosent,
+        bakgrunnsinformasjon = bakgrunnsinformasjon,
+        deltakelsesinnhold = deltakelsesinnhold,
+        status = status,
+        kanEndres = !erLaastForEndringer,
+        sistEndret = sistEndret,
+        erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+        historikk = historikk,
+        vedtaksinformasjon = vedtaksinformasjon?.toVedtaksinformasjonModel(),
+        erLaastForEndringer = erLaastForEndringer,
+        endringsforslagFraArrangor = endringsforslagFraArrangor,
+    )
+}

@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.apiclients.deltaker
 
+import no.nav.amt.deltaker.bff.deltaker.model.NavBrukerModel
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.person.Oppfolgingsperiode
 import no.nav.amt.lib.models.person.address.Adresse
@@ -20,4 +21,21 @@ data class NavBrukerResponse(
     val navVeileder: String?,
     val navEnhet: String?,
     val erDigital: Boolean,
-)
+) {
+    fun toNavBrukerModel() = NavBrukerModel(
+        personident = personident,
+        fornavn = fornavn,
+        mellomnavn = mellomnavn,
+        etternavn = etternavn,
+        navVeileder = navVeileder,
+        navEnhet = navEnhet,
+        telefon = telefon,
+        epost = epost,
+        erSkjermet = erSkjermet,
+        adresse = adresse,
+        adressebeskyttelse = adressebeskyttelse,
+        oppfolgingsperioder = oppfolgingsperioder,
+        innsatsgruppe = innsatsgruppe,
+        erDigital = erDigital,
+    )
+}

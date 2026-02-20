@@ -4,8 +4,9 @@ import no.nav.amt.deltaker.bff.apiclients.deltaker.ArrangorResponse
 import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
 import no.nav.amt.deltaker.bff.apiclients.deltaker.GjennomforingResponse
 import no.nav.amt.deltaker.bff.apiclients.deltaker.NavBrukerResponse
+import no.nav.amt.deltaker.bff.apiclients.deltaker.VedtaksinformasjonResponse
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
-import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
+import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse.DeltakelsesinnholdDto.Companion.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
 import no.nav.amt.deltaker.bff.deltakerliste.tiltakstype.getInnholdselementer
@@ -143,6 +144,18 @@ object TestData {
     )
 
     private val tiltakstypeCache = mutableMapOf<Tiltakskode, Tiltakstype>()
+
+    fun lagDeltakelsesinnhold(): Deltakelsesinnhold = Deltakelsesinnhold(
+        ledetekst = "Beskrivelse av tilaket",
+        innhold = listOf(
+            Innhold(
+                tekst = "~tekst~",
+                innholdskode = "~kode~",
+                valgt = true,
+                beskrivelse = "~beskrivelse~",
+            ),
+        ),
+    )
 
     fun lagArrangorResponse(
         navn: String = "Arrangor 1",
@@ -285,6 +298,17 @@ object TestData {
         }
     }
 
+    fun lagVedtaksinformasjonResponse() = VedtaksinformasjonResponse(
+        fattet = LocalDateTime.now(),
+        fattetAvNav = true,
+        opprettet = LocalDateTime.now(),
+        opprettetAv = "~veileder~",
+        opprettetAvEnhet = "~enhet~",
+        sistEndret = LocalDateTime.now(),
+        sistEndretAv = "~veileder2~",
+        sistEndretAvEnhet = "~enhet2~",
+    )
+
     fun lagDeltakerResponse(
         id: UUID = UUID.randomUUID(),
         navBruker: NavBrukerResponse = lagNavBrukerResponse(),
@@ -297,6 +321,10 @@ object TestData {
         status: DeltakerStatus = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
         sistEndret: LocalDateTime = LocalDateTime.now(),
         erManueltDeltMedArrangor: Boolean = false,
+        deltakelsesinnhold: Deltakelsesinnhold? = lagDeltakelsesinnhold(),
+        vedtaksinformasjon: VedtaksinformasjonResponse? = lagVedtaksinformasjonResponse(),
+        endringsforslagFraArrangor: List<Forslag> = listOf(lagForslag()),
+        historikk: List<DeltakerHistorikk> = lagDeltakerHistorikk(),
     ) = DeltakerAmtDeltakerResponse(
         id = id,
         status = status,
@@ -307,15 +335,15 @@ object TestData {
         dagerPerUke = dagerPerUke,
         deltakelsesprosent = deltakelsesprosent,
         bakgrunnsinformasjon = bakgrunnsinformasjon,
-        null,
-        null,
-        erManueltDeltMedArrangor,
-        Kilde.KOMET,
-        sistEndret,
-        LocalDateTime.now(),
-        historikk = emptyList(),
+        deltakelsesinnhold = deltakelsesinnhold,
+        vedtaksinformasjon = vedtaksinformasjon,
+        erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+        kilde = Kilde.KOMET,
+        sistEndret = sistEndret,
+        opprettet = LocalDateTime.now(),
+        historikk = historikk,
         erLaastForEndringer = false,
-        endringsforslagFraArrangor = emptyList(),
+        endringsforslagFraArrangor = endringsforslagFraArrangor,
     )
 
     fun lagTiltakskoordinatorDeltaker(
@@ -370,7 +398,7 @@ object TestData {
         ),
     )
 
-    private fun lagDeltakerHistorikk(deltaker: Deltaker): List<DeltakerHistorikk> {
+    private fun lagDeltakerHistorikk(deltaker: Deltaker = lagDeltaker()): List<DeltakerHistorikk> {
         val vedtak = lagVedtak(
             deltakerVedVedtak = deltaker,
             fattet = LocalDateTime.now(),
@@ -538,6 +566,8 @@ object TestData {
         innsatsgruppe: Innsatsgruppe? = Innsatsgruppe.STANDARD_INNSATS,
         adresse: Adresse? = lagAdresse(),
         erSkjermet: Boolean = false,
+        telefon: String? = null,
+        epost: String? = null,
     ) = NavBrukerResponse(
         personident = personident,
         fornavn = fornavn,
@@ -548,8 +578,8 @@ object TestData {
         adressebeskyttelse = adressebeskyttelse,
         oppfolgingsperioder = oppfolgingsperioder,
         innsatsgruppe = innsatsgruppe,
-        telefon = null,
-        epost = null,
+        telefon = telefon,
+        epost = epost,
         erDigital = true,
         navVeileder = "Nav Veiledersen",
         navEnhet = "Nav Grunerløkka",

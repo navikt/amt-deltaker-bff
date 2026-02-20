@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
 import no.nav.amt.deltaker.bff.utils.FERIETILLEGG
 import no.nav.amt.deltaker.bff.utils.months
 import no.nav.amt.deltaker.bff.utils.weeks
@@ -42,28 +41,6 @@ data class DeltakerModel(
 
     val adresseDelesMedArrangor = this.navBruker.adressebeskyttelse == null &&
         this.gjennomforing.tiltak.adresseKanDelesMedArrangor
-
-    companion object {
-        fun fromDeltakerAmtDeltakerResponse(response: DeltakerAmtDeltakerResponse): DeltakerModel = DeltakerModel(
-            id = response.id,
-            navBruker = NavBrukerModel.fromNavBrukerResponse(response.navBruker),
-            gjennomforing = GjennomforingModel.fromGjennomforingResponse(response.gjennomforing),
-            startdato = response.startdato,
-            sluttdato = response.sluttdato,
-            dagerPerUke = response.dagerPerUke,
-            deltakelsesprosent = response.deltakelsesprosent,
-            bakgrunnsinformasjon = response.bakgrunnsinformasjon,
-            deltakelsesinnhold = response.deltakelsesinnhold,
-            status = response.status,
-            kanEndres = !response.erLaastForEndringer,
-            sistEndret = response.sistEndret,
-            erManueltDeltMedArrangor = response.erManueltDeltMedArrangor,
-            historikk = response.historikk,
-            vedtaksinformasjon = VedtaksinformasjonModel.fromVedtaksinformasjonResponse(response.vedtaksinformasjon),
-            erLaastForEndringer = response.erLaastForEndringer,
-            endringsforslagFraArrangor = response.endringsforslagFraArrangor,
-        )
-    }
 
     fun harSluttet(): Boolean = status.type in AVSLUTTENDE_STATUSER
 

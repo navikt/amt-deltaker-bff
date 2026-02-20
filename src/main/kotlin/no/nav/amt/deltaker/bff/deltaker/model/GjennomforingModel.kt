@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.apiclients.deltaker.GjennomforingResponse
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -21,23 +20,4 @@ data class GjennomforingModel(
     val antallPlasser: Int?,
     val oppmoteSted: String?,
     val pameldingstype: GjennomforingPameldingType?,
-) {
-    companion object {
-        fun fromGjennomforingResponse(gjennomforing: GjennomforingResponse): GjennomforingModel = GjennomforingModel(
-            id = gjennomforing.id,
-            tiltak = gjennomforing.tiltakstype,
-            navn = gjennomforing.navn,
-            status = gjennomforing.status,
-            startDato = gjennomforing.startDato,
-            sluttDato = gjennomforing.sluttDato,
-            oppstart = gjennomforing.oppstart,
-            arrangor = ArrangorModel(
-                navn = gjennomforing.arrangor.navn,
-            ),
-            apentForPamelding = gjennomforing.apentForPamelding,
-            antallPlasser = gjennomforing.antallPlasser,
-            oppmoteSted = gjennomforing.oppmoteSted,
-            pameldingstype = gjennomforing.pameldingstype,
-        )
-    }
-}
+)

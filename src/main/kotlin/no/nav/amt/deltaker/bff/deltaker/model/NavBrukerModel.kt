@@ -23,23 +23,4 @@ data class NavBrukerModel(
 ) {
     val harAktivOppfolgingsperiode: Boolean
         get() = oppfolgingsperioder.any { it.erAktiv() }
-
-    companion object {
-        fun fromNavBrukerResponse(response: no.nav.amt.deltaker.bff.apiclients.deltaker.NavBrukerResponse): NavBrukerModel = NavBrukerModel(
-            personident = response.personident,
-            fornavn = response.fornavn,
-            mellomnavn = response.mellomnavn,
-            etternavn = response.etternavn,
-            navVeileder = response.navVeileder,
-            navEnhet = response.navEnhet,
-            telefon = response.telefon,
-            epost = response.epost,
-            erSkjermet = response.erSkjermet,
-            adresse = response.adresse,
-            adressebeskyttelse = response.adressebeskyttelse,
-            oppfolgingsperioder = response.oppfolgingsperioder,
-            innsatsgruppe = response.innsatsgruppe,
-            erDigital = response.erDigital,
-        )
-    }
 }
