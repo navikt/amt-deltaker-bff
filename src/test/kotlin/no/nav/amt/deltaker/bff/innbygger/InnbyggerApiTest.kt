@@ -13,6 +13,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import no.nav.amt.deltaker.bff.Environment
+import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.configureAuthentication
 import no.nav.amt.deltaker.bff.application.plugins.configureRouting
@@ -62,6 +63,7 @@ class InnbyggerApiTest {
     private val forslagService = mockk<ForslagService>()
     private val innbyggerService = mockk<InnbyggerService>()
     private val amtDistribusjonClient = mockk<AmtDistribusjonClient>()
+    private val amtDeltakerClient = mockk<AmtDeltakerClient>()
     private val tiltakskoordinatorTilgangRepository = mockk<TiltakskoordinatorTilgangRepository>()
     private val tiltakskoordinatorsDeltakerlisteProducer = mockk<TiltakskoordinatorsDeltakerlisteProducer>()
     private val tiltakskoordinatorService = mockk<TiltakskoordinatorService>()
@@ -210,6 +212,7 @@ class InnbyggerApiTest {
                 forslagRepository = forslagRepository,
                 forslagService = forslagService,
                 amtDistribusjonClient = amtDistribusjonClient,
+                amtDeltakerClient = amtDeltakerClient,
                 sporbarhetsloggService = mockk(),
                 deltakerRepository = deltakerRepository,
                 deltakerlisteService = mockk(),

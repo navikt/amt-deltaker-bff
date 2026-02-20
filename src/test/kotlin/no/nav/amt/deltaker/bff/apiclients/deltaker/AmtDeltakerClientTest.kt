@@ -28,7 +28,6 @@ import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.SluttarsakRe
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.SluttdatoRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.StartdatoRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerEndringResponse
-import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerMedStatusResponse
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -43,7 +42,7 @@ class AmtDeltakerClientTest {
     inner class GetDeltaker {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}"
         val expectedErrorMessage = "Fant ikke deltaker ${deltakerInTest.id} i amt-deltaker."
-        val getDeltakerLambda: suspend (AmtDeltakerClient) -> DeltakerMedStatusResponse =
+        val getDeltakerLambda: suspend (AmtDeltakerClient) -> DeltakerAmtDeltakerResponse =
             { client -> client.getDeltaker(deltakerInTest.id) }
 
         @ParameterizedTest
@@ -54,10 +53,10 @@ class AmtDeltakerClientTest {
         }
 
         @Test
-        fun `skal returnere DeltakerMedStatusResponse`() {
+        fun `skal returnere DeltakerResponse`() {
             runHappyPathTest(
                 expectedUrl = expectedUrl,
-                expectedResponse = DeltakerMedStatusResponse(deltakerInTest.id, TestData.lagDeltakerStatus()),
+                expectedResponse = TestData.lagDeltakerResponse(deltakerInTest.id),
                 block = getDeltakerLambda,
             )
         }

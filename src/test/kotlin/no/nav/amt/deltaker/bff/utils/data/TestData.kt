@@ -1,5 +1,9 @@
 package no.nav.amt.deltaker.bff.utils.data
 
+import no.nav.amt.deltaker.bff.apiclients.deltaker.ArrangorResponse
+import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
+import no.nav.amt.deltaker.bff.apiclients.deltaker.GjennomforingResponse
+import no.nav.amt.deltaker.bff.apiclients.deltaker.NavBrukerResponse
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.api.model.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -22,6 +26,7 @@ import no.nav.amt.lib.models.deltaker.DeltakerVedVedtak
 import no.nav.amt.lib.models.deltaker.ImportertFraArena
 import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
+import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.Vedtak
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
@@ -111,7 +116,42 @@ object TestData {
         pameldingstype = pameldingType,
     )
 
+    fun lagGjennomforingResponse(
+        id: UUID = UUID.randomUUID(),
+        tiltakstype: Tiltakstype = lagTiltakstype(),
+        navn: String = "Test Deltakerliste ${tiltakstype.tiltakskode}",
+        status: GjennomforingStatusType = GjennomforingStatusType.GJENNOMFORES,
+        startDato: LocalDate = LocalDate.now().minusMonths(1),
+        sluttDato: LocalDate? = LocalDate.now().plusYears(1),
+        oppstart: Oppstartstype = finnOppstartstype(tiltakstype.tiltakskode),
+        apentForPamelding: Boolean = true,
+        oppmoteSted: String = "~oppmoteSted~",
+        pameldingType: GjennomforingPameldingType? = null,
+    ) = GjennomforingResponse(
+        id = id,
+        tiltakstype = tiltakstype,
+        navn = navn,
+        status = status,
+        startDato = startDato,
+        sluttDato = sluttDato,
+        oppstart = oppstart,
+        arrangor = lagArrangorResponse(),
+        apentForPamelding = apentForPamelding,
+        oppmoteSted = oppmoteSted,
+        pameldingstype = pameldingType,
+        antallPlasser = 42,
+    )
+
     private val tiltakstypeCache = mutableMapOf<Tiltakskode, Tiltakstype>()
+
+    fun lagArrangorResponse(
+        navn: String = "Arrangor 1",
+        organisasjonsnummer: String = no.nav.amt.lib.testing.utils.TestData
+            .randomOrgnr(),
+    ) = ArrangorResponse(
+        navn = navn,
+        organisasjonsnummer = organisasjonsnummer,
+    )
 
     fun lagTiltakstype(
         id: UUID = UUID.randomUUID(),
@@ -244,6 +284,38 @@ object TestData {
             deltaker
         }
     }
+
+    fun lagDeltakerResponse(
+        id: UUID = UUID.randomUUID(),
+        navBruker: NavBrukerResponse = lagNavBrukerResponse(),
+        deltakerliste: GjennomforingResponse = lagGjennomforingResponse(),
+        startdato: LocalDate? = LocalDate.now().minusMonths(3),
+        sluttdato: LocalDate? = LocalDate.now().minusDays(1),
+        dagerPerUke: Float? = 5F,
+        deltakelsesprosent: Float? = 100F,
+        bakgrunnsinformasjon: String? = "Søkes inn fordi...",
+        status: DeltakerStatus = lagDeltakerStatus(DeltakerStatus.Type.HAR_SLUTTET),
+        sistEndret: LocalDateTime = LocalDateTime.now(),
+        erManueltDeltMedArrangor: Boolean = false,
+    ) = DeltakerAmtDeltakerResponse(
+        id = id,
+        status = status,
+        navBruker = navBruker,
+        gjennomforing = deltakerliste,
+        startdato = startdato,
+        sluttdato = sluttdato,
+        dagerPerUke = dagerPerUke,
+        deltakelsesprosent = deltakelsesprosent,
+        bakgrunnsinformasjon = bakgrunnsinformasjon,
+        null,
+        null,
+        erManueltDeltMedArrangor,
+        Kilde.KOMET,
+        sistEndret,
+        LocalDateTime.now(),
+        historikk = emptyList(),
+        erLaastForEndringer = false,
+    )
 
     fun lagTiltakskoordinatorDeltaker(
         sisteVurdering: Vurdering? = lagVurdering(),
@@ -453,6 +525,31 @@ object TestData {
         innsatsgruppe = innsatsgruppe,
         telefon = null,
         epost = null,
+    )
+
+    fun lagNavBrukerResponse(
+        personident: String = randomIdent(),
+        fornavn: String = "Fornavn",
+        mellomnavn: String? = "Mellomnavn",
+        etternavn: String = "Etternavn",
+        adressebeskyttelse: Adressebeskyttelse? = null,
+        oppfolgingsperioder: List<Oppfolgingsperiode> = listOf(lagOppfolgingsperiode()),
+        innsatsgruppe: Innsatsgruppe? = Innsatsgruppe.STANDARD_INNSATS,
+        adresse: Adresse? = lagAdresse(),
+        erSkjermet: Boolean = false,
+    ) = NavBrukerResponse(
+        personident = personident,
+        fornavn = fornavn,
+        mellomnavn = mellomnavn,
+        etternavn = etternavn,
+        erSkjermet = erSkjermet,
+        adresse = adresse,
+        adressebeskyttelse = adressebeskyttelse,
+        oppfolgingsperioder = oppfolgingsperioder,
+        innsatsgruppe = innsatsgruppe,
+        telefon = null,
+        epost = null,
+        erDigital = true,
     )
 
     fun lagAdresse(): Adresse = Adresse(

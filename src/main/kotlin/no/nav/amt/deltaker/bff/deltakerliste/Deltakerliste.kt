@@ -22,14 +22,18 @@ data class Deltakerliste(
     val oppmoteSted: String?,
     val pameldingstype: GjennomforingPameldingType?,
 ) {
+    // Merkelig datastruktur som lager behov for å joine samme tabell flere ganger
+    // Erstattet i GjennomforingModel og utledes i amt-deltaker
     data class Arrangor(
         val arrangor: no.nav.amt.lib.models.deltaker.Arrangor,
         val overordnetArrangorNavn: String?,
     )
 
+    // Flyttet til lib
     fun deltakerAdresseDeles() = tiltakUtenDeltakerAdresset.none { it == this.tiltak.tiltakskode }
 }
 
+// Flyttet til lib
 private val tiltakUtenDeltakerAdresset = setOf(
     Tiltakskode.DIGITALT_OPPFOLGINGSTILTAK,
     Tiltakskode.JOBBKLUBB,

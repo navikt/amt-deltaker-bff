@@ -1,6 +1,6 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-import no.nav.amt.deltaker.bff.deltakerliste.Deltakerliste
+import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
 import no.nav.amt.deltaker.bff.utils.FERIETILLEGG
 import no.nav.amt.deltaker.bff.utils.months
 import no.nav.amt.deltaker.bff.utils.weeks
@@ -11,90 +11,56 @@ import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.Deltakelsesmengder
 import no.nav.amt.lib.models.deltaker.deltakelsesmengde.toDeltakelsesmengder
-import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.tiltakstype.Tiltakskode
-import no.nav.amt.lib.models.person.NavBruker
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.UUID
 
-/*Denne deltakermodellen passer ikke med bff behov og erstattes
- med DeltakerModel
-FOr eksempel:
- - NavBruker som brukes mange steder i lib(blant annet på kafka) mangler
- om personen er digital
- - Deltakerliste arrangør har en datamodell som legger opp til at navnet på
- den overordnede arrangøren skal utledes ved uthenting.
- - Bff bør ikke trenge kunnskap om detaljert arrangør hirarki
-
- */
-data class Deltaker(
+data class DeltakerModel(
     val id: UUID,
-    val navBruker: NavBruker,
-    val deltakerliste: Deltakerliste,
+    val navBruker: NavBrukerModel,
+    val deltakerliste: GjennomforingModel,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,
     val dagerPerUke: Float?,
     val deltakelsesprosent: Float?,
     val bakgrunnsinformasjon: String?,
     val deltakelsesinnhold: Deltakelsesinnhold?,
+    val vedtaksinformasjon: VedtaksinformasjonModel?,
     val status: DeltakerStatus,
-    // Vedtaksinformasjon finnes kun i amt-deltaker
+    val kanEndres: Boolean,
     val sistEndret: LocalDateTime,
-    // kilde finnes kun i amt-deltaker
     val erManueltDeltMedArrangor: Boolean,
-    val historikk: List<DeltakerHistorikk>, // finnes ikke i amt-deltaker
-    val kanEndres: Boolean, // finnes ikke i amt-deltaker
-    val opprettet: LocalDateTime,
+    val historikk: List<DeltakerHistorikk>,
+    val erLaastForEndringer: Boolean,
 ) {
     val deltakelsesmengder: Deltakelsesmengder
         get() = startdato?.let { historikk.toDeltakelsesmengder().periode(it, sluttdato) } ?: historikk.toDeltakelsesmengder()
 
-    val fattetVedtak
-        get() = historikk
-            .filterIsInstance<DeltakerHistorikk.Vedtak>()
-            .firstOrNull { it.vedtak.gyldigTil == null && it.vedtak.fattet != null }
-            ?.vedtak
+    val adresseDelesMedArrangor = this.navBruker.adressebeskyttelse == null &&
+        this.deltakerliste.tiltak.adresseKanDelesMedArrangor
 
-    val paameldtDato
-        get() = historikk
-            .firstOrNull { it is DeltakerHistorikk.Vedtak || it is DeltakerHistorikk.ImportertFraArena }
-            ?.let {
-                when (it) {
-                    is DeltakerHistorikk.ImportertFraArena -> {
-                        it.importertFraArena.deltakerVedImport.innsoktDato
-                            .atStartOfDay()
-                    }
-
-                    is DeltakerHistorikk.Vedtak -> {
-                        it.vedtak.fattet
-                    }
-
-                    else -> {
-                        null
-                    }
-                }
-            }
-
-    val ikkeFattetVedtak
-        get() = historikk
-            .filterIsInstance<DeltakerHistorikk.Vedtak>()
-            .firstOrNull { it.vedtak.fattet == null }
-            ?.vedtak
-
-    val vedtaksinformasjon
-        get() = if (this.fattetVedtak != null) {
-            fattetVedtak
-        } else {
-            ikkeFattetVedtak
-        }
-
-    fun getDeltakerHistorikkForVisning() = historikk
-        .filterNot {
-            deltakerliste.pameldingstype == GjennomforingPameldingType.TRENGER_GODKJENNING &&
-                it is DeltakerHistorikk.Vedtak
-        }.sortedByDescending { it.sistEndret }
+    companion object {
+        fun fromDeltakerAmtDeltakerResponse(response: DeltakerAmtDeltakerResponse): DeltakerModel = DeltakerModel(
+            id = response.id,
+            navBruker = NavBrukerModel.fromNavBrukerResponse(response.navBruker),
+            deltakerliste = GjennomforingModel.fromGjennomforingResponse(response.gjennomforing),
+            startdato = response.startdato,
+            sluttdato = response.sluttdato,
+            dagerPerUke = response.dagerPerUke,
+            deltakelsesprosent = response.deltakelsesprosent,
+            bakgrunnsinformasjon = response.bakgrunnsinformasjon,
+            deltakelsesinnhold = response.deltakelsesinnhold,
+            status = response.status,
+            kanEndres = !response.erLaastForEndringer,
+            sistEndret = response.sistEndret,
+            erManueltDeltMedArrangor = response.erManueltDeltMedArrangor,
+            historikk = response.historikk,
+            vedtaksinformasjon = VedtaksinformasjonModel.fromVedtaksinformasjonResponse(response.vedtaksinformasjon),
+            erLaastForEndringer = response.erLaastForEndringer,
+        )
+    }
 
     fun harSluttet(): Boolean = status.type in AVSLUTTENDE_STATUSER
 
@@ -107,9 +73,6 @@ data class Deltaker(
         val toMndSiden = LocalDate.now().minusMonths(2)
         return nyesteDato.isAfter(toMndSiden)
     }
-
-    fun adresseDelesMedArrangor() = this.navBruker.adressebeskyttelse == null &&
-        this.deltakerliste.deltakerAdresseDeles()
 
     /**
      Noen tiltak har en max varighet som kan overgås ved visse omstendigheter,
@@ -205,15 +168,4 @@ data class Deltaker(
             Tiltakskode.ENKELTPLASS_FAG_OG_YRKESOPPLAERING,
             -> null
         }
-
-    fun oppdater(oppdatering: Deltakeroppdatering) = this.copy(
-        startdato = oppdatering.startdato,
-        sluttdato = oppdatering.sluttdato,
-        dagerPerUke = oppdatering.dagerPerUke,
-        deltakelsesprosent = oppdatering.deltakelsesprosent,
-        bakgrunnsinformasjon = oppdatering.bakgrunnsinformasjon,
-        deltakelsesinnhold = oppdatering.deltakelsesinnhold,
-        status = oppdatering.status,
-        historikk = oppdatering.historikk,
-    )
 }
