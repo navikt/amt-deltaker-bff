@@ -1,5 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.model
 
-class ArrangorModel(
+data class ArrangorModel(
     val navn: String,
 )
