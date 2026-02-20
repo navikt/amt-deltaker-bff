@@ -6,9 +6,9 @@ data class VedtaksinformasjonResponse(
     val fattet: LocalDateTime?,
     val fattetAvNav: Boolean,
     val opprettet: LocalDateTime,
-    val opprettetAv: String,
+    val opprettetAv: String, // Det er nytt at dette er en string
     val opprettetAvEnhet: String,
     val sistEndret: LocalDateTime,
-    val sistEndretAv: String?,
-    val sistEndretAvEnhet: String?,
+    val sistEndretAv: String?, // Det er nytt at dette er en string
+    val sistEndretAvEnhet: String?, // Det er nytt at dette er en string
 )

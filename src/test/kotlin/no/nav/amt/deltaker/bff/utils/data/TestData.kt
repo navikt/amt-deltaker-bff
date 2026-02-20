@@ -551,6 +551,8 @@ object TestData {
         telefon = null,
         epost = null,
         erDigital = true,
+        navVeileder = "Nav Veiledersen",
+        navEnhet = "Nav Grunerløkka",
     )
 
     fun lagAdresse(): Adresse = Adresse(

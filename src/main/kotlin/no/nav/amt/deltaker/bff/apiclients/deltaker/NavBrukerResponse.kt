@@ -17,5 +17,7 @@ data class NavBrukerResponse(
     val adressebeskyttelse: Adressebeskyttelse?,
     val oppfolgingsperioder: List<Oppfolgingsperiode>,
     val innsatsgruppe: Innsatsgruppe?,
+    val navVeileder: String?,
+    val navEnhet: String?,
     val erDigital: Boolean,
 )

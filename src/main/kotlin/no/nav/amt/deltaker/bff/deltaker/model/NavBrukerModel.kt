@@ -30,8 +30,8 @@ data class NavBrukerModel(
             fornavn = response.fornavn,
             mellomnavn = response.mellomnavn,
             etternavn = response.etternavn,
-            navVeileder = null, // Dette må hentes fra en annen kilde
-            navEnhet = null, // Dette må hentes fra en annen kilde
+            navVeileder = response.navVeileder,
+            navEnhet = response.navEnhet,
             telefon = response.telefon,
             epost = response.epost,
             erSkjermet = response.erSkjermet,
