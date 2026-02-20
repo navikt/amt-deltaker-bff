@@ -5,6 +5,7 @@ import no.nav.amt.deltaker.bff.utils.FERIETILLEGG
 import no.nav.amt.deltaker.bff.utils.months
 import no.nav.amt.deltaker.bff.utils.weeks
 import no.nav.amt.deltaker.bff.utils.years
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -20,7 +21,7 @@ import java.util.UUID
 data class DeltakerModel(
     val id: UUID,
     val navBruker: NavBrukerModel,
-    val deltakerliste: GjennomforingModel,
+    val gjennomforing: GjennomforingModel,
     val startdato: LocalDate?,
     val sluttdato: LocalDate?,
     val dagerPerUke: Float?,
@@ -34,18 +35,19 @@ data class DeltakerModel(
     val erManueltDeltMedArrangor: Boolean,
     val historikk: List<DeltakerHistorikk>,
     val erLaastForEndringer: Boolean,
+    val endringsforslagFraArrangor: List<Forslag>,
 ) {
     val deltakelsesmengder: Deltakelsesmengder
         get() = startdato?.let { historikk.toDeltakelsesmengder().periode(it, sluttdato) } ?: historikk.toDeltakelsesmengder()
 
     val adresseDelesMedArrangor = this.navBruker.adressebeskyttelse == null &&
-        this.deltakerliste.tiltak.adresseKanDelesMedArrangor
+        this.gjennomforing.tiltak.adresseKanDelesMedArrangor
 
     companion object {
         fun fromDeltakerAmtDeltakerResponse(response: DeltakerAmtDeltakerResponse): DeltakerModel = DeltakerModel(
             id = response.id,
             navBruker = NavBrukerModel.fromNavBrukerResponse(response.navBruker),
-            deltakerliste = GjennomforingModel.fromGjennomforingResponse(response.gjennomforing),
+            gjennomforing = GjennomforingModel.fromGjennomforingResponse(response.gjennomforing),
             startdato = response.startdato,
             sluttdato = response.sluttdato,
             dagerPerUke = response.dagerPerUke,
@@ -59,6 +61,7 @@ data class DeltakerModel(
             historikk = response.historikk,
             vedtaksinformasjon = VedtaksinformasjonModel.fromVedtaksinformasjonResponse(response.vedtaksinformasjon),
             erLaastForEndringer = response.erLaastForEndringer,
+            endringsforslagFraArrangor = response.endringsforslagFraArrangor,
         )
     }
 
@@ -83,7 +86,7 @@ data class DeltakerModel(
      https://lovdata.no/forskrift/2015-12-11-1598
      */
     val softMaxVarighet: Duration?
-        get() = when (deltakerliste.tiltak.tiltakskode) {
+        get() = when (gjennomforing.tiltak.tiltakskode) {
             Tiltakskode.ARBEIDSFORBEREDENDE_TRENING -> years(2)
 
             Tiltakskode.OPPFOLGING -> when (navBruker.innsatsgruppe) {
@@ -129,7 +132,7 @@ data class DeltakerModel(
      https://lovdata.no/forskrift/2015-12-11-1598
      */
     val maxVarighet: Duration?
-        get() = when (deltakerliste.tiltak.tiltakskode) {
+        get() = when (gjennomforing.tiltak.tiltakskode) {
             Tiltakskode.GRUPPE_ARBEIDSMARKEDSOPPLAERING,
             Tiltakskode.ARBEIDSFORBEREDENDE_TRENING,
             Tiltakskode.ARBEIDSMARKEDSOPPLAERING,

@@ -1,6 +1,5 @@
 package no.nav.amt.deltaker.bff.deltaker.api.model
 
-import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.DeltakerModel
 import no.nav.amt.deltaker.bff.deltaker.model.VedtaksinformasjonModel
@@ -219,80 +218,74 @@ data class DeltakerResponse(
             )
         }
 
-        fun fromAmtDeltakerResponse(
-            deltaker: DeltakerAmtDeltakerResponse,
-            forslag: List<Forslag>, // Denne må flyttes til amt-deltaker også
-        ) = with(deltaker) {
-            // Dette skal ikke egentlig gjøres her, modellen skal lages på forhånd
-            // skal bli til fromDeltakerModel -> DeltakerFrontendResponse
-            val deltakerModel = DeltakerModel.fromDeltakerAmtDeltakerResponse(this)
+        fun fromDeltakerModel(deltaker: DeltakerModel) = with(deltaker) {
             DeltakerResponse(
                 deltakerId = id,
-                fornavn = deltakerModel.navBruker.fornavn,
-                mellomnavn = deltakerModel.navBruker.mellomnavn,
-                etternavn = deltakerModel.navBruker.etternavn,
+                fornavn = navBruker.fornavn,
+                mellomnavn = navBruker.mellomnavn,
+                etternavn = navBruker.etternavn,
                 deltakerliste = DeltakerlisteDto(
-                    deltakerlisteId = deltakerModel.deltakerliste.id,
-                    deltakerlisteNavn = deltakerModel.deltakerliste.navn,
-                    tiltakskode = deltakerModel.deltakerliste.tiltak.tiltakskode,
+                    deltakerlisteId = gjennomforing.id,
+                    deltakerlisteNavn = gjennomforing.navn,
+                    tiltakskode = gjennomforing.tiltak.tiltakskode,
                     // Nå er det amtdeltaker som sender med navnet som er riktig for visningen
-                    arrangorNavn = deltakerModel.deltakerliste.arrangor.navn,
-                    oppstartstype = deltakerModel.deltakerliste.oppstart,
-                    startdato = deltakerModel.deltakerliste.startDato,
-                    sluttdato = deltakerModel.deltakerliste.sluttDato,
-                    status = deltakerModel.deltakerliste.status,
+                    arrangorNavn = gjennomforing.arrangor.navn,
+                    oppstartstype = gjennomforing.oppstart,
+                    startdato = gjennomforing.startDato,
+                    sluttdato = gjennomforing.sluttDato,
+                    status = gjennomforing.status,
                     tilgjengeligInnhold = TilgjengeligInnhold.fromDeltakerRegistreringInnhold(
-                        gjennomforing.tiltakstype.innhold,
-                        gjennomforing.tiltakstype.tiltakskode,
+                        gjennomforing.tiltak.innhold,
+                        gjennomforing.tiltak.tiltakskode,
                     ),
-                    erEnkeltplassUtenRammeavtale = deltakerModel.deltakerliste.tiltak.erEnkeltplass(),
-                    oppmoteSted = deltakerModel.deltakerliste.oppmoteSted,
-                    pameldingstype = deltakerModel.deltakerliste.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
+                    erEnkeltplassUtenRammeavtale = gjennomforing.tiltak.erEnkeltplass(),
+                    oppmoteSted = gjennomforing.oppmoteSted,
+                    pameldingstype = gjennomforing.pameldingstype ?: GjennomforingPameldingType.TRENGER_GODKJENNING,
                 ),
-                status = deltakerModel.status,
-                startdato = deltakerModel.startdato,
-                sluttdato = deltakerModel.sluttdato,
-                dagerPerUke = deltakerModel.dagerPerUke,
-                deltakelsesprosent = deltakerModel.deltakelsesprosent,
-                bakgrunnsinformasjon = deltakerModel.bakgrunnsinformasjon,
-                deltakelsesinnhold = deltakerModel.deltakelsesinnhold?.let {
+                status = status,
+                startdato = startdato,
+                sluttdato = sluttdato,
+                dagerPerUke = dagerPerUke,
+                deltakelsesprosent = deltakelsesprosent,
+                bakgrunnsinformasjon = bakgrunnsinformasjon,
+                deltakelsesinnhold = deltakelsesinnhold?.let {
                     DeltakelsesinnholdDto.fromDeltakelsesinnhold(
                         it,
                         getInnholdselementer(
-                            deltakerModel.deltakerliste.tiltak.innhold
+                            gjennomforing.tiltak.innhold
                                 ?.innholdselementer,
-                            deltakerModel.deltakerliste.tiltak.tiltakskode,
+                            gjennomforing.tiltak.tiltakskode,
                         ),
                     )
                 },
-                vedtaksinformasjon = deltakerModel.vedtaksinformasjon?.let {
+                vedtaksinformasjon = vedtaksinformasjon?.let {
                     VedtaksinformasjonDto.fromVedtak(it)
                 },
-                adresseDelesMedArrangor = deltakerModel.adresseDelesMedArrangor,
+                adresseDelesMedArrangor = adresseDelesMedArrangor,
                 kanEndres = erLaastForEndringer,
-                digitalBruker = deltakerModel.navBruker.erDigital,
-                maxVarighet = deltakerModel.maxVarighet?.toMillis(),
-                softMaxVarighet = deltakerModel.softMaxVarighet?.toMillis(),
-                forslag = forslag.map { it.toResponse(gjennomforing.arrangor.navn) },
-                importertFraArena = ImportertFraArenaDto.fromDeltaker(deltakerModel),
+                digitalBruker = navBruker.erDigital,
+                maxVarighet = maxVarighet?.toMillis(),
+                softMaxVarighet = softMaxVarighet?.toMillis(),
+                forslag = endringsforslagFraArrangor.map { it.toResponse(gjennomforing.arrangor.navn) },
+                importertFraArena = ImportertFraArenaDto.fromDeltaker(this),
                 harAdresse = navBruker.adresse != null,
                 // Her bør det gjøres noen forenklinger
                 // Kan dette utledes i amt-deltaker?
                 deltakelsesmengder = DeltakelsesmengderDto(
-                    nesteDeltakelsesmengde = deltakerModel.deltakelsesmengder.nesteGjeldende?.let {
+                    nesteDeltakelsesmengde = deltakelsesmengder.nesteGjeldende?.let {
                         DeltakelsesmengdeDto
                             .fromDeltakelsesmengde(
                                 it,
                             )
                     },
-                    sisteDeltakelsesmengde = deltakerModel.deltakelsesmengder.lastOrNull()?.let {
+                    sisteDeltakelsesmengde = deltakelsesmengder.lastOrNull()?.let {
                         DeltakelsesmengdeDto
                             .fromDeltakelsesmengde(
                                 it,
                             )
                     },
                 ),
-                erUnderOppfolging = deltakerModel.navBruker.harAktivOppfolgingsperiode,
+                erUnderOppfolging = navBruker.harAktivOppfolgingsperiode,
                 erManueltDeltMedArrangor = erManueltDeltMedArrangor,
             )
         }

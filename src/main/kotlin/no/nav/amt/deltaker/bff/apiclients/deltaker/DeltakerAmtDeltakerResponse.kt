@@ -1,5 +1,6 @@
 package no.nav.amt.deltaker.bff.apiclients.deltaker
 
+import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerHistorikk
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -31,4 +32,5 @@ data class DeltakerAmtDeltakerResponse(
      */
     val historikk: List<DeltakerHistorikk>,
     val erLaastForEndringer: Boolean, // TODO: Må fikses i amt-deltaker
+    val endringsforslagFraArrangor: List<Forslag>,
 )

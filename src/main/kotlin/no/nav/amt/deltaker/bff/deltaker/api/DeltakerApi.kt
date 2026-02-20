@@ -12,7 +12,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import jakarta.ws.rs.ForbiddenException
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
 import no.nav.amt.deltaker.bff.application.plugins.AuthLevel
 import no.nav.amt.deltaker.bff.application.plugins.getNavAnsattAzureId
@@ -85,11 +84,6 @@ fun Routing.registerDeltakerApi(
         ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker),
         vedtakSistEndretAvEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) },
         digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident),
-        forslag = forslagRepository.getForDeltaker(deltaker.id),
-    )
-
-    fun buildDeltakerResponse(deltaker: DeltakerAmtDeltakerResponse): DeltakerResponse = DeltakerResponse.fromAmtDeltakerResponse(
-        deltaker = deltaker,
         forslag = forslagRepository.getForDeltaker(deltaker.id),
     )
 

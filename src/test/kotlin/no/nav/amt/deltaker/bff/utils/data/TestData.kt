@@ -315,6 +315,7 @@ object TestData {
         LocalDateTime.now(),
         historikk = emptyList(),
         erLaastForEndringer = false,
+        endringsforslagFraArrangor = emptyList(),
     )
 
     fun lagTiltakskoordinatorDeltaker(
