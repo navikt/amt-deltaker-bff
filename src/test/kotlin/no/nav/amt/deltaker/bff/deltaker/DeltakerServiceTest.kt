@@ -243,7 +243,6 @@ class DeltakerServiceTest {
             endringer.forEach { endring ->
                 MockResponseHandler.addEndringsresponse(
                     deltaker.endre(lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
-                    endring,
                 )
 
                 val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
@@ -339,7 +338,6 @@ class DeltakerServiceTest {
 
             MockResponseHandler.addEndringsresponse(
                 deltaker.endre(lagDeltakerEndring(deltakerId = deltaker.id, endring = endring)),
-                endring,
             )
 
             MockResponseHandler.addSlettKladdResponse(deltakerKladd.id)
