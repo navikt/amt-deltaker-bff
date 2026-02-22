@@ -13,8 +13,7 @@ class SporbarhetsloggService(
         const val AUDIT_LOG_NAME = "Sporingslogg"
         const val MESSAGE_EXTENSION = "msg"
 
-        const val NAVANSATT_DELTAKER_OPPSLAG_AUDIT_LOG_REASON =
-            "NAV-ansatt har gjort oppslag paa deltaker."
+        const val NAVANSATT_DELTAKER_OPPSLAG_AUDIT_LOG_REASON = "Nav-ansatt har gjort oppslag på deltaker."
     }
 
     fun sendAuditLog(navIdent: String, deltakerPersonIdent: String) {

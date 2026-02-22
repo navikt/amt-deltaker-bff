@@ -78,7 +78,7 @@ class TiltakskoordinatorTilgangRepository {
      * Metoden slår opp i databasen etter koordinator-tilganger for deltakerlisten,
      * og returnerer en liste med distinkte koordinatorer. Hver koordinator får
      * et flagg som angir om tilgangen er aktiv, samt om vedkommende kan fjernes
-     * (satt dersom koordinatoren er den samme som den påloggede NAV-ansatte).
+     * (satt dersom koordinatoren er den samme som den påloggede Nav-ansatte).
      *
      * @param deltakerlisteId ID til deltakerlisten koordinatorene skal hentes for
      * @param paaloggetNavAnsattId ID til Nav-ansatt som er pålogget og gjør spørringen

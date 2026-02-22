@@ -415,7 +415,7 @@ object TestData {
     fun lagNavEnhet(
         id: UUID = UUID.randomUUID(),
         enhetsnummer: String = randomEnhetsnummer(),
-        navn: String = "NAV Testheim",
+        navn: String = "Nav Testheim",
     ): NavEnhet {
         val enhet = navEnhetCache[enhetsnummer] ?: NavEnhet(id, enhetsnummer, navn)
         val nyEnhet = enhet.copy(id = id, navn = navn)

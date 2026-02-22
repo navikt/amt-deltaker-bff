@@ -271,7 +271,7 @@ fun Routing.registerDeltakerApi(
             val navIdent = call.getNavIdent()
             val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-            log.info("NAV-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
+            log.info("Nav-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
             val historikk = deltaker.getDeltakerHistorikkForVisning()
 
