@@ -42,7 +42,7 @@ class DeltakerService(
                         deltakerId = deltaker.id,
                         endretAv = endretAv,
                         endretAvEnhet = endretAvEnhet,
-                        endring = endring,
+                        bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
                     ).toDeltakeroppdatering()
             }
 
@@ -72,6 +72,19 @@ class DeltakerService(
                     ).toDeltakeroppdatering()
             }
 
+            is DeltakerEndring.Endring.AvbrytDeltakelse -> {
+                amtDeltakerClient
+                    .avbrytDeltakelse(
+                        deltakerId = deltaker.id,
+                        endretAv = endretAv,
+                        endretAvEnhet = endretAvEnhet,
+                        sluttdato = endring.sluttdato,
+                        aarsak = endring.aarsak,
+                        begrunnelse = endring.begrunnelse,
+                        forslagId = forslagId,
+                    ).toDeltakeroppdatering()
+            }
+
             is DeltakerEndring.Endring.EndreAvslutning -> {
                 amtDeltakerClient
                     .endreAvslutning(
@@ -82,19 +95,6 @@ class DeltakerService(
                         begrunnelse = endring.begrunnelse,
                         harFullfort = endring.harFullfort,
                         sluttdato = endring.sluttdato,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.AvbrytDeltakelse -> {
-                amtDeltakerClient
-                    .avbrytDeltakelse(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        sluttdato = endring.sluttdato,
-                        aarsak = endring.aarsak,
-                        begrunnelse = endring.begrunnelse,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
             }

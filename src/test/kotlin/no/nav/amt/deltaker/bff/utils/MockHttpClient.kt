@@ -20,7 +20,6 @@ import no.nav.amt.lib.ktor.auth.AzureAdTokenClient
 import no.nav.amt.lib.ktor.clients.AmtPersonServiceClient
 import no.nav.amt.lib.ktor.clients.arrangor.AmtArrangorClient
 import no.nav.amt.lib.models.deltaker.Arrangor
-import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.internalapis.paamelding.response.OpprettKladdResponse
 import no.nav.amt.lib.models.person.NavAnsatt
 import no.nav.amt.lib.models.person.NavEnhet
@@ -213,26 +212,8 @@ object MockResponseHandler {
         )
     }
 
-    fun addEndringsresponse(
-        deltaker: Deltaker,
-        endring: DeltakerEndring.Endring,
-        status: HttpStatusCode = HttpStatusCode.OK,
-    ) {
-        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/" + when (endring) {
-            is DeltakerEndring.Endring.AvsluttDeltakelse -> AmtDeltakerClient.AVSLUTT_DELTAKELSE
-            is DeltakerEndring.Endring.AvbrytDeltakelse -> AmtDeltakerClient.AVBRYT_DELTAKELSE
-            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> AmtDeltakerClient.BAKGRUNNSINFORMASJON
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> AmtDeltakerClient.DELTAKELSESMENGDE
-            is DeltakerEndring.Endring.EndreInnhold -> AmtDeltakerClient.INNHOLD
-            is DeltakerEndring.Endring.EndreSluttarsak -> AmtDeltakerClient.SLUTTARSAK
-            is DeltakerEndring.Endring.EndreSluttdato -> AmtDeltakerClient.SLUTTDATO
-            is DeltakerEndring.Endring.EndreStartdato -> AmtDeltakerClient.STARTDATO
-            is DeltakerEndring.Endring.ForlengDeltakelse -> AmtDeltakerClient.FORLENG_DELTAKELSE
-            is DeltakerEndring.Endring.IkkeAktuell -> AmtDeltakerClient.IKKE_AKTUELL
-            is DeltakerEndring.Endring.ReaktiverDeltakelse -> AmtDeltakerClient.REAKTIVER
-            is DeltakerEndring.Endring.FjernOppstartsdato -> AmtDeltakerClient.FJERN_OPPSTARTSDATO
-            is DeltakerEndring.Endring.EndreAvslutning -> AmtDeltakerClient.ENDRE_AVSLUTNING
-        }
+    fun addEndringsresponse(deltaker: Deltaker, status: HttpStatusCode = HttpStatusCode.OK) {
+        val url = "$AMT_DELTAKER_URL/deltaker/${deltaker.id}/${AmtDeltakerClient.ENDRE_DELTAKER_URL_SEGMENT}"
 
         addResponse(
             url = url,

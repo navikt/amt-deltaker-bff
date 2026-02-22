@@ -14,6 +14,7 @@ import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.AvsluttDelta
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.DeltakelsesmengdeRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndreAvslutningRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndringRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.FjernOppstartsdatoRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.ForlengDeltakelseRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.IkkeAktuellRequest
@@ -50,11 +51,14 @@ class AmtDeltakerClient(
         deltakerId: UUID,
         endretAv: String,
         endretAvEnhet: String,
-        endring: DeltakerEndring.Endring.EndreBakgrunnsinformasjon,
-    ) = postEndring(
+        bakgrunnsinformasjon: String?,
+    ) = postEndreDeltaker(
         deltakerId = deltakerId,
-        requestBody = BakgrunnsinformasjonRequest(endretAv, endretAvEnhet, endring.bakgrunnsinformasjon),
-        endepunkt = BAKGRUNNSINFORMASJON,
+        requestBody = BakgrunnsinformasjonRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            bakgrunnsinformasjon = bakgrunnsinformasjon,
+        ),
     )
 
     suspend fun endreInnhold(
@@ -62,7 +66,14 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         innhold: Deltakelsesinnhold,
-    ) = postEndring(deltakerId, InnholdRequest(endretAv, endretAvEnhet, innhold), INNHOLD)
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = InnholdRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            deltakelsesinnhold = innhold,
+        ),
+    )
 
     suspend fun endreDeltakelsesmengde(
         deltakerId: UUID,
@@ -73,9 +84,9 @@ class AmtDeltakerClient(
         gyldigFra: LocalDate?,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        DeltakelsesmengdeRequest(
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = DeltakelsesmengdeRequest(
             endretAv = endretAv,
             endretAvEnhet = endretAvEnhet,
             forslagId = forslagId,
@@ -84,7 +95,6 @@ class AmtDeltakerClient(
             gyldigFra = gyldigFra,
             begrunnelse = begrunnelse,
         ),
-        DELTAKELSESMENGDE,
     )
 
     suspend fun endreStartdato(
@@ -95,10 +105,16 @@ class AmtDeltakerClient(
         sluttdato: LocalDate?,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
+    ) = postEndreDeltaker(
         deltakerId = deltakerId,
-        requestBody = StartdatoRequest(endretAv, endretAvEnhet, forslagId, startdato, sluttdato, begrunnelse),
-        endepunkt = STARTDATO,
+        requestBody = StartdatoRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            startdato = startdato,
+            sluttdato = sluttdato,
+            begrunnelse = begrunnelse,
+        ),
     )
 
     suspend fun endreSluttdato(
@@ -108,7 +124,16 @@ class AmtDeltakerClient(
         sluttdato: LocalDate,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(deltakerId, SluttdatoRequest(endretAv, endretAvEnhet, forslagId, sluttdato, begrunnelse), SLUTTDATO)
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = SluttdatoRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            sluttdato = sluttdato,
+            begrunnelse = begrunnelse,
+        ),
+    )
 
     suspend fun endreSluttaarsak(
         deltakerId: UUID,
@@ -117,7 +142,16 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(deltakerId, SluttarsakRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse), SLUTTARSAK)
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = SluttarsakRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            aarsak = aarsak,
+            begrunnelse = begrunnelse,
+        ),
+    )
 
     suspend fun forlengDeltakelse(
         deltakerId: UUID,
@@ -126,10 +160,15 @@ class AmtDeltakerClient(
         sluttdato: LocalDate,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        ForlengDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, begrunnelse),
-        FORLENG_DELTAKELSE,
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = ForlengDeltakelseRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            sluttdato = sluttdato,
+            begrunnelse = begrunnelse,
+        ),
     )
 
     suspend fun ikkeAktuell(
@@ -139,10 +178,15 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        IkkeAktuellRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse),
-        IKKE_AKTUELL,
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = IkkeAktuellRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            aarsak = aarsak,
+            begrunnelse = begrunnelse,
+        ),
     )
 
     suspend fun reaktiverDeltakelse(
@@ -150,7 +194,14 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         begrunnelse: String,
-    ) = postEndring(deltakerId, ReaktiverDeltakelseRequest(endretAv, endretAvEnhet, begrunnelse), REAKTIVER)
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = ReaktiverDeltakelseRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            begrunnelse = begrunnelse,
+        ),
+    )
 
     suspend fun avbrytDeltakelse(
         deltakerId: UUID,
@@ -160,10 +211,16 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        AvbrytDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
-        AVBRYT_DELTAKELSE,
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = AvbrytDeltakelseRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            sluttdato = sluttdato,
+            aarsak = aarsak,
+            begrunnelse = begrunnelse,
+        ),
     )
 
     suspend fun avsluttDeltakelse(
@@ -174,10 +231,16 @@ class AmtDeltakerClient(
         aarsak: DeltakerEndring.Aarsak?,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
-        AVSLUTT_DELTAKELSE,
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = AvsluttDeltakelseRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            sluttdato = sluttdato,
+            aarsak = aarsak,
+            begrunnelse = begrunnelse,
+        ),
     )
 
     suspend fun endreAvslutning(
@@ -189,10 +252,17 @@ class AmtDeltakerClient(
         harFullfort: Boolean?,
         sluttdato: LocalDate?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        EndreAvslutningRequest(endretAv, endretAvEnhet, forslagId, aarsak, begrunnelse, sluttdato, harFullfort),
-        ENDRE_AVSLUTNING,
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = EndreAvslutningRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            aarsak = aarsak,
+            begrunnelse = begrunnelse,
+            sluttdato = sluttdato,
+            harFullfort = harFullfort,
+        ),
     )
 
     suspend fun fjernOppstartsdato(
@@ -201,42 +271,33 @@ class AmtDeltakerClient(
         endretAvEnhet: String,
         begrunnelse: String?,
         forslagId: UUID?,
-    ) = postEndring(
-        deltakerId,
-        FjernOppstartsdatoRequest(endretAv, endretAvEnhet, forslagId, begrunnelse),
-        FJERN_OPPSTARTSDATO,
+    ) = postEndreDeltaker(
+        deltakerId = deltakerId,
+        requestBody = FjernOppstartsdatoRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+            begrunnelse = begrunnelse,
+        ),
     )
 
     suspend fun sistBesokt(deltakerId: UUID, sistBesokt: ZonedDateTime) {
-        val response = performPost("deltaker/$deltakerId/$SIST_BESOKT", sistBesokt)
+        val response = performPost("deltaker/$deltakerId/$SIST_BESOKT_URL_SEGMENT", sistBesokt)
 
         if (!response.status.isSuccess()) {
-            log.warn("Kunne ikke endre $SIST_BESOKT i amt-deltaker. Status=${response.status.value} error=${response.bodyAsText()}")
+            log.warn(
+                "Kunne ikke endre $SIST_BESOKT_URL_SEGMENT i amt-deltaker. Status=${response.status.value} error=${response.bodyAsText()}",
+            )
         }
     }
 
-    private suspend fun postEndring(
-        deltakerId: UUID,
-        requestBody: Any,
-        endepunkt: String,
-    ): DeltakerEndringResponse = performPost("deltaker/$deltakerId/$endepunkt", requestBody)
-        .failIfNotSuccess("Kunne ikke endre $endepunkt i amt-deltaker.")
-        .body()
+    private suspend fun postEndreDeltaker(deltakerId: UUID, requestBody: EndringRequest): DeltakerEndringResponse =
+        performPost("deltaker/$deltakerId/$ENDRE_DELTAKER_URL_SEGMENT", requestBody)
+            .failIfNotSuccess("Kunne ikke oppdatere deltaker $deltakerId med ${requestBody::class.java.simpleName} i amt-deltaker")
+            .body()
 
     companion object Endepunkt {
-        const val BAKGRUNNSINFORMASJON = "bakgrunnsinformasjon"
-        const val INNHOLD = "innhold"
-        const val DELTAKELSESMENGDE = "deltakelsesmengde"
-        const val STARTDATO = "startdato"
-        const val SLUTTDATO = "sluttdato"
-        const val SLUTTARSAK = "sluttarsak"
-        const val FORLENG_DELTAKELSE = "forleng"
-        const val IKKE_AKTUELL = "ikke-aktuell"
-        const val AVSLUTT_DELTAKELSE = "avslutt"
-        const val ENDRE_AVSLUTNING = "endre-avslutning"
-        const val AVBRYT_DELTAKELSE = "avbryt"
-        const val SIST_BESOKT = "sist-besokt"
-        const val REAKTIVER = "reaktiver"
-        const val FJERN_OPPSTARTSDATO = "fjern-oppstartsdato"
+        const val ENDRE_DELTAKER_URL_SEGMENT = "endre-deltaker"
+        const val SIST_BESOKT_URL_SEGMENT = "sist-besokt"
     }
 }
