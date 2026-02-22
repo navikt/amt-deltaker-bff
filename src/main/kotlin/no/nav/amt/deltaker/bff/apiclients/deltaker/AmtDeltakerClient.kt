@@ -9,6 +9,7 @@ import no.nav.amt.lib.ktor.clients.ApiClientBase
 import no.nav.amt.lib.ktor.clients.failIfNotSuccess
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.AvbrytDeltakelseRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.AvsluttDeltakelseRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.BakgrunnsinformasjonRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.DeltakelsesmengdeRequest
@@ -156,12 +157,12 @@ class AmtDeltakerClient(
         endretAv: String,
         endretAvEnhet: String,
         sluttdato: LocalDate,
-        aarsak: DeltakerEndring.Aarsak?,
+        aarsak: DeltakerEndring.Aarsak,
         begrunnelse: String?,
         forslagId: UUID?,
     ) = postEndring(
         deltakerId,
-        AvsluttDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
+        AvbrytDeltakelseRequest(endretAv, endretAvEnhet, forslagId, sluttdato, aarsak, begrunnelse),
         AVBRYT_DELTAKELSE,
     )
 
