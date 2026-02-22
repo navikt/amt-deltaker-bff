@@ -83,7 +83,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(BakgrunnsinformasjonRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<BakgrunnsinformasjonRequest>(),
                 block = endreBakgrunnsinformasjonLambda,
             )
         }
@@ -119,7 +119,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(InnholdRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<InnholdRequest>(),
                 block = endreInnholdLambda,
             )
         }
@@ -158,7 +158,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(DeltakelsesmengdeRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<DeltakelsesmengdeRequest>(),
                 block = endreDeltakelsesmengdeLambda,
             )
         }
@@ -196,7 +196,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(StartdatoRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<StartdatoRequest>(),
                 block = endreStartdatoLambda,
             )
         }
@@ -233,7 +233,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(SluttdatoRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<SluttdatoRequest>(),
                 block = endreSluttdatoLambda,
             )
         }
@@ -273,7 +273,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(SluttarsakRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<SluttarsakRequest>(),
                 block = endreSluttaarsakLambda,
             )
         }
@@ -310,7 +310,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(ForlengDeltakelseRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<ForlengDeltakelseRequest>(),
                 block = forlengDeltakelseLambda,
             )
         }
@@ -350,7 +350,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(IkkeAktuellRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<IkkeAktuellRequest>(),
                 block = ikkeAktuellLambda,
             )
         }
@@ -385,7 +385,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(ReaktiverDeltakelseRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<ReaktiverDeltakelseRequest>(),
                 block = reaktiverDeltakelseLambda,
             )
         }
@@ -426,7 +426,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(AvsluttDeltakelseRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<AvsluttDeltakelseRequest>(),
                 block = avsluttDeltakelseLambda,
             )
         }
@@ -467,7 +467,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(AvbrytDeltakelseRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<AvbrytDeltakelseRequest>(),
                 block = avbrytDeltakelseLambda,
             )
         }
@@ -503,7 +503,7 @@ class AmtDeltakerClientTest {
                 exceptionType = expectedExceptionType,
                 statusCode = statusCode,
                 expectedUrl = expectedEndreDeltakerUrl,
-                expectedErrorMessage = createExpectedErrorMessage(FjernOppstartsdatoRequest::class),
+                expectedErrorMessage = createExpectedErrorMessage<FjernOppstartsdatoRequest>(),
                 block = fjernOppstartsdatoLambda,
             )
         }
@@ -552,8 +552,8 @@ class AmtDeltakerClientTest {
         private val deltakerEndringResponseInTest = deltakerInTest.toDeltakerEndringResponse()
         private val expectedEndreDeltakerUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}/endre-deltaker"
 
-        fun <T : EndringRequest> createExpectedErrorMessage(requestType: KClass<T>) =
-            "Kunne ikke oppdatere deltaker ${deltakerInTest.id} med ${requestType.simpleName} i amt-deltaker"
+        private inline fun <reified T : EndringRequest> createExpectedErrorMessage() =
+            "Kunne ikke oppdatere deltaker ${deltakerInTest.id} med ${T::class.simpleName} i amt-deltaker"
 
         private fun runFailureTest(
             exceptionType: KClass<out Throwable>,
