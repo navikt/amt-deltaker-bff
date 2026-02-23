@@ -434,6 +434,7 @@ class AmtDeltakerClientTest {
                         ),
                         begrunnelse = null,
                         forslagId = null,
+                        harFullfort = null,
                     ),
                 )
             }

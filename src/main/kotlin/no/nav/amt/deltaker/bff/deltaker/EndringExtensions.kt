@@ -50,6 +50,7 @@ fun DeltakerEndring.Endring.toEndringRequest(
             sluttdato = this.sluttdato,
             aarsak = this.aarsak,
             begrunnelse = this.begrunnelse,
+            harFullfort = this.harFullfort,
         )
     }
 
