@@ -205,7 +205,12 @@ fun Routing.registerDeltakerApi(
             handleEndring(call, request) {
                 if (request.harDeltatt() && request.harFullfort()) {
                     require(request.sluttdato != null) { "Sluttdato er påkrevd for å avslutte deltakelse" }
-                    DeltakerEndring.Endring.AvsluttDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
+                    DeltakerEndring.Endring.AvsluttDeltakelse(
+                        request.aarsak,
+                        request.sluttdato,
+                        request.begrunnelse,
+                        request.harFullfort,
+                    )
                 } else if (request.harDeltatt() && !request.harFullfort()) {
                     require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
                     require(request.sluttdato != null) { "Sluttdato er påkrevd for å avbryte deltakelse" }

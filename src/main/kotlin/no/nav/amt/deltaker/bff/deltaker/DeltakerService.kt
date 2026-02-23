@@ -68,6 +68,7 @@ class DeltakerService(
                         sluttdato = endring.sluttdato,
                         aarsak = endring.aarsak,
                         begrunnelse = endring.begrunnelse,
+                        harFullfort = endring.harFullfort,
                         forslagId = forslagId,
                     ).toDeltakeroppdatering()
             }

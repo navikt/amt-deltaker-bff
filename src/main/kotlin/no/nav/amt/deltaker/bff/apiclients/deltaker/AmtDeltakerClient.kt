@@ -230,6 +230,7 @@ class AmtDeltakerClient(
         sluttdato: LocalDate,
         aarsak: DeltakerEndring.Aarsak?,
         begrunnelse: String?,
+        harFullfort: Boolean?,
         forslagId: UUID?,
     ) = postEndreDeltaker(
         deltakerId = deltakerId,
@@ -240,6 +241,7 @@ class AmtDeltakerClient(
             sluttdato = sluttdato,
             aarsak = aarsak,
             begrunnelse = begrunnelse,
+            harFullfort = harFullfort,
         ),
     )
 

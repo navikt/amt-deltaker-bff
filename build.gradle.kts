@@ -36,7 +36,7 @@ val postgresVersion = "42.7.10"
 val caffeineVersion = "3.2.3"
 val mockkVersion = "1.14.9"
 val nimbusVersion = "10.7"
-val amtLibVersion = "1.2026.02.20_17.26-67b9eb21a72f"
+val amtLibVersion = "1.2026.02.23_11.32-2482c3f13c63"
 val unleashVersion = "12.1.1"
 
 // fjernes ved neste release av org.apache.kafka:kafka-clients
