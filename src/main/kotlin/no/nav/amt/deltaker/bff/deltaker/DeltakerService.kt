@@ -42,17 +42,25 @@ class DeltakerService(
             ).toDeltakeroppdatering()
 
         if (endringRequest is ReaktiverDeltakelseRequest) {
+            // Code-review note: Her benyttes paameldingClient.slettKladd før all info om deltaker slettes fra db.
+            // Kallet til paameldingClient.slettKladd kan elimineres ved å la amt-deltaker slette kladd som en
+            // del av amtDeltakerClient.postEndreDeltaker.
+            // Sletting av kladd kan da flyttes inn i transaksjonen under.
             slettKladd(
                 deltakerlisteId = deltaker.deltakerliste.id,
                 personident = deltaker.navBruker.personident,
             )
         }
 
-        if (endringRequest is EndringForslagRequest) {
-            endringRequest.forslagId?.let { forslagId -> forslagRepository.delete(forslagId) }
-        }
+        oppdaterDeltaker(
+            deltakeroppdatering = deltakeroppdatering,
+            beforeUpsert = {
+                if (endringRequest is EndringForslagRequest) {
+                    endringRequest.forslagId?.let { forslagId -> forslagRepository.delete(forslagId) }
+                }
+            },
+        )
 
-        oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)
     }
 
@@ -157,11 +165,17 @@ class DeltakerService(
         DeltakerStatusRepository.insertIfNotExists(deltakerId, deltakerStatus)
     }
 
-    suspend fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering, afterUpsert: () -> Unit = {}) {
+    suspend fun oppdaterDeltaker(
+        deltakeroppdatering: Deltakeroppdatering,
+        beforeUpsert: () -> Unit = {},
+        afterUpsert: () -> Unit = {},
+    ) {
         val disableKanEndres = deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
 
         Database.transaction {
+            beforeUpsert()
+
             laasTidligereDeltakelser(deltakeroppdatering)
 
             deltakerRepository.update(deltakeroppdatering)

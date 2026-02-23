@@ -244,6 +244,7 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/avslutt") {
             val request = call.receive<AvsluttDeltakelseRequest>()
             handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                // code-review note: Denne logikken bør flyttes til amt-deltaker
                 when {
                     request.harDeltatt() && request.harFullfort() -> {
                         require(request.sluttdato != null) { "Sluttdato er påkrevd for å avslutte deltakelse" }
@@ -290,6 +291,7 @@ fun Routing.registerDeltakerApi(
             val request = call.receive<EndreAvslutningRequest>()
 
             handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                // code-review note: Denne logikken bør flyttes til amt-deltaker
                 if (request.harDeltatt()) {
                     no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndreAvslutningRequest(
                         endretAv = endretAv,
