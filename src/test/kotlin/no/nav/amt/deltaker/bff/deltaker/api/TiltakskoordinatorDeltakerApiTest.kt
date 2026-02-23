@@ -889,7 +889,7 @@ class TiltakskoordinatorDeltakerApiTest {
 
         return if (oppdatertDeltaker != null) {
             coEvery {
-                deltakerService.oppdaterDeltaker(deltaker, any(), any(), any())
+                deltakerService.oppdaterDeltaker(deltaker, any(), any())
             } returns oppdatertDeltaker
 
             mockAnsatteOgEnhetForDeltaker(oppdatertDeltaker)

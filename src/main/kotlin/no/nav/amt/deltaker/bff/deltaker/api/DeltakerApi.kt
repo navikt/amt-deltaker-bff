@@ -29,7 +29,6 @@ import no.nav.amt.deltaker.bff.deltaker.api.model.EndreInnholdRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttarsakRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreSluttdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.EndreStartdatoRequest
-import no.nav.amt.deltaker.bff.deltaker.api.model.EndringsforslagRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.Endringsrequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.FjernOppstartsdatoRequest
 import no.nav.amt.deltaker.bff.deltaker.api.model.ForlengDeltakelseRequest
@@ -45,13 +44,21 @@ import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
-import no.nav.amt.lib.models.deltaker.DeltakerEndring
+import no.nav.amt.deltaker.extensions.getDeltakerId
+import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.AvbrytDeltakelseRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.BakgrunnsinformasjonRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.DeltakelsesmengdeRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndringRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.InnholdRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.SluttarsakRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.SluttdatoRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.StartdatoRequest
 import no.nav.amt.lib.utils.objectMapper
 import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.time.LocalDate
 import java.util.UUID
 
 fun Routing.registerDeltakerApi(
@@ -97,35 +104,33 @@ fun Routing.registerDeltakerApi(
         }
     }
 
+    fun ApplicationCall.getEnhetsnummer() = this.request.headerNotNull("aktiv-enhet")
+
     suspend fun handleEndring(
         call: ApplicationCall,
         request: Endringsrequest,
-        endring: (deltaker: Deltaker) -> DeltakerEndring.Endring,
+        produceEndringRequest: (deltaker: Deltaker, endretAv: String, endretAvEnhet: String) -> EndringRequest,
     ) {
-        val navIdent = call.getNavIdent()
-        val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
-        val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+        val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
 
-        tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-        illegalUpdateGuard(deltaker, request.tillattEndringUtenAktivOppfolgingsperiode())
+        tilgangskontrollService.verifiserSkrivetilgang(
+            navAnsattAzureId = call.getNavAnsattAzureId(),
+            norskIdent = deltaker.navBruker.personident,
+        )
+        illegalUpdateGuard(
+            deltaker = deltaker,
+            tillatEndringUtenOppfPeriode = request.tillattEndringUtenAktivOppfolgingsperiode(),
+        )
 
         request.valider(deltaker)
 
-        val forslag = if (request is EndringsforslagRequest) {
-            request.forslagId?.let { forslagRepository.get(it).getOrThrow() }
-        } else {
-            null
-        }
+        val endretAvEnhet = call.getEnhetsnummer()
 
         val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
             deltaker = deltaker,
-            endring = endring(deltaker),
-            endretAv = navIdent,
-            endretAvEnhet = enhetsnummer,
-            forslagId = forslag?.id,
+            endringRequest = produceEndringRequest(deltaker, call.getNavIdent(), endretAvEnhet),
+            endretAvEnhet = endretAvEnhet,
         )
-
-        forslag?.let { forslagRepository.delete(it.id) }
 
         call.respond(komplettDeltakerResponse(oppdatertDeltaker))
     }
@@ -133,38 +138,52 @@ fun Routing.registerDeltakerApi(
     authenticate(AuthLevel.VEILEDER.name) {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.EndreBakgrunnsinformasjon(request.bakgrunnsinformasjon)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                BakgrunnsinformasjonRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    bakgrunnsinformasjon = request.bakgrunnsinformasjon,
+                )
             }
         }
 
         post("/deltaker/{deltakerId}/innhold") {
             val request = call.receive<EndreInnholdRequest>()
-            handleEndring(call, request) { deltaker ->
-                DeltakerEndring.Endring.EndreInnhold(
-                    deltaker.deltakerliste.tiltak.innhold
-                        ?.ledetekst,
-                    request.innhold.toInnholdModel(deltaker),
+            handleEndring(call, request) { deltaker, endretAv, endretAvEnhet ->
+                InnholdRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    deltakelsesinnhold = Deltakelsesinnhold(
+                        innhold = request.innhold.toInnholdModel(deltaker),
+                        ledetekst = deltaker.deltakerliste.tiltak.innhold
+                            ?.ledetekst,
+                    ),
                 )
             }
         }
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.EndreDeltakelsesmengde(
-                    deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
-                    dagerPerUke = request.dagerPerUke?.toFloat(),
-                    begrunnelse = request.begrunnelse,
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                DeltakelsesmengdeRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
+                    deltakelsesprosent = request.deltakelsesprosent,
+                    dagerPerUke = request.dagerPerUke,
                     gyldigFra = request.gyldigFra,
+                    begrunnelse = request.begrunnelse,
                 )
             }
         }
 
         post("/deltaker/{deltakerId}/startdato") {
             val request = call.receive<EndreStartdatoRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.EndreStartdato(
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                StartdatoRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
                     startdato = request.startdato,
                     sluttdato = request.sluttdato,
                     begrunnelse = request.begrunnelse,
@@ -174,50 +193,95 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/sluttdato") {
             val request = call.receive<EndreSluttdatoRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.EndreSluttdato(request.sluttdato, request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                SluttdatoRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
+                    sluttdato = request.sluttdato,
+                    begrunnelse = request.begrunnelse,
+                )
             }
         }
 
         post("/deltaker/{deltakerId}/sluttarsak") {
             val request = call.receive<EndreSluttarsakRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.EndreSluttarsak(request.aarsak, request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                SluttarsakRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
+                    aarsak = request.aarsak,
+                    begrunnelse = request.begrunnelse,
+                )
             }
         }
 
         post("/deltaker/{deltakerId}/ikke-aktuell") {
             val request = call.receive<IkkeAktuellRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.IkkeAktuellRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
+                    aarsak = request.aarsak,
+                    begrunnelse = request.begrunnelse,
+                )
             }
         }
 
         post("/deltaker/{deltakerId}/reaktiver") {
             val request = call.receive<ReaktiverDeltakelseRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.ReaktiverDeltakelse(LocalDate.now(), request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.ReaktiverDeltakelseRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    begrunnelse = request.begrunnelse,
+                )
             }
         }
 
         post("/deltaker/{deltakerId}/avslutt") {
             val request = call.receive<AvsluttDeltakelseRequest>()
-            handleEndring(call, request) {
-                if (request.harDeltatt() && request.harFullfort()) {
-                    require(request.sluttdato != null) { "Sluttdato er påkrevd for å avslutte deltakelse" }
-                    DeltakerEndring.Endring.AvsluttDeltakelse(
-                        request.aarsak,
-                        request.sluttdato,
-                        request.begrunnelse,
-                        request.harFullfort,
-                    )
-                } else if (request.harDeltatt() && !request.harFullfort()) {
-                    require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
-                    require(request.sluttdato != null) { "Sluttdato er påkrevd for å avbryte deltakelse" }
-                    DeltakerEndring.Endring.AvbrytDeltakelse(request.aarsak, request.sluttdato, request.begrunnelse)
-                } else {
-                    require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
-                    DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                when {
+                    request.harDeltatt() && request.harFullfort() -> {
+                        require(request.sluttdato != null) { "Sluttdato er påkrevd for å avslutte deltakelse" }
+                        no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.AvsluttDeltakelseRequest(
+                            endretAv = endretAv,
+                            endretAvEnhet = endretAvEnhet,
+                            forslagId = request.forslagId,
+                            sluttdato = request.sluttdato,
+                            aarsak = request.aarsak,
+                            begrunnelse = request.begrunnelse,
+                            harFullfort = request.harFullfort,
+                        )
+                    }
+
+                    request.harDeltatt() && !request.harFullfort() -> {
+                        require(request.aarsak != null) { "Årsak er påkrevd for å avbryte deltakelse" }
+                        require(request.sluttdato != null) { "Sluttdato er påkrevd for å avbryte deltakelse" }
+                        AvbrytDeltakelseRequest(
+                            endretAv = endretAv,
+                            endretAvEnhet = endretAvEnhet,
+                            forslagId = request.forslagId,
+                            sluttdato = request.sluttdato,
+                            aarsak = request.aarsak,
+                            begrunnelse = request.begrunnelse,
+                        )
+                    }
+
+                    else -> {
+                        require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
+                        no.nav.amt.lib.models.deltaker.internalapis.deltaker.request
+                            .IkkeAktuellRequest(
+                                endretAv = endretAv,
+                                endretAvEnhet = endretAvEnhet,
+                                forslagId = request.forslagId,
+                                aarsak = request.aarsak,
+                                begrunnelse = request.begrunnelse,
+                            )
+                    }
                 }
             }
         }
@@ -225,41 +289,61 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/endre-avslutning") {
             val request = call.receive<EndreAvslutningRequest>()
 
-            handleEndring(call, request) {
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
                 if (request.harDeltatt()) {
-                    DeltakerEndring.Endring.EndreAvslutning(
-                        aarsak = request.aarsak,
-                        harFullfort = request.harFullfort,
+                    no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndreAvslutningRequest(
+                        endretAv = endretAv,
+                        endretAvEnhet = endretAvEnhet,
+                        forslagId = request.forslagId,
                         sluttdato = request.sluttdato,
+                        aarsak = request.aarsak,
                         begrunnelse = request.begrunnelse,
+                        harFullfort = request.harFullfort,
                     )
                 } else {
                     require(request.aarsak != null) { "Årsak er påkrevd for å sette deltaker til ikke aktuell" }
-                    DeltakerEndring.Endring.IkkeAktuell(request.aarsak, request.begrunnelse)
+                    no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.IkkeAktuellRequest(
+                        endretAv = endretAv,
+                        endretAvEnhet = endretAvEnhet,
+                        forslagId = request.forslagId,
+                        aarsak = request.aarsak,
+                        begrunnelse = request.begrunnelse,
+                    )
                 }
             }
         }
 
         post("/deltaker/{deltakerId}/forleng") {
             val request = call.receive<ForlengDeltakelseRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.ForlengDeltakelse(request.sluttdato, request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.ForlengDeltakelseRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
+                    sluttdato = request.sluttdato,
+                    begrunnelse = request.begrunnelse,
+                )
             }
         }
 
         post("/deltaker/{deltakerId}/fjern-oppstartsdato") {
             val request = call.receive<FjernOppstartsdatoRequest>()
-            handleEndring(call, request) {
-                DeltakerEndring.Endring.FjernOppstartsdato(request.begrunnelse)
+            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+                no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.FjernOppstartsdatoRequest(
+                    endretAv = endretAv,
+                    endretAvEnhet = endretAvEnhet,
+                    forslagId = request.forslagId,
+                    begrunnelse = request.begrunnelse,
+                )
             }
         }
 
         // Get deltaker
         post("/deltaker/{deltakerId}") {
             val request = call.receive<DeltakerRequest>()
-            val deltakerId = call.parameters["deltakerId"]
+            val deltakerId = call.getDeltakerId()
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerRepository.get(UUID.fromString(deltakerId)).getOrThrow()
+            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
 
             if (request.personident != deltaker.navBruker.personident) {
                 log.warn("$deltakerId ble forsøkt lest med en annen navbruker i kontekst.")
@@ -274,7 +358,9 @@ fun Routing.registerDeltakerApi(
 
         get("/deltaker/{deltakerId}/historikk") {
             val navIdent = call.getNavIdent()
-            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["deltakerId"])).getOrThrow()
+            val deltakerId = call.getDeltakerId()
+
+            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
             tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
             log.info("Nav-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
