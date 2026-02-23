@@ -10,7 +10,6 @@ import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
-import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.utils.database.Database
@@ -35,167 +34,26 @@ class DeltakerService(
         forslagId: UUID? = null,
     ): Deltaker {
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
-        val deltakeroppdatering = when (endring) {
-            is DeltakerEndring.Endring.EndreBakgrunnsinformasjon -> {
-                amtDeltakerClient
-                    .endreBakgrunnsinformasjon(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        bakgrunnsinformasjon = endring.bakgrunnsinformasjon,
-                    ).toDeltakeroppdatering()
-            }
 
-            is DeltakerEndring.Endring.EndreInnhold -> {
-                amtDeltakerClient
-                    .endreInnhold(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        innhold = Deltakelsesinnhold(
-                            ledetekst = endring.ledetekst,
-                            innhold = endring.innhold,
-                        ),
-                    ).toDeltakeroppdatering()
-            }
+        val endringRequest = endring.toEndringRequest(
+            endretAv = endretAv,
+            endretAvEnhet = endretAvEnhet,
+            forslagId = forslagId,
+        )
 
-            is DeltakerEndring.Endring.AvsluttDeltakelse -> {
-                amtDeltakerClient
-                    .avsluttDeltakelse(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        sluttdato = endring.sluttdato,
-                        aarsak = endring.aarsak,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
+        val deltakeroppdatering = amtDeltakerClient
+            .postEndreDeltaker(
+                deltakerId = deltaker.id,
+                requestBody = endringRequest,
+            ).toDeltakeroppdatering()
 
-            is DeltakerEndring.Endring.AvbrytDeltakelse -> {
-                amtDeltakerClient
-                    .avbrytDeltakelse(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        sluttdato = endring.sluttdato,
-                        aarsak = endring.aarsak,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.EndreAvslutning -> {
-                amtDeltakerClient
-                    .endreAvslutning(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        aarsak = endring.aarsak,
-                        begrunnelse = endring.begrunnelse,
-                        harFullfort = endring.harFullfort,
-                        sluttdato = endring.sluttdato,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.EndreDeltakelsesmengde -> {
-                amtDeltakerClient
-                    .endreDeltakelsesmengde(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        deltakelsesprosent = endring.deltakelsesprosent,
-                        dagerPerUke = endring.dagerPerUke,
-                        begrunnelse = endring.begrunnelse,
-                        gyldigFra = endring.gyldigFra,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.EndreSluttarsak -> {
-                amtDeltakerClient
-                    .endreSluttaarsak(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        aarsak = endring.aarsak,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.EndreSluttdato -> {
-                amtDeltakerClient
-                    .endreSluttdato(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        sluttdato = endring.sluttdato,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.EndreStartdato -> {
-                amtDeltakerClient
-                    .endreStartdato(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        startdato = endring.startdato,
-                        sluttdato = endring.sluttdato,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.ForlengDeltakelse -> {
-                amtDeltakerClient
-                    .forlengDeltakelse(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        sluttdato = endring.sluttdato,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.IkkeAktuell -> {
-                amtDeltakerClient
-                    .ikkeAktuell(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        aarsak = endring.aarsak,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.ReaktiverDeltakelse -> {
-                val response = amtDeltakerClient.reaktiverDeltakelse(
-                    deltakerId = deltaker.id,
-                    endretAv = endretAv,
-                    endretAvEnhet = endretAvEnhet,
-                    begrunnelse = endring.begrunnelse,
-                )
-                slettKladd(deltaker.deltakerliste.id, deltaker.navBruker.personident)
-                response.toDeltakeroppdatering()
-            }
-
-            is DeltakerEndring.Endring.FjernOppstartsdato -> {
-                amtDeltakerClient
-                    .fjernOppstartsdato(
-                        deltakerId = deltaker.id,
-                        endretAv = endretAv,
-                        endretAvEnhet = endretAvEnhet,
-                        begrunnelse = endring.begrunnelse,
-                        forslagId = forslagId,
-                    ).toDeltakeroppdatering()
-            }
+        if (endring is DeltakerEndring.Endring.ReaktiverDeltakelse) {
+            slettKladd(
+                deltakerlisteId = deltaker.deltakerliste.id,
+                personident = deltaker.navBruker.personident,
+            )
         }
+
         oppdaterDeltaker(deltakeroppdatering)
         return deltaker.oppdater(deltakeroppdatering)
     }
