@@ -54,7 +54,7 @@ class DeltakerService(
 
         oppdaterDeltaker(
             deltakeroppdatering = deltakeroppdatering,
-            beforeUpsert = {
+            afterUpsert = {
                 if (endringRequest is EndringForslagRequest) {
                     endringRequest.forslagId?.let { forslagId -> forslagRepository.delete(forslagId) }
                 }
