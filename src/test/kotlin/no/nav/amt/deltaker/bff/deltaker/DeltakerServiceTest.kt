@@ -220,6 +220,7 @@ class DeltakerServiceTest {
                         "beskrivelse",
                     ),
                     begrunnelse = "begrunnelse",
+                    harFullfort = true,
                 ),
                 DeltakerEndring.Endring.AvbrytDeltakelse(
                     sluttdato = LocalDate.now(),
