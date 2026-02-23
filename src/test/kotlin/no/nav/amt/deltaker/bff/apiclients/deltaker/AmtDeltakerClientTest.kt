@@ -67,11 +67,13 @@ class AmtDeltakerClientTest {
     inner class EndreBakgrunnsinformasjon {
         val endreBakgrunnsinformasjonLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.endreBakgrunnsinformasjon(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    bakgrunnsinformasjon = "~bakgrunnsinformasjon~",
+                    requestBody = BakgrunnsinformasjonRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        bakgrunnsinformasjon = "~bakgrunnsinformasjon~",
+                    ),
                 )
             }
 
@@ -103,11 +105,13 @@ class AmtDeltakerClientTest {
         val innhold = Deltakelsesinnhold(null, emptyList())
         val endreInnholdLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.endreInnhold(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    innhold = innhold,
+                    requestBody = InnholdRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        deltakelsesinnhold = innhold,
+                    ),
                 )
             }
 
@@ -138,15 +142,17 @@ class AmtDeltakerClientTest {
     inner class EndreDeltakelsesmengde {
         val endreDeltakelsesmengdeLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.endreDeltakelsesmengde(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    deltakelsesprosent = null,
-                    dagerPerUke = null,
-                    gyldigFra = null,
-                    begrunnelse = null,
-                    forslagId = null,
+                    requestBody = DeltakelsesmengdeRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        deltakelsesprosent = null,
+                        dagerPerUke = null,
+                        gyldigFra = null,
+                        begrunnelse = null,
+                        forslagId = null,
+                    ),
                 )
             }
 
@@ -177,14 +183,16 @@ class AmtDeltakerClientTest {
     inner class EndreStartdato {
         val endreStartdatoLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.endreStartdato(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    startdato = null,
-                    sluttdato = null,
-                    begrunnelse = null,
-                    forslagId = null,
+                    requestBody = StartdatoRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        startdato = null,
+                        sluttdato = null,
+                        begrunnelse = null,
+                        forslagId = null,
+                    ),
                 )
             }
 
@@ -215,13 +223,15 @@ class AmtDeltakerClientTest {
     inner class EndreSluttdato {
         val endreSluttdatoLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.endreSluttdato(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    sluttdato = LocalDate.now(),
-                    begrunnelse = null,
-                    forslagId = null,
+                    requestBody = SluttdatoRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        sluttdato = LocalDate.now(),
+                        begrunnelse = null,
+                        forslagId = null,
+                    ),
                 )
             }
 
@@ -252,16 +262,18 @@ class AmtDeltakerClientTest {
     inner class EndreSluttaarsak {
         val endreSluttaarsakLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.endreSluttaarsak(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    aarsak = DeltakerEndring.Aarsak(
-                        DeltakerEndring.Aarsak.Type.ANNET,
-                        "~beskrivelse~",
+                    requestBody = SluttarsakRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        aarsak = DeltakerEndring.Aarsak(
+                            DeltakerEndring.Aarsak.Type.ANNET,
+                            "~beskrivelse~",
+                        ),
+                        begrunnelse = null,
+                        forslagId = null,
                     ),
-                    begrunnelse = null,
-                    forslagId = null,
                 )
             }
 
@@ -292,13 +304,15 @@ class AmtDeltakerClientTest {
     inner class ForlengDeltakelse {
         val forlengDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.forlengDeltakelse(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    sluttdato = LocalDate.now(),
-                    begrunnelse = null,
-                    forslagId = null,
+                    requestBody = ForlengDeltakelseRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        sluttdato = LocalDate.now(),
+                        begrunnelse = null,
+                        forslagId = null,
+                    ),
                 )
             }
 
@@ -329,16 +343,18 @@ class AmtDeltakerClientTest {
     inner class IkkeAktuell {
         val ikkeAktuellLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.ikkeAktuell(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    aarsak = DeltakerEndring.Aarsak(
-                        DeltakerEndring.Aarsak.Type.ANNET,
-                        "~beskrivelse~",
+                    requestBody = IkkeAktuellRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        aarsak = DeltakerEndring.Aarsak(
+                            DeltakerEndring.Aarsak.Type.ANNET,
+                            "~beskrivelse~",
+                        ),
+                        begrunnelse = null,
+                        forslagId = null,
                     ),
-                    begrunnelse = null,
-                    forslagId = null,
                 )
             }
 
@@ -369,11 +385,13 @@ class AmtDeltakerClientTest {
     inner class ReaktiverDeltakelse {
         val reaktiverDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.reaktiverDeltakelse(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    begrunnelse = "~begrunnelse~",
+                    requestBody = ReaktiverDeltakelseRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        begrunnelse = "~begrunnelse~",
+                    ),
                 )
             }
 
@@ -404,18 +422,20 @@ class AmtDeltakerClientTest {
     inner class AvsluttDeltakelse {
         val avsluttDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.avsluttDeltakelse(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    sluttdato = LocalDate.now(),
-                    aarsak = DeltakerEndring.Aarsak(
-                        DeltakerEndring.Aarsak.Type.ANNET,
-                        "~beskrivelse~",
+                    requestBody = AvsluttDeltakelseRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        sluttdato = LocalDate.now(),
+                        aarsak = DeltakerEndring.Aarsak(
+                            DeltakerEndring.Aarsak.Type.ANNET,
+                            "~beskrivelse~",
+                        ),
+                        begrunnelse = null,
+                        forslagId = null,
+                        harFullfort = null,
                     ),
-                    begrunnelse = null,
-                    forslagId = null,
-                    harFullfort = true,
                 )
             }
 
@@ -446,17 +466,19 @@ class AmtDeltakerClientTest {
     inner class AvbrytDeltakelse {
         val avbrytDeltakelseLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.avbrytDeltakelse(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    sluttdato = LocalDate.now(),
-                    aarsak = DeltakerEndring.Aarsak(
-                        DeltakerEndring.Aarsak.Type.ANNET,
-                        "~beskrivelse~",
+                    AvbrytDeltakelseRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        sluttdato = LocalDate.now(),
+                        aarsak = DeltakerEndring.Aarsak(
+                            DeltakerEndring.Aarsak.Type.ANNET,
+                            "~beskrivelse~",
+                        ),
+                        begrunnelse = null,
+                        forslagId = null,
                     ),
-                    begrunnelse = null,
-                    forslagId = null,
                 )
             }
 
@@ -487,12 +509,14 @@ class AmtDeltakerClientTest {
     inner class FjernOppstartsdato {
         val fjernOppstartsdatoLambda: suspend (AmtDeltakerClient) -> DeltakerEndringResponse =
             { client ->
-                client.fjernOppstartsdato(
+                client.postEndreDeltaker(
                     deltakerId = deltakerInTest.id,
-                    endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
-                    begrunnelse = null,
-                    forslagId = null,
+                    FjernOppstartsdatoRequest(
+                        endretAv = "~endretAv~",
+                        endretAvEnhet = "~endretAvEnhet~",
+                        begrunnelse = null,
+                        forslagId = null,
+                    ),
                 )
             }
 
