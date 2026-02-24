@@ -179,8 +179,11 @@ data class DeltakerResponse(
                 bakgrunnsinformasjon = bakgrunnsinformasjon,
                 deltakelsesinnhold = deltakelsesinnhold?.let {
                     DeltakelsesinnholdDto.fromDeltakelsesinnhold(
-                        it,
-                        getInnholdselementer(deltakerliste.tiltak.innhold?.innholdselementer, deltakerliste.tiltak.tiltakskode),
+                        deltakelsesinnhold = it,
+                        tiltaksInnhold = getInnholdselementer(
+                            innholdselementer = deltakerliste.tiltak.innhold?.innholdselementer,
+                            tiltakstype = deltakerliste.tiltak.tiltakskode,
+                        ),
                     )
                 },
                 vedtaksinformasjon = vedtaksinformasjon?.let { VedtaksinformasjonDto.fromVedtak(it, ansatte, vedtakSistEndretAvEnhet) },

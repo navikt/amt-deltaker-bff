@@ -127,6 +127,7 @@ class DeltakerV2Consumer(
             kanEndres = true,
             sistEndret = sistEndret ?: LocalDateTime.now(),
             erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+            opprettet = LocalDateTime.now(),
         )
 
         private fun DeltakerKafkaPayload.toDeltakerOppdatering(): Deltakeroppdatering {

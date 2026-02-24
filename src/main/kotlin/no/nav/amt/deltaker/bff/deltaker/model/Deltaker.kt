@@ -27,10 +27,13 @@ data class Deltaker(
     val bakgrunnsinformasjon: String?,
     val deltakelsesinnhold: Deltakelsesinnhold?,
     val status: DeltakerStatus,
-    val historikk: List<DeltakerHistorikk>,
-    val kanEndres: Boolean,
+    // Vedtaksinformasjon finnes kun i amt-deltaker
     val sistEndret: LocalDateTime,
+    // kilde finnes kun i amt-deltaker
     val erManueltDeltMedArrangor: Boolean,
+    val historikk: List<DeltakerHistorikk>, // finnes ikke i amt-deltaker
+    val kanEndres: Boolean, // finnes ikke i amt-deltaker
+    val opprettet: LocalDateTime,
 ) {
     val deltakelsesmengder: Deltakelsesmengder
         get() = startdato?.let { historikk.toDeltakelsesmengder().periode(it, sluttdato) } ?: historikk.toDeltakelsesmengder()

@@ -370,10 +370,12 @@ class DeltakerRepository {
                 d.deltakelsesprosent AS "d.deltakelsesprosent",
                 d.bakgrunnsinformasjon AS "d.bakgrunnsinformasjon",
                 d.innhold AS "d.innhold",
-                d.historikk AS "d.historikk",
-                d.modified_at AS "d.modified_at",
+                d.historikk AS "d.historikk",                
                 d.kan_endres AS "d.kan_endres",
                 d.er_manuelt_delt_med_arrangor AS "d.er_manuelt_delt_med_arrangor",
+                d.created_at AS "d.created_at",
+                d.modified_at AS "d.modified_at",
+
                 nb.personident AS "nb.personident",
                 nb.fornavn AS "nb.fornavn",
                 nb.mellomnavn AS "nb.mellomnavn",
@@ -489,8 +491,9 @@ class DeltakerRepository {
             status = mapDeltakerStatus(row),
             historikk = objectMapper.readValue(row.string("d.historikk").trim()),
             kanEndres = row.boolean("d.kan_endres"),
-            sistEndret = row.localDateTime("d.modified_at"),
             erManueltDeltMedArrangor = row.boolean("d.er_manuelt_delt_med_arrangor"),
+            opprettet = row.localDateTime("d.created_at"),
+            sistEndret = row.localDateTime("d.modified_at"),
         )
     }
 }

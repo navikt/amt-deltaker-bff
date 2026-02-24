@@ -26,6 +26,7 @@ object DtoMappers {
         )
     }
 
+    // benyttes i PaameldingClient
     fun utkastRequestFromUtkast(utkast: Utkast): UtkastRequest = with(utkast.pamelding) {
         UtkastRequest(
             deltakelsesinnhold = deltakelsesinnhold,
@@ -38,6 +39,7 @@ object DtoMappers {
         )
     }
 
+    // benyttes i PaameldingService og TiltakskoordinatorService
     fun UtkastResponse.toDeltakerOppdatering() = Deltakeroppdatering(
         id = id,
         startdato = startdato,
@@ -51,6 +53,7 @@ object DtoMappers {
         erManueltDeltMedArrangor = false,
     )
 
+    // benyttes i DeltakerService
     fun DeltakerEndringResponse.toDeltakeroppdatering() = Deltakeroppdatering(
         id = id,
         startdato = startdato,
@@ -64,6 +67,7 @@ object DtoMappers {
         erManueltDeltMedArrangor = false,
     )
 
+    // benyttes i TiltakskoordinatorService
     fun DeltakerOppdateringResponse.toDeltakerOppdatering() = Deltakeroppdatering(
         id = id,
         startdato = startdato,
@@ -78,20 +82,22 @@ object DtoMappers {
         erManueltDeltMedArrangor = erManueltDeltMedArrangor,
     )
 
-    fun deltakerOppdateringResponseFromDeltaker(deltaker: Deltaker, feilkode: DeltakerOppdateringFeilkode? = null) = with(deltaker) {
-        DeltakerOppdateringResponse(
-            id = id,
-            startdato = startdato,
-            sluttdato = sluttdato,
-            dagerPerUke = dagerPerUke,
-            deltakelsesprosent = deltakelsesprosent,
-            bakgrunnsinformasjon = bakgrunnsinformasjon,
-            deltakelsesinnhold = deltakelsesinnhold,
-            status = status,
-            historikk = historikk,
-            erManueltDeltMedArrangor = erManueltDeltMedArrangor,
-            sistEndret = sistEndret,
-            feilkode = feilkode,
-        )
-    }
+    // benyttes kun i tester (tiltakskoordinator)
+    internal fun deltakerOppdateringResponseFromDeltaker(deltaker: Deltaker, feilkode: DeltakerOppdateringFeilkode? = null) =
+        with(deltaker) {
+            DeltakerOppdateringResponse(
+                id = id,
+                startdato = startdato,
+                sluttdato = sluttdato,
+                dagerPerUke = dagerPerUke,
+                deltakelsesprosent = deltakelsesprosent,
+                bakgrunnsinformasjon = bakgrunnsinformasjon,
+                deltakelsesinnhold = deltakelsesinnhold,
+                status = status,
+                historikk = historikk,
+                erManueltDeltMedArrangor = erManueltDeltMedArrangor,
+                sistEndret = sistEndret,
+                feilkode = feilkode,
+            )
+        }
 }
