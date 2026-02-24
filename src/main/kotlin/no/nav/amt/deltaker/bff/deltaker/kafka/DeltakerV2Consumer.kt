@@ -41,7 +41,9 @@ class DeltakerV2Consumer(
     suspend fun consume(key: UUID, value: String?) {
         if (value == null) {
             log.info("Mottok tombstone for deltaker $key - sletter deltaker")
-            deltakerService.delete(key)
+            Database.transaction {
+                deltakerService.deleteDeltaker(key)
+            }
             return
         }
 

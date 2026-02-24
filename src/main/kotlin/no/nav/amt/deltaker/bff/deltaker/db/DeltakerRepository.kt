@@ -209,7 +209,7 @@ class DeltakerRepository {
         return Database.query { session -> session.run(query) }
     }
 
-    fun getKladdForDeltakerliste(deltakerlisteId: UUID, personident: String): Deltaker? {
+    fun getKladdForDeltakerliste(deltakerlisteId: UUID, personident: String): Result<Deltaker> = runCatching {
         val sql = getDeltakerSql(
             """
             WHERE 
@@ -219,15 +219,17 @@ class DeltakerRepository {
             """.trimIndent(),
         )
 
-        val query = queryOf(
-            sql,
-            mapOf(
-                "deltakerliste_id" to deltakerlisteId,
-                "personident" to personident,
-            ),
-        ).map(::rowMapper).asSingle
-
-        return Database.query { session -> session.run(query) }
+        Database.query { session ->
+            session.run(
+                queryOf(
+                    sql,
+                    mapOf(
+                        "deltakerliste_id" to deltakerlisteId,
+                        "personident" to personident,
+                    ),
+                ).map(::rowMapper).asSingle,
+            ) ?: throw NoSuchElementException("Ingen kladd for deltakerliste $deltakerlisteId og personident")
+        }
     }
 
     fun getTidligereAvsluttedeDeltakelser(deltakerId: UUID): List<UUID> {

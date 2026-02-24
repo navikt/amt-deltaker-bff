@@ -2,7 +2,6 @@ package no.nav.amt.deltaker.bff.deltaker
 
 import no.nav.amt.deltaker.bff.apiclients.DtoMappers.toDeltakeroppdatering
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
-import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerStatusRepository
 import no.nav.amt.deltaker.bff.deltaker.forslag.ForslagRepository
@@ -22,7 +21,6 @@ import java.util.UUID
 class DeltakerService(
     private val deltakerRepository: DeltakerRepository,
     private val amtDeltakerClient: AmtDeltakerClient,
-    private val paameldingClient: PaameldingClient,
     private val navEnhetService: NavEnhetService,
     private val forslagRepository: ForslagRepository,
 ) {
@@ -41,19 +39,16 @@ class DeltakerService(
                 requestBody = endringRequest,
             ).toDeltakeroppdatering()
 
-        if (endringRequest is ReaktiverDeltakelseRequest) {
-            // Code-review note: Her benyttes paameldingClient.slettKladd før all info om deltaker slettes fra db.
-            // Kallet til paameldingClient.slettKladd kan elimineres ved å la amt-deltaker slette kladd som en
-            // del av amtDeltakerClient.postEndreDeltaker.
-            // Sletting av kladd kan da flyttes inn i transaksjonen under.
-            slettKladd(
-                deltakerlisteId = deltaker.deltakerliste.id,
-                personident = deltaker.navBruker.personident,
-            )
-        }
-
         oppdaterDeltaker(
             deltakeroppdatering = deltakeroppdatering,
+            beforeUpsert = {
+                if (endringRequest is ReaktiverDeltakelseRequest) {
+                    slettKladdIfExists(
+                        deltakerlisteId = deltaker.deltakerliste.id,
+                        personident = deltaker.navBruker.personident,
+                    )
+                }
+            },
             afterUpsert = {
                 if (endringRequest is EndringForslagRequest) {
                     endringRequest.forslagId?.let { forslagId -> forslagRepository.delete(forslagId) }
@@ -62,6 +57,15 @@ class DeltakerService(
         )
 
         return deltaker.oppdater(deltakeroppdatering)
+    }
+
+    /**
+     * Benyttes av [oppdaterDeltaker] og kaller ikke amt-deltaker
+     */
+    private fun slettKladdIfExists(deltakerlisteId: UUID, personident: String) {
+        deltakerRepository.getKladdForDeltakerliste(deltakerlisteId, personident).onSuccess { deltaker ->
+            deleteDeltaker(deltaker.id)
+        }
     }
 
     // benyttes av DeltakerV2Consumer
@@ -190,22 +194,7 @@ class DeltakerService(
         }
     }
 
-    private suspend fun slettKladd(deltakerlisteId: UUID, personident: String): Boolean {
-        val kladd = deltakerRepository.getKladdForDeltakerliste(deltakerlisteId, personident)
-        return kladd?.let { slettKladd(kladd) } == true
-    }
-
-    suspend fun slettKladd(deltaker: Deltaker): Boolean {
-        if (deltaker.status.type != DeltakerStatus.Type.KLADD) {
-            log.warn("Kan ikke slette deltaker med id ${deltaker.id} som har status ${deltaker.status.type}")
-            return false
-        }
-        paameldingClient.slettKladd(deltaker.id)
-        delete(deltaker.id)
-        return true
-    }
-
-    suspend fun delete(deltakerId: UUID) = Database.transaction {
+    fun deleteDeltaker(deltakerId: UUID) {
         forslagRepository.deleteForDeltaker(deltakerId)
         DeltakerStatusRepository.slettStatus(deltakerId)
         deltakerRepository.slettDeltaker(deltakerId)

@@ -9,7 +9,6 @@ import kotlinx.coroutines.runBlocking
 import no.nav.amt.deltaker.bff.apiclients.DtoMappers.deltakerOppdateringResponseFromDeltaker
 import no.nav.amt.deltaker.bff.apiclients.deltaker.AmtDeltakerClient
 import no.nav.amt.deltaker.bff.apiclients.distribusjon.AmtDistribusjonClient
-import no.nav.amt.deltaker.bff.apiclients.paamelding.PaameldingClient
 import no.nav.amt.deltaker.bff.apiclients.tiltakskoordinator.TiltaksKoordinatorClient
 import no.nav.amt.deltaker.bff.deltaker.DeltakerService
 import no.nav.amt.deltaker.bff.deltaker.db.DeltakerRepository
@@ -33,7 +32,6 @@ import java.util.UUID
 
 class TiltakskoordinatorServiceIntegrationTest {
     private val amtDeltakerClient = mockk<AmtDeltakerClient>()
-    private val paameldingClient = mockk<PaameldingClient>()
     private val tiltaksKoordinatorClient = mockk<TiltaksKoordinatorClient>()
 
     private val navEnhetService = mockk<NavEnhetService>()
@@ -44,7 +42,6 @@ class TiltakskoordinatorServiceIntegrationTest {
     private val deltakerService = DeltakerService(
         deltakerRepository = deltakerRepository,
         amtDeltakerClient = amtDeltakerClient,
-        paameldingClient = paameldingClient,
         navEnhetService = navEnhetService,
         forslagRepository = forslagRepository,
     )
