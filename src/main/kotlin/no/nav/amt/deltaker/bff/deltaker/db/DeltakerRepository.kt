@@ -105,7 +105,7 @@ class DeltakerRepository {
                 :er_manuelt_delt_med_arrangor
             )
             ON CONFLICT (id) DO UPDATE SET 
-                person_id          = :person_id,
+                person_id            = :person_id,
                 startdato            = :startdato,
                 sluttdato            = :sluttdato,
                 dager_per_uke        = :dagerPerUke,
@@ -143,7 +143,7 @@ class DeltakerRepository {
         Database.query { session ->
             session.run(
                 queryOf(
-                    getDeltakerSql("WHERE d.id = :id"),
+                    getDeltakerSql("d.id = :id"),
                     mapOf("id" to id),
                 ).map(::rowMapper).asSingle,
             ) ?: throw NoSuchElementException("Ingen deltaker med id $id")
@@ -156,66 +156,49 @@ class DeltakerRepository {
         return Database.query { session ->
             session.run(
                 queryOf(
-                    getDeltakerSql("WHERE d.id = ANY(:ider::uuid[])"),
+                    getDeltakerSql("d.id = ANY(:ider::uuid[])"),
                     mapOf("ider" to ider.toTypedArray()),
                 ).map(::rowMapper).asList,
             )
         }
     }
 
-    fun getMany(personident: String, deltakerlisteId: UUID): List<Deltaker> {
-        val sql = getDeltakerSql(
-            """
-            WHERE 
-                nb.personident = :personident 
-                AND d.deltakerliste_id = :deltakerliste_id 
-            """.trimIndent(),
+    fun getMany(personident: String, deltakerlisteId: UUID): List<Deltaker> = Database.query { session ->
+        session.run(
+            queryOf(
+                getDeltakerSql("nb.personident = :personident AND d.deltakerliste_id = :deltakerliste_id"),
+                mapOf(
+                    "personident" to personident,
+                    "deltakerliste_id" to deltakerlisteId,
+                ),
+            ).map(::rowMapper).asList,
         )
-
-        val query = queryOf(
-            sql,
-            mapOf(
-                "personident" to personident,
-                "deltakerliste_id" to deltakerlisteId,
-            ),
-        ).map(::rowMapper).asList
-
-        return Database.query { session -> session.run(query) }
     }
 
     fun getMany(personident: String): List<Deltaker> = Database.query { session ->
         session.run(
             queryOf(
-                getDeltakerSql("WHERE nb.personident = :personident"),
+                getDeltakerSql("nb.personident = :personident"),
                 mapOf("personident" to personident),
             ).map(::rowMapper).asList,
         )
     }
 
-    fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> {
-        val sql = getDeltakerSql(
-            """
-            WHERE 
-               d.deltakerliste_id = :deltakerliste_id 
-               AND ds.type = 'KLADD'
-            """.trimIndent(),
+    fun getKladderForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> = Database.query { session ->
+        session.run(
+            queryOf(
+                getDeltakerSql("d.deltakerliste_id = :deltakerliste_id AND ds.type = 'KLADD'"),
+                mapOf("deltakerliste_id" to deltakerlisteId),
+            ).map(::rowMapper).asList,
         )
-
-        val query = queryOf(
-            sql,
-            mapOf("deltakerliste_id" to deltakerlisteId),
-        ).map(::rowMapper).asList
-
-        return Database.query { session -> session.run(query) }
     }
 
     fun getKladdForDeltakerliste(deltakerlisteId: UUID, personident: String): Result<Deltaker> = runCatching {
         val sql = getDeltakerSql(
             """
-            WHERE 
-               d.deltakerliste_id = :deltakerliste_id
-               AND nb.personident = :personident
-               AND ds.type = 'KLADD'
+            d.deltakerliste_id = :deltakerliste_id
+            AND nb.personident = :personident
+            AND ds.type = 'KLADD'
             """.trimIndent(),
         )
 
@@ -258,21 +241,13 @@ class DeltakerRepository {
         return Database.query { session -> session.run(query) }
     }
 
-    fun getUtdaterteKladder(sistEndret: LocalDateTime): List<Deltaker> {
-        val sql = getDeltakerSql(
-            """
-            WHERE 
-                ds.type = 'KLADD'
-                AND d.modified_at < :sist_endret
-            """.trimIndent(),
+    fun getUtdaterteKladder(sistEndret: LocalDateTime): List<Deltaker> = Database.query { session ->
+        session.run(
+            queryOf(
+                getDeltakerSql("ds.type = 'KLADD' AND d.modified_at < :sist_endret"),
+                mapOf("sist_endret" to sistEndret),
+            ).map(::rowMapper).asList,
         )
-
-        val query = queryOf(
-            sql,
-            mapOf("sist_endret" to sistEndret),
-        ).map(::rowMapper).asList
-
-        return Database.query { session -> session.run(query) }
     }
 
     fun slettDeltaker(deltakerId: UUID) {
@@ -337,7 +312,7 @@ class DeltakerRepository {
         Database.query { session ->
             session.update(
                 queryOf(
-                    updateDeltakerSQL(false),
+                    updateDeltakerSql(false),
                     params,
                 ),
             )
@@ -345,18 +320,18 @@ class DeltakerRepository {
     }
 
     fun updateBatch(deltakere: List<Deltakeroppdatering>) {
-        val deltakerParams = deltakere.map { batchUpdateDeltakerParams(it) }
-        val sql = updateDeltakerSQL(true)
-
         Database.query { session ->
-            session.batchPreparedNamedStatement(sql, deltakerParams)
+            session.batchPreparedNamedStatement(
+                updateDeltakerSql(true),
+                deltakere.map { batchUpdateDeltakerParams(it) },
+            )
         }
     }
 
     fun getForDeltakerliste(deltakerlisteId: UUID): List<Deltaker> = Database.query { session ->
         session.run(
             queryOf(
-                getDeltakerSql("WHERE dl.id = :deltakerliste_id"),
+                getDeltakerSql("dl.id = :deltakerliste_id"),
                 mapOf("deltakerliste_id" to deltakerlisteId),
             ).map(::rowMapper).asList,
         )
@@ -383,7 +358,7 @@ class DeltakerRepository {
     companion object {
         private val avsluttendeDeltakerStatuser = AVSLUTTENDE_STATUSER.map { it.name }
 
-        private fun getDeltakerSql(where: String) =
+        private fun getDeltakerSql(whereClause: String) =
             """
             SELECT 
                 d.id AS "d.id",
@@ -445,7 +420,8 @@ class DeltakerRepository {
                 JOIN arrangor a ON a.id = dl.arrangor_id
                 JOIN tiltakstype t ON t.id = dl.tiltakstype_id
                 LEFT JOIN arrangor oa ON oa.id = a.overordnet_arrangor_id
-                $where
+            WHERE 
+                $whereClause
             """.trimIndent()
 
         private fun batchUpdateDeltakerParams(deltaker: Deltakeroppdatering) = mapOf(
@@ -461,7 +437,7 @@ class DeltakerRepository {
             "er_manuelt_delt_med_arrangor" to deltaker.erManueltDeltMedArrangor,
         )
 
-        private fun updateDeltakerSQL(erBatchUpdate: Boolean): String =
+        private fun updateDeltakerSql(erBatchUpdate: Boolean): String =
             """
             UPDATE deltaker SET 
                 startdato            = :startdato,
