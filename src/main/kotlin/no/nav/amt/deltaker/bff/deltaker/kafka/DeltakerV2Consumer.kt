@@ -81,15 +81,18 @@ class DeltakerV2Consumer(
             }
         } else {
             log.info("Oppdaterer deltaker med id ${deltakerPayload.id}")
-            deltakerService.oppdaterDeltaker(deltakerPayload.toDeltakerOppdatering()) {
-                deltakerService.oppdaterDeltakerLaas(
-                    deltakerId = deltakerPayload.id,
-                    personident = navBruker.personident,
-                    deltakerlisteId = deltakerPayload.deltakerliste.id,
-                )
+            deltakerService.oppdaterDeltaker(
+                deltakeroppdatering = deltakerPayload.toDeltakerOppdatering(),
+                afterUpsert = {
+                    deltakerService.oppdaterDeltakerLaas(
+                        deltakerId = deltakerPayload.id,
+                        personident = navBruker.personident,
+                        deltakerlisteId = deltakerPayload.deltakerliste.id,
+                    )
 
-                vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
-            }
+                    vurderingService.upsertMany(deltakerPayload.vurderingerFraArrangor.orEmpty())
+                },
+            )
 
             lagretDeltaker.navBruker.let {
                 if (it.adresse == null) {
