@@ -200,15 +200,20 @@ class DeltakerServiceTest {
             val deltaker = lagDeltaker()
             TestRepository.insert(deltaker)
 
+            val navEnhet = navEnhetService
+                .hentEnhet(
+                    deltaker.navBruker.navEnhetId.shouldNotBeNull(),
+                ).shouldNotBeNull()
+
             val endringRequests = listOf(
                 BakgrunnsinformasjonRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     bakgrunnsinformasjon = "foo",
                 ),
                 InnholdRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     deltakelsesinnhold = Deltakelsesinnhold(
                         ledetekst = "~ledetekst~",
                         innhold = listOf(Innhold("tekst,", "innholdskode,", true, "beskrivelse")),
@@ -216,7 +221,7 @@ class DeltakerServiceTest {
                 ),
                 DeltakelsesmengdeRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     deltakelsesprosent = 50,
                     dagerPerUke = 2,
@@ -225,7 +230,7 @@ class DeltakerServiceTest {
                 ),
                 StartdatoRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     startdato = LocalDate.now(),
                     sluttdato = LocalDate.now().plusWeeks(2),
@@ -233,14 +238,14 @@ class DeltakerServiceTest {
                 ),
                 SluttdatoRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     sluttdato = LocalDate.now(),
                     begrunnelse = null,
                 ),
                 SluttarsakRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     aarsak = DeltakerEndring.Aarsak(
                         type = DeltakerEndring.Aarsak.Type.ANNET,
@@ -250,14 +255,14 @@ class DeltakerServiceTest {
                 ),
                 ForlengDeltakelseRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     sluttdato = LocalDate.now(),
                     begrunnelse = "begrunnelse",
                 ),
                 IkkeAktuellRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     DeltakerEndring.Aarsak(
                         type = DeltakerEndring.Aarsak.Type.ANNET,
@@ -267,7 +272,7 @@ class DeltakerServiceTest {
                 ),
                 AvsluttDeltakelseRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     sluttdato = LocalDate.now(),
                     aarsak = DeltakerEndring.Aarsak(
@@ -279,7 +284,7 @@ class DeltakerServiceTest {
                 ),
                 AvbrytDeltakelseRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     sluttdato = LocalDate.now(),
                     aarsak = DeltakerEndring.Aarsak(
@@ -290,18 +295,16 @@ class DeltakerServiceTest {
                 ),
                 ReaktiverDeltakelseRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     begrunnelse = "begrunnelse",
                 ),
                 FjernOppstartsdatoRequest(
                     endretAv = "~endretAv~",
-                    endretAvEnhet = "~endretAvEnhet~",
+                    endretAvEnhet = navEnhet.enhetsnummer,
                     forslagId = null,
                     begrunnelse = "begrunnelse",
                 ),
             )
-
-            val navEnhet = navEnhetService.hentEnhet(deltaker.navBruker.navEnhetId!!)!!
 
             endringRequests.forEach { endringRequest ->
                 MockResponseHandler.addEndringsresponse(
@@ -316,7 +319,6 @@ class DeltakerServiceTest {
                 val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
                     deltaker = deltaker,
                     endringRequest = endringRequest,
-                    endretAvEnhet = navEnhet.enhetsnummer,
                 )
 
                 when (endringRequest) {
@@ -405,7 +407,7 @@ class DeltakerServiceTest {
 
             val endringRequest = ReaktiverDeltakelseRequest(
                 endretAv = "~endretAv~",
-                endretAvEnhet = "~endretAvEnhet~",
+                endretAvEnhet = navEnhet.enhetsnummer,
                 begrunnelse = "begrunnelse",
             )
 
@@ -419,9 +421,8 @@ class DeltakerServiceTest {
             deltakerRepository.get(deltakerKladd.id).shouldBeSuccess()
 
             deltakerService.oppdaterDeltaker(
-                deltaker,
-                endringRequest,
-                navEnhet.enhetsnummer,
+                deltaker = deltaker,
+                endringRequest = endringRequest,
             )
 
             val deltakerFraDb = deltakerRepository.get(deltaker.id).getOrThrow()

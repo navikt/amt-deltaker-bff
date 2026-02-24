@@ -26,12 +26,8 @@ class DeltakerService(
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun oppdaterDeltaker(
-        deltaker: Deltaker,
-        endringRequest: EndringRequest,
-        endretAvEnhet: String,
-    ): Deltaker {
-        navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
+    suspend fun oppdaterDeltaker(deltaker: Deltaker, endringRequest: EndringRequest): Deltaker {
+        navEnhetService.hentOpprettEllerOppdaterNavEnhet(endringRequest.endretAvEnhet)
 
         val deltakeroppdatering = amtDeltakerClient
             .postEndreDeltaker(

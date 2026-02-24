@@ -122,16 +122,13 @@ fun Routing.registerDeltakerApi(
 
         request.valider(deltaker)
 
-        val endretAvEnhet = this.getEnhetsnummer()
-
         val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
             deltaker = deltaker,
             endringRequest = produceEndringRequest(
                 deltaker,
                 this.getNavIdent(),
-                endretAvEnhet,
+                this.getEnhetsnummer(),
             ),
-            endretAvEnhet = endretAvEnhet,
         )
 
         this.respond(komplettDeltakerResponse(oppdatertDeltaker))
