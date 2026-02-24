@@ -30,6 +30,7 @@ import no.nav.amt.deltaker.bff.deltaker.model.Utkast
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.extensions.getDeltakerId
+import no.nav.amt.deltaker.extensions.getEnhetsnummer
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import org.slf4j.LoggerFactory
@@ -68,17 +69,17 @@ fun Routing.registerPameldingApi(
             call.respond(komplettDeltakerResponse(deltaker))
         }
 
+        // migration note: Dette endepunktet kommuniserer ikke med amt-deltaker
         post("/pamelding/{deltakerId}/kladd") {
-            val deltakerId = call.getDeltakerId()
-            val navIdent = call.getNavIdent()
             val request = call.receive<KladdRequest>().sanitize()
 
-            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
             request.valider(deltaker)
 
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
             val nyKladd = pameldingService.upsertKladd(
                 kladd = Kladd(
@@ -91,44 +92,43 @@ fun Routing.registerPameldingApi(
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
-                        endretAv = navIdent,
-                        endretAvEnhet = enhetsnummer,
+                        endretAv = call.getNavIdent(),
+                        endretAvEnhet = call.getEnhetsnummer(),
                     ),
                 ),
             )
-            if (nyKladd != null) {
-                call.respond(HttpStatusCode.OK)
-            } else {
-                call.respond(HttpStatusCode.BadRequest, "Kladden ble ikke opprettet")
-            }
+
+            nyKladd
+                ?.let { call.respond(HttpStatusCode.OK) }
+                ?: call.respond(HttpStatusCode.BadRequest, "Kladden ble ikke opprettet")
         }
 
         post("/pamelding/{deltakerId}") {
-            val deltakerId = call.getDeltakerId()
-            val navIdent = call.getNavIdent()
-            val request = call.receive<UtkastRequest>()
-
-            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
             val digitalBruker = amtDistribusjonClient.digitalBruker(deltaker.navBruker.personident)
+
+            val request = call.receive<UtkastRequest>()
             request.valider(deltaker, digitalBruker)
 
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
+            tilgangskontrollService.verifiserSkrivetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
-            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-
+            // kaller paameldingClient.utkast
             val oppdatertDeltaker = pameldingService.upsertUtkast(
                 Utkast(
                     deltakerId = deltaker.id,
                     pamelding = Pamelding(
                         deltakelsesinnhold = Deltakelsesinnhold(
-                            deltaker.deltakelsesinnhold?.ledetekst,
-                            request.innhold.toInnholdModel(deltaker),
+                            ledetekst = deltaker.deltakelsesinnhold?.ledetekst,
+                            innhold = request.innhold.toInnholdModel(deltaker),
                         ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
-                        endretAv = navIdent,
-                        endretAvEnhet = enhetsnummer,
+                        endretAv = call.getNavIdent(),
+                        endretAvEnhet = call.getEnhetsnummer(),
                     ),
                     godkjentAvNav = false,
                 ),
@@ -140,18 +140,17 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/avbryt") {
-            val deltakerId = call.getDeltakerId()
-            val navIdent = call.getNavIdent()
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
+            tilgangskontrollService.verifiserSkrivetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
-            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-
+            // kaller paameldingClient.avbrytUtkast
             pameldingService.avbrytUtkast(
                 deltaker = deltaker,
-                avbruttAv = navIdent,
-                avbruttAvEnhet = enhetsnummer,
+                avbruttAv = call.getNavIdent(),
+                avbruttAvEnhet = call.getEnhetsnummer(),
             )
 
             MetricRegister.AVBRUTT_UTKAST.inc()
@@ -160,31 +159,30 @@ fun Routing.registerPameldingApi(
         }
 
         post("/pamelding/{deltakerId}/utenGodkjenning") {
-            val deltakerId = call.getDeltakerId()
-            val navIdent = call.getNavIdent()
             val request = call.receive<PameldingUtenGodkjenningRequest>()
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
 
-            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
             request.valider(deltaker)
+            tilgangskontrollService.verifiserSkrivetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
-
-            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-
+            // kaller paameldingClient.utkast
             pameldingService.upsertUtkast(
                 Utkast(
                     deltakerId = deltaker.id,
                     pamelding = Pamelding(
                         deltakelsesinnhold = Deltakelsesinnhold(
-                            deltaker.deltakerliste.tiltak.innhold
+                            innhold = request.innhold.toInnholdModel(deltaker),
+                            ledetekst = deltaker.deltakerliste.tiltak.innhold
                                 ?.ledetekst,
-                            request.innhold.toInnholdModel(deltaker),
                         ),
                         bakgrunnsinformasjon = request.bakgrunnsinformasjon,
                         deltakelsesprosent = request.deltakelsesprosent?.toFloat(),
                         dagerPerUke = request.dagerPerUke?.toFloat(),
-                        endretAv = navIdent,
-                        endretAvEnhet = enhetsnummer,
+                        endretAv = call.getNavIdent(),
+                        endretAvEnhet = call.getEnhetsnummer(),
                     ),
                     godkjentAvNav = true,
                 ),
@@ -200,17 +198,20 @@ fun Routing.registerPameldingApi(
         }
 
         delete("/pamelding/{deltakerId}") {
-            val navIdent = call.getNavIdent()
             val deltakerId = call.getDeltakerId()
             val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
 
-            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
+            // kaller paameldingClient.slettKladd
             if (!pameldingService.slettKladd(deltaker)) {
                 call.respond(HttpStatusCode.BadRequest, "Kan ikke slette deltaker")
             }
 
-            log.info("$navIdent har slettet kladd for deltaker med id $deltakerId")
+            log.info("${call.getNavIdent()} har slettet kladd for deltaker med id $deltakerId")
 
             call.respond(HttpStatusCode.OK)
         }

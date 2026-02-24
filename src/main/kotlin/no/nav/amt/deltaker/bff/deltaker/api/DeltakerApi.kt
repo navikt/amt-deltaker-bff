@@ -45,6 +45,8 @@ import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
 import no.nav.amt.deltaker.bff.sporbarhet.SporbarhetsloggService
 import no.nav.amt.deltaker.extensions.getDeltakerId
+import no.nav.amt.deltaker.extensions.getEnhetsnummer
+import no.nav.amt.deltaker.extensions.getForslagId
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.AvbrytDeltakelseRequest
@@ -59,7 +61,6 @@ import no.nav.amt.lib.utils.objectMapper
 import no.nav.amt.lib.utils.unleash.CommonUnleashToggle
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.UUID
 
 fun Routing.registerDeltakerApi(
     tilgangskontrollService: TilgangskontrollService,
@@ -104,17 +105,14 @@ fun Routing.registerDeltakerApi(
         }
     }
 
-    fun ApplicationCall.getEnhetsnummer() = this.request.headerNotNull("aktiv-enhet")
-
-    suspend fun handleEndring(
-        call: ApplicationCall,
+    suspend fun ApplicationCall.handleEndring(
         request: Endringsrequest,
         produceEndringRequest: (deltaker: Deltaker, endretAv: String, endretAvEnhet: String) -> EndringRequest,
     ) {
-        val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
+        val deltaker = deltakerRepository.get(this.getDeltakerId()).getOrThrow()
 
         tilgangskontrollService.verifiserSkrivetilgang(
-            navAnsattAzureId = call.getNavAnsattAzureId(),
+            navAnsattAzureId = this.getNavAnsattAzureId(),
             norskIdent = deltaker.navBruker.personident,
         )
         illegalUpdateGuard(
@@ -124,21 +122,25 @@ fun Routing.registerDeltakerApi(
 
         request.valider(deltaker)
 
-        val endretAvEnhet = call.getEnhetsnummer()
+        val endretAvEnhet = this.getEnhetsnummer()
 
         val oppdatertDeltaker = deltakerService.oppdaterDeltaker(
             deltaker = deltaker,
-            endringRequest = produceEndringRequest(deltaker, call.getNavIdent(), endretAvEnhet),
+            endringRequest = produceEndringRequest(
+                deltaker,
+                this.getNavIdent(),
+                endretAvEnhet,
+            ),
             endretAvEnhet = endretAvEnhet,
         )
 
-        call.respond(komplettDeltakerResponse(oppdatertDeltaker))
+        this.respond(komplettDeltakerResponse(oppdatertDeltaker))
     }
 
     authenticate(AuthLevel.VEILEDER.name) {
         post("/deltaker/{deltakerId}/bakgrunnsinformasjon") {
             val request = call.receive<EndreBakgrunnsinformasjonRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 BakgrunnsinformasjonRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -149,7 +151,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/innhold") {
             val request = call.receive<EndreInnholdRequest>()
-            handleEndring(call, request) { deltaker, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { deltaker, endretAv, endretAvEnhet ->
                 InnholdRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -164,7 +166,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/deltakelsesmengde") {
             val request = call.receive<EndreDeltakelsesmengdeRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 DeltakelsesmengdeRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -179,7 +181,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/startdato") {
             val request = call.receive<EndreStartdatoRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 StartdatoRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -193,7 +195,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/sluttdato") {
             val request = call.receive<EndreSluttdatoRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 SluttdatoRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -206,7 +208,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/sluttarsak") {
             val request = call.receive<EndreSluttarsakRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 SluttarsakRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -219,7 +221,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/ikke-aktuell") {
             val request = call.receive<IkkeAktuellRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.IkkeAktuellRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -232,7 +234,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/reaktiver") {
             val request = call.receive<ReaktiverDeltakelseRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.ReaktiverDeltakelseRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -243,7 +245,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/avslutt") {
             val request = call.receive<AvsluttDeltakelseRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 // code-review note: Denne logikken bør flyttes til amt-deltaker
                 when {
                     request.harDeltatt() && request.harFullfort() -> {
@@ -290,7 +292,7 @@ fun Routing.registerDeltakerApi(
         post("/deltaker/{deltakerId}/endre-avslutning") {
             val request = call.receive<EndreAvslutningRequest>()
 
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 // code-review note: Denne logikken bør flyttes til amt-deltaker
                 if (request.harDeltatt()) {
                     no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndreAvslutningRequest(
@@ -317,7 +319,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/forleng") {
             val request = call.receive<ForlengDeltakelseRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.ForlengDeltakelseRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -330,7 +332,7 @@ fun Routing.registerDeltakerApi(
 
         post("/deltaker/{deltakerId}/fjern-oppstartsdato") {
             val request = call.receive<FjernOppstartsdatoRequest>()
-            handleEndring(call, request) { _, endretAv, endretAvEnhet ->
+            call.handleEndring(request) { _, endretAv, endretAvEnhet ->
                 no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.FjernOppstartsdatoRequest(
                     endretAv = endretAv,
                     endretAvEnhet = endretAvEnhet,
@@ -340,58 +342,72 @@ fun Routing.registerDeltakerApi(
             }
         }
 
-        // Get deltaker
+        // kaller ikke amt-deltaker
         post("/deltaker/{deltakerId}") {
             val request = call.receive<DeltakerRequest>()
-            val deltakerId = call.getDeltakerId()
-            val navIdent = call.getNavIdent()
-            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
 
             if (request.personident != deltaker.navBruker.personident) {
-                log.warn("$deltakerId ble forsøkt lest med en annen navbruker i kontekst.")
+                log.warn("${deltaker.id} ble forsøkt lest med annen Nav-bruker i kontekst.")
                 call.respond(HttpStatusCode.BadRequest)
+                return@post
             }
 
-            tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-            sporbarhetsloggService.sendAuditLog(navIdent = navIdent, deltakerPersonIdent = deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserLesetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
+            sporbarhetsloggService.sendAuditLog(
+                navIdent = call.getNavIdent(),
+                deltakerPersonIdent = deltaker.navBruker.personident,
+            )
 
             call.respond(komplettDeltakerResponse(deltaker))
         }
 
+        // kaller ikke amt-deltaker
         get("/deltaker/{deltakerId}/historikk") {
-            val navIdent = call.getNavIdent()
-            val deltakerId = call.getDeltakerId()
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
+            tilgangskontrollService.verifiserLesetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
-            val deltaker = deltakerRepository.get(deltakerId).getOrThrow()
-            tilgangskontrollService.verifiserLesetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
-            log.info("Nav-ident $navIdent har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
+            log.info("Nav-ident ${call.getNavIdent()} har gjort oppslag på historikk for deltaker med id ${deltaker.id}")
 
             val historikk = deltaker.getDeltakerHistorikkForVisning()
 
-            val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
-            val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
+            val historikkResponse = historikk.toResponse(
+                enheter = navEnhetService.hentEnheterForHistorikk(historikk),
+                ansatte = navAnsattService.hentAnsatteForHistorikk(historikk),
+                arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn(),
+                oppstartstype = deltaker.deltakerliste.oppstart,
+            )
 
-            val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
-            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart)
-            val json = objectMapper.writePolymorphicListAsString(historikkResponse)
-            call.respondText(json, ContentType.Application.Json)
+            call.respondText(
+                objectMapper.writePolymorphicListAsString(historikkResponse),
+                ContentType.Application.Json,
+            )
         }
 
+        // kaller ikke amt-deltaker
         post("/forslag/{forslagId}/avvis") {
-            val navIdent = call.getNavIdent()
             val request = call.receive<AvvisForslagRequest>()
-            val forslag = forslagRepository.get(UUID.fromString(call.parameters["forslagId"])).getOrThrow()
+            val forslag = forslagRepository.get(call.getForslagId()).getOrThrow()
             val deltaker = deltakerRepository.get(forslag.deltakerId).getOrThrow()
-            val enhetsnummer = call.request.headerNotNull("aktiv-enhet")
 
-            tilgangskontrollService.verifiserSkrivetilgang(call.getNavAnsattAzureId(), deltaker.navBruker.personident)
+            tilgangskontrollService.verifiserSkrivetilgang(
+                navAnsattAzureId = call.getNavAnsattAzureId(),
+                norskIdent = deltaker.navBruker.personident,
+            )
 
             forslagService.avvisForslag(
                 opprinneligForslag = forslag,
                 begrunnelse = request.begrunnelse,
-                avvistAvAnsatt = navIdent,
-                avvistAvEnhet = enhetsnummer,
+                avvistAvAnsatt = call.getNavIdent(),
+                avvistAvEnhet = call.getEnhetsnummer(),
             )
+
             call.respond(komplettDeltakerResponse(deltaker))
         }
     }
