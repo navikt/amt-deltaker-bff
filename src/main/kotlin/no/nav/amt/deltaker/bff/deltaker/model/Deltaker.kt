@@ -40,9 +40,9 @@ data class Deltaker(
 
     val fattetVedtak
         get() = historikk
-            .firstOrNull {
-                it is DeltakerHistorikk.Vedtak && it.vedtak.gyldigTil == null && it.vedtak.fattet != null
-            }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
+            .filterIsInstance<DeltakerHistorikk.Vedtak>()
+            .firstOrNull { it.vedtak.gyldigTil == null && it.vedtak.fattet != null }
+            ?.vedtak
 
     val paameldtDato
         get() = historikk
@@ -66,9 +66,9 @@ data class Deltaker(
 
     val ikkeFattetVedtak
         get() = historikk
-            .firstOrNull {
-                it is DeltakerHistorikk.Vedtak && it.vedtak.fattet == null
-            }?.let { (it as DeltakerHistorikk.Vedtak).vedtak }
+            .filterIsInstance<DeltakerHistorikk.Vedtak>()
+            .firstOrNull { it.vedtak.fattet == null }
+            ?.vedtak
 
     val vedtaksinformasjon
         get() = if (this.fattetVedtak != null) {
