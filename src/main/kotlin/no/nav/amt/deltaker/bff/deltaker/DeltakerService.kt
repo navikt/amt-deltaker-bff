@@ -10,8 +10,10 @@ import no.nav.amt.deltaker.bff.deltaker.model.AKTIVE_STATUSER
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
 import no.nav.amt.deltaker.bff.deltaker.model.Deltakeroppdatering
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
-import no.nav.amt.lib.models.deltaker.DeltakerEndring
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndringForslagRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.EndringRequest
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.ReaktiverDeltakelseRequest
 import no.nav.amt.lib.utils.database.Database
 import org.slf4j.LoggerFactory
 import java.time.ZonedDateTime
@@ -28,18 +30,10 @@ class DeltakerService(
 
     suspend fun oppdaterDeltaker(
         deltaker: Deltaker,
-        endring: DeltakerEndring.Endring,
-        endretAv: String,
+        endringRequest: EndringRequest,
         endretAvEnhet: String,
-        forslagId: UUID? = null,
     ): Deltaker {
         navEnhetService.hentOpprettEllerOppdaterNavEnhet(endretAvEnhet)
-
-        val endringRequest = endring.toEndringRequest(
-            endretAv = endretAv,
-            endretAvEnhet = endretAvEnhet,
-            forslagId = forslagId,
-        )
 
         val deltakeroppdatering = amtDeltakerClient
             .postEndreDeltaker(
@@ -47,14 +41,26 @@ class DeltakerService(
                 requestBody = endringRequest,
             ).toDeltakeroppdatering()
 
-        if (endring is DeltakerEndring.Endring.ReaktiverDeltakelse) {
+        if (endringRequest is ReaktiverDeltakelseRequest) {
+            // Code-review note: Her benyttes paameldingClient.slettKladd før all info om deltaker slettes fra db.
+            // Kallet til paameldingClient.slettKladd kan elimineres ved å la amt-deltaker slette kladd som en
+            // del av amtDeltakerClient.postEndreDeltaker.
+            // Sletting av kladd kan da flyttes inn i transaksjonen under.
             slettKladd(
                 deltakerlisteId = deltaker.deltakerliste.id,
                 personident = deltaker.navBruker.personident,
             )
         }
 
-        oppdaterDeltaker(deltakeroppdatering)
+        oppdaterDeltaker(
+            deltakeroppdatering = deltakeroppdatering,
+            afterUpsert = {
+                if (endringRequest is EndringForslagRequest) {
+                    endringRequest.forslagId?.let { forslagId -> forslagRepository.delete(forslagId) }
+                }
+            },
+        )
+
         return deltaker.oppdater(deltakeroppdatering)
     }
 
@@ -159,11 +165,17 @@ class DeltakerService(
         DeltakerStatusRepository.insertIfNotExists(deltakerId, deltakerStatus)
     }
 
-    suspend fun oppdaterDeltaker(deltakeroppdatering: Deltakeroppdatering, afterUpsert: () -> Unit = {}) {
+    suspend fun oppdaterDeltaker(
+        deltakeroppdatering: Deltakeroppdatering,
+        beforeUpsert: () -> Unit = {},
+        afterUpsert: () -> Unit = {},
+    ) {
         val disableKanEndres = deltakeroppdatering.status.type == DeltakerStatus.Type.FEILREGISTRERT ||
             deltakeroppdatering.status.aarsak?.type == DeltakerStatus.Aarsak.Type.SAMARBEIDET_MED_ARRANGOREN_ER_AVBRUTT
 
         Database.transaction {
+            beforeUpsert()
+
             laasTidligereDeltakelser(deltakeroppdatering)
 
             deltakerRepository.update(deltakeroppdatering)
