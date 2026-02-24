@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class InnbyggerServiceTest {
     private val amtDeltakerClient = mockAmtDeltakerClient()
     private val navEnhetService = NavEnhetService(NavEnhetRepository(), mockAmtPersonServiceClient())
-    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, mockPaameldingClient(), navEnhetService, mockk())
+    private val deltakerService = DeltakerService(DeltakerRepository(), amtDeltakerClient, navEnhetService, mockk())
     private val innbyggerService = InnbyggerService(deltakerService, mockPaameldingClient())
 
     companion object {

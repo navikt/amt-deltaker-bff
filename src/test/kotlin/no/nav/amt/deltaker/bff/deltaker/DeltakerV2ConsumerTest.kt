@@ -20,7 +20,6 @@ import no.nav.amt.deltaker.bff.utils.data.TestData
 import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
-import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.lib.models.arrangor.melding.Vurdering
 import no.nav.amt.lib.models.deltaker.DeltakerKafkaPayload
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
@@ -50,7 +49,6 @@ class DeltakerV2ConsumerTest {
     private val deltakerService = DeltakerService(
         deltakerRepository,
         mockAmtDeltakerClient(),
-        mockPaameldingClient(),
         navEnhetService,
         mockk(relaxed = true),
     )

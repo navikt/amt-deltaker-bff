@@ -23,7 +23,6 @@ import no.nav.amt.deltaker.bff.utils.data.TestRepository
 import no.nav.amt.deltaker.bff.utils.data.endre
 import no.nav.amt.deltaker.bff.utils.mockAmtDeltakerClient
 import no.nav.amt.deltaker.bff.utils.mockAmtPersonServiceClient
-import no.nav.amt.deltaker.bff.utils.mockPaameldingClient
 import no.nav.amt.deltaker.bff.utils.toDeltakeroppdatering
 import no.nav.amt.lib.models.arrangor.melding.Forslag
 import no.nav.amt.lib.models.deltaker.Deltakelsesinnhold
@@ -61,7 +60,6 @@ class DeltakerServiceTest {
     private val deltakerService = DeltakerService(
         deltakerRepository,
         mockAmtDeltakerClient(),
-        mockPaameldingClient(),
         navEnhetService,
         forslagRepository,
     )
@@ -110,7 +108,7 @@ class DeltakerServiceTest {
         val deltaker = lagDeltaker(status = lagDeltakerStatus(DeltakerStatus.Type.KLADD))
         TestRepository.insert(deltaker)
 
-        deltakerService.delete(deltaker.id)
+        deltakerService.deleteDeltaker(deltaker.id)
 
         deltakerRepository.get(deltaker.id).shouldBeFailure()
     }

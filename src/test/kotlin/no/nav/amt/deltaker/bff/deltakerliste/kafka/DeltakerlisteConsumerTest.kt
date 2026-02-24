@@ -63,7 +63,6 @@ class DeltakerlisteConsumerTest {
     private val deltakerService = DeltakerService(
         deltakerRepository = deltakerRepository,
         amtDeltakerClient = mockAmtDeltakerClient(),
-        paameldingClient = mockPaameldingClient(),
         navEnhetService = navEnhetService,
         forslagRepository = mockk(relaxed = true),
     )

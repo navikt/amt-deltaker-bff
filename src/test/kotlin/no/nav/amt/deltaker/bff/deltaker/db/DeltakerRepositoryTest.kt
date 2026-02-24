@@ -4,8 +4,9 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
-import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.result.shouldBeFailure
+import io.kotest.matchers.result.shouldBeSuccess
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import no.nav.amt.deltaker.bff.arrangor.ArrangorRepository
@@ -283,7 +284,7 @@ class DeltakerRepositoryTest {
                 .getKladdForDeltakerliste(
                     deltakerlisteId = UUID.randomUUID(),
                     personident = "~personindent~",
-                ).shouldBeNull()
+                ).shouldBeFailure()
         }
 
         @Test
@@ -303,7 +304,7 @@ class DeltakerRepositoryTest {
                 .getKladdForDeltakerliste(
                     deltakerlisteId = deltakerliste.id,
                     personident = deltakerInTest.navBruker.personident,
-                ).shouldNotBeNull()
+                ).shouldBeSuccess()
         }
     }
 
