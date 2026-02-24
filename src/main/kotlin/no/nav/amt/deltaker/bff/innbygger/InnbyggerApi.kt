@@ -25,9 +25,9 @@ import no.nav.amt.deltaker.bff.innbygger.model.InnbyggerDeltakerResponse
 import no.nav.amt.deltaker.bff.innbygger.model.toInnbyggerDeltakerResponse
 import no.nav.amt.deltaker.bff.navansatt.NavAnsattService
 import no.nav.amt.deltaker.bff.navenhet.NavEnhetService
+import no.nav.amt.deltaker.extensions.getDeltakerId
 import no.nav.amt.lib.models.deltaker.DeltakerStatus
 import no.nav.amt.lib.utils.objectMapper
-import java.util.UUID
 
 fun Routing.registerInnbyggerApi(
     deltakerRepository: DeltakerRepository,
@@ -40,28 +40,35 @@ fun Routing.registerInnbyggerApi(
 ) {
     val scope = CoroutineScope(Dispatchers.IO)
 
-    fun komplettInnbyggerDeltakerResponse(deltaker: Deltaker): InnbyggerDeltakerResponse {
-        val ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker)
-        val enhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) }
-        val forslag = forslageRepository.getForDeltaker(deltaker.id)
-        return deltaker.toInnbyggerDeltakerResponse(ansatte, enhet, forslag)
-    }
+    fun komplettInnbyggerDeltakerResponse(deltaker: Deltaker): InnbyggerDeltakerResponse = deltaker.toInnbyggerDeltakerResponse(
+        ansatte = navAnsattService.hentAnsatteForDeltaker(deltaker),
+        vedtakSistEndretAvEnhet = deltaker.vedtaksinformasjon?.sistEndretAvEnhet?.let { navEnhetService.hentEnhet(it) },
+        forslag = forslageRepository.getForDeltaker(deltaker.id),
+    )
 
     authenticate(AuthLevel.INNBYGGER.name) {
-        get("/innbygger/{id}") {
-            val innbygger = call.getPersonIdent()
-            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
-            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
+        // kaller amtDeltakerClient.sistBesokt
+        get("/innbygger/{deltakerId}") {
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
+
+            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(
+                rekvirentPersonident = call.getPersonIdent(),
+                ressursPersonident = deltaker.navBruker.personident,
+            )
 
             scope.launch { deltakerService.oppdaterSistBesokt(deltaker) }
 
             call.respond(komplettInnbyggerDeltakerResponse(deltaker))
         }
 
-        post("/innbygger/{id}/godkjenn-utkast") {
-            val innbygger = call.getPersonIdent()
-            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
-            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
+        // kaller paameldingClient.innbyggerGodkjennUtkast
+        post("/innbygger/{deltakerId}/godkjenn-utkast") {
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
+
+            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(
+                rekvirentPersonident = call.getPersonIdent(),
+                ressursPersonident = deltaker.navBruker.personident,
+            )
 
             // duplikatkode i InnbyggerService
             require(deltaker.status.type == DeltakerStatus.Type.UTKAST_TIL_PAMELDING) {
@@ -75,20 +82,28 @@ fun Routing.registerInnbyggerApi(
             call.respond(komplettInnbyggerDeltakerResponse(oppdatertDeltaker))
         }
 
-        get("/innbygger/{id}/historikk") {
-            val innbygger = call.getPersonIdent()
-            val deltaker = deltakerRepository.get(UUID.fromString(call.parameters["id"])).getOrThrow()
-            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(innbygger, deltaker.navBruker.personident)
+        // kaller ikke amt-deltaker
+        get("/innbygger/{deltakerId}/historikk") {
+            val deltaker = deltakerRepository.get(call.getDeltakerId()).getOrThrow()
+
+            tilgangskontrollService.verifiserInnbyggersTilgangTilDeltaker(
+                rekvirentPersonident = call.getPersonIdent(),
+                ressursPersonident = deltaker.navBruker.personident,
+            )
 
             val historikk = deltaker.getDeltakerHistorikkForVisning()
 
-            val ansatte = navAnsattService.hentAnsatteForHistorikk(historikk)
-            val enheter = navEnhetService.hentEnheterForHistorikk(historikk)
+            val historikkResponse = historikk.toResponse(
+                enheter = navEnhetService.hentEnheterForHistorikk(historikk),
+                ansatte = navAnsattService.hentAnsatteForHistorikk(historikk),
+                arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn(),
+                oppstartstype = deltaker.deltakerliste.oppstart,
+            )
 
-            val arrangornavn = deltaker.deltakerliste.arrangor.getArrangorNavn()
-            val historikkResponse = historikk.toResponse(ansatte, arrangornavn, enheter, deltaker.deltakerliste.oppstart)
-            val json = objectMapper.writePolymorphicListAsString(historikkResponse)
-            call.respondText(json, ContentType.Application.Json)
+            call.respondText(
+                objectMapper.writePolymorphicListAsString(historikkResponse),
+                ContentType.Application.Json,
+            )
         }
     }
 }
