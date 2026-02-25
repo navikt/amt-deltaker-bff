@@ -65,7 +65,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
                 .hentDeltakereForDeltakerliste(deltakerlisteId)
                 .toDeltakerResponses(
                     tilgangskontrollService = tilgangskontrollService,
-                    navAnsattAzureId = getDeltakerlisteId(),
+                    navAnsattAzureId = call.getNavAnsattAzureId(),
                 )
 
             call.respond(deltakere)
@@ -136,7 +136,7 @@ fun Routing.registerTiltakskoordinatorDeltakerlisteApi(
                     endretAv = navIdent,
                 ).toDeltakerResponses(
                     tilgangskontrollService = tilgangskontrollService,
-                    navAnsattAzureId = getDeltakerlisteId(),
+                    navAnsattAzureId = call.getNavAnsattAzureId(),
                 )
 
             call.respond(oppdaterteDeltakere)
