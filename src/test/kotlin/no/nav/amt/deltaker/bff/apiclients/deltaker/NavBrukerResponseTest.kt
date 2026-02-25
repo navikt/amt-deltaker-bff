@@ -17,7 +17,7 @@ class NavBrukerResponseTest {
             adressebeskyttelse = Adressebeskyttelse.FORTROLIG,
         )
 
-        val model = response.toNavBrukerModel()
+        val model = ModelMapper.toNavBruker(response)
 
         assertSoftly(model) {
             personident shouldBe response.personident

@@ -12,12 +12,12 @@ class DeltakerAmtDeltakerResponseTest {
     fun `skal mapppe response til model korrekt`() {
         val response = lagDeltakerResponse()
 
-        val model = response.toDeltakerModel()
+        val model = ModelMapper.toDeltaker(response)
 
         assertSoftly(model) {
             id shouldBe response.id
-            navBruker shouldBe response.navBruker.toNavBrukerModel()
-            gjennomforing shouldBe response.gjennomforing.toGjennomforingModel()
+            navBruker shouldBe ModelMapper.toNavBruker(response.navBruker)
+            gjennomforing shouldBe ModelMapper.toGjennomforing(response.gjennomforing)
             startdato shouldBe response.startdato.shouldNotBeNull()
             sluttdato shouldBe response.sluttdato.shouldNotBeNull()
             dagerPerUke shouldBe response.dagerPerUke.shouldNotBeNull()
@@ -34,7 +34,7 @@ class DeltakerAmtDeltakerResponseTest {
             historikk shouldBe response.historikk
 
             response.vedtaksinformasjon.shouldNotBeNull()
-            vedtaksinformasjon shouldBe response.vedtaksinformasjon.toVedtaksinformasjonModel()
+            vedtaksinformasjon shouldBe ModelMapper.toVedtaksinformasjon(response.vedtaksinformasjon!!)
 
             response.endringsforslagFraArrangor.shouldNotBeEmpty()
             endringsforslagFraArrangor shouldBe response.endringsforslagFraArrangor

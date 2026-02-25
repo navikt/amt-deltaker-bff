@@ -12,7 +12,7 @@ class GjennomforingResponseTest {
     fun `skal mapppe response til model korrekt`() {
         val response = lagGjennomforingResponse(pameldingType = GjennomforingPameldingType.DIREKTE_VEDTAK)
 
-        val model = response.toGjennomforingModel()
+        val model = ModelMapper.toGjennomforing(response)
 
         assertSoftly(model) {
             id shouldBe response.id
@@ -25,8 +25,7 @@ class GjennomforingResponseTest {
             apentForPamelding shouldBe response.apentForPamelding
             oppmoteSted shouldBe response.oppmoteSted.shouldNotBeNull()
             pameldingstype shouldBe response.pameldingstype.shouldNotBeNull()
-            antallPlasser shouldBe response.antallPlasser.shouldNotBeNull()
-            arrangor shouldBe response.arrangor.toArrangorModel()
+            arrangor shouldBe ModelMapper.toArrangor(response.arrangor)
         }
     }
 }

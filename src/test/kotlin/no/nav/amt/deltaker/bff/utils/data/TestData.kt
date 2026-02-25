@@ -1,10 +1,5 @@
 package no.nav.amt.deltaker.bff.utils.data
 
-import no.nav.amt.deltaker.bff.apiclients.deltaker.ArrangorResponse
-import no.nav.amt.deltaker.bff.apiclients.deltaker.DeltakerAmtDeltakerResponse
-import no.nav.amt.deltaker.bff.apiclients.deltaker.GjennomforingResponse
-import no.nav.amt.deltaker.bff.apiclients.deltaker.NavBrukerResponse
-import no.nav.amt.deltaker.bff.apiclients.deltaker.VedtaksinformasjonResponse
 import no.nav.amt.deltaker.bff.auth.TiltakskoordinatorDeltakerlisteTilgang
 import no.nav.amt.deltaker.bff.deltaker.api.model.DeltakerResponse.DeltakelsesinnholdDto.Companion.fulltInnhold
 import no.nav.amt.deltaker.bff.deltaker.model.Deltaker
@@ -29,6 +24,11 @@ import no.nav.amt.lib.models.deltaker.Innhold
 import no.nav.amt.lib.models.deltaker.Innsatsgruppe
 import no.nav.amt.lib.models.deltaker.Kilde
 import no.nav.amt.lib.models.deltaker.Vedtak
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.ArrangorResponse
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerResponse
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.GjennomforingResponse
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.NavBrukerResponse
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.VedtaksinformasjonResponse
 import no.nav.amt.lib.models.deltakerliste.GjennomforingPameldingType
 import no.nav.amt.lib.models.deltakerliste.GjennomforingStatusType
 import no.nav.amt.lib.models.deltakerliste.Oppstartstype
@@ -140,7 +140,6 @@ object TestData {
         apentForPamelding = apentForPamelding,
         oppmoteSted = oppmoteSted,
         pameldingstype = pameldingType,
-        antallPlasser = 42,
     )
 
     private val tiltakstypeCache = mutableMapOf<Tiltakskode, Tiltakstype>()
@@ -325,7 +324,7 @@ object TestData {
         vedtaksinformasjon: VedtaksinformasjonResponse? = lagVedtaksinformasjonResponse(),
         endringsforslagFraArrangor: List<Forslag> = listOf(lagForslag()),
         historikk: List<DeltakerHistorikk> = lagDeltakerHistorikk(),
-    ) = DeltakerAmtDeltakerResponse(
+    ) = DeltakerResponse(
         id = id,
         status = status,
         navBruker = navBruker,

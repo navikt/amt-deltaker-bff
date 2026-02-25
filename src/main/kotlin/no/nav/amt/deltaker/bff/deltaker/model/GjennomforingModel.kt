@@ -17,7 +17,6 @@ data class GjennomforingModel(
     val oppstart: Oppstartstype?,
     val arrangor: ArrangorModel,
     val apentForPamelding: Boolean,
-    val antallPlasser: Int?,
     val oppmoteSted: String?,
     val pameldingstype: GjennomforingPameldingType?,
 )

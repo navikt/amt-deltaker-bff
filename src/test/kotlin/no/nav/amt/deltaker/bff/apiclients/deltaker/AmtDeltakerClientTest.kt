@@ -28,6 +28,7 @@ import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.SluttarsakRe
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.SluttdatoRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.request.StartdatoRequest
 import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerEndringResponse
+import no.nav.amt.lib.models.deltaker.internalapis.deltaker.response.DeltakerResponse
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -42,7 +43,7 @@ class AmtDeltakerClientTest {
     inner class GetDeltaker {
         val expectedUrl = "$DELTAKER_BASE_URL/deltaker/${deltakerInTest.id}"
         val expectedErrorMessage = "Fant ikke deltaker ${deltakerInTest.id} i amt-deltaker."
-        val getDeltakerLambda: suspend (AmtDeltakerClient) -> DeltakerAmtDeltakerResponse =
+        val getDeltakerLambda: suspend (AmtDeltakerClient) -> DeltakerResponse =
             { client -> client.getDeltaker(deltakerInTest.id) }
 
         @ParameterizedTest

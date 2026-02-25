@@ -9,7 +9,7 @@ class ArrangorResponseTest {
     fun `skal mapppe response til model korrekt`() {
         val response = lagArrangorResponse()
 
-        val model = response.toArrangorModel()
+        val model = ModelMapper.toArrangor(response)
 
         model.navn shouldBe response.navn
     }
