@@ -35,7 +35,7 @@ class ModelMapper {
             )
         }
 
-        fun toNavBruker(navBrukerResponse: NavBrukerResponse) = with(navBrukerResponse) {
+        internal fun toNavBruker(navBrukerResponse: NavBrukerResponse) = with(navBrukerResponse) {
             NavBrukerModel(
                 personident = personident,
                 fornavn = fornavn,
@@ -54,7 +54,7 @@ class ModelMapper {
             )
         }
 
-        fun toGjennomforing(gjennomforingResponse: GjennomforingResponse) = with(gjennomforingResponse) {
+        internal fun toGjennomforing(gjennomforingResponse: GjennomforingResponse) = with(gjennomforingResponse) {
             GjennomforingModel(
                 id = id,
                 tiltak = tiltakstype,
@@ -70,9 +70,9 @@ class ModelMapper {
             )
         }
 
-        fun toArrangor(arrangorResponse: ArrangorResponse) = ArrangorModel(arrangorResponse.navn)
+        internal fun toArrangor(arrangorResponse: ArrangorResponse) = ArrangorModel(arrangorResponse.navn)
 
-        fun toVedtaksinformasjon(vedtaksinformasjonResponse: VedtaksinformasjonResponse) = with(vedtaksinformasjonResponse) {
+        internal fun toVedtaksinformasjon(vedtaksinformasjonResponse: VedtaksinformasjonResponse) = with(vedtaksinformasjonResponse) {
             VedtaksinformasjonModel(
                 fattet = fattet,
                 fattetAvNav = fattetAvNav,
